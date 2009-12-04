@@ -63,7 +63,7 @@ public class DefaultGateway implements Gateway {
 	private boolean isStarted = false;
 	private final static String OBJECT_NAME_PREFIX = "o";
 
-	 private final static String ARG_NAME_PREFIX = "a";
+	private final static String ARG_NAME_PREFIX = "a";
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -99,7 +99,7 @@ public class DefaultGateway implements Gateway {
 	public void startup() {
 		isStarted = true;
 	}
-	
+
 	@Override
 	public Object getObject(String objectId) {
 		return bindings.get(objectId);
@@ -131,26 +131,33 @@ public class DefaultGateway implements Gateway {
 		return bindings;
 	}
 
-	protected ReturnObject invoke(String methodName, String targetObjectId,
+	@Override
+	public ReturnObject invoke(String methodName, String targetObjectId,
 			List<Argument> args) {
 		if (args == null) {
 			args = new ArrayList<Argument>();
 		}
-		ReturnObject returnObject = new ReturnObject();
+		ReturnObject returnObject = null;
 		List<String> tempArgsIds = new ArrayList<String>();
 		try {
 			StringBuilder methodCall = new StringBuilder();
 			methodCall.append(targetObjectId);
 			methodCall.append(".");
 			methodCall.append(methodName);
-			methodCall.append(buildArgs(args,tempArgsIds));
+			methodCall.append(buildArgs(args, tempArgsIds));
 			methodCall.append(";");
-		
+
 			Object object = jsEngine.eval(methodCall.toString());
 			if (object != null) {
-				String objectId = putNewObject(object);
-				// TODO Handle lists, maps, etc.
-				returnObject = new ReturnObject(objectId);
+				if (isPrimitiveObject(object)) {
+					returnObject = ReturnObject.getPrimitiveReturnObject(object);
+				} else {
+					String objectId = putNewObject(object);
+					// TODO Handle lists, maps, etc.
+					returnObject = ReturnObject.getReferenceReturnObject(objectId);
+				}
+			} else {
+				returnObject = ReturnObject.getNullReturnObject();
 			}
 		} catch (Exception e) {
 			throw new Py4JException(e);
@@ -161,12 +168,17 @@ public class DefaultGateway implements Gateway {
 		return returnObject;
 	}
 
+	protected boolean isPrimitiveObject(Object object) {
+		return object instanceof Boolean || object instanceof String
+				|| object instanceof Number || object instanceof Character;
+	}
+
 	private void cleanTempArgs(List<String> tempArgsIds) {
 		for (String argId : tempArgsIds) {
 			bindings.remove(argId);
 		}
 	}
-	
+
 	private String buildArgs(List<Argument> args, List<String> tempArgsIds) {
 		StringBuilder argsString = new StringBuilder();
 		argsString.append('(');
@@ -175,7 +187,7 @@ public class DefaultGateway implements Gateway {
 			if (i != 0) {
 				argsString.append(',');
 			}
-			
+
 			String argumentRef = arg.getValue().toString();
 			if (!arg.isReference()) {
 				String tempArgId = ARG_NAME_PREFIX + i;
@@ -183,7 +195,7 @@ public class DefaultGateway implements Gateway {
 				tempArgsIds.add(tempArgId);
 				argumentRef = tempArgId;
 			}
-			
+
 			argsString.append(argumentRef);
 			++i;
 		}

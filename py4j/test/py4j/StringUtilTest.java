@@ -1,19 +1,20 @@
-/**
+/*******************************************************************************
+ *
  * Copyright (c) 2009, Barthelemy Dagenais All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * 
+ *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,25 +26,38 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *******************************************************************************/
 package py4j;
 
-import java.util.List;
+import org.junit.Test;
 
-public interface Gateway {
+import static org.junit.Assert.assertEquals;
 
-	public List<String> getMethodNames(Object obj);
+public class StringUtilTest {
+
+	@Test
+	public void testEmptyString() {
+		assertEquals("",StringUtil.unescape(""));
+	}
 	
-	public String getMethodNamesAsString(Object obj);
+	@Test
+	public void testNoEscape() {
+		assertEquals("Hello",StringUtil.unescape("Hello"));
+		assertEquals("Hello World!",StringUtil.unescape("Hello World!"));
+		assertEquals("Hello\tWorld!\"",StringUtil.unescape("Hello\tWorld!\""));
+	}
 	
-	public void startup();
+	@Test
+	public void testWithEscape() {
+		assertEquals("Hello\\World!",StringUtil.unescape("Hello\\\\World!"));
+		assertEquals("Hello \\\\World!",StringUtil.unescape("Hello \\\\\\\\World!"));
+	}
 	
-	public void shutdown();
-	
-	public Object getObject(String objectId);
-	
-	public ReturnObject invoke(String methodName, String targetObjectId,
-			List<Argument> args);
+	@Test
+	public void testWithLineBreaks() {
+		assertEquals("Hello\\nWorld!",StringUtil.unescape("Hello\\\\nWorld!"));
+		assertEquals("Hello\nWorld!",StringUtil.unescape("Hello\\nWorld!"));
+		assertEquals("Hello\\\nWorld!",StringUtil.unescape("Hello\\\\\\nWorld!"));
+	}
 	
 }

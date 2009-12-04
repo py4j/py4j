@@ -33,7 +33,7 @@ public class ExampleGateway extends DefaultGateway {
 
 	public ReturnObject getNewExample() {
 		String id = putNewObject(new ExampleClass());
-		return new ReturnObject(id);
+		return ReturnObject.getReferenceReturnObject(id);
 	}
 	
 }

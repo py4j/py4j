@@ -54,14 +54,14 @@ public class DefaultJavaGatewayTest {
 	}
 	
 	@Test
-	public void noParam() {
+	public void testNoParam() {
 		ReturnObject obj1 = gateway.getNewExample();
 		ReturnObject obj2 = gateway.invoke("method1", obj1.getName(), null);
-		assertEquals(new Integer(1), gateway.getObject(obj2.getName()));
+		assertEquals(1, obj2.getPrimitiveObject());
 	}
 	
 	@Test
-	public void voidMethod() {
+	public void testVoidMethod() {
 		ReturnObject obj1 = gateway.getNewExample();
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument("This is a String!",false));
@@ -70,7 +70,7 @@ public class DefaultJavaGatewayTest {
 	}
 	
 	@Test
-	public void charMethod() {
+	public void testCharMethod() {
 		ReturnObject obj1 = gateway.getNewExample();
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument('c', false));
@@ -80,7 +80,7 @@ public class DefaultJavaGatewayTest {
 	}
 	
 	@Test
-	public void charMethod2() {
+	public void testCharMethod2() {
 		ReturnObject obj1 = gateway.getNewExample();
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument('c', false));
@@ -90,7 +90,7 @@ public class DefaultJavaGatewayTest {
 	}
 	
 	@Test
-	public void StringMethod() {
+	public void testStringMethod() {
 		ReturnObject obj1 = gateway.getNewExample();
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument("c", false));
@@ -99,7 +99,7 @@ public class DefaultJavaGatewayTest {
 	}
 	
 	@Test
-	public void usingMethodReturn() {
+	public void testUsingMethodReturn() {
 		ReturnObject obj1 = gateway.getNewExample();
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument("c", false));
@@ -107,7 +107,7 @@ public class DefaultJavaGatewayTest {
 		args = new ArrayList<Argument>();
 		args.add(new Argument(obj2.getName(),true));
 		ReturnObject obj3 = gateway.invoke("method5", obj1.getName(), args);
-		assertEquals(new Integer(2), gateway.getObject(obj3.getName()));
+		assertEquals(2, obj3.getPrimitiveObject());
 	}
 	
 }

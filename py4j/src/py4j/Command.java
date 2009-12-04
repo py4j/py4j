@@ -30,11 +30,13 @@
 package py4j;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 
 public interface Command {
 
 	public void init(Gateway gateway);
 	
-	public void execute(String command, BufferedReader reader) throws Py4JException;
+	public void execute(String command, BufferedReader reader, BufferedWriter writer) throws Py4JException, IOException;
 	
 }

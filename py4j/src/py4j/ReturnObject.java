@@ -32,25 +32,40 @@ package py4j;
 public class ReturnObject {
 
 	private String name;
+	private Object primitiveObject;
+	private boolean isReference;
 	private boolean isMap;
 	private boolean isList;
 	private boolean isNull;
+	private boolean isError;
 	private int size;
 
-	public ReturnObject() {
-		isNull = true;
+	private ReturnObject() {
 	}
 
-	public ReturnObject(String name) {
-		this.name = name;
+	public static ReturnObject getPrimitiveReturnObject(Object primitive) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.primitiveObject = primitive;
+		return rObject;
 	}
-
-	public ReturnObject(String name, boolean isMap, boolean isList, int size) {
-		super();
-		this.name = name;
-		this.isMap = isMap;
-		this.isList = isList;
-		this.size = size;
+	
+	public static ReturnObject getReferenceReturnObject(String name) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.name = name;
+		rObject.isReference = true;
+		return rObject;
+	}
+	
+	public static ReturnObject getNullReturnObject() {
+		ReturnObject rObject = new ReturnObject();
+		rObject.isNull = true;
+		return rObject;
+	}
+	
+	public static ReturnObject getErrorReturnObject() {
+		ReturnObject rObject = new ReturnObject();
+		rObject.isError = true;
+		return rObject;
 	}
 
 	public String getName() {
@@ -93,4 +108,30 @@ public class ReturnObject {
 		this.isNull = isNull;
 	}
 
+	public boolean isError() {
+		return isError;
+	}
+
+	public void setError(boolean isError) {
+		this.isError = isError;
+	}
+
+	public Object getPrimitiveObject() {
+		return primitiveObject;
+	}
+
+	public void setPrimitiveObject(Object primitiveObject) {
+		this.primitiveObject = primitiveObject;
+	}
+
+	public boolean isReference() {
+		return isReference;
+	}
+
+	public void setReference(boolean isReference) {
+		this.isReference = isReference;
+	}
+
+	
+	
 }

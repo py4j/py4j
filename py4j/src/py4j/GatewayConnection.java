@@ -41,6 +41,7 @@ import java.util.Map;
 
 public class GatewayConnection implements Runnable {
 
+	@SuppressWarnings("unused")
 	private final Gateway gateway;
 	private final Socket socket;
 	private final BufferedWriter writer;
@@ -71,11 +72,14 @@ public class GatewayConnection implements Runnable {
 	@Override
 	public void run() {
 		try {
-			String command = null;
+			String commandLine = null;
 			do {
-				command = reader.readLine();
-				
-			} while (command != null && !command.equals('q'));
+				commandLine = reader.readLine();
+				Command command = commands.get(commandLine);
+				if (command != null) {
+					command.execute(commandLine, reader, writer);
+				}
+			} while (commandLine != null && !commandLine.equals('q'));
 			writer.close();
 			reader.close();
 			socket.close();
