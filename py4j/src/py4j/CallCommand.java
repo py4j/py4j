@@ -32,7 +32,6 @@ package py4j;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -54,39 +53,20 @@ import java.util.List;
  * @author Barthelemy Dagenais
  * 
  */
-public class CallCommand implements Command {
-
-	private Gateway gateway;
+public class CallCommand extends AbstractCommand {
 
 	@Override
 	public void execute(String command, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
 		String targetObjectId = reader.readLine();
 		String methodName = reader.readLine();
-		List<Argument> arguments = new ArrayList<Argument>();
-		String line = reader.readLine();
+		List<Argument> arguments = getArguments(reader);
 
-		while (!Protocol.isEmpty(line) && !Protocol.isEnd(line)) {
-			Argument argument = new Argument(Protocol.getObject(line), Protocol
-					.isReference(line));
-			arguments.add(argument);
-		}
-		ReturnObject returnObject = null;
-		try {
-			returnObject = gateway.invoke(methodName,
-					targetObjectId, arguments);
-		} catch (Exception e) {
-			e.printStackTrace();
-			returnObject = ReturnObject.getErrorReturnObject();
-		}
+		ReturnObject returnObject = getReturnObject(methodName, targetObjectId, arguments);
 		
 		String returnCommand = Protocol.getOutputCommand(returnObject);
 		writer.write(returnCommand);
-	}
-
-	@Override
-	public void init(Gateway gateway) {
-		this.gateway = gateway;
+		writer.flush();
 	}
 
 }

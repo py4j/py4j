@@ -31,9 +31,8 @@ package py4j;
 
 public class ExampleGateway extends DefaultGateway {
 
-	public ReturnObject getNewExample() {
-		String id = putNewObject(new ExampleClass());
-		return ReturnObject.getReferenceReturnObject(id);
+	public ExampleClass getNewExample() {
+		return new ExampleClass();
 	}
 	
 }

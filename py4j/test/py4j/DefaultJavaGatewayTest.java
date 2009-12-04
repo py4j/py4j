@@ -55,59 +55,77 @@ public class DefaultJavaGatewayTest {
 	
 	@Test
 	public void testNoParam() {
-		ReturnObject obj1 = gateway.getNewExample();
-		ReturnObject obj2 = gateway.invoke("method1", obj1.getName(), null);
+		String name = gateway.putNewObject(gateway.getNewExample());
+		ReturnObject obj2 = gateway.invoke("method1", name, null);
 		assertEquals(1, obj2.getPrimitiveObject());
 	}
 	
 	@Test
 	public void testVoidMethod() {
-		ReturnObject obj1 = gateway.getNewExample();
+		String name = gateway.putNewObject(gateway.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument("This is a String!",false));
-		ReturnObject obj2 = gateway.invoke("method2", obj1.getName(), args);
+		ReturnObject obj2 = gateway.invoke("method2", name, args);
 		assertTrue(obj2.isNull());
 	}
 	
 	@Test
+	public void testMethodWithParams() {
+		String name = gateway.putNewObject(gateway.getNewExample());
+		List<Argument> args = new ArrayList<Argument>();
+		args.add(new Argument(1,false));
+		args.add(new Argument(false,false));
+		ReturnObject obj2 = gateway.invoke("method3", name, args);
+		assertEquals("Hello World", obj2.getPrimitiveObject());
+	}
+	
+	@Test
 	public void testCharMethod() {
-		ReturnObject obj1 = gateway.getNewExample();
+		String name = gateway.putNewObject(gateway.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument('c', false));
-		ReturnObject obj2 = gateway.invoke("method4", obj1.getName(), args);
+		ReturnObject obj2 = gateway.invoke("method4", name, args);
 		// Unfortunately, Rhino has no way of distinguishing from chars and strings.
 		assertEquals(3, ((ExampleClass)gateway.getObject(obj2.getName())).getField1());
 	}
 	
 	@Test
 	public void testCharMethod2() {
-		ReturnObject obj1 = gateway.getNewExample();
+		String name = gateway.putNewObject(gateway.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument('c', false));
-		ReturnObject obj2 = gateway.invoke("method6", obj1.getName(), args);
+		ReturnObject obj2 = gateway.invoke("method6", name, args);
 		// Unfortunately, Rhino has no way of distinguishing from chars and strings.
 		assertEquals(4, ((ExampleClass)gateway.getObject(obj2.getName())).getField1());
 	}
 	
 	@Test
 	public void testStringMethod() {
-		ReturnObject obj1 = gateway.getNewExample();
+		String name = gateway.putNewObject(gateway.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument("c", false));
-		ReturnObject obj2 = gateway.invoke("method4", obj1.getName(), args);
+		ReturnObject obj2 = gateway.invoke("method4", name, args);
 		assertEquals(3, ((ExampleClass)gateway.getObject(obj2.getName())).getField1());
 	}
 	
 	@Test
 	public void testUsingMethodReturn() {
-		ReturnObject obj1 = gateway.getNewExample();
+		String name = gateway.putNewObject(gateway.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument("c", false));
-		ReturnObject obj2 = gateway.invoke("method4", obj1.getName(), args);
+		ReturnObject obj2 = gateway.invoke("method4", name, args);
 		args = new ArrayList<Argument>();
 		args.add(new Argument(obj2.getName(),true));
-		ReturnObject obj3 = gateway.invoke("method5", obj1.getName(), args);
+		ReturnObject obj3 = gateway.invoke("method5", name, args);
 		assertEquals(2, obj3.getPrimitiveObject());
+	}
+	
+	@Test
+	public void testGetMethodsAsString() {
+		String name = gateway.putNewObject(gateway.getNewExample());
+		Object obj = gateway.getObject(name);
+		String methods = gateway.getMethodNamesAsString(obj);
+		assertEquals("getClass,equals,getField1,hashCode,method6,setField1,method5,wait,method4,method3,method2,method1,notify,toString,notifyAll,",methods);
 	}
 	
 }

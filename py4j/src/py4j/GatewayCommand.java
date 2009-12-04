@@ -32,15 +32,21 @@ package py4j;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.List;
 
-public class GatewayCommand implements Command {
+public class GatewayCommand extends AbstractCommand {
 	
-	private Gateway gateway;
-
 	@Override
 	public void execute(String command, BufferedReader reader, BufferedWriter writer)
 			throws Py4JException, IOException {
-		// TODO Auto-generated method stub
+		String methodName = reader.readLine();
+		List<Argument> arguments = getArguments(reader);
+
+		ReturnObject returnObject = getReturnObject(methodName, Gateway.GATEWAY_OBJECT_ID, arguments);
+		
+		String returnCommand = Protocol.getOutputCommand(returnObject);
+		writer.write(returnCommand);
+		writer.flush();
 
 	}
 

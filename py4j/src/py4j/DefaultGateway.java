@@ -64,6 +64,8 @@ public class DefaultGateway implements Gateway {
 	private final static String OBJECT_NAME_PREFIX = "o";
 
 	private final static String ARG_NAME_PREFIX = "a";
+	
+	
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -98,6 +100,7 @@ public class DefaultGateway implements Gateway {
 	@Override
 	public void startup() {
 		isStarted = true;
+		bindings.put(GATEWAY_OBJECT_ID, this);
 	}
 
 	@Override
@@ -146,7 +149,7 @@ public class DefaultGateway implements Gateway {
 			methodCall.append(methodName);
 			methodCall.append(buildArgs(args, tempArgsIds));
 			methodCall.append(";");
-
+			System.out.println("Calling: " + methodCall.toString());
 			Object object = jsEngine.eval(methodCall.toString());
 			if (object != null) {
 				if (isPrimitiveObject(object)) {
