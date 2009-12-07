@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -62,8 +63,9 @@ public class DefaultGateway implements Gateway {
 	private int idCounter = 0;
 	private boolean isStarted = false;
 	private final static String OBJECT_NAME_PREFIX = "o";
-
 	private final static String ARG_NAME_PREFIX = "a";
+	
+	private final Logger logger = Logger.getLogger(DefaultGateway.class.getName());
 	
 	
 
@@ -149,7 +151,7 @@ public class DefaultGateway implements Gateway {
 			methodCall.append(methodName);
 			methodCall.append(buildArgs(args, tempArgsIds));
 			methodCall.append(";");
-			System.out.println("Calling: " + methodCall.toString());
+			logger.info("Calling: " + methodCall.toString());
 			Object object = jsEngine.eval(methodCall.toString());
 			if (object != null) {
 				if (isPrimitiveObject(object)) {

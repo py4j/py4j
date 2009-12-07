@@ -1,0 +1,3 @@
+- Server (need to be able to start/stop server, limit the number of connections, etc.)
+ 
+- Support for lists/arrays/map/set

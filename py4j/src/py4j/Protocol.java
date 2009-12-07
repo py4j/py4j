@@ -234,7 +234,7 @@ public class Protocol {
 
 	/**
 	 * <p>
-	 * Method provided for consistency. Just return null.
+	 * Method provided for consistency. Just returns null.
 	 * </p>
 	 * 
 	 * @param commandPart

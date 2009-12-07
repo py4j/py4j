@@ -38,6 +38,7 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class GatewayConnection implements Runnable {
 
@@ -47,6 +48,7 @@ public class GatewayConnection implements Runnable {
 	private final BufferedWriter writer;
 	private final BufferedReader reader;
 	private final Map<String,Command> commands;
+	private final Logger logger = Logger.getLogger(GatewayConnection.class.getName());
 	
 	public GatewayConnection(Gateway gateway, Socket socket) throws IOException {
 		super();
@@ -55,6 +57,7 @@ public class GatewayConnection implements Runnable {
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
 		this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String,Command>();
+		initCommands(gateway);
 		Thread t = new Thread(this);
 		t.start();
 	}
@@ -75,6 +78,7 @@ public class GatewayConnection implements Runnable {
 			String commandLine = null;
 			do {
 				commandLine = reader.readLine();
+				logger.info("Received command: " + commandLine);
 				Command command = commands.get(commandLine);
 				if (command != null) {
 					command.execute(commandLine, reader, writer);

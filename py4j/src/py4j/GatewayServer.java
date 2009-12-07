@@ -44,17 +44,18 @@ public class GatewayServer {
 
 	private boolean acceptOnlyOne;
 
-	public GatewayServer() {
-
+	public GatewayServer(Gateway gateway) {
+		this.gateway = gateway;
 	}
 
-	public GatewayServer(int port) {
-		super();
+	public GatewayServer(Gateway gateway, int port) {
+		this(gateway);
 		this.port = port;
 	}
 
 	public void start() {
 		try {
+			gateway.startup();
 			sSocket = new ServerSocket(port);
 			while (true) {
 				Socket socket = sSocket.accept();
@@ -66,6 +67,10 @@ public class GatewayServer {
 		} catch (Exception e) {
 			throw new Py4JException(e);
 		}
+	}
+	
+	public void stop() {
+		gateway.shutdown();
 	}
 
 	public boolean isAcceptOnlyOne() {

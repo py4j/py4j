@@ -29,10 +29,6 @@
 
 package py4j;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 public class Application {
 
@@ -40,7 +36,7 @@ public class Application {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		GatewayServer server = new GatewayServer();
+		GatewayServer server = new GatewayServer(new ExampleGateway());
 		server.start();
 	}
 
