@@ -1,8 +1,8 @@
-- create gateway class
-- create an object class
-- call it java gateway (why channel?)
+- create gateway class - done
+- create an object class - done
+- call it java gateway (why channel?) - done
+- implement the marshalling - done
 
-
-- implement the marshalling/unmarshalling
+- implement the unmarshalling
 - implement the communication
 - next thing: implement sequence (good luck!)
