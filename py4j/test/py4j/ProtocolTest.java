@@ -45,13 +45,13 @@ public class ProtocolTest {
 		assertTrue(Protocol.isEmpty("  "));
 		assertTrue(Protocol.isEmpty("\n"));
 		assertTrue(Protocol.isEmpty(null));
-		assertFalse(Protocol.isEmpty("b:true"));
+		assertFalse(Protocol.isEmpty("btrue"));
 	}
 
 	@Test
 	public void testIntegers() {
-		assertTrue(Protocol.isInteger("i:123"));
-		assertFalse(Protocol.isInteger("b:true"));
+		assertTrue(Protocol.isInteger("i123"));
+		assertFalse(Protocol.isInteger("btrue"));
 		try {
 			Protocol.isInteger(null);
 			fail();
@@ -65,19 +65,19 @@ public class ProtocolTest {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getInteger("i:");
+			Protocol.getInteger("i");
 			fail();
 		} catch (Exception e) {
 			assertTrue(true);
 		}
-		assertEquals(1, Protocol.getInteger("i:1"));
-		assertEquals(234, Protocol.getInteger("i:234"));
+		assertEquals(1, Protocol.getInteger("i1"));
+		assertEquals(234, Protocol.getInteger("i234"));
 	}
 
 	@Test
 	public void testBooleans() {
-		assertTrue(Protocol.isBoolean("b:true"));
-		assertFalse(Protocol.isBoolean("i:234"));
+		assertTrue(Protocol.isBoolean("btrue"));
+		assertFalse(Protocol.isBoolean("i234"));
 		try {
 			Protocol.isBoolean(null);
 			fail();
@@ -90,18 +90,18 @@ public class ProtocolTest {
 		} catch (Exception e) {
 			assertTrue(true);
 		}
-		assertEquals(true, Protocol.getBoolean("b:true"));
-		assertEquals(true, Protocol.getBoolean("b:True"));
-		assertEquals(false, Protocol.getBoolean("b:false"));
-		assertEquals(false, Protocol.getBoolean("b:False"));
-		assertEquals(false, Protocol.getBoolean("b:1"));
-		assertEquals(false, Protocol.getBoolean("b:"));
+		assertEquals(true, Protocol.getBoolean("btrue"));
+		assertEquals(true, Protocol.getBoolean("bTrue"));
+		assertEquals(false, Protocol.getBoolean("bfalse"));
+		assertEquals(false, Protocol.getBoolean("bFalse"));
+		assertEquals(false, Protocol.getBoolean("b1"));
+		assertEquals(false, Protocol.getBoolean("b"));
 	}
 
 	@Test
 	public void testStrings() {
-		assertTrue(Protocol.isString("s:hello"));
-		assertFalse(Protocol.isString("i:234"));
+		assertTrue(Protocol.isString("shello"));
+		assertFalse(Protocol.isString("i234"));
 		try {
 			Protocol.isString(null);
 			fail();
@@ -114,14 +114,14 @@ public class ProtocolTest {
 		} catch (Exception e) {
 			assertTrue(true);
 		}
-		assertEquals("", Protocol.getString("s:"));
-		assertEquals("Hello\nWorld\t", Protocol.getString("s:Hello\\nWorld\t"));
+		assertEquals("", Protocol.getString("s"));
+		assertEquals("Hello\nWorld\t", Protocol.getString("sHello\\nWorld\t"));
 	}
 
 	@Test
 	public void testReferences() {
-		assertTrue(Protocol.isReference("r:o123"));
-		assertFalse(Protocol.isReference("b:true"));
+		assertTrue(Protocol.isReference("ro123"));
+		assertFalse(Protocol.isReference("btrue"));
 		try {
 			Protocol.isReference(null);
 			fail();
@@ -135,19 +135,19 @@ public class ProtocolTest {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getReference("r:");
+			Protocol.getReference("r");
 			fail();
 		} catch (Exception e) {
 			assertTrue(true);
 		}
-		assertEquals("o123", Protocol.getReference("r:o123"));
-		assertEquals("o2", Protocol.getReference("r:o2"));
+		assertEquals("o123", Protocol.getReference("ro123"));
+		assertEquals("o2", Protocol.getReference("ro2"));
 	}
 
 	@Test
 	public void testDoubles() {
-		assertTrue(Protocol.isDouble("d:1.2"));
-		assertFalse(Protocol.isDouble("b:true"));
+		assertTrue(Protocol.isDouble("d1.2"));
+		assertFalse(Protocol.isDouble("btrue"));
 		try {
 			Protocol.isDouble(null);
 			fail();
@@ -161,21 +161,21 @@ public class ProtocolTest {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getDouble("d:");
+			Protocol.getDouble("d");
 			fail();
 		} catch (Exception e) {
 			assertTrue(true);
 		}
-		assertEquals(1.25, Protocol.getDouble("d:1.25"), 0.001);
-		assertEquals(0.0, Protocol.getDouble("d:0"), 0.001);
-		assertEquals(1234.567, Protocol.getDouble("d:1234.567"), 0.001);
+		assertEquals(1.25, Protocol.getDouble("d1.25"), 0.001);
+		assertEquals(0.0, Protocol.getDouble("d0"), 0.001);
+		assertEquals(1234.567, Protocol.getDouble("d1234.567"), 0.001);
 	}
 
 	@Test
 	public void testEnd() {
 		assertTrue(Protocol.isEnd("e"));
 		assertFalse(Protocol.isEnd(""));
-		assertFalse(Protocol.isEnd("b:true"));
+		assertFalse(Protocol.isEnd("btrue"));
 		try {
 			Protocol.isEnd(null);
 			fail();
@@ -187,7 +187,7 @@ public class ProtocolTest {
 	@Test
 	public void testNull() {
 		assertTrue(Protocol.isNull("n"));
-		assertFalse(Protocol.isNull("b:true"));
+		assertFalse(Protocol.isNull("btrue"));
 		try {
 			Protocol.isNull("");
 			fail();
@@ -209,11 +209,11 @@ public class ProtocolTest {
 	
 	@Test
 	public void testGetObject() {
-		assertEquals(1, Protocol.getObject("i:1"));
-		assertEquals(true, Protocol.getObject("b:True"));
-		assertEquals(1.234,(Double)Protocol.getObject("d:1.234"),0.001);
-		assertEquals("o123",Protocol.getObject("r:o123"));
-		assertEquals("Hello\nWorld\t", Protocol.getObject("s:Hello\\nWorld\t"));
+		assertEquals(1, Protocol.getObject("i1"));
+		assertEquals(true, Protocol.getObject("bTrue"));
+		assertEquals(1.234,(Double)Protocol.getObject("d1.234"),0.001);
+		assertEquals("o123",Protocol.getObject("ro123"));
+		assertEquals("Hello\nWorld\t", Protocol.getObject("sHello\\nWorld\t"));
 		assertNull(Protocol.getObject("n"));
 		try {
 			Protocol.getObject(null);
@@ -234,7 +234,7 @@ public class ProtocolTest {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getObject("z:123");
+			Protocol.getObject("z123");
 			fail();
 		} catch (Py4JException e) {
 			assertTrue(true);

@@ -80,7 +80,7 @@ public class CallCommandTest {
 	
 	@Test
 	public void testVoidMethod() {
-		String inputCommand = target + "\nmethod2\ns:This is a\tString\\n\ne\n";
+		String inputCommand = target + "\nmethod2\nsThis is a\tString\\n\ne\n";
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -93,7 +93,7 @@ public class CallCommandTest {
 	
 	@Test
 	public void testMethodWithParams() {
-		String inputCommand = target + "\nmethod3\ni:1\nb:true\ne\n";
+		String inputCommand = target + "\nmethod3\ni1\nbtrue\ne\n";
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -106,7 +106,7 @@ public class CallCommandTest {
 	
 	@Test
 	public void testCharMethod() {
-		String inputCommand = target + "\nmethod4\ns:c\ne\n";
+		String inputCommand = target + "\nmethod4\nsc\ne\n";
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -119,7 +119,7 @@ public class CallCommandTest {
 	
 	@Test
 	public void testCharMethod2() {
-		String inputCommand = target + "\nmethod6\ns:c\ne\n";
+		String inputCommand = target + "\nmethod6\nsc\ne\n";
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -132,7 +132,7 @@ public class CallCommandTest {
 	
 	@Test
 	public void testStringMethod() {
-		String inputCommand = target + "\nmethod4\ns:c\ne\n";
+		String inputCommand = target + "\nmethod4\nsc\ne\n";
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -146,8 +146,8 @@ public class CallCommandTest {
 	
 	@Test
 	public void testUsingMethodReturn() {
-		String inputCommand = target + "\nmethod4\ns:c\ne\n";
-		String inputCommand2 = target + "\nmethod5\nr:o1\ne\n";
+		String inputCommand = target + "\nmethod4\nsc\ne\n";
+		String inputCommand2 = target + "\nmethod5\nro1\ne\n";
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);

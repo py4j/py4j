@@ -108,7 +108,7 @@ public class Protocol {
 	 * @return The integer value corresponding to this command part.
 	 */
 	public final static int getInteger(String commandPart) {
-		return Integer.parseInt(commandPart.substring(2, commandPart.length()));
+		return Integer.parseInt(commandPart.substring(1, commandPart.length()));
 	}
 
 	/**
@@ -132,7 +132,7 @@ public class Protocol {
 	 * @return The boolean value corresponding to this command part.
 	 */
 	public final static boolean getBoolean(String commandPart) {
-		return Boolean.parseBoolean(commandPart.substring(2, commandPart
+		return Boolean.parseBoolean(commandPart.substring(1, commandPart
 				.length()));
 	}
 
@@ -158,7 +158,7 @@ public class Protocol {
 	 */
 	public final static double getDouble(String commandPart) {
 		return Double.parseDouble(commandPart
-				.substring(2, commandPart.length()));
+				.substring(1, commandPart.length()));
 	}
 
 	/**
@@ -182,7 +182,7 @@ public class Protocol {
 	 * @return The reference contained in this command part.
 	 */
 	public final static String getReference(String commandPart) {
-		String reference = commandPart.substring(2, commandPart.length());
+		String reference = commandPart.substring(1, commandPart.length());
 
 		if (reference.trim().length() == 0) {
 			throw new Py4JException("Reference is empty.");
@@ -214,7 +214,7 @@ public class Protocol {
 	public final static String getString(String commandPart) {
 		String toReturn = "";
 		if (commandPart.length() > 2) {
-			toReturn = StringUtil.unescape(commandPart.substring(2, commandPart
+			toReturn = StringUtil.unescape(commandPart.substring(1, commandPart
 					.length()));
 		}
 		return toReturn;

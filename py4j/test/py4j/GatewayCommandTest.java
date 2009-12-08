@@ -78,7 +78,7 @@ public class GatewayCommandTest {
 	@Test
 	public void testGetMethodsAsString() {
 		String inputCommand1 = "getNewExample\ne\n";
-		String inputCommand2 = "getMethodNamesAsString\nr:o0\ne\n";
+		String inputCommand2 = "getMethodNamesAsString\nro0\ne\n";
 		try {
 			command.execute("g", new BufferedReader(new StringReader(
 					inputCommand1)), writer);
