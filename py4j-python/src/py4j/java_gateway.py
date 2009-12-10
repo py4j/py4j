@@ -32,6 +32,8 @@ END = 'e'
 ERROR = 'x'
 SUCCESS = 'y'
 
+CALL_COMMAND = 'c\n'
+
 class Py4JError(Exception):
     def __init__(self, value):
         self.value = value
@@ -66,7 +68,7 @@ class CommChannel(object):
 class NullCommChannel(object):
     """Communication Channel that does nothing. Useful for testing."""
     
-    def __init__(self, return_message = SUCCESS + NULL_TYPE):
+    def __init__(self, return_message=SUCCESS + NULL_TYPE):
         self.return_message = return_message
         pass
     
@@ -102,10 +104,10 @@ class JavaMember(object):
         command_part = ''
         if parameter == None:
             command_part = NULL_TYPE
-        if isinstance(parameter, int) or isinstance(parameter, long):
-            command_part = INTEGER_TYPE + str(parameter)
         elif isinstance(parameter, bool):
             command_part = BOOLEAN_TYPE + str(parameter)
+        elif isinstance(parameter, int) or isinstance(parameter, long):
+            command_part = INTEGER_TYPE + str(parameter)
         elif isinstance(parameter, float):
             command_part = DOUBLE_TYPE + str(parameter) 
         elif isinstance(parameter, basestring):
@@ -117,7 +119,7 @@ class JavaMember(object):
     
     def get_return_value(self, answer):
         if len(answer) == 1 or answer[0] != SUCCESS:
-            raise Py4JError('An error occured while calling %s.%s' %(self.target_id, self.name))
+            raise Py4JError('An error occured while calling %s.%s' % (self.target_id, self.name))
         elif answer[1] == NULL_TYPE:
             return None
         elif answer[1] == REFERENCE_TYPE:
@@ -133,7 +135,7 @@ class JavaMember(object):
         
     def __call__(self, *args):
         args_command = ''.join([self.get_command_part(arg) for arg in args])
-        command = self.command_header + args_command + END + '\n'
+        command = CALL_COMMAND + self.command_header + args_command + END + '\n'
         answer = self.comm_channel.send_command(command)
         return_value = self.get_return_value(answer)
         return return_value
@@ -154,7 +156,7 @@ class JavaObject(object):
     
 
 class JavaGateway(JavaObject):
-    def __init__(self, comm_channel = None):
+    def __init__(self, comm_channel=None):
         
         # This is the default Java Gateway
         # The comm channel can be customized to not send anything.
@@ -172,21 +174,7 @@ if __name__ == '__main__':
     gateway = JavaGateway()
     gateway.comm_channel.start()
     ex = gateway.getNewExample()
-    print(type(ex))
-    response = ex.method3(1,True)
+    response = ex.method3(1, True)
     print(response)
-    #gateway.getExample(1, 2, 'hello world\nNewT\\n!')
     gateway.comm_channel.stop()
     print('done')
-#    s = socket(AF_INET,SOCK_STREAM)
-#    s.connect(('localhost', 25333))
-#    #str = re.escape('Hello World\n') + '\n'
-#    str = 'g\ngetNewExample\ne\n'
-#    print(str)
-#    s.send(str.encode('utf-8'))
-#    resp = s.recv(4096).decode('utf-8')
-#    print(resp)
-#    #s.send((re.escape('Hello World! This is éééàààà') + '\n').encode('utf-8'))
-#    #s.send((re.escape('Bonjour\n\tLe monde\n') + '\n').encode('utf-8'))
-#    s.close()
-#    print('done')

@@ -63,11 +63,8 @@ public class GatewayConnection implements Runnable {
 	}
 	
 	protected void initCommands(Gateway gateway) {
-		Command gatewayCommand = new GatewayCommand();
 		Command callCommand = new CallCommand();
-		gatewayCommand.init(gateway);
 		callCommand.init(gateway);
-		commands.put("g",gatewayCommand);
 		commands.put("c",callCommand);
 	}
 	
