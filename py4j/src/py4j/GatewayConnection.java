@@ -38,6 +38,7 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GatewayConnection implements Runnable {
@@ -81,11 +82,12 @@ public class GatewayConnection implements Runnable {
 					command.execute(commandLine, reader, writer);
 				}
 			} while (commandLine != null && !commandLine.equals('q'));
-			writer.close();
-			reader.close();
-			socket.close();
 		} catch(Exception e) {
-			throw new Py4JException(e);
+			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
+		} finally {
+			NetworkUtil.quietlyClose(writer);
+			NetworkUtil.quietlyClose(reader);
+			NetworkUtil.quietlyClose(socket);
 		}
 	}
 

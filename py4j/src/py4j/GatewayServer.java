@@ -31,10 +31,16 @@ package py4j;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GatewayServer {
 
 	public static final int DEFAULT_PORT = 25333;
+	
+	public static final int DEFAULT_CONNECT_TIMEOUT = 0;
+	
+	public static final int DEFAULT_READ_TIMEOUT = 0;
 
 	private int port = DEFAULT_PORT;
 
@@ -43,6 +49,10 @@ public class GatewayServer {
 	private Gateway gateway = new ExampleGateway();
 
 	private boolean acceptOnlyOne;
+	
+	private int connect_timeout = DEFAULT_CONNECT_TIMEOUT;
+	
+	private int read_timeout = DEFAULT_READ_TIMEOUT;
 
 	public GatewayServer(Gateway gateway) {
 		this.gateway = gateway;
@@ -57,8 +67,10 @@ public class GatewayServer {
 		try {
 			gateway.startup();
 			sSocket = new ServerSocket(port);
+			sSocket.setSoTimeout(connect_timeout);
 			while (true) {
 				Socket socket = sSocket.accept();
+				socket.setSoTimeout(read_timeout);
 				new GatewayConnection(gateway, socket);
 				if (acceptOnlyOne) {
 					break;
@@ -94,4 +106,27 @@ public class GatewayServer {
 		this.acceptOnlyOne = acceptOnlyOne;
 	}
 
+	public int getConnect_timeout() {
+		return connect_timeout;
+	}
+
+	public void setConnect_timeout(int connectTimeout) {
+		connect_timeout = connectTimeout;
+	}
+
+	public int getRead_timeout() {
+		return read_timeout;
+	}
+
+	public void setRead_timeout(int readTimeout) {
+		read_timeout = readTimeout;
+	}
+	
+	public static void turnLoggingOff() {
+		Logger.getLogger("py4j").setLevel(Level.OFF);
+	}
+	
+	public static void turnLoggingOn() {
+		Logger.getLogger("py4j").setLevel(Level.ALL);
+	}
 }

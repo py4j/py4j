@@ -47,16 +47,30 @@ class CommChannel(object):
     This class will eventually be used to restrict the access to the socket or replace the socket communication. 
     """
     
-    def __init__(self, address='localhost', port=25333):
+    def __init__(self, address='localhost', port=25333, auto_close=True):
         self.address = address
         self.port = port
         self.socket = socket(AF_INET, SOCK_STREAM)
+        self.is_connected = False
+        self.auto_close = auto_close
         
     def start(self):
         self.socket.connect((self.address, self.port))
+        self.is_connected = True
     
     def stop(self):
         self.socket.close()
+        self.is_connected = False
+
+    def __del__(self):
+        """Closes the socket if auto_delete is True and the socket is opened. 
+        
+        This is an acceptable practice if you know that your Python VM implements garbage collection 
+        and closing sockets immediately is not a concern. Otherwise, it is always better (because it 
+        is predictable) to explicitly close the socket by calling CommChannel.close().
+        """
+        if self.auto_close and self.socket != None and self.is_connected:
+            self.stop()
         
     def send_command(self, command):
         logger.debug("Command to send: %s" % (command))
@@ -118,8 +132,8 @@ class JavaMember(object):
         return command_part + '\n'
     
     def get_return_value(self, answer):
-        if len(answer) == 1 or answer[0] != SUCCESS:
-            raise Py4JError('An error occured while calling %s.%s' % (self.target_id, self.name))
+        if len(answer) == 0 or answer[0] != SUCCESS:
+            raise Py4JError('An error occured while calling %s%s%s' % (self.target_id, '.', self.name))
         elif answer[1] == NULL_TYPE:
             return None
         elif answer[1] == REFERENCE_TYPE:
@@ -156,7 +170,7 @@ class JavaObject(object):
     
 
 class JavaGateway(JavaObject):
-    def __init__(self, comm_channel=None):
+    def __init__(self, comm_channel=None, auto_start=True):
         
         # This is the default Java Gateway
         # The comm channel can be customized to not send anything.
@@ -164,6 +178,9 @@ class JavaGateway(JavaObject):
             comm_channel = CommChannel()
             
         JavaObject.__init__(self, GATEWAY_OBJECT_ID, comm_channel)
+        
+        if auto_start:
+            self.comm_channel.start()
     
             
 if __name__ == '__main__':
@@ -172,9 +189,7 @@ if __name__ == '__main__':
     logger.addHandler(logging.StreamHandler())
     
     gateway = JavaGateway()
-    gateway.comm_channel.start()
     ex = gateway.getNewExample()
     response = ex.method3(1, True)
     print(response)
-    gateway.comm_channel.stop()
     print('done')

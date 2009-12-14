@@ -15,15 +15,13 @@ Here is a brief example of what you can do with Py4J. The following Python progr
 ::
 
   >>> from py4j.java_gateway import JavaGateway
-  >>> gateway = JavaGateway()
-  >>> gateway.comm_channel.start()        # connect to the JVM
+  >>> gateway = JavaGateway()             # connect to the JVM
   >>> buffer = gateway.getStringBuffer()  # call BufferGateway.getStringBuffer() in the JVM
   >>> buffer.append(True)                 # call StringBuffer.append(boolean) in the JVM
   >>> buffer.append(1.0)
   >>> buffer.append('This is a Python %s' % 'string')
   >>> print(buffer.toString())
   FromJavatrue1.0This is a Python string
-  >>> gateway.comm_channel.stop()
 
 This is the highly complex Java program that was executing at the same time (no code was generated and no tool was required to run these programs):
 

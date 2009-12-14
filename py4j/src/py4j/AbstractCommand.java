@@ -34,10 +34,14 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class AbstractCommand implements Command {
 
 	protected Gateway gateway;
+	
+	private final Logger logger = Logger.getLogger(AbstractCommand.class.getName());
 
 	@Override
 	public abstract void execute(String command, BufferedReader reader,
@@ -70,7 +74,7 @@ public abstract class AbstractCommand implements Command {
 			returnObject = gateway
 					.invoke(methodName, targetObjectId, arguments);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.INFO, "Received exception while executing this command: " + methodName, e);
 			returnObject = ReturnObject.getErrorReturnObject();
 		}
 		return returnObject;
