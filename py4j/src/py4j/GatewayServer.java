@@ -34,54 +34,106 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class GatewayServer {
+public class GatewayServer implements Runnable {
 
 	public static final int DEFAULT_PORT = 25333;
-	
+
 	public static final int DEFAULT_CONNECT_TIMEOUT = 0;
-	
+
 	public static final int DEFAULT_READ_TIMEOUT = 0;
 
-	private int port = DEFAULT_PORT;
+	private final int port;
+
+	private final Gateway gateway;
+
+	private final boolean acceptOnlyOne;
+
+	private final int connect_timeout;
+
+	private final int read_timeout;
+
+	private final Logger logger = Logger.getLogger(GatewayServer.class
+			.getName());
+
+	private Socket currentSocket;
 
 	private ServerSocket sSocket;
 
-	private Gateway gateway = new ExampleGateway();
-
-	private boolean acceptOnlyOne;
-	
-	private int connect_timeout = DEFAULT_CONNECT_TIMEOUT;
-	
-	private int read_timeout = DEFAULT_READ_TIMEOUT;
+	public GatewayServer(Gateway gateway, int port, int connectTimeout,
+			int readTimeout, boolean acceptOnlyOne) {
+		super();
+		this.gateway = gateway;
+		this.port = port;
+		connect_timeout = connectTimeout;
+		read_timeout = readTimeout;
+		this.acceptOnlyOne = acceptOnlyOne;
+	}
 
 	public GatewayServer(Gateway gateway) {
-		this.gateway = gateway;
+		this(gateway, DEFAULT_PORT, DEFAULT_CONNECT_TIMEOUT,
+				DEFAULT_READ_TIMEOUT, false);
 	}
 
 	public GatewayServer(Gateway gateway, int port) {
-		this(gateway);
-		this.port = port;
+		this(gateway, port, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT,
+				false);
 	}
 
-	public void start() {
+	@Override
+	public void run() {
 		try {
 			gateway.startup();
 			sSocket = new ServerSocket(port);
 			sSocket.setSoTimeout(connect_timeout);
+
 			while (true) {
 				Socket socket = sSocket.accept();
+				processSocket(socket);
+			}
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Error while waiting for connection.", e);
+		}
+	}
+
+	private void processSocket(Socket socket) {
+		try {
+			if (acceptOnlyOne && isConnected()) {
+				socket.close();
+			} else {
 				socket.setSoTimeout(read_timeout);
 				new GatewayConnection(gateway, socket);
 				if (acceptOnlyOne) {
-					break;
+					currentSocket = socket;
 				}
 			}
 		} catch (Exception e) {
-			throw new Py4JException(e);
+			// Error while processing a connection should not be prevent the
+			// gateway server from accepting new connections.
+			logger
+					.log(Level.WARNING, "Error while processing a connection.",
+							e);
 		}
 	}
-	
+
+	private boolean isConnected() {
+		return currentSocket != null && currentSocket.isConnected();
+	}
+
+	public void start(boolean fork) {
+		if (fork) {
+			Thread t = new Thread(this);
+			t.start();
+		} else {
+			run();
+		}
+	}
+
+	public void start() {
+		start(true);
+	}
+
 	public void stop() {
+		NetworkUtil.quietlyClose(sSocket);
 		gateway.shutdown();
 	}
 
@@ -89,43 +141,18 @@ public class GatewayServer {
 		return acceptOnlyOne;
 	}
 
-	/**
-	 * <p>
-	 * Set to true to only accept one connection: useful for testing because the
-	 * server does not stay up forever.
-	 * </p>
-	 * 
-	 * <p>
-	 * <b>TODO: ensure that we can shut down the server even if acceptOnlyOne is
-	 * false!</b>
-	 * </p>
-	 * 
-	 * @param acceptOnlyOne
-	 */
-	public void setAcceptOnlyOne(boolean acceptOnlyOne) {
-		this.acceptOnlyOne = acceptOnlyOne;
-	}
-
 	public int getConnect_timeout() {
 		return connect_timeout;
-	}
-
-	public void setConnect_timeout(int connectTimeout) {
-		connect_timeout = connectTimeout;
 	}
 
 	public int getRead_timeout() {
 		return read_timeout;
 	}
 
-	public void setRead_timeout(int readTimeout) {
-		read_timeout = readTimeout;
-	}
-	
 	public static void turnLoggingOff() {
 		Logger.getLogger("py4j").setLevel(Level.OFF);
 	}
-	
+
 	public static void turnLoggingOn() {
 		Logger.getLogger("py4j").setLevel(Level.ALL);
 	}

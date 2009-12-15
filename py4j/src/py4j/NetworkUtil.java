@@ -1,6 +1,7 @@
 package py4j;
 
 import java.io.Closeable;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +21,16 @@ public class NetworkUtil {
 	}
 	
 	public static void quietlyClose(Socket closeable) {
+		try {
+			if (closeable != null) {
+				closeable.close();
+			}
+		} catch(Exception e) {
+			logger.log(Level.WARNING, "Socket cannot be closed.",e);
+		}
+	}
+	
+	public static void quietlyClose(ServerSocket closeable) {
 		try {
 			if (closeable != null) {
 				closeable.close();

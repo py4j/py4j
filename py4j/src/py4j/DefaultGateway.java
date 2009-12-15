@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import javax.script.Bindings;
@@ -56,18 +57,18 @@ import javax.script.ScriptEngineManager;
  */
 public class DefaultGateway implements Gateway {
 
-	private ScriptEngineManager mgr = new ScriptEngineManager();
-	private ScriptEngine jsEngine = mgr.getEngineByName("JavaScript");
-	private Bindings bindings = jsEngine
+	private final ScriptEngineManager mgr = new ScriptEngineManager();
+	private final ScriptEngine jsEngine = mgr.getEngineByName("JavaScript");
+	private final Bindings bindings = jsEngine
 			.getBindings(ScriptContext.ENGINE_SCOPE);
-	private int idCounter = 0;
-	private boolean isStarted = false;
+	private final AtomicInteger objCounter = new AtomicInteger();
+	private final AtomicInteger argCounter = new AtomicInteger();
 	private final static String OBJECT_NAME_PREFIX = "o";
 	private final static String ARG_NAME_PREFIX = "a";
 	
 	private final Logger logger = Logger.getLogger(DefaultGateway.class.getName());
 	
-	
+	private boolean isStarted = false;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -119,11 +120,15 @@ public class DefaultGateway implements Gateway {
 	}
 
 	protected String getNextObjectId() {
-		return OBJECT_NAME_PREFIX + idCounter++;
+		return OBJECT_NAME_PREFIX + objCounter.getAndIncrement();
 	}
 
-	protected int getCurrentObjectId() {
-		return idCounter;
+	protected AtomicInteger getObjCounter() {
+		return objCounter;
+	}
+	
+	protected AtomicInteger getArgCounter() {
+		return argCounter;
 	}
 
 	protected String putNewObject(Object object) {
@@ -195,7 +200,7 @@ public class DefaultGateway implements Gateway {
 
 			String argumentRef = arg.getValue().toString();
 			if (!arg.isReference()) {
-				String tempArgId = ARG_NAME_PREFIX + i;
+				String tempArgId = ARG_NAME_PREFIX + argCounter.getAndIncrement();
 				bindings.put(tempArgId, arg.getValue());
 				tempArgsIds.add(tempArgId);
 				argumentRef = tempArgId;

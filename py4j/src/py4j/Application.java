@@ -29,7 +29,6 @@
 
 package py4j;
 
-
 public class Application {
 
 	/**
@@ -38,6 +37,12 @@ public class Application {
 	public static void main(String[] args) {
 		GatewayServer server = new GatewayServer(new ExampleGateway());
 		server.start();
+		try {
+			Thread.sleep(10000);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		server.stop();
 	}
 
 }
