@@ -33,6 +33,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * <p>
@@ -54,6 +55,8 @@ import java.util.List;
  * 
  */
 public class CallCommand extends AbstractCommand {
+	
+	private final Logger logger = Logger.getLogger(CallCommand.class.getName());
 
 	@Override
 	public void execute(String command, BufferedReader reader,
@@ -65,6 +68,7 @@ public class CallCommand extends AbstractCommand {
 		ReturnObject returnObject = getReturnObject(methodName, targetObjectId, arguments);
 		
 		String returnCommand = Protocol.getOutputCommand(returnObject);
+		logger.info("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}

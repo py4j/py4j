@@ -27,22 +27,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package py4j;
+package py4j.examples;
 
-public class Application {
+public class ExampleClass {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		GatewayServer server = new GatewayServer(new ExampleGateway());
-		server.start();
-		try {
-			Thread.sleep(10000);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		server.stop();
+	private int field1 = 2;
+	
+	public int method1() {
+		return 1;
+	}
+	
+	public void method2(String param1) {
+		
+	}
+	
+	public String method3(int param1, boolean param2) {
+		return "Hello World";
+	}
+	
+	public ExampleClass method4(char param1) {
+		ExampleClass ex = new ExampleClass();
+		ex.field1 = 1;
+		return ex;
+	}
+	
+	public ExampleClass method4(String param1) {
+		ExampleClass ex = new ExampleClass();
+		ex.field1 = 3;
+		return ex;
+	}
+	
+	public int method5(ExampleClass param1) {
+		return 2;
 	}
 
+	public int getField1() {
+		return field1;
+	}
+
+	public void setField1(int field1) {
+		this.field1 = field1;
+	}
+	
+	public ExampleClass method6(char param1) {
+		ExampleClass ex = new ExampleClass();
+		ex.field1 = 4;
+		return ex;
+	}
 }

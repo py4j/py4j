@@ -27,12 +27,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package py4j;
+package py4j.examples;
 
-public class ExampleGateway extends DefaultGateway {
+import py4j.GatewayServer;
 
-	public ExampleClass getNewExample() {
-		return new ExampleClass();
+public class ExampleApplication {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		GatewayServer server = new GatewayServer(new ExampleGateway());
+		server.start();
+		try {
+			Thread.sleep(10000);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		server.stop();
 	}
-	
+
 }
