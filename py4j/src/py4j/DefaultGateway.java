@@ -49,8 +49,19 @@ import javax.script.ScriptEngineManager;
  * </p>
  * 
  * <p>
- * This class is <b>not</b> thread-safe.
+ * This class is <b>not</b> thread-safe. If the {@link py4j.GatewayServer
+ * GatewayServer} allows multiple connections to the same gateway (acceptOnlyOne
+ * == false), the javascript engine might be invoked by multiple threads with
+ * unexpected consequences. The object and argument identifiers used by the
+ * script engine are allocated in a thread-safe manner though.
  * </p>
+ * 
+ * <p>
+ * If you plan to allow concurrent connections to a gateway, use
+ * {@link py4j.DefaultSynchronizedGateway DefaultSynchronizedGateway} instead.
+ * </p>
+ * 
+ * @see py4j.DefaultSynchronizedGateway DefaultSynchronizedGateway
  * 
  * @author Barthelemy Dagenais
  * 
@@ -65,9 +76,10 @@ public class DefaultGateway implements Gateway {
 	private final AtomicInteger argCounter = new AtomicInteger();
 	private final static String OBJECT_NAME_PREFIX = "o";
 	private final static String ARG_NAME_PREFIX = "a";
-	
-	private final Logger logger = Logger.getLogger(DefaultGateway.class.getName());
-	
+
+	private final Logger logger = Logger.getLogger(DefaultGateway.class
+			.getName());
+
 	private boolean isStarted = false;
 
 	@SuppressWarnings("unchecked")
@@ -126,7 +138,7 @@ public class DefaultGateway implements Gateway {
 	protected AtomicInteger getObjCounter() {
 		return objCounter;
 	}
-	
+
 	protected AtomicInteger getArgCounter() {
 		return argCounter;
 	}
@@ -160,11 +172,13 @@ public class DefaultGateway implements Gateway {
 			Object object = jsEngine.eval(methodCall.toString());
 			if (object != null) {
 				if (isPrimitiveObject(object)) {
-					returnObject = ReturnObject.getPrimitiveReturnObject(object);
+					returnObject = ReturnObject
+							.getPrimitiveReturnObject(object);
 				} else {
 					String objectId = putNewObject(object);
 					// TODO Handle lists, maps, etc.
-					returnObject = ReturnObject.getReferenceReturnObject(objectId);
+					returnObject = ReturnObject
+							.getReferenceReturnObject(objectId);
 				}
 			} else {
 				returnObject = ReturnObject.getNullReturnObject();
@@ -200,7 +214,8 @@ public class DefaultGateway implements Gateway {
 
 			String argumentRef = arg.getValue().toString();
 			if (!arg.isReference()) {
-				String tempArgId = ARG_NAME_PREFIX + argCounter.getAndIncrement();
+				String tempArgId = ARG_NAME_PREFIX
+						+ argCounter.getAndIncrement();
 				bindings.put(tempArgId, arg.getValue());
 				tempArgsIds.add(tempArgId);
 				argumentRef = tempArgId;
