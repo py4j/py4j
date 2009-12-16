@@ -79,24 +79,6 @@ class CommChannel(object):
         logger.debug("Answer received: %s" % (answer))
         return answer
 
-class NullCommChannel(object):
-    """Communication Channel that does nothing. Useful for testing."""
-    
-    def __init__(self, return_message=SUCCESS + NULL_TYPE):
-        self.return_message = return_message
-        pass
-    
-    def start(self):
-        pass
-    
-    def stop(self):
-        pass
-    
-    def send_command(self, command):
-        logger.debug("Null command received: %s" % (command))
-        return self.return_message
-
-
 class JavaMember(object):
     """Represents a member (field, method) of a Java Object.
     
@@ -133,7 +115,7 @@ class JavaMember(object):
     
     def get_return_value(self, answer):
         if len(answer) == 0 or answer[0] != SUCCESS:
-            raise Py4JError('An error occured while calling %s%s%s' % (self.target_id, '.', self.name))
+            raise Py4JError('An error occurred while calling %s%s%s' % (self.target_id, '.', self.name))
         elif answer[1] == NULL_TYPE:
             return None
         elif answer[1] == REFERENCE_TYPE:
