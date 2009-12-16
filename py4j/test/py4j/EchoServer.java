@@ -167,6 +167,7 @@ public class EchoServer {
 		EchoServer echoServer = new EchoServer();
 		echoServer.setupTestServer();
 		echoServer.setupServer();
+		System.out.println("EchoServer started...");
 	}
 
 	
