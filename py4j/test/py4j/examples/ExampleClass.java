@@ -29,6 +29,9 @@
 
 package py4j.examples;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ExampleClass {
 
 	private int field1 = 2;
@@ -39,6 +42,14 @@ public class ExampleClass {
 	
 	public void method2(String param1) {
 		
+	}
+	
+	public List<String> getList(int i) {
+		List<String> list = new ArrayList<String>();
+		for (int counter = 0; counter < i; counter++) {
+			list.add(""+counter);
+		}
+		return list;
 	}
 	
 	public String method3(int param1, boolean param2) {

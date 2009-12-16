@@ -43,6 +43,14 @@ public class ReturnObject {
 	private ReturnObject() {
 	}
 
+	public static ReturnObject getListReturnObject(String name, int size) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.name = name;
+		rObject.size = size;
+		rObject.isList = true;
+		return rObject;
+	}
+	
 	public static ReturnObject getPrimitiveReturnObject(Object primitive) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.primitiveObject = primitive;

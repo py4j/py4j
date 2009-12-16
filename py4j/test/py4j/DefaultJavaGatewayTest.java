@@ -128,7 +128,23 @@ public class DefaultJavaGatewayTest {
 		String name = gateway.putNewObject(gateway.getNewExample());
 		Object obj = gateway.getObject(name);
 		String methods = gateway.getMethodNamesAsString(obj);
-		assertEquals("getClass,equals,getField1,hashCode,method6,setField1,method5,wait,method4,method3,method2,method1,notify,toString,notifyAll,",methods);
+		assertEquals("getClass,equals,getField1,hashCode,method6,setField1,method5,wait,method4,method3,method2,method1,notify,getList,toString,notifyAll,",methods);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testListMethod() {
+		String name = gateway.putNewObject(gateway.getNewExample());
+		List<Argument> args = new ArrayList<Argument>();
+		args.add(new Argument("3", false));
+		ReturnObject obj2 = gateway.invoke("getList", name, args);
+		List<String> myList = (List<String>)gateway.getObject(obj2.getName());
+		assertEquals(myList.size(),3);
+		
+		args = new ArrayList<Argument>();
+		args.add(new Argument("\"3\"", false));
+		gateway.invoke("add", obj2.getName(), args);
+		assertEquals(myList.size(),4);
 	}
 	
 }

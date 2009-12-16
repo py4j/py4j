@@ -64,8 +64,10 @@ public class Protocol {
 	public final static char DOUBLE_TYPE = 'd';
 	public final static char STRING_TYPE = 's';
 	public final static char REFERENCE_TYPE = 'r';
+	public final static char LIST_TYPE = 'l';
 	public final static char NULL_TYPE = 'n';
 	public final static char END = 'e';
+	
 
 	// OUTPUT PROTOCOL
 	public final static char ERROR = 'x';
@@ -274,6 +276,12 @@ public class Protocol {
 			builder.append(SUCCESS);
 			if (rObject.isNull()) {
 				builder.append(NULL_TYPE);
+			} else if (rObject.isList()) {
+				builder.append(LIST_TYPE);
+				builder.append(rObject.getSize());
+				builder.append(END);
+				builder.append(REFERENCE_TYPE);
+				builder.append(rObject.getName());
 			} else if (rObject.isReference()) {
 				// TODO Handle list, map, etc.
 				builder.append(REFERENCE_TYPE);

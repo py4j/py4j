@@ -154,6 +154,7 @@ public class DefaultGateway implements Gateway {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public ReturnObject invoke(String methodName, String targetObjectId,
 			List<Argument> args) {
 		if (args == null) {
@@ -174,6 +175,10 @@ public class DefaultGateway implements Gateway {
 				if (isPrimitiveObject(object)) {
 					returnObject = ReturnObject
 							.getPrimitiveReturnObject(object);
+				} else if (isList(object)) {
+					String objectId = putNewObject(object);
+					returnObject = ReturnObject.getListReturnObject(objectId,
+							((List) object).size());
 				} else {
 					String objectId = putNewObject(object);
 					// TODO Handle lists, maps, etc.
@@ -195,6 +200,11 @@ public class DefaultGateway implements Gateway {
 	protected boolean isPrimitiveObject(Object object) {
 		return object instanceof Boolean || object instanceof String
 				|| object instanceof Number || object instanceof Character;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected boolean isList(Object object) {
+		return object instanceof List;
 	}
 
 	private void cleanTempArgs(List<String> tempArgsIds) {
