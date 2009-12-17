@@ -278,9 +278,6 @@ public class Protocol {
 				builder.append(NULL_TYPE);
 			} else if (rObject.isList()) {
 				builder.append(LIST_TYPE);
-				builder.append(rObject.getSize());
-				builder.append(END);
-				builder.append(REFERENCE_TYPE);
 				builder.append(rObject.getName());
 			} else if (rObject.isReference()) {
 				// TODO Handle list, map, etc.

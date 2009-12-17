@@ -27,6 +27,7 @@ BOOLEAN_TYPE = 'b'
 DOUBLE_TYPE = 'd'
 STRING_TYPE = 's'
 REFERENCE_TYPE = 'r'
+LIST_TYPE = 'l'
 NULL_TYPE = 'n'
 END = 'e'
 ERROR = 'x'
@@ -120,6 +121,8 @@ class JavaMember(object):
             return None
         elif answer[1] == REFERENCE_TYPE:
             return JavaObject(answer[2:], self.comm_channel)
+        elif answer[1] == LIST_TYPE:
+            return JavaList(answer[2:], self.comm_channel)
         elif answer[1] == INTEGER_TYPE:
             return int(answer[2:])
         elif answer[1] == BOOLEAN_TYPE:
@@ -136,6 +139,8 @@ class JavaMember(object):
         return_value = self.get_return_value(answer)
         return return_value
 
+
+
 class JavaObject(object):
     def __init__(self, target_id, comm_channel):
         self.target_id = target_id
@@ -145,11 +150,106 @@ class JavaObject(object):
     def get_object_id(self):
         return self.target_id
         
+    def __str__(self):
+        return self.toString()
+    
+    def __repr__(self):
+        # For now...
+        return self.toString()
+    
     def __getattr__(self, name):
         if name not in self.methods:
             self.methods[name] = JavaMember(name, self.target_id, self.comm_channel)
         return self.methods[name]
     
+class JavaListIterator(JavaObject):
+    def __init__(self, target_id, comm_channel):
+        JavaObject.__init__(self, target_id, comm_channel)
+        self.next_name = 'next'
+        
+    def __iter__(self):
+        return self
+    
+    def next(self):
+        if self.next_name not in self.methods:
+            self.methods[self.next_name] = JavaMember(self.next_name, self.target_id, self.comm_channel)
+        try:
+            return self.methods[self.next_name]()
+        except Py4JError:
+            raise StopIteration()
+    
+class JavaList(JavaObject):
+    def __init__(self, target_id, comm_channel):
+        JavaObject.__init__(self, target_id, comm_channel)
+
+    def __len__(self):
+        return self.size()
+
+    def __iter__(self):
+        return JavaListIterator(self.iterator().get_object_id(), self.comm_channel)
+    
+    def __compute_index(self, key):
+        size = self.size()
+        if 0 <= key < size:
+            return key
+        elif key < 0 and abs(key) <= size:
+            return size+key
+        else:
+            raise IndexError("list index out of range")
+    
+    def __compute_item(self, key):
+        new_key = self.__compute_index(key)
+        return self.get(new_key)
+    
+    def __set_item(self, key, value):
+        new_key = self.__compute_index(key)
+        self.set(new_key,value)
+    
+    def __del_item(self, key):
+        new_key = self.__compute_index(key)
+        self.remove(new_key)
+
+    def __setitem__(self, key, value):
+        if isinstance(key, slice):
+            indices = key.indices(len(self))
+            for i in range(*indices):
+                self.__set_item(i, value) 
+        elif isinstance(key, int):
+            return self.__set_item(key, value)
+        else:
+            raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+        
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+#            indices = key.indices(len(self))
+#            new_list = [self.compute_item(i) for i in range(*indices)]
+#            return test_list(len(new_list),new_list)
+            raise Py4JError('Slicing not currently supported.')
+        elif isinstance(key, int):
+            return self.__compute_item(key)
+        else:
+            raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+        
+    def __delitem__(self, key):
+        if isinstance(key, slice):
+            indices = key.indices(len(self))
+            for i in range(*indices):
+                self.__del_item(i) 
+        elif isinstance(key, int):
+            return self.__del_item(key)
+        else:
+            raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+        
+    def __str__(self):
+        return self.__repr__()
+    
+    def __repr__(self):
+        # TODO Make it more efficient/pythonic
+        # TODO Debug why strings are not outputed with apostrophes.
+        srep = '['
+        for elem in self:
+            srep += str(elem) + ', '
+        return srep[:-2] + ']'
 
 class JavaGateway(JavaObject):
     def __init__(self, comm_channel=None, auto_start=True):
@@ -166,12 +266,26 @@ class JavaGateway(JavaObject):
     
             
 if __name__ == '__main__':
-    logger = logging.getLogger("py4j")
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.StreamHandler())
+#    logger = logging.getLogger("py4j")
+#    logger.setLevel(logging.DEBUG)
+#    logger.addHandler(logging.StreamHandler())
     
     gateway = JavaGateway()
     ex = gateway.getNewExample()
     response = ex.method3(1, True)
     print(response)
     print('done')
+    
+    l = ex.getList(3)
+    print(len(l))
+    print(l)
+    print(l[1])
+    l[1] = 'Bonjour'
+    print(l)
+    del l[1]
+    print(l)
+    print(type(l[1]))
+#    for s in l:
+#        print(s)
+    
+    gateway.comm_channel.stop()

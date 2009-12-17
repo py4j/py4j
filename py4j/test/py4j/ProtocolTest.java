@@ -267,7 +267,7 @@ public class ProtocolTest {
 		assertEquals("ybfalse", Protocol.getOutputCommand(rObject9));
 		assertEquals("yn", Protocol.getOutputCommand(rObject10));
 		assertEquals("yro123", Protocol.getOutputCommand(rObject11));
-		assertEquals("yl2ero123", Protocol.getOutputCommand(rObject12));
+		assertEquals("ylo123", Protocol.getOutputCommand(rObject12));
 	}
 
 }
