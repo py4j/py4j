@@ -58,6 +58,7 @@ public abstract class AbstractCommand implements Command {
 		String line = reader.readLine();
 
 		while (!Protocol.isEmpty(line) && !Protocol.isEnd(line)) {
+			logger.info("Raw Argument: " + line);
 			Argument argument = new Argument(Protocol.getObject(line), Protocol
 					.isReference(line));
 			arguments.add(argument);

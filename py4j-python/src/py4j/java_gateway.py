@@ -134,7 +134,7 @@ class JavaMember(object):
         elif answer[1] == INTEGER_TYPE:
             return int(answer[2:])
         elif answer[1] == BOOLEAN_TYPE:
-            return bool(answer[2:])
+            return answer[2:].lower() == 'true'
         elif answer[1] == DOUBLE_TYPE:
             return float(answer[2:])
         elif answer[1] == STRING_TYPE:
@@ -164,7 +164,10 @@ class JavaObject(object):
         return self.methods[name]
     
     def __eq__(self, other):
-        return self.equals(object)
+        if other == None:
+            return False
+        else:
+            return self.equals(other)
     
     def __hash__(self):
         return self.hashCode()
@@ -248,8 +251,10 @@ class JavaList(JavaObject):
     def __delitem__(self, key):
         if isinstance(key, slice):
             indices = key.indices(len(self))
+            offset = 0
             for i in range(*indices):
-                self.__del_item(i) 
+                self.__del_item(i+offset)
+                offset -= 1 
         elif isinstance(key, int):
             return self.__del_item(key)
         else:
@@ -282,7 +287,7 @@ class JavaList(JavaObject):
         return self.indexOf(value)
     
     def count(self, value):
-        pass
+        raise Py4JError('Operation not currently supported.')
     
     def sort(self):
         raise Py4JError('Operation not currently supported.')

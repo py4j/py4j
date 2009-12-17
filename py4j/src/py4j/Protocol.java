@@ -215,7 +215,7 @@ public class Protocol {
 	 */
 	public final static String getString(String commandPart) {
 		String toReturn = "";
-		if (commandPart.length() > 2) {
+		if (commandPart.length() >= 2) {
 			toReturn = StringUtil.unescape(commandPart.substring(1, commandPart
 					.length()));
 		}
