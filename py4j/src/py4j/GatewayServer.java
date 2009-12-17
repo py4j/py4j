@@ -101,7 +101,7 @@ public class GatewayServer implements Runnable {
 				socket.close();
 			} else {
 				socket.setSoTimeout(read_timeout);
-				new GatewayConnection(gateway, socket);
+				new GatewayConnection(this, gateway, socket);
 				if (acceptOnlyOne) {
 					currentSocket = socket;
 				}

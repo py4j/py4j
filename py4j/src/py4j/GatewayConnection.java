@@ -45,15 +45,17 @@ public class GatewayConnection implements Runnable {
 
 	@SuppressWarnings("unused")
 	private final Gateway gateway;
+	private final GatewayServer gatewayServer;
 	private final Socket socket;
 	private final BufferedWriter writer;
 	private final BufferedReader reader;
 	private final Map<String,Command> commands;
 	private final Logger logger = Logger.getLogger(GatewayConnection.class.getName());
 	
-	public GatewayConnection(Gateway gateway, Socket socket) throws IOException {
+	public GatewayConnection(GatewayServer gatewayServer, Gateway gateway, Socket socket) throws IOException {
 		super();
 		this.gateway = gateway;
+		this.gatewayServer = gatewayServer;
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
 		this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
@@ -66,10 +68,13 @@ public class GatewayConnection implements Runnable {
 	protected void initCommands(Gateway gateway) {
 		Command callCommand = new CallCommand();
 		Command listCommand = new ListCommand();
+		Command stopCommand = new StopGatewayCommand(gatewayServer);
 		callCommand.init(gateway);
 		listCommand.init(gateway);
+		stopCommand.init(gateway);
 		commands.put("c",callCommand);
 		commands.put("l",listCommand);
+		commands.put("s",stopCommand);
 	}
 	
 	

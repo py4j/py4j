@@ -34,6 +34,7 @@ ERROR = 'x'
 SUCCESS = 'y'
 
 CALL_COMMAND = 'c\n'
+SHUTDOWN_COMMAND = 's\n'
 
 class Py4JError(Exception):
     def __init__(self, value):
@@ -62,6 +63,13 @@ class CommChannel(object):
     def stop(self):
         self.socket.close()
         self.is_connected = False
+        
+    def shutdown(self):
+        try:
+            self.socket.sendall(SHUTDOWN_COMMAND.encode('utf-8'))
+        except Exception:
+            # Do nothing!
+            pass
 
     def __del__(self):
         """Closes the socket if auto_delete is True and the socket is opened. 
@@ -150,17 +158,23 @@ class JavaObject(object):
     def get_object_id(self):
         return self.target_id
         
+    def __getattr__(self, name):
+        if name not in self.methods:
+            self.methods[name] = JavaMember(name, self.target_id, self.comm_channel)
+        return self.methods[name]
+    
+    def __eq__(self, other):
+        return self.equals(object)
+    
+    def __hash__(self):
+        return self.hashCode()
+    
     def __str__(self):
         return self.toString()
     
     def __repr__(self):
         # For now...
         return self.toString()
-    
-    def __getattr__(self, name):
-        if name not in self.methods:
-            self.methods[name] = JavaMember(name, self.target_id, self.comm_channel)
-        return self.methods[name]
     
 class JavaListIterator(JavaObject):
     def __init__(self, target_id, comm_channel):
@@ -211,9 +225,10 @@ class JavaList(JavaObject):
 
     def __setitem__(self, key, value):
         if isinstance(key, slice):
-            indices = key.indices(len(self))
-            for i in range(*indices):
-                self.__set_item(i, value) 
+#            indices = key.indices(len(self))
+#            for i in range(*indices):
+#                self.__set_item(i, value)
+            raise Py4JError('Slicing not currently supported.') 
         elif isinstance(key, int):
             return self.__set_item(key, value)
         else:
@@ -239,7 +254,44 @@ class JavaList(JavaObject):
             return self.__del_item(key)
         else:
             raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+    
+    def __contains__(self, item):
+        return self.contains(item)
         
+    def append(self, value):
+        self.add(value)
+        
+    def insert(self, key, value):
+        if isinstance(key, int):
+            new_key = self.__compute_index(key)
+            return self.add(new_key,value)
+        else:
+            raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+        
+    def extend(self, other_list):
+        self.addAll(other_list)
+
+    def pop(self, key = None):
+        if key == None:
+            new_key = self.size() - 1
+        else:
+            new_key = self.__compute_index(key) 
+        return self.remove(new_key);
+    
+    def index(self, value):
+        return self.indexOf(value)
+    
+    def count(self, value):
+        pass
+    
+    def sort(self):
+        raise Py4JError('Operation not currently supported.')
+    
+    def reverse(self):
+        raise Py4JError('Operation not currently supported.')
+    
+    # remove is automatically supported by Java...
+    
     def __str__(self):
         return self.__repr__()
     
@@ -248,7 +300,7 @@ class JavaList(JavaObject):
         # TODO Debug why strings are not outputed with apostrophes.
         srep = '['
         for elem in self:
-            srep += str(elem) + ', '
+            srep += repr(elem) + ', '
         return srep[:-2] + ']'
 
 class JavaGateway(JavaObject):
