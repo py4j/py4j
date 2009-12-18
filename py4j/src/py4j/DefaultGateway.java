@@ -154,7 +154,6 @@ public class DefaultGateway implements Gateway {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public ReturnObject invoke(String methodName, String targetObjectId,
 			List<Argument> args) {
 		if (args == null) {
@@ -171,29 +170,37 @@ public class DefaultGateway implements Gateway {
 			methodCall.append(";");
 			logger.info("Calling: " + methodCall.toString());
 			Object object = jsEngine.eval(methodCall.toString());
-			if (object != null) {
-				if (isPrimitiveObject(object)) {
-					returnObject = ReturnObject
-							.getPrimitiveReturnObject(object);
-				} else if (isList(object)) {
-					String objectId = putNewObject(object);
-					returnObject = ReturnObject.getListReturnObject(objectId,
-							((List) object).size());
-				} else {
-					String objectId = putNewObject(object);
-					// TODO Handle lists, maps, etc.
-					returnObject = ReturnObject
-							.getReferenceReturnObject(objectId);
-				}
-			} else {
-				returnObject = ReturnObject.getNullReturnObject();
-			}
+			returnObject = getReturnObject(object);
 		} catch (Exception e) {
 			throw new Py4JException(e);
 		} finally {
 			cleanTempArgs(tempArgsIds);
 		}
 
+		return returnObject;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public ReturnObject getReturnObject(Object object) {
+		ReturnObject returnObject;
+		if (object != null) {
+			if (isPrimitiveObject(object)) {
+				returnObject = ReturnObject
+						.getPrimitiveReturnObject(object);
+			} else if (isList(object)) {
+				String objectId = putNewObject(object);
+				returnObject = ReturnObject.getListReturnObject(objectId,
+						((List) object).size());
+			} else {
+				String objectId = putNewObject(object);
+				// TODO Handle lists, maps, etc.
+				returnObject = ReturnObject
+						.getReferenceReturnObject(objectId);
+			}
+		} else {
+			returnObject = ReturnObject.getNullReturnObject();
+		}
 		return returnObject;
 	}
 

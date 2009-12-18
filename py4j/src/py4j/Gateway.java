@@ -48,4 +48,6 @@ public interface Gateway {
 	public ReturnObject invoke(String methodName, String targetObjectId,
 			List<Argument> args);
 	
+	public ReturnObject getReturnObject(Object object);
+	
 }

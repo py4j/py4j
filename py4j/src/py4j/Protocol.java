@@ -72,6 +72,10 @@ public class Protocol {
 	// OUTPUT PROTOCOL
 	public final static char ERROR = 'x';
 	public final static char SUCCESS = 'y';
+	// TODO to change to v
+	public final static char VOID = 'n';
+	
+	public final static String ERROR_COMMAND = "x";
 
 	public final static boolean isEmpty(String commandPart) {
 		return commandPart == null || commandPart.trim().length() == 0;
@@ -267,6 +271,10 @@ public class Protocol {
 		}
 	}
 
+	public final static String getOutputErrorCommand() {
+		return ERROR_COMMAND;
+	}
+	
 	public final static String getOutputCommand(ReturnObject rObject) {
 		StringBuilder builder = new StringBuilder();
 

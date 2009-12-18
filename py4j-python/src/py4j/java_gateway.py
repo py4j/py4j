@@ -35,6 +35,10 @@ SUCCESS = 'y'
 
 CALL_COMMAND = 'c\n'
 SHUTDOWN_COMMAND = 's\n'
+LIST_COMMAND = 'l\n'
+LIST_SORT_COMMAND = 's\n'
+LIST_REVERSE_COMMAND = 'r\n'
+LIST_SLICE_COMMAND = 'l\n'
 
 class Py4JError(Exception):
     def __init__(self, value):
@@ -210,7 +214,7 @@ class JavaList(JavaObject):
         if 0 <= key < size:
             return key
         elif key < 0 and abs(key) <= size:
-            return size+key
+            return size + key
         else:
             raise IndexError("list index out of range")
     
@@ -220,7 +224,7 @@ class JavaList(JavaObject):
     
     def __set_item(self, key, value):
         new_key = self.__compute_index(key)
-        self.set(new_key,value)
+        self.set(new_key, value)
     
     def __del_item(self, key):
         new_key = self.__compute_index(key)
@@ -253,7 +257,7 @@ class JavaList(JavaObject):
             indices = key.indices(len(self))
             offset = 0
             for i in range(*indices):
-                self.__del_item(i+offset)
+                self.__del_item(i + offset)
                 offset -= 1 
         elif isinstance(key, int):
             return self.__del_item(key)
@@ -269,14 +273,14 @@ class JavaList(JavaObject):
     def insert(self, key, value):
         if isinstance(key, int):
             new_key = self.__compute_index(key)
-            return self.add(new_key,value)
+            return self.add(new_key, value)
         else:
             raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
         
     def extend(self, other_list):
         self.addAll(other_list)
 
-    def pop(self, key = None):
+    def pop(self, key=None):
         if key == None:
             new_key = self.size() - 1
         else:
@@ -290,10 +294,12 @@ class JavaList(JavaObject):
         raise Py4JError('Operation not currently supported.')
     
     def sort(self):
-        raise Py4JError('Operation not currently supported.')
+        command = LIST_COMMAND + LIST_SORT_COMMAND + self.get_object_id() + '\n' + END + '\n'
+        self.comm_channel.send_command(command)
     
     def reverse(self):
-        raise Py4JError('Operation not currently supported.')
+        command = LIST_COMMAND + LIST_REVERSE_COMMAND + self.get_object_id() + '\n' + END + '\n'
+        self.comm_channel.send_command(command)
     
     # remove is automatically supported by Java...
     

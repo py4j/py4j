@@ -28,9 +28,9 @@ def get_list(count):
 class Test(unittest.TestCase):
 
     def setUp(self):
-#        logger = logging.getLogger("py4j")
-#        logger.setLevel(logging.DEBUG)
-#        logger.addHandler(logging.StreamHandler())
+        logger = logging.getLogger("py4j")
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(logging.StreamHandler())
         self.p = start_echo_server_process()
         time.sleep(1)
         self.gateway = JavaGateway()
@@ -38,6 +38,22 @@ class Test(unittest.TestCase):
     def tearDown(self):
         self.p.terminate()
         self.gateway.comm_channel.shutdown()
+        time.sleep(1)
+        
+    def testJavaListProtocol(self):
+        ex = self.gateway.getNewExample()
+        pList = get_list(3)
+        jList = ex.getList(3)
+        pList.append(u'1')
+        jList.append(u'1')
+        pList.sort()
+        jList.sort()
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
+        pList.reverse()
+        jList.reverse()
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
         
     def testJavaListSlice(self):
         ex = self.gateway.getNewExample()
