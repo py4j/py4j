@@ -250,6 +250,14 @@ public class Protocol {
 		return null;
 	}
 
+	public final static Object getObject(String commandPart, Gateway gateway) {
+		Object obj = getObject(commandPart);
+		if (isReference(commandPart)) {
+			obj = gateway.getObject((String)obj);
+		}
+		return obj;
+	}
+	
 	public final static Object getObject(String commandPart) {
 		if (isEmpty(commandPart) || isEnd(commandPart)) {
 			throw new Py4JException(

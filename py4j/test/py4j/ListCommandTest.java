@@ -163,5 +163,96 @@ public class ListCommandTest {
 			fail();
 		}
 	}
+	
+	@Test
+	public void testCount() {
+		String inputCommand = ListCommand.LIST_COUNT_COMMAND + "\n" + target + "\ns1\ne\n";
+		list.add("1");
+		try {
+			command.execute("l", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yi2", sWriter.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testConcat() {
+		String inputCommand = ListCommand.LIST_CONCAT_COMMAND + "\n" + target + "\n" + target2 + "\ne\n";
+		try {
+			// concat l + l2
+			command.execute("l", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("ylo2", sWriter.toString());
+			List newList = (List)gateway.getObject("o2");
+			assertEquals(7, newList.size());
+			assertEquals(4, list.size());
+			assertEquals(3, list2.size());
+			assertEquals(newList.get(4),list2.get(0));
+			
+			// concat l + l
+			inputCommand = ListCommand.LIST_CONCAT_COMMAND + "\n" + target + "\n" + target + "\ne\n";
+			command.execute("l", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("ylo2ylo3", sWriter.toString());
+			newList = (List)gateway.getObject("o3");
+			assertEquals(8, newList.size());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testMult() {
+		String inputCommand = ListCommand.LIST_MULT_COMMAND + "\n" + target + "\ni3\ne\n";
+		try {
+			// l3 = l1 * 3
+			command.execute("l", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("ylo2", sWriter.toString());
+			List newList = (List)gateway.getObject("o2");
+			assertEquals(12, newList.size());
+			assertEquals(4, list.size());
+			
+			// l3 = l1 * -1
+			inputCommand = ListCommand.LIST_MULT_COMMAND + "\n" + target + "\ni-1\ne\n";
+			command.execute("l", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("ylo2ylo3", sWriter.toString());
+			newList = (List)gateway.getObject("o3");
+			assertEquals(0, newList.size());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
+	public void testiMult() {
+		String inputCommand = ListCommand.LIST_IMULT_COMMAND + "\n" + target + "\ni3\ne\n";
+		try {
+			// l *= 3
+			assertEquals(4, list.size());
+			command.execute("l", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yn", sWriter.toString());
+			assertEquals(12, list.size());
+			
+			// l *= -1
+			inputCommand = ListCommand.LIST_IMULT_COMMAND + "\n" + target + "\ni-1\ne\n";
+			command.execute("l", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("ynyn", sWriter.toString());
+			assertEquals(0, list.size());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
 }
 

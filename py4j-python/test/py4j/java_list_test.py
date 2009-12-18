@@ -54,6 +54,56 @@ class Test(unittest.TestCase):
         jList.reverse()
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
+        self.assertEqual(pList.count(u'1'), jList.count(u'1'))
+        self.assertEqual(pList.count(u'2'), jList.count(u'2'))
+        self.assertEqual(pList.count(u'-1'), jList.count(u'-1'))
+        
+        # Hack because this is a list of strings
+        self.assertEqual(max(pList), max(jList))
+        self.assertEqual(min(pList), min(jList))
+        
+    def testJavaListProtocol2(self):
+        ex = self.gateway.getNewExample()
+        pList = get_list(3)
+        pList2 = get_list(4)
+        jList = ex.getList(3)
+        jList2 = ex.getList(4)
+        
+        pList3 = pList + pList2
+        jList3 = jList + jList2
+        self.assertEqual(len(pList3), len(jList3))
+        self.assertEqual(str(pList3), str(jList3))
+        
+        pList3 = pList * 3
+        jList3 = jList * 3
+        self.assertEqual(len(pList3), len(jList3))
+        self.assertEqual(str(pList3), str(jList3))
+        
+        pList3 = 3 * pList
+        jList3 = 3 * jList
+        self.assertEqual(len(pList3), len(jList3))
+        self.assertEqual(str(pList3), str(jList3))
+        
+        pList3 = pList * 0
+        jList3 = jList * 0
+        self.assertEqual(len(pList3), len(jList3))
+        self.assertEqual(str(pList3), str(jList3))
+        
+        pList += pList2
+        jList += jList2
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
+        
+        pList2 *= 3
+        jList2 *= 3
+        self.assertEqual(len(pList2), len(jList2))
+        self.assertEqual(str(pList2), str(jList2))
+        
+        pList2 *= -1
+        jList2 *= -1
+        self.assertEqual(len(pList2), len(jList2))
+        self.assertEqual(str(pList2), str(jList2))
+        
         
     def testJavaListSlice(self):
         ex = self.gateway.getNewExample()

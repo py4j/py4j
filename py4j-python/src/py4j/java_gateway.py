@@ -40,6 +40,53 @@ LIST_SORT_COMMAND = 's\n'
 LIST_REVERSE_COMMAND = 'r\n'
 LIST_SLICE_COMMAND = 'l\n'
 
+# TODO
+LIST_CONCAT_COMMAND = 'a\n'
+LIST_MULT_COMMAND = 'm\n'
+LIST_IMULT_COMMAND = 'i\n'
+LIST_COUNT_COMMAND = 'f\n'
+
+
+def escape_new_line(original):
+        temp = original.replace('\\', '\\\\')
+        final = temp.replace('\n', '\\n')
+        return final
+    
+def get_command_part(parameter):
+    command_part = ''
+    if parameter == None:
+        command_part = NULL_TYPE
+    elif isinstance(parameter, bool):
+        command_part = BOOLEAN_TYPE + str(parameter)
+    elif isinstance(parameter, int) or isinstance(parameter, long):
+        command_part = INTEGER_TYPE + str(parameter)
+    elif isinstance(parameter, float):
+        command_part = DOUBLE_TYPE + str(parameter) 
+    elif isinstance(parameter, basestring):
+        command_part = STRING_TYPE + escape_new_line(parameter)
+    else:
+        command_part = REFERENCE_TYPE + parameter.get_object_id()
+    
+    return command_part + '\n'
+
+def get_return_value(answer, comm_channel, target_id = None, name = None):
+    if len(answer) == 0 or answer[0] != SUCCESS:
+        raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))
+    elif answer[1] == NULL_TYPE:
+        return None
+    elif answer[1] == REFERENCE_TYPE:
+        return JavaObject(answer[2:], comm_channel)
+    elif answer[1] == LIST_TYPE:
+        return JavaList(answer[2:], comm_channel)
+    elif answer[1] == INTEGER_TYPE:
+        return int(answer[2:])
+    elif answer[1] == BOOLEAN_TYPE:
+        return answer[2:].lower() == 'true'
+    elif answer[1] == DOUBLE_TYPE:
+        return float(answer[2:])
+    elif answer[1] == STRING_TYPE:
+        return answer[2:]
+
 class Py4JError(Exception):
     def __init__(self, value):
         self.value = value
@@ -104,51 +151,11 @@ class JavaMember(object):
         self.comm_channel = comm_channel
         self.command_header = self.target_id + '\n' + self.name + '\n'
         
-    def escape_new_line(self, original):
-        temp = original.replace('\\', '\\\\')
-        final = temp.replace('\n', '\\n')
-        return final
-    
-    def get_command_part(self, parameter):
-        command_part = ''
-        if parameter == None:
-            command_part = NULL_TYPE
-        elif isinstance(parameter, bool):
-            command_part = BOOLEAN_TYPE + str(parameter)
-        elif isinstance(parameter, int) or isinstance(parameter, long):
-            command_part = INTEGER_TYPE + str(parameter)
-        elif isinstance(parameter, float):
-            command_part = DOUBLE_TYPE + str(parameter) 
-        elif isinstance(parameter, basestring):
-            command_part = STRING_TYPE + self.escape_new_line(parameter)
-        else:
-            command_part = REFERENCE_TYPE + parameter.get_object_id()
-        
-        return command_part + '\n'
-    
-    def get_return_value(self, answer):
-        if len(answer) == 0 or answer[0] != SUCCESS:
-            raise Py4JError('An error occurred while calling %s%s%s' % (self.target_id, '.', self.name))
-        elif answer[1] == NULL_TYPE:
-            return None
-        elif answer[1] == REFERENCE_TYPE:
-            return JavaObject(answer[2:], self.comm_channel)
-        elif answer[1] == LIST_TYPE:
-            return JavaList(answer[2:], self.comm_channel)
-        elif answer[1] == INTEGER_TYPE:
-            return int(answer[2:])
-        elif answer[1] == BOOLEAN_TYPE:
-            return answer[2:].lower() == 'true'
-        elif answer[1] == DOUBLE_TYPE:
-            return float(answer[2:])
-        elif answer[1] == STRING_TYPE:
-            return answer[2:]
-        
     def __call__(self, *args):
-        args_command = ''.join([self.get_command_part(arg) for arg in args])
+        args_command = ''.join([get_command_part(arg) for arg in args])
         command = CALL_COMMAND + self.command_header + args_command + END + '\n'
         answer = self.comm_channel.send_command(command)
-        return_value = self.get_return_value(answer)
+        return_value = get_return_value(answer, self.comm_channel, self.target_id, self.name)
         return return_value
 
 
@@ -267,6 +274,31 @@ class JavaList(JavaObject):
     def __contains__(self, item):
         return self.contains(item)
         
+    def __add__(self, other):
+        command = LIST_COMMAND + LIST_CONCAT_COMMAND + self.get_object_id() + '\n' + other.get_object_id() + '\n' + END + '\n'
+        answer = self.comm_channel.send_command(command)
+        return get_return_value(answer, self.comm_channel)
+    
+    def __radd__(self, other):
+        return self.__add__(other)
+    
+    def __iadd__(self, other):
+        self.extend(other)
+        return self
+    
+    def __mul__(self, other):
+        command = LIST_COMMAND + LIST_MULT_COMMAND + self.get_object_id() + '\n' + get_command_part(other) + END + '\n'
+        answer = self.comm_channel.send_command(command)
+        return get_return_value(answer, self.comm_channel)
+    
+    def __rmul__(self, other):
+        return self.__mul__(other)
+    
+    def __imul__(self, other):
+        command = LIST_COMMAND + LIST_IMULT_COMMAND + self.get_object_id() + '\n' + get_command_part(other) + END + '\n'
+        self.comm_channel.send_command(command)
+        return self
+        
     def append(self, value):
         self.add(value)
         
@@ -291,7 +323,9 @@ class JavaList(JavaObject):
         return self.indexOf(value)
     
     def count(self, value):
-        raise Py4JError('Operation not currently supported.')
+        command = LIST_COMMAND + LIST_COUNT_COMMAND + self.get_object_id() + '\n' + get_command_part(value) + END + '\n'
+        answer = self.comm_channel.send_command(command)
+        return get_return_value(answer, self.comm_channel)
     
     def sort(self):
         command = LIST_COMMAND + LIST_SORT_COMMAND + self.get_object_id() + '\n' + END + '\n'
@@ -309,10 +343,14 @@ class JavaList(JavaObject):
     def __repr__(self):
         # TODO Make it more efficient/pythonic
         # TODO Debug why strings are not outputed with apostrophes.
-        srep = '['
-        for elem in self:
-            srep += repr(elem) + ', '
-        return srep[:-2] + ']'
+        if len(self) == 0:
+            return '[]'
+        else:
+            srep = '['
+            for elem in self:
+                srep += repr(elem) + ', '
+                
+            return srep[:-2] + ']'
 
 class JavaGateway(JavaObject):
     def __init__(self, comm_channel=None, auto_start=True):
