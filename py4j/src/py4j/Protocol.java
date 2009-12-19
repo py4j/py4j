@@ -87,7 +87,7 @@ public class Protocol {
 	 * </p>
 	 * 
 	 * @param commandPart
-	 * @return
+	 * @return True if the command part is the end token
 	 */
 	public final static boolean isEnd(String commandPart) {
 		return commandPart.length() == 1 && commandPart.charAt(0) == 'e';

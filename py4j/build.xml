@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="py4j">
+    <property environment="env"/>
+	<property file="ant.properties"/>
+    <property name="ECLIPSE_HOME" value="/home/barthelemy/eclipse_prog/eclipse3.5.1"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+    <path id="JUnit 4.libraryclasspath">
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.junit4_4.5.0.v20090824/junit.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
+    </path>
+    <path id="py4j.classpath">
+        <pathelement location="bin"/>
+        <path refid="JUnit 4.libraryclasspath"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+		<copy includeemptydirs="false" todir="bin">
+            <fileset dir="examples">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="test">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+	<target name="clean-doc">
+        <delete dir="javadoc"/>
+    </target>
+	<target name="clean-junit">
+        <delete dir="javadoc"/>
+    </target>
+    <target depends="clean,clean-doc,clean-junit" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="py4j.classpath"/>
+        </javac>
+		<javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="examples"/>
+            <classpath refid="py4j.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="test"/>
+            <classpath refid="py4j.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target name="py4j-tests">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="py4j.BufferGatewayTest" todir="${junit.output.dir}"/>
+            <test name="py4j.CallCommandTest" todir="${junit.output.dir}"/>
+            <test name="py4j.DefaultJavaGatewayTest" todir="${junit.output.dir}"/>
+            <test name="py4j.EchoClientTest" todir="${junit.output.dir}"/>
+            <test name="py4j.EchoServerTest" todir="${junit.output.dir}"/>
+            <test name="py4j.ListCommandTest" todir="${junit.output.dir}"/>
+            <test name="py4j.ProtocolTest" todir="${junit.output.dir}"/>
+            <test name="py4j.StringUtilTest" todir="${junit.output.dir}"/>
+            <classpath refid="py4j.classpath"/>
+        </junit>
+    </target>
+    <target name="BufferGateway">
+        <java classname="py4j.examples.BufferGateway" failonerror="true" fork="yes">
+            <classpath refid="py4j.classpath"/>
+        </java>
+    </target>
+    <target name="ExampleApplication">
+        <java classname="py4j.examples.ExampleApplication" failonerror="true" fork="yes">
+            <classpath refid="py4j.classpath"/>
+        </java>
+    </target>
+    <target name="junitreport">
+        <junitreport todir="${junit.output.dir}">
+            <fileset dir="${junit.output.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${junit.output.dir}"/>
+        </junitreport>
+    </target>
+	<target name="javadoc">
+        <javadoc access="protected" author="true" classpath="" destdir="javadoc" doctitle="Py4J" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="py4j,py4j.examples" source="1.6" sourcepath="src:examples" splitindex="true" use="true" version="true">
+            <link href="http://java.sun.com/javase/6/docs/api/"/>
+        </javadoc>
+    </target>
+</project>
