@@ -1,37 +1,34 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- WARNING: Eclipse auto-generated file.
-              Any modifications will be overwritten.
-              To include a user specific buildfile here, simply create one in the same
-              directory with the processing instruction <?eclipse.ant.import?>
-              as the first entry and export the buildfile again. --><project basedir="." default="build" name="py4j">
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="build" name="py4j">
     <property environment="env"/>
 	<property file="ant.properties"/>
-    <property name="ECLIPSE_HOME" value="/home/barthelemy/eclipse_prog/eclipse3.5.1"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
-    <path id="JUnit 4.libraryclasspath">
-        <pathelement location="${ECLIPSE_HOME}/plugins/org.junit4_4.5.0.v20090824/junit.jar"/>
-        <pathelement location="${ECLIPSE_HOME}/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
+    <path id="junit4.classpath">
+        <pathelement location="${junit.path}"/>
+        <pathelement location="${hamcrest.path}"/>
     </path>
     <path id="py4j.classpath">
-        <pathelement location="bin"/>
-        <path refid="JUnit 4.libraryclasspath"/>
+        <pathelement location="${build.dir}"/>
+        <path refid="junit4.classpath"/>
     </path>
     <target name="init">
-        <mkdir dir="bin"/>
-        <copy includeemptydirs="false" todir="bin">
+        <mkdir dir="${build.dir}"/>
+		<mkdir dir="${junit.output.dir}"/>
+        <copy includeemptydirs="false" todir="${build.dir}">
             <fileset dir="src">
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
-		<copy includeemptydirs="false" todir="bin">
+		<copy includeemptydirs="false" todir="${build.dir}">
             <fileset dir="examples">
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
-        <copy includeemptydirs="false" todir="bin">
+        <copy includeemptydirs="false" todir="${build.dir}">
             <fileset dir="test">
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
@@ -52,15 +49,15 @@
     <target name="build-subprojects"/>
     <target depends="init" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">
             <src path="src"/>
             <classpath refid="py4j.classpath"/>
         </javac>
-		<javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+		<javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">
             <src path="examples"/>
             <classpath refid="py4j.classpath"/>
         </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">
             <src path="test"/>
             <classpath refid="py4j.classpath"/>
         </javac>
