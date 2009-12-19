@@ -255,6 +255,7 @@ public class ListCommandTest {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testSlice() {
 		String inputCommand = ListCommand.LIST_SLICE_COMMAND + "\n" + target + "\ni1\ni2\ne\n";
