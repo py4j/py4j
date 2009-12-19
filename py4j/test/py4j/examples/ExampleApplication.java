@@ -37,6 +37,7 @@ public class ExampleApplication {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		GatewayServer.turnLoggingOff();
 		GatewayServer server = new GatewayServer(new ExampleGateway());
 		server.start();
 //		try {

@@ -9,7 +9,7 @@ Created on Dec 3, 2009
 import logging
 from IN import AF_INET
 from IN import SOCK_STREAM
-from socket import socket
+import socket
 
 class NullHandler(logging.Handler):
     def emit(self, record):
@@ -103,7 +103,7 @@ class CommChannel(object):
     def __init__(self, address='localhost', port=25333, auto_close=True):
         self.address = address
         self.port = port
-        self.socket = socket(AF_INET, SOCK_STREAM)
+        self.socket = socket.socket(AF_INET, SOCK_STREAM)
         self.is_connected = False
         self.auto_close = auto_close
         
@@ -112,14 +112,17 @@ class CommChannel(object):
         self.is_connected = True
     
     def stop(self):
+        self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
         self.is_connected = False
         
     def shutdown(self):
         try:
             self.socket.sendall(SHUTDOWN_COMMAND.encode('utf-8'))
+            self.socket.close()
+            self.is_connected = False
         except Exception:
-            # Do nothing!
+            # Do nothing! Exceptions might occur anyway.
             pass
 
     def __del__(self):
@@ -216,12 +219,14 @@ class JavaList(JavaObject):
     def __iter__(self):
         return JavaListIterator(self.iterator().get_object_id(), self.comm_channel)
     
-    def __compute_index(self, key):
+    def __compute_index(self, key, adjustLast = False):
         size = self.size()
         if 0 <= key < size:
             return key
         elif key < 0 and abs(key) <= size:
             return size + key
+        elif adjustLast:
+            return size
         else:
             raise IndexError("list index out of range")
     
@@ -232,6 +237,42 @@ class JavaList(JavaObject):
     def __set_item(self, key, value):
         new_key = self.__compute_index(key)
         self.set(new_key, value)
+
+    def __set_item_from_slice(self, indices, iterable):
+        offset = 0
+        last = 0
+        value_iter = iter(iterable)
+        
+        # First replace and delete if from_slice > to_slice
+        for i in range(*indices):
+            try:
+                value = value_iter.next()
+                self.__set_item(i, value)
+            except StopIteration:
+                self.__del_item(i)
+                offset -= 1
+            last = i + 1
+        
+        # Then insert if from_slice < to_slice 
+        for elem in value_iter:
+            self.insert(last,elem)
+            last += 1
+    
+    def __insert_item_from_slice(self, indices, iterable):
+        index = indices[0]
+        for elem in iterable:
+            self.insert(index,elem)
+            index += 1
+    
+    def __repl_item_from_slice(self, range, iterable):
+        value_iter = iter(iterable)
+        for i in range:
+            value = value_iter.next()
+            self.__set_item(i, value)
+            
+    def __append_item_from_slice(self, range, iterable):
+        for value in iterable:
+            self.append(value)
     
     def __del_item(self, key):
         new_key = self.__compute_index(key)
@@ -239,21 +280,41 @@ class JavaList(JavaObject):
 
     def __setitem__(self, key, value):
         if isinstance(key, slice):
-#            indices = key.indices(len(self))
-#            for i in range(*indices):
-#                self.__set_item(i, value)
-            raise Py4JError('Slicing not currently supported.') 
+            self_len = len(self)
+            indices = key.indices(self_len)
+            if indices[0] >= self_len:
+                self.__append_item_from_slice(range, value)
+            elif indices[0] == indices[1]:
+                self.__insert_item_from_slice(indices, value)
+            elif indices[2] == 1:
+                self.__set_item_from_slice(indices, value)
+            else:
+                self_range = range(*indices)
+                lenr = len(self_range)
+                lenv = len(value)
+                if lenr != lenv:
+                    raise ValueError("attempt to assign sequence of size %d to extended slice of size %d" % (lenv,lenr))
+                else:
+                    return self.__repl_item_from_slice(self_range,value)
+            
         elif isinstance(key, int):
             return self.__set_item(key, value)
         else:
             raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+    
+    def __get_slice(self, indices):
+        command = LIST_COMMAND + LIST_SLICE_COMMAND + self.get_object_id() + '\n'
+        for index in indices:
+            command += get_command_part(index)
+        command += END + '\n'
+        answer = self.comm_channel.send_command(command)
+        return get_return_value(answer, self.comm_channel)
+        
         
     def __getitem__(self, key):
         if isinstance(key, slice):
-#            indices = key.indices(len(self))
-#            new_list = [self.compute_item(i) for i in range(*indices)]
-#            return test_list(len(new_list),new_list)
-            raise Py4JError('Slicing not currently supported.')
+            indices = key.indices(len(self))
+            return self.__get_slice(range(*indices))
         elif isinstance(key, int):
             return self.__compute_item(key)
         else:
@@ -304,7 +365,7 @@ class JavaList(JavaObject):
         
     def insert(self, key, value):
         if isinstance(key, int):
-            new_key = self.__compute_index(key)
+            new_key = self.__compute_index(key, True)
             return self.add(new_key, value)
         else:
             raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
@@ -364,29 +425,3 @@ class JavaGateway(JavaObject):
         
         if auto_start:
             self.comm_channel.start()
-    
-            
-if __name__ == '__main__':
-#    logger = logging.getLogger("py4j")
-#    logger.setLevel(logging.DEBUG)
-#    logger.addHandler(logging.StreamHandler())
-    
-    gateway = JavaGateway()
-    ex = gateway.getNewExample()
-    response = ex.method3(1, True)
-    print(response)
-    print('done')
-    
-    l = ex.getList(3)
-    print(len(l))
-    print(l)
-    print(l[1])
-    l[1] = 'Bonjour'
-    print(l)
-    del l[1]
-    print(l)
-    print(type(l[1]))
-#    for s in l:
-#        print(s)
-    
-    gateway.comm_channel.stop()

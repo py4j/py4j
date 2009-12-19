@@ -45,6 +45,8 @@ public class BufferGateway extends DefaultGateway {
 		server.start();
 	}
 	
+	
+	// Useful for unit tests
 	public static void stopGateway() {
 		server.stop();
 	}

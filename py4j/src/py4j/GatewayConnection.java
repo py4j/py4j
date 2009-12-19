@@ -93,6 +93,7 @@ public class GatewayConnection implements Runnable {
 		} catch(Exception e) {
 			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
 		} finally {
+			logger.log(Level.INFO, "Closing connection.");
 			NetworkUtil.quietlyClose(writer);
 			NetworkUtil.quietlyClose(reader);
 			NetworkUtil.quietlyClose(socket);

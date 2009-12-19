@@ -32,7 +32,7 @@ public class ListCommand extends AbstractCommand {
 		char listCommand = reader.readLine().charAt(0);
 		String returnCommand = null;
 		if (listCommand == LIST_SLICE_COMMAND) {
-			// TODO!
+			returnCommand = slice_list(reader);
 		} else if (listCommand == LIST_CONCAT_COMMAND) {
 			returnCommand = concat_list(reader);
 		} else if (listCommand == LIST_MULT_COMMAND) {
@@ -48,6 +48,20 @@ public class ListCommand extends AbstractCommand {
 		logger.info("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
+	}
+
+	@SuppressWarnings("unchecked")
+	private String slice_list(BufferedReader reader) throws IOException {
+		List list1 = (List) gateway.getObject(reader.readLine());
+		List<Argument> arguments = getArguments(reader);
+		
+		List slice = new ArrayList();
+		for (Argument argument : arguments) {
+			slice.add(list1.get((Integer)argument.getValue()));
+		}
+		
+		ReturnObject returnObject = gateway.getReturnObject(slice);
+		return Protocol.getOutputCommand(returnObject);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -254,5 +254,32 @@ public class ListCommandTest {
 			fail();
 		}
 	}
+	
+	@Test
+	public void testSlice() {
+		String inputCommand = ListCommand.LIST_SLICE_COMMAND + "\n" + target + "\ni1\ni2\ne\n";
+		try {
+			// l3 = l1[1:3]
+			command.execute("l", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("ylo2", sWriter.toString());
+			List newList = (List)gateway.getObject("o2");
+			assertEquals(2, newList.size());
+			assertEquals("9",newList.get(0));
+			assertEquals("3",newList.get(1));
+			assertEquals(4, list.size());
+			
+			// l3 = l[0:0]
+			inputCommand = ListCommand.LIST_SLICE_COMMAND + "\n" + target + "\ne\n";
+			command.execute("l", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("ylo2ylo3", sWriter.toString());
+			newList = (List)gateway.getObject("o3");
+			assertEquals(0, newList.size());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
 }
 

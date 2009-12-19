@@ -28,17 +28,17 @@ def get_list(count):
 class Test(unittest.TestCase):
 
     def setUp(self):
-        logger = logging.getLogger("py4j")
-        logger.setLevel(logging.DEBUG)
-        logger.addHandler(logging.StreamHandler())
+#        logger = logging.getLogger("py4j")
+#        logger.setLevel(logging.DEBUG)
+#        logger.addHandler(logging.StreamHandler())
         self.p = start_echo_server_process()
-        time.sleep(1)
+        time.sleep(0.5)
         self.gateway = JavaGateway()
         
     def tearDown(self):
         self.p.terminate()
         self.gateway.comm_channel.shutdown()
-        time.sleep(1)
+        time.sleep(0.5)
         
     def testJavaListProtocol(self):
         ex = self.gateway.getNewExample()
@@ -104,14 +104,94 @@ class Test(unittest.TestCase):
         self.assertEqual(len(pList2), len(jList2))
         self.assertEqual(str(pList2), str(jList2))
         
+    
+    def testJavaListGetSlice(self):
+        ex = self.gateway.getNewExample()
+        pList = get_list(5)
+        jList = ex.getList(5)
         
-    def testJavaListSlice(self):
+        pSlice = pList[1:3]
+        jSlice = jList[1:3]
+        self.assertEqual(len(pSlice), len(jSlice))
+        self.assertEqual(str(pSlice), str(jSlice))
+        
+        pSlice = pList[0:0]
+        jSlice = jList[0:0]
+        self.assertEqual(len(pSlice), len(jSlice))
+        self.assertEqual(str(pSlice), str(jSlice))
+        
+        pSlice = pList[0:-2]
+        jSlice = jList[0:-2]
+        self.assertEqual(len(pSlice), len(jSlice))
+        self.assertEqual(str(pSlice), str(jSlice))
+        
+    def testJavaListDelSlice(self):
         ex = self.gateway.getNewExample()
         pList = get_list(5)
         jList = ex.getList(5)
         
         del pList[1:3]
         del jList[1:3]
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
+        
+    def testJavaListSetSlice(self):
+        ex = self.gateway.getNewExample()
+        pList = get_list(6)
+        jList = ex.getList(6)
+        tList = [u'500',u'600']
+        
+        pList[0:0] = tList
+        jList[0:0] = tList
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
+        
+        pList[1:2] = tList
+        jList[1:2] = tList
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
+        
+        pList[3:5] = tList
+        jList[3:5] = tList
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
+        
+        pList[1:5:2] = tList
+        jList[1:5:2] = tList
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
+        
+        pList[0:4] = tList
+        jList[0:4] = tList
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
+        
+        pList = get_list(6)
+        jList = ex.getList(6)
+        try:
+            pList[0:6:2] = tList
+            self.fail('Should have failed')
+        except ValueError:
+            self.assertTrue(True)
+        try:
+            jList[0:6:2] = tList
+            self.fail('Should have failed')
+        except ValueError:
+            self.assertTrue(True)
+        
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
+        
+        pList = get_list(6)
+        jList = ex.getList(6)
+        
+        pList[100:100] = tList
+        jList[100:100] = tList
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
+        
+        pList[1000:10000] = tList
+        jList[1000:10000] = tList
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
         
@@ -161,6 +241,10 @@ class Test(unittest.TestCase):
         jList.insert(3,u'150')
         pList.insert(-1,u'200')
         jList.insert(-1,u'200')
+        pList.insert(len(pList),u'300')
+        jList.insert(len(pList),u'300')
+        pList.insert(300,u'1500')
+        jList.insert(300,u'1500')
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
         
