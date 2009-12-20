@@ -15,7 +15,21 @@ setup(
     version="0.1",
     url="http://py4j.sourceforge.net/",
     author="Barthelemy Dagenais",
-    author_email="barthe@users.sourceforge.net"
+    author_email="barthe@users.sourceforge.net",
+    license="BSD License",
+    classifiers=[
+          'Development Status :: 3 - Alpha',
+          'Intended Audience :: by End-User Class :: Developers',
+          'License :: OSI-Approved Open Source :: BSD License',
+          'Operating System :: Grouping and Descriptive Categories :: OS Portable (Source code to work with many OS platforms)',
+          'Programming Language :: Python',
+          'Programming Language :: Java',
+          'Topic :: Software Development :: Libraries',
+          'Topic :: Software Development :: Object Brokering',
+          'Topic :: Software Development :: Virtual Machines',
+          'User Interface :: Non-interactive (Daemon)',
+          ],
+
 )
 
 options(
@@ -58,7 +72,9 @@ def deploy():
 def clean():
     distdir = path('dist')
     docdir = path('docs')
+    build = path('build')
     eggdir = path('Py4J.egg-info')
     distdir.rmtree()
     docdir.rmtree()
     eggdir.rmtree()
+    build.rmtree()
