@@ -6,7 +6,8 @@
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
 	<property name="jar.name" value="py4j${version}.jar"/>
-    <path id="junit4.classpath">
+    <property name="release.name" value="py4j-${version}"/>
+	<path id="junit4.classpath">
         <pathelement location="${junit.path}"/>
         <pathelement location="${hamcrest.path}"/>
     </path>
@@ -16,7 +17,7 @@
     </path>
 	<target name="init_dist">
 		<mkdir dir="${dist.dir}"/>
-		<mkdir dir="py4j-${version}"/>
+		<mkdir dir="${dist.dir}/${release.name}"/>
 	</target>
     <target name="init">
         <mkdir dir="${build.dir}"/>
@@ -112,27 +113,25 @@
 	<target depends="build" name="jar">
 		<jar destfile="${jar.name}" basedir="${build.dir}" excludes="**/*Test.class"/>
 	</target>
-	<target depends="init_dist,build,javadoc" name="dist">
-		<copy todir="${dist.dir}/py4j-${version}/src">
+	<target depends="init_dist,build,jar" name="dist">
+		<copy todir="${dist.dir}/${release.name}/src">
     		<fileset dir="src"/>
   		</copy>
-		<copy todir="${dist.dir}/py4j-${version}/test">
+		<copy todir="${dist.dir}/${release.name}/examples">
+    		<fileset dir="examples"/>
+  		</copy>
+		<copy todir="${dist.dir}/${release.name}/test">
     		<fileset dir="test"/>
   		</copy>
-		<copy todir="${dist.dir}/py4j-${version}/test">
-    		<fileset dir="test"/>
-  		</copy>
-		<copy todir="${dist.dir}/py4j-${version}/javadoc">
-    		<fileset dir="test"/>
-  		</copy>
-		<copy file="LICENSE" tofile="${dist.dir}/py4j-${version}/LICENSE"/>
-		<copy file="README" tofile="${dist.dir}/py4j-${version}/README"/>
-		<copy file="TODO" tofile="${dist.dir}/py4j-${version}/TODO"/>
+		<copy file="LICENSE.txt" tofile="${dist.dir}/py4j-${version}/LICENSE.txt"/>
+		<copy file="README.txt" tofile="${dist.dir}/py4j-${version}/README.txt"/>
 		<copy file="build.xml" tofile="${dist.dir}/py4j-${version}/build.xml"/>
 		<copy file="ant.properties" tofile="${dist.dir}/py4j-${version}/ant.properties"/>
 		<copy file="${jar.name}" tofile="${dist.dir}/py4j-${version}/${jar.name}"/>
 		
-		<tar destfile="${dist.dir}/py4j-java-${version}.tar" basedir="${dist.dir}/py4j-${version}/"/>
-		<gzip src="py4j-java-${version}.tar" destfile="py4j-java-${version}.tar.gz"/>
+		<tar destfile="${dist.dir}/${release.name}.tar" basedir="${dist.dir}/${release.name}/"/>
+		<gzip src="${dist.dir}/${release.name}.tar" destfile="${dist.dir}/${release.name}.tar.gz"/>
+		
+		<delete file="${dist.dir}/${release.name}.tar"/>
 	</target>
 </project>
