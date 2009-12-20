@@ -5,6 +5,7 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
+	<property name="jar.name" value="py4j${version}.jar"/>
     <path id="junit4.classpath">
         <pathelement location="${junit.path}"/>
         <pathelement location="${hamcrest.path}"/>
@@ -13,6 +14,10 @@
         <pathelement location="${build.dir}"/>
         <path refid="junit4.classpath"/>
     </path>
+	<target name="init_dist">
+		<mkdir dir="${dist.dir}"/>
+		<mkdir dir="py4j-${version}"/>
+	</target>
     <target name="init">
         <mkdir dir="${build.dir}"/>
 		<mkdir dir="${junit.output.dir}"/>
@@ -36,15 +41,18 @@
         </copy>
     </target>
     <target name="clean">
-        <delete dir="bin"/>
+        <delete dir="${build.dir}"/>
     </target>
 	<target name="clean-doc">
-        <delete dir="javadoc"/>
+        <delete dir="${javadoc.dir}"/>
     </target>
 	<target name="clean-junit">
-        <delete dir="javadoc"/>
+        <delete dir="junit.output.dir}"/>
     </target>
-    <target depends="clean,clean-doc,clean-junit" name="cleanall"/>
+	<target name="clean-dist">
+		<delete dir="${dist.dir}"/>
+	</target>
+    <target depends="clean,clean-doc,clean-junit,clean-dist" name="cleanall"/>
     <target depends="build-subprojects,build-project" name="build"/>
     <target name="build-subprojects"/>
     <target depends="init" name="build-project">
@@ -97,8 +105,34 @@
         </junitreport>
     </target>
 	<target name="javadoc">
-        <javadoc access="protected" author="true" classpath="" destdir="javadoc" doctitle="Py4J" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="py4j,py4j.examples" source="1.6" sourcepath="src:examples" splitindex="true" use="true" version="true">
+        <javadoc access="protected" author="true" classpath="" destdir="${javadoc.dir}" doctitle="Py4J" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="py4j,py4j.examples" source="1.6" sourcepath="src:examples" splitindex="true" use="true" version="true">
             <link href="http://java.sun.com/javase/6/docs/api/"/>
         </javadoc>
     </target>
+	<target depends="build" name="jar">
+		<jar destfile="${jar.name}" basedir="${build.dir}" excludes="**/*Test.class"/>
+	</target>
+	<target depends="init_dist,build,javadoc" name="dist">
+		<copy todir="${dist.dir}/py4j-${version}/src">
+    		<fileset dir="src"/>
+  		</copy>
+		<copy todir="${dist.dir}/py4j-${version}/test">
+    		<fileset dir="test"/>
+  		</copy>
+		<copy todir="${dist.dir}/py4j-${version}/test">
+    		<fileset dir="test"/>
+  		</copy>
+		<copy todir="${dist.dir}/py4j-${version}/javadoc">
+    		<fileset dir="test"/>
+  		</copy>
+		<copy file="LICENSE" tofile="${dist.dir}/py4j-${version}/LICENSE"/>
+		<copy file="README" tofile="${dist.dir}/py4j-${version}/README"/>
+		<copy file="TODO" tofile="${dist.dir}/py4j-${version}/TODO"/>
+		<copy file="build.xml" tofile="${dist.dir}/py4j-${version}/build.xml"/>
+		<copy file="ant.properties" tofile="${dist.dir}/py4j-${version}/ant.properties"/>
+		<copy file="${jar.name}" tofile="${dist.dir}/py4j-${version}/${jar.name}"/>
+		
+		<tar destfile="${dist.dir}/py4j-java-${version}.tar" basedir="${dist.dir}/py4j-${version}/"/>
+		<gzip src="py4j-java-${version}.tar" destfile="py4j-java-${version}.tar.gz"/>
+	</target>
 </project>
