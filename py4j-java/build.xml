@@ -50,7 +50,7 @@
 	<target name="clean-junit">
         <delete dir="junit.output.dir}"/>
     </target>
-	<target name="clean-dist">
+	<target depends="clean" name="clean-dist">
 		<delete dir="${dist.dir}"/>
 	</target>
     <target depends="clean,clean-doc,clean-junit,clean-dist" name="cleanall"/>
