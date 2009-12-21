@@ -17,6 +17,7 @@ import sys, os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.append(os.path.abspath('.'))
+sys.path.append(os.path.abspath('../py4j-python/src'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -34,7 +35,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'contents'
 
 # General information about the project.
 project = u'Py4J'
@@ -60,7 +61,7 @@ release = '0.1'
 #today_fmt = '%B %d, %Y'
 
 # List of documents that shouldn't be included in the build.
-#unused_docs = []
+#unused_docs = ['index','download','about']
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
@@ -192,3 +193,4 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+

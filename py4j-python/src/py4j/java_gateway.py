@@ -414,8 +414,9 @@ class JavaList(JavaObject):
             return srep[:-2] + ']'
 
 class JavaGateway(JavaObject):
+    """Default class"""
+    
     def __init__(self, comm_channel=None, auto_start=True):
-        
         # This is the default Java Gateway
         # The comm channel can be customized to not send anything.
         if comm_channel == None:
