@@ -110,7 +110,7 @@
         VERSION:     '{{ release|e }}',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '{{ file_suffix }}',
-        HAS_SOURCE:  {{ has_source|lower }}
+        HAS_SOURCE:  '{{ has_source|lower }}'
       };
     </script>
     {%- for scriptfile in script_files %}
@@ -167,6 +167,18 @@
           <div class="body">
             {% block body %} {% endblock %}
           </div>
+		  {%- block helpbar %}
+		  		{% if pagename not in ['index','download','about'] %}
+				<div class="helpbar">
+					<h3>Questions/Feedback?</h3>
+					<ul>
+						<li>Try the <a href="faq.html">FAQ</a> -- It answers many questions.</li>
+						<li>Search for information in the <a href="http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users">archives of the py4j-users mailing list</a>, or <a href="https://lists.sourceforge.net/lists/listinfo/py4j-users">post a question</a>.</li>
+						<li>If you notice errors with this documentation, <a href="http://sourceforge.net/apps/trac/py4j/newticket">open a ticket</a> and let us know. Please, only open a ticket for feedback or improvements on the docs. To get help, use the links above!</li>
+					</ul>
+				</div>
+				{% endif %}
+		  {%- endblock %}
       {%- if not embedded %}{% if not theme_nosidebar|tobool %}
         </div>
       {%- endif %}{% endif %}
@@ -176,6 +188,8 @@
 {%- block sidebar2 %}{{ sidebar() }}{% endblock %}
       <div class="clearer"></div>
     </div>
+
+
 
 {%- block relbar2 %}{{ relbar() }}{% endblock %}
 

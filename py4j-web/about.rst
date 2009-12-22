@@ -8,6 +8,12 @@ useful Java libraries and frameworks such as `PPA <http://www.sable.mcgill.ca/pp
 Virtual Machine to run a Python program.
 
 
+License
+=======
+
+Py4J is distributed under the `BSD license <http://sourceforge.net/apps/trac/py4j/browser/trunk/py4j-python/LICENSE.txt>`_.
+
+
 Alternatives to Py4J
 ====================
 
@@ -20,13 +26,3 @@ JVM while Py4J uses plain old sockets, which is more portable in practice.
 In terms of performance, Py4J has a bigger overhead than both of the previous solutions, but if performance is critical
 to your application, accessing Java objects from Python programs might not be the best idea :-) We plan to evaluate the
 performance overhead of Py4J once we have a stable release.
-
-
-How to get Help
-===============
-
-If you want...
-
-* to report a bug or request a feature, create a ticket in `Trac <https://sourceforge.net/apps/trac/py4j/wiki>`_.
-* to ask a question, send an email to our `mailing list <https://lists.sourceforge.net/lists/listinfo/py4j-users>`_.
-* to contribute to the code, the documentation or anything else, contact Barthélémy Dagenais at *barthe at users dot sourceforge dot net*.

@@ -5,8 +5,7 @@ Welcome to Py4J
 ===============
 
 Py4J enables Python programs to dynamically access arbitrary Java objects. Methods are called as if the Java objects
-resided in the Python virtual machine. There is no code to generate and no interface to implement for the shared objects 
-on both sides.
+resided in the Python virtual machine. Py4J is distributed under the `BSD license <http://sourceforge.net/apps/trac/py4j/browser/trunk/py4j-python/LICENSE.txt>`_.
 
 Here is a brief example of what you can do with Py4J. The following Python program receives a *java.lang.StringBuffer*
 instance from a JVM and calls some of its methods:
@@ -38,6 +37,8 @@ required to run these programs):
 		  server.start();
 	  }  
   }
+
+
   
 
 

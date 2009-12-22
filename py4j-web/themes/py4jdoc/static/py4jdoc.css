@@ -135,6 +135,13 @@ div.sphinxsidebar ul ul {
     margin-left: 20px;
 }
 
+div.helpbar {
+	background-color: #FFD996;
+	text-align: left;
+	padding: 0.2em 1em 0.5em 1em;
+	margin:0;
+}
+
 div.footer {
     background-color: #6A92D4;
     color: #052C6E;
@@ -176,9 +183,10 @@ h1 {
 }
 
 h2 {
-    margin: 1.3em 0 0.2em 0;
+    margin: 1.5em 0 0.2em 0;
     font-size: 1.35em;
     padding: 0;
+	color: #1049A9;
 }
 
 h3 {
@@ -342,4 +350,9 @@ div.versioninfo {
     padding: 8px;
     line-height: 1.3em;
     font-size: 0.9em;
+}
+
+dl.class {
+	margin-top: 1.5em;
+	
 }
