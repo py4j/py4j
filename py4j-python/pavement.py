@@ -25,6 +25,7 @@ setup(
     author="Barthelemy Dagenais",
     author_email="barthe@users.sourceforge.net",
     license="BSD License",
+    zip_safe = True,
     classifiers=[
           'Development Status :: 3 - Alpha',
           'Intended Audience :: by End-User Class :: Developers',
@@ -69,8 +70,9 @@ def bdist_egg():
     pass
 
 @task
-@needs('sdist','bdist_egg','soft_clean')
+@needs('generate_setup', 'minilib', 'html_complete', 'py4j_java', 'setuptools.command.sdist','bdist_egg','soft_clean')
 def big_release():
+    # Don't forget to run with --formats=zip,gztar
     pass
 
 @task

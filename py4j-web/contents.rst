@@ -6,6 +6,7 @@ Py4J Documentation
    :maxdepth: 2
    :numbered:
 
+   install
    getting_started
    py4j_python
    py4j_java

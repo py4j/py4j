@@ -356,3 +356,7 @@ dl.class {
 	margin-top: 1.5em;
 	
 }
+
+ol.arabic li {
+	margin-bottom: 0.3em;
+}
