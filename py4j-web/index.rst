@@ -1,0 +1,57 @@
+.. Py4J documentation master file, created by
+   sphinx-quickstart on Thu Dec 10 15:12:43 2009.
+
+Welcome to Py4J
+===============
+
+Py4J enables Python programs to dynamically access arbitrary Java objects. Methods are called as if the Java objects
+resided in the Python virtual machine. Py4J is distributed under the `BSD license <http://sourceforge.net/apps/trac/py4j/browser/trunk/py4j-python/LICENSE.txt>`_.
+
+Here is a brief example of what you can do with Py4J. The following Python program receives a *java.lang.StringBuffer*
+instance from a JVM and calls some of its methods:
+
+::
+
+  >>> from py4j.java_gateway import JavaGateway
+  >>> gateway = JavaGateway()             # connect to the JVM        
+  >>> buffer = gateway.getStringBuffer()  # call BufferGateway.getStringBuffer in the JVM
+  >>> buffer.append(True)                 # call StringBuffer.append(boolean) in the JVM
+  >>> buffer.append(1.0)
+  >>> buffer.append('This is a Python %s' % 'string')
+  >>> print(buffer.toString())
+  FromJavatrue1.0This is a Python string
+
+This is the highly complex Java program that was executing at the same time (no code was generated and no tool was
+required to run these programs):
+
+.. code-block:: java
+
+  public class BufferGateway extends DefaultGateway {
+      public StringBuffer getStringBuffer() {
+          StringBuffer sb = new StringBuffer("FromJava");
+          return sb;
+      }
+    
+      public static void main(String[] args) {
+          GatewayServer server = new GatewayServer(new BufferGateway());
+          server.start();
+      }  
+  }
+
+
+  
+
+
+Resources
+=========
+
+* Take a look at the tutorial :doc:`getting_started`.
+* Browse the :doc:`contents`.
+* Ask a question on the `mailing list <https://lists.sourceforge.net/lists/listinfo/py4j-users>`_.
+
+News
+====
+
+* **December 23rd 2009** - Py4J 0.1 has been released. Rejoice!
+* **December 11th 2009** - Py4J is still in the planning phase, but the `code <https://sourceforge.net/projects/py4j/develop>`_ 
+  currently works for basic scenarios. A release and a tutorial should be available in the following weeks.
