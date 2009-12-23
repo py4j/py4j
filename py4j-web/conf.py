@@ -195,4 +195,4 @@ latex_documents = [
 #latex_use_modindex = True
 
 # Custom
-
+autoclass_content = 'both'

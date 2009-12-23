@@ -48,9 +48,17 @@ LIST_COUNT_COMMAND = 'f\n'
 
 
 def escape_new_line(original):
-        temp = original.replace('\\', '\\\\')
-        final = temp.replace('\n', '\\n')
-        return final
+    """Replaces new line characters by a backslash followed by a n.
+    
+    Backslashes are also escaped by another backslash.
+    
+    :param original: the string to escape
+    
+    :rtype: an escaped string
+    """
+    temp = original.replace('\\', '\\\\')
+    final = temp.replace('\n', '\\n')
+    return final
     
 def get_command_part(parameter):
     command_part = ''
@@ -88,19 +96,27 @@ def get_return_value(answer, comm_channel, target_id = None, name = None):
         return answer[2:]
 
 class Py4JError(Exception):
+    """Exception thrown when a problem occurs with Py4J."""
     def __init__(self, value):
+        """
+        
+        :param value: the error message
+        """
         self.value = value
     
     def __str__(self):
         return repr(self.value)
 
 class CommChannel(object):
-    """Default communication channel (socket based) responsible for communicating with the Java Virtual Machine.
-    
-    This class will eventually be used to restrict the access to the socket or replace the socket communication. 
-    """
+    """Default communication channel (socket based) responsible for communicating with the Java Virtual Machine."""
     
     def __init__(self, address='localhost', port=25333, auto_close=True):
+        """
+        :param address: the address to which the comm channel will connect
+        :param port: the port to which the comm channel will connect. Default is 25333.
+        :param auto_close: if `True`, the communication channel closes the socket when it is garbage 
+          collected (i.e., when `CommChannel.__del__()` is called).
+        """
         self.address = address
         self.port = port
         self.socket = socket.socket(AF_INET, SOCK_STREAM)
@@ -108,15 +124,20 @@ class CommChannel(object):
         self.auto_close = auto_close
         
     def start(self):
+        """Starts the communication channel by connecting to the `address` and the `port`"""
         self.socket.connect((self.address, self.port))
         self.is_connected = True
     
     def stop(self):
+        """Stops the communication channel by closing the socket."""
         self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
         self.is_connected = False
         
     def shutdown(self):
+        """Sends a shutdown command to the gateway. This will close the gateway server: all active 
+        connections will be closed. This may be useful if the lifecycle of the Java program must be 
+        tied to the Python program."""
         try:
             self.socket.sendall(SHUTDOWN_COMMAND.encode('utf-8'))
             self.socket.close()
@@ -130,12 +151,18 @@ class CommChannel(object):
         
         This is an acceptable practice if you know that your Python VM implements garbage collection 
         and closing sockets immediately is not a concern. Otherwise, it is always better (because it 
-        is predictable) to explicitly close the socket by calling CommChannel.close().
+        is predictable) to explicitly close the socket by calling `CommChannel.close()`.
         """
         if self.auto_close and self.socket != None and self.is_connected:
             self.stop()
         
     def send_command(self, command):
+        """Sends a command to the JVM. This method is not intended to be called directly by Py4J users: it is usually called by JavaMember instances.
+        
+        :param command: the `string` command to send to the JVM. The command must follow the Py4J protocol.
+        :rtype: the `string` answer received from the JVM. The answer follows the Py4J protocol.
+        """
+        
         logger.debug("Command to send: %s" % (command))
         self.socket.sendall(command.encode('utf-8'))
         answer = self.socket.recv(BUFFER_SIZE).decode('utf-8')
@@ -143,9 +170,7 @@ class CommChannel(object):
         return answer
 
 class JavaMember(object):
-    """Represents a member (field, method) of a Java Object.
-    
-    For now, only methods are supported.
+    """Represents a member (field, method) of a Java Object. For now, only methods are supported.
     """
     
     def __init__(self, name, target_id, comm_channel):
@@ -164,7 +189,13 @@ class JavaMember(object):
 
 
 class JavaObject(object):
+    """Represents a Java object from which you can call methods."""
+    
     def __init__(self, target_id, comm_channel):
+        """
+        :param target_id: the identifier of the object on the JVM side. Given by the JVM.
+        :param comm_channel: the communication channel used to communicate with the JVM.
+        """
         self.target_id = target_id
         self.methods = {}
         self.comm_channel = comm_channel
@@ -194,6 +225,9 @@ class JavaObject(object):
         return self.toString()
     
 class JavaListIterator(JavaObject):
+    """Maps a Python list iterator to a Java list iterator.
+    
+    The `JavaListIterator` follows the Python iterator protocol and raises a `StopIteration` error when the iterator can no longer iterate."""
     def __init__(self, target_id, comm_channel):
         JavaObject.__init__(self, target_id, comm_channel)
         self.next_name = 'next'
@@ -210,6 +244,13 @@ class JavaListIterator(JavaObject):
             raise StopIteration()
     
 class JavaList(JavaObject):
+    """Maps a Python list to a Java list.
+    
+    All operations possible on a Python list are implemented. For example, slicing (e.g., list[1:3]) 
+    will create a copy of the list on the JVM. Slicing is thus not equivalent to subList(), because 
+    a modification to a slice such as the addition of a new element will not affect the original 
+    list."""
+    
     def __init__(self, target_id, comm_channel):
         JavaObject.__init__(self, target_id, comm_channel)
 
@@ -414,11 +455,13 @@ class JavaList(JavaObject):
             return srep[:-2] + ']'
 
 class JavaGateway(JavaObject):
-    """Default class"""
+    """A `JavaGateway` is the Python entry point to the JVM. A `JavaGateway` instance must be connected to a `Gateway` instance on the Java side."""
     
     def __init__(self, comm_channel=None, auto_start=True):
-        # This is the default Java Gateway
-        # The comm channel can be customized to not send anything.
+        """
+        :param comm_channel: communication channel used to connect to the JVM. If `None`, a communication channel based on a socket with the default parameters is created.
+        :param auto_start: if `True`, the JavaGateway connects to the JVM as soon as it is created. Otherwise, you need to explicitly call `gateway.comm_channel.start()`.
+        """
         if comm_channel == None:
             comm_channel = CommChannel()
             

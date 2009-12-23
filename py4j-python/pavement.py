@@ -105,7 +105,7 @@ def html(options):
     builtdocs.move(destdir)
     
 @task
-@needs('html','javadoc')
+@needs('html_complete')
 def deploy():
     docdir = path(DOC_DIR)
     docdir.symlink('htdocs')
