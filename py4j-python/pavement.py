@@ -6,7 +6,6 @@ Created on Dec 19, 2009
 from paver.easy import *
 import paver.doctools
 from paver.setuputils import setup, find_package_data
-from setuptools import find_packages
 
 DOC_DIR = 'doc'
 DIST_DIR = 'dist'
@@ -28,15 +27,13 @@ setup(
     zip_safe = True,
     classifiers=[
           'Development Status :: 3 - Alpha',
-          'Intended Audience :: by End-User Class :: Developers',
-          'License :: OSI-Approved Open Source :: BSD License',
-          'Operating System :: Grouping and Descriptive Categories :: OS Portable (Source code to work with many OS platforms)',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: BSD License',
+          'Operating System :: OS Independent',
           'Programming Language :: Python',
           'Programming Language :: Java',
           'Topic :: Software Development :: Libraries',
           'Topic :: Software Development :: Object Brokering',
-          'Topic :: Software Development :: Virtual Machines',
-          'User Interface :: Non-interactive (Daemon)',
           ],
 
 )
@@ -45,6 +42,9 @@ options(
     sphinx=Bunch(
         docroot="../py4j-web",
         builddir="_build"
+    ),
+    minilib=Bunch(
+        extra_files = ['doctools'],
     )
 )
 
@@ -112,6 +112,10 @@ def deploy():
     scp_dir('htdocs', 'barthe,py4j@web.sourceforge.net:/home/groups/p/py/py4j')
     htdocs = path('htdocs')
     htdocs.remove()
+    
+# You can also deploy to sourceforge:
+# scp Py4J-0.1-py2.6.egg barthe,py4j@frs.sourceforge.net:/home/frs/project/p/py/py4j/0.1
+
     
 @task
 @needs('paver.doctools.doc_clean', 'distutils.command.clean','soft_clean')

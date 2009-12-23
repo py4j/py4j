@@ -1,5 +1,5 @@
 Py4J Java API
-===============
+=============
 
 The Java API is under active development and will be refactored in the next releases. You can browse the `javadoc <_static/javadoc/index.html>`_, but most classes are not documented yet.
 

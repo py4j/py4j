@@ -360,3 +360,11 @@ dl.class {
 ol.arabic li {
 	margin-bottom: 0.3em;
 }
+
+div.highlight {
+	margin: 1.5em 0 1.5em 0;	
+}
+
+.highlight {
+	background-color: #FFFFFF;
+}

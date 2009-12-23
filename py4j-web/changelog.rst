@@ -7,8 +7,8 @@ The changelog describes in plain English the changes that occurred between Py4J 
 Py4J 0.1
 --------
 
-- This is the first release..
-- Basic functionality like connecting to a JVM and calling methods.
+- This is the first release.
+- Basic features like connecting to a JVM and calling methods are implemented.
 - Java List are converted to Python List.
 - Field access, constructors, and static classes are **NOT** accessible yet.
 - Dictionary and Set are only accessible through the Java Map and Set interface for now.
