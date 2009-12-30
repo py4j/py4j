@@ -5,7 +5,15 @@ import java.lang.reflect.Method;
 
 public class ReflectionEngine {
 
-	private LRUCache cache;
+	private final LRUCache<MethodDescriptor, Method> cache;
+	
+	public ReflectionEngine() {
+		this(new LRUCache<MethodDescriptor, Method>());
+	}
+	
+	public ReflectionEngine(LRUCache<MethodDescriptor, Method> cache) {
+		this.cache = cache;
+	}
 	
 	public Field getField() {
 		return null;

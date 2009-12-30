@@ -37,114 +37,123 @@ import org.junit.Before;
 import org.junit.Test;
 
 import py4j.examples.ExampleClass;
-import py4j.examples.ExampleGateway;
+import py4j.examples.ExampleEntryPoint;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DefaultJavaGatewayTest {
 
-	private ExampleGateway gateway;
-	
+	private DefaultGateway gateway;
+	private ExampleEntryPoint entryPoint;
+
 	@Before
 	public void setUp() {
-		gateway = new ExampleGateway();
+		entryPoint = new ExampleEntryPoint();
+		gateway = new DefaultGateway(entryPoint);
 	}
-	
+
 	@After
 	public void tearDown() {
 		gateway.shutdown();
 	}
-	
+
 	@Test
 	public void testNoParam() {
-		String name = gateway.putNewObject(gateway.getNewExample());
+		String name = gateway.putNewObject(entryPoint.getNewExample());
 		ReturnObject obj2 = gateway.invoke("method1", name, null);
 		assertEquals(1, obj2.getPrimitiveObject());
 	}
-	
+
 	@Test
 	public void testVoidMethod() {
-		String name = gateway.putNewObject(gateway.getNewExample());
+		String name = gateway.putNewObject(entryPoint.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
-		args.add(new Argument("This is a String!",false));
+		args.add(new Argument("This is a String!", false));
 		ReturnObject obj2 = gateway.invoke("method2", name, args);
 		assertTrue(obj2.isNull());
 	}
-	
+
 	@Test
 	public void testMethodWithParams() {
-		String name = gateway.putNewObject(gateway.getNewExample());
+		String name = gateway.putNewObject(entryPoint.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
-		args.add(new Argument(1,false));
-		args.add(new Argument(false,false));
+		args.add(new Argument(1, false));
+		args.add(new Argument(false, false));
 		ReturnObject obj2 = gateway.invoke("method3", name, args);
 		assertEquals("Hello World", obj2.getPrimitiveObject());
 	}
-	
+
 	@Test
 	public void testCharMethod() {
-		String name = gateway.putNewObject(gateway.getNewExample());
+		String name = gateway.putNewObject(entryPoint.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument('c', false));
 		ReturnObject obj2 = gateway.invoke("method4", name, args);
-		// Unfortunately, Rhino has no way of distinguishing from chars and strings.
-		assertEquals(3, ((ExampleClass)gateway.getObject(obj2.getName())).getField1());
+		// Unfortunately, Rhino has no way of distinguishing from chars and
+		// strings.
+		assertEquals(3, ((ExampleClass) gateway.getObject(obj2.getName()))
+				.getField1());
 	}
-	
+
 	@Test
 	public void testCharMethod2() {
-		String name = gateway.putNewObject(gateway.getNewExample());
+		String name = gateway.putNewObject(entryPoint.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument('c', false));
 		ReturnObject obj2 = gateway.invoke("method6", name, args);
-		// Unfortunately, Rhino has no way of distinguishing from chars and strings.
-		assertEquals(4, ((ExampleClass)gateway.getObject(obj2.getName())).getField1());
+		// Unfortunately, Rhino has no way of distinguishing from chars and
+		// strings.
+		assertEquals(4, ((ExampleClass) gateway.getObject(obj2.getName()))
+				.getField1());
 	}
-	
+
 	@Test
 	public void testStringMethod() {
-		String name = gateway.putNewObject(gateway.getNewExample());
+		String name = gateway.putNewObject(entryPoint.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument("c", false));
 		ReturnObject obj2 = gateway.invoke("method4", name, args);
-		assertEquals(3, ((ExampleClass)gateway.getObject(obj2.getName())).getField1());
+		assertEquals(3, ((ExampleClass) gateway.getObject(obj2.getName()))
+				.getField1());
 	}
-	
+
 	@Test
 	public void testUsingMethodReturn() {
-		String name = gateway.putNewObject(gateway.getNewExample());
+		String name = gateway.putNewObject(entryPoint.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument("c", false));
 		ReturnObject obj2 = gateway.invoke("method4", name, args);
 		args = new ArrayList<Argument>();
-		args.add(new Argument(obj2.getName(),true));
+		args.add(new Argument(obj2.getName(), true));
 		ReturnObject obj3 = gateway.invoke("method5", name, args);
 		assertEquals(2, obj3.getPrimitiveObject());
 	}
-	
+
 	@Test
 	public void testGetMethodsAsString() {
-		String name = gateway.putNewObject(gateway.getNewExample());
+		String name = gateway.putNewObject(entryPoint.getNewExample());
 		Object obj = gateway.getObject(name);
 		String methods = gateway.getMethodNamesAsString(obj);
-		assertEquals("getClass,equals,getField1,hashCode,method6,setField1,method5,wait,method4,method3,method2,method1,notify,getList,toString,notifyAll,",methods);
+		assertEquals(
+				"getClass,equals,getField1,hashCode,method6,setField1,method5,wait,method4,method3,method2,method1,notify,getList,toString,notifyAll,",
+				methods);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testListMethod() {
-		String name = gateway.putNewObject(gateway.getNewExample());
+		String name = gateway.putNewObject(entryPoint.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument("3", false));
 		ReturnObject obj2 = gateway.invoke("getList", name, args);
-		List<String> myList = (List<String>)gateway.getObject(obj2.getName());
-		assertEquals(myList.size(),3);
-		
+		List<String> myList = (List<String>) gateway.getObject(obj2.getName());
+		assertEquals(myList.size(), 3);
+
 		args = new ArrayList<Argument>();
 		args.add(new Argument("\"3\"", false));
 		gateway.invoke("add", obj2.getName(), args);
-		assertEquals(myList.size(),4);
+		assertEquals(myList.size(), 4);
 	}
-	
+
 }

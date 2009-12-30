@@ -12,7 +12,7 @@ import unittest
 
 
 def start_echo_server():
-    subprocess.call(["java", "-cp", "../../../../py4j/bin/", "py4j.examples.ExampleApplication"])
+    subprocess.call(["java", "-cp", "../../../../py4j-java/bin/", "py4j.examples.ExampleApplication"])
     
     
 def start_echo_server_process():
@@ -63,7 +63,7 @@ class Test(unittest.TestCase):
         self.assertEqual(min(pList), min(jList))
         
     def testJavaListProtocol2(self):
-        ex = self.gateway.getNewExample()
+        ex = self.gateway.entry_point.getNewExample()
         pList = get_list(3)
         pList2 = get_list(4)
         jList = ex.getList(3)

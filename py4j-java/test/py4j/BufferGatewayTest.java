@@ -33,13 +33,13 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import py4j.examples.BufferGateway;
+import py4j.examples.BufferEntryPoint;
 
 public class BufferGatewayTest {
 
 	@Test
 	public void testBufferedGateway1() {
-		BufferGateway.main(null);
+		BufferEntryPoint.main(null);
 		
 		EchoClient client = new EchoClient();
 
@@ -47,7 +47,7 @@ public class BufferGatewayTest {
 			Thread.sleep(250);
 			client.connect();
 			
-			client.write("c\ng\ngetStringBuffer\ne\n");
+			client.write("c\ne\ngetStringBuffer\ne\n");
 			assertEquals(client.getResponse(),"yro0");
 			client.write("c\no0\nappend\nd1.1\ne\n");
 			assertEquals(client.getResponse(),"yro1");
@@ -58,7 +58,7 @@ public class BufferGatewayTest {
 			fail();
 		} finally {
 			client.close();
-			BufferGateway.stopGateway();
+			BufferEntryPoint.stopGateway();
 		}
 	}
 

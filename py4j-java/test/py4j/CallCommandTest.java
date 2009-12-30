@@ -29,6 +29,9 @@
  *******************************************************************************/
 package py4j;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.StringReader;
@@ -39,14 +42,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import py4j.examples.ExampleClass;
-import py4j.examples.ExampleGateway;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import py4j.examples.ExampleEntryPoint;
 
 public class CallCommandTest {
 
-	private ExampleGateway gateway;
+	private ExampleEntryPoint entryPoint;
+	private DefaultGateway gateway;
 	private CallCommand command;
 	private BufferedWriter writer;
 	private StringWriter sWriter;
@@ -54,13 +55,14 @@ public class CallCommandTest {
 
 	@Before
 	public void setUp() {
-		gateway = new ExampleGateway();
+		entryPoint = new ExampleEntryPoint();
+		gateway = new DefaultGateway(entryPoint);
 		gateway.startup();
 		command = new CallCommand();
 		command.init(gateway);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
-		target = gateway.putNewObject(gateway.getNewExample());
+		target = gateway.putNewObject(entryPoint.getNewExample());
 	}
 
 	@After

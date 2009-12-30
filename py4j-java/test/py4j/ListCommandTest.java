@@ -14,11 +14,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import py4j.examples.ExampleGateway;
+import py4j.examples.ExampleEntryPoint;
 
 public class ListCommandTest {
 	
-	private ExampleGateway gateway;
+	private DefaultGateway gateway;
 	private ListCommand command;
 	private BufferedWriter writer;
 	private StringWriter sWriter;
@@ -29,7 +29,7 @@ public class ListCommandTest {
 	
 	@Before
 	public void setUp() {
-		gateway = new ExampleGateway();
+		gateway = new DefaultGateway(new ExampleEntryPoint());
 		gateway.startup();
 		command = new ListCommand();
 		command.init(gateway);

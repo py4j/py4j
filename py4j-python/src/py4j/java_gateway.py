@@ -21,7 +21,7 @@ logger = logging.getLogger("py4j.java_gateway")
 
 BUFFER_SIZE = 4096
 DEFAULT_PORT = 25333
-GATEWAY_OBJECT_ID = 'g'
+ENTRY_POINT_OBJECT_ID = 'e'
 INTEGER_TYPE = 'i'
 BOOLEAN_TYPE = 'b'
 DOUBLE_TYPE = 'd'
@@ -465,7 +465,7 @@ class JavaGateway(JavaObject):
         if comm_channel == None:
             comm_channel = CommChannel()
             
-        JavaObject.__init__(self, GATEWAY_OBJECT_ID, comm_channel)
-        
+        JavaObject.__init__(self, ENTRY_POINT_OBJECT_ID, comm_channel)
+        self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, comm_channel)
         if auto_start:
             self.comm_channel.start()

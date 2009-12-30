@@ -33,7 +33,7 @@ import java.util.List;
 
 public interface Gateway {
 
-	public final static String GATEWAY_OBJECT_ID = "g";
+	public final static String ENTRY_POINT_OBJECT_ID = "e";
 	
 	public List<String> getMethodNames(Object obj);
 	
@@ -49,5 +49,7 @@ public interface Gateway {
 			List<Argument> args);
 	
 	public ReturnObject getReturnObject(Object object);
+	
+	public Object getEntryPoint();
 	
 }

@@ -76,11 +76,21 @@ public class DefaultGateway implements Gateway {
 	private final AtomicInteger argCounter = new AtomicInteger();
 	private final static String OBJECT_NAME_PREFIX = "o";
 	private final static String ARG_NAME_PREFIX = "a";
+	private final Object entryPoint;
 
 	private final Logger logger = Logger.getLogger(DefaultGateway.class
 			.getName());
 
 	private boolean isStarted = false;
+
+	public DefaultGateway(Object entryPoint) {
+		this.entryPoint = entryPoint;
+	}
+
+	@Override
+	public Object getEntryPoint() {
+		return this.entryPoint;
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -115,7 +125,9 @@ public class DefaultGateway implements Gateway {
 	@Override
 	public void startup() {
 		isStarted = true;
-		bindings.put(GATEWAY_OBJECT_ID, this);
+		if (entryPoint != null) {
+			bindings.put(ENTRY_POINT_OBJECT_ID, entryPoint);
+		}
 	}
 
 	@Override
@@ -186,8 +198,7 @@ public class DefaultGateway implements Gateway {
 		ReturnObject returnObject;
 		if (object != null) {
 			if (isPrimitiveObject(object)) {
-				returnObject = ReturnObject
-						.getPrimitiveReturnObject(object);
+				returnObject = ReturnObject.getPrimitiveReturnObject(object);
 			} else if (isList(object)) {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getListReturnObject(objectId,
@@ -195,8 +206,7 @@ public class DefaultGateway implements Gateway {
 			} else {
 				String objectId = putNewObject(object);
 				// TODO Handle lists, maps, etc.
-				returnObject = ReturnObject
-						.getReferenceReturnObject(objectId);
+				returnObject = ReturnObject.getReferenceReturnObject(objectId);
 			}
 		} else {
 			returnObject = ReturnObject.getNullReturnObject();

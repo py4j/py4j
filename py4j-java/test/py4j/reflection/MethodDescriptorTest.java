@@ -19,7 +19,7 @@ public class MethodDescriptorTest {
 			assertEquals(mDesc1, mDesc2);
 			assertEquals(mDesc1.hashCode(), mDesc2.hashCode());
 			assertEquals(mDesc1.getInternalRepresentation(),"p1.Cat.meowmeow(java.lang.String.)");
-
+			assertEquals(mDesc1.toString(), "p1.Cat.meowmeow(java.lang.String.)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

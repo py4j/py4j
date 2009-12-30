@@ -59,23 +59,23 @@ public class GatewayServer implements Runnable {
 
 	private ServerSocket sSocket;
 
-	public GatewayServer(Gateway gateway, int port, int connectTimeout,
+	public GatewayServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout, boolean acceptOnlyOne) {
 		super();
-		this.gateway = gateway;
+		this.gateway = new DefaultGateway(entryPoint);
 		this.port = port;
 		connect_timeout = connectTimeout;
 		read_timeout = readTimeout;
 		this.acceptOnlyOne = acceptOnlyOne;
 	}
 
-	public GatewayServer(Gateway gateway) {
-		this(gateway, DEFAULT_PORT, DEFAULT_CONNECT_TIMEOUT,
+	public GatewayServer(Object entryPoint) {
+		this(entryPoint, DEFAULT_PORT, DEFAULT_CONNECT_TIMEOUT,
 				DEFAULT_READ_TIMEOUT, false);
 	}
 
-	public GatewayServer(Gateway gateway, int port) {
-		this(gateway, port, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT,
+	public GatewayServer(Object entryPoint, int port) {
+		this(entryPoint, port, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT,
 				false);
 	}
 

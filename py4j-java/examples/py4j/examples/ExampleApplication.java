@@ -38,7 +38,7 @@ public class ExampleApplication {
 	 */
 	public static void main(String[] args) {
 		GatewayServer.turnLoggingOff();
-		GatewayServer server = new GatewayServer(new ExampleGateway());
+		GatewayServer server = new GatewayServer(new ExampleEntryPoint());
 		server.start();
 //		try {
 //			Thread.sleep(10000);
