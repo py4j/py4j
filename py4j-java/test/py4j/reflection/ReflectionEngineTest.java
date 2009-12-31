@@ -28,81 +28,54 @@
  *******************************************************************************/
 package py4j.reflection;
 
-import java.lang.reflect.Method;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
 
-@SuppressWarnings("unchecked")
-public class MethodDescriptor {
+import org.junit.Before;
+import org.junit.Test;
 
-	private String internalRepresentation;
-	
-	private String name;
-	
-	private Class container;
-	
-	private Class[] parameters;
-	
-	private final char DOT = '.';
+import p1.Cat;
 
-	public MethodDescriptor(String name, Class container,
-			Class[] parameters) {
-		super();
-		this.name = name;
-		this.container = container;
-		this.parameters = parameters;
-		this.internalRepresentation = buildInternalRepresentation(container, name, parameters);
+public class ReflectionEngineTest {
+
+	private ReflectionEngine rEngine;
+	
+	@Before
+	public void setUp() {
+		rEngine = new ReflectionEngine();
 	}
 	
-	private String buildInternalRepresentation(Class container, String name, Class[] params) {
-		StringBuilder builder = new StringBuilder();
+	@Test
+	public void testGetField() {
+		Cat cat = new Cat();
+		// Private from super
+		assertNull(rEngine.getField(cat, "age"));
 		
-		builder.append(container.getName());
-		builder.append(DOT);
-		builder.append(name);
-		builder.append('(');
-		for (Class param : params) {
-			builder.append(param.getName());
-			builder.append(DOT);
-		}
-		builder.append(')');
+		// Inexistent
+		assertNull(rEngine.getField(cat, "age1"));
 		
-		return builder.toString();
-	}
-
-	public String getInternalRepresentation() {
-		return internalRepresentation;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public Class getContainer() {
-		return container;
-	}
-
-	public Class[] getParameters() {
-		return parameters;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof MethodDescriptor)) {
-			return false;
-		}
+		// Field shadowing
+		assertEquals(rEngine.getField(cat, "age2").getType(),int.class);
+		assertEquals(rEngine.getField(Cat.class, "age2").getType(),int.class);
+		assertEquals(rEngine.getField("p1.Cat", "age2").getType(),int.class);
 		
-		return internalRepresentation.equals(((MethodDescriptor)obj).internalRepresentation);
-	}
-
-	@Override
-	public int hashCode() {
-		return internalRepresentation.hashCode();
-	}
-
-	@Override
-	public String toString() {
-		return internalRepresentation;
+		// Static field
+		assertEquals(rEngine.getField(cat, "CONSTANT").getType(),String.class);
+		
+		// Package 
+		assertNull(rEngine.getField(cat, "age4"));
+		
+		// Protected
+		assertNull(rEngine.getField(cat, "age5"));
 	}
 	
+	@Test
+	public void testGetFieldValue() {
+		Cat cat = new Cat();
+		
+		assertEquals(rEngine.getFieldValue(cat, rEngine.getField(cat, "age2")), 2);
+		assertEquals(rEngine.getFieldValue(cat, rEngine.getField(cat, "CONSTANT")), "Salut!");
+		assertEquals(rEngine.getFieldValue(null, rEngine.getField(cat, "CONSTANT")), "Salut!");
+	}
 	
-
 }

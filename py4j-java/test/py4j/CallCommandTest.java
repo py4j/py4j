@@ -47,7 +47,7 @@ import py4j.examples.ExampleEntryPoint;
 public class CallCommandTest {
 
 	private ExampleEntryPoint entryPoint;
-	private DefaultGateway gateway;
+	private Gateway gateway;
 	private CallCommand command;
 	private BufferedWriter writer;
 	private StringWriter sWriter;
@@ -56,7 +56,7 @@ public class CallCommandTest {
 	@Before
 	public void setUp() {
 		entryPoint = new ExampleEntryPoint();
-		gateway = new DefaultGateway(entryPoint);
+		gateway = new Gateway(entryPoint);
 		gateway.startup();
 		command = new CallCommand();
 		command.init(gateway);

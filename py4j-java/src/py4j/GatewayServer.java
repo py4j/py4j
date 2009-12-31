@@ -62,7 +62,7 @@ public class GatewayServer implements Runnable {
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout, boolean acceptOnlyOne) {
 		super();
-		this.gateway = new DefaultGateway(entryPoint);
+		this.gateway = new Gateway(entryPoint);
 		this.port = port;
 		connect_timeout = connectTimeout;
 		read_timeout = readTimeout;

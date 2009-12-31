@@ -44,13 +44,13 @@ import static org.junit.Assert.assertTrue;
 
 public class DefaultJavaGatewayTest {
 
-	private DefaultGateway gateway;
+	private Gateway gateway;
 	private ExampleEntryPoint entryPoint;
 
 	@Before
 	public void setUp() {
 		entryPoint = new ExampleEntryPoint();
-		gateway = new DefaultGateway(entryPoint);
+		gateway = new Gateway(entryPoint);
 	}
 
 	@After
