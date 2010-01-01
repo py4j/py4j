@@ -19,6 +19,8 @@ public class MethodInvoker {
 	private Method method;
 	
 	private final Logger logger = Logger.getLogger(MethodInvoker.class.getName());
+	
+	public static final MethodInvoker INVALID_INVOKER = new MethodInvoker(null, null, INVALID_INVOKER_COST);
 
 	public MethodInvoker(Method method, TypeConverter[] converters, int cost) {
 		super();
@@ -45,7 +47,7 @@ public class MethodInvoker {
 				}
 			}
 
-			method.invoke(obj, newArguments);
+			returnObject = method.invoke(obj, newArguments);
 		} catch (Exception e) {
 			logger.log(Level.WARNING,"Could not invoke method or received an exception while invoking.",e);
 			throw new Py4JException(e);
@@ -58,10 +60,15 @@ public class MethodInvoker {
 		return method.getReturnType().equals(void.class);
 	}
 	
+	public TypeConverter[] getConverters() {
+		return converters;
+	}
+
 	public static MethodInvoker buildInvoker(Method method, Class<?>[] arguments) {
 		MethodInvoker invoker = null;
 		int size = arguments.length;
 		int cost = 0;
+		int tempCost = -1;
 		Class<?>[] parameters = method.getParameterTypes();
 		List<TypeConverter> converters = new ArrayList<TypeConverter>();
 		if (arguments == null || size == 0) {
@@ -69,30 +76,50 @@ public class MethodInvoker {
 		} else {
 			for (int i = 0; i<size; i++) {
 				if (parameters[i].isAssignableFrom(arguments[i])) {
-					cost += computeCost(parameters[i],arguments[i]);
+					tempCost = TypeUtil.computeDistance(parameters[i],arguments[i]);
 					converters.add(TypeConverter.NO_CONVERTER);
 				} else if (TypeUtil.isNumeric(parameters[i]) && TypeUtil.isNumeric(arguments[i])) {
-					
+					tempCost = TypeUtil.computeNumericConversion(parameters[i], arguments[i], converters);
 				} else if (TypeUtil.isCharacter(parameters[i])) {
-					
+					tempCost = TypeUtil.computeCharacterConversion(parameters[i], arguments[i], converters);
 				} else if (TypeUtil.isBoolean(parameters[i]) && TypeUtil.isBoolean(arguments[i])) {
+					tempCost = 0;
 					converters.add(TypeConverter.NO_CONVERTER);
+				} 
+				
+				if (tempCost != -1) {
+					cost += tempCost;
+					tempCost = -1;
 				} else {
 					cost = -1;
 					break;
 				}
 			}
 		}
-		
-		invoker = new MethodInvoker(method, converters.toArray(new TypeConverter[0]), cost);
+		if (cost == -1) {
+			invoker = INVALID_INVOKER;
+		} else {
+			TypeConverter[] convertersArray = null;
+			if (!allNoConverter(converters)) {
+				convertersArray = converters.toArray(new TypeConverter[0]);
+			}
+			invoker = new MethodInvoker(method, convertersArray, cost);
+		}
 		
 		return invoker;
 	}
-
 	
-
-	private static int computeCost(Class<?> parent, Class<?> child) {
-		return 0;
+	private static boolean allNoConverter(List<TypeConverter> converters) {
+		boolean allNo = true;
+		
+		for (TypeConverter converter : converters) {
+			if (converter != TypeConverter.NO_CONVERTER) {
+				allNo = false;
+				break;
+			}
+		}
+		
+		return allNo;
 	}
 
 }

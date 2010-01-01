@@ -77,13 +77,17 @@ public class Cat extends Animal {
 	public void meow10(float f) {
 		System.out.println("Meowing float " + f);
 	}
-	
+		
 	public void meow11() {
 		System.out.println("Meowing");
 	}
 	
 	public int meow12() {
 		return 1;
+	}
+	
+	public int meow13(long p1, int p2, short p3, byte p4, double p5, Float p6, boolean p7, String p8, char p9) {
+		return 10;
 	}
 	
 }

@@ -8,9 +8,13 @@ public class TypeConverter {
 	public final static int INT_TO_BYTE = 2;
 	public final static int STRING_TO_CHAR = 3;
 
-	private int conversion;
+	private final int conversion;
 
 	public final static TypeConverter NO_CONVERTER = new TypeConverter();
+	public final static TypeConverter FLOAT_CONVERTER = new TypeConverter(DOUBLE_TO_FLOAT);
+	public final static TypeConverter SHORT_CONVERTER = new TypeConverter(INT_TO_SHORT);
+	public final static TypeConverter BYTE_CONVERTER = new TypeConverter(INT_TO_BYTE);
+	public final static TypeConverter CHAR_CONVERTER = new TypeConverter(STRING_TO_CHAR);
 	
 	public TypeConverter() {
 		this(NO_CONVERSION);
@@ -37,7 +41,7 @@ public class TypeConverter {
 			newObject = ((Integer) obj).byteValue();
 			break;
 		case STRING_TO_CHAR:
-			newObject = ((String) obj).charAt(0);
+			newObject = ((CharSequence) obj).charAt(0);
 			break;
 		}
 
