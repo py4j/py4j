@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2009, Barthelemy Dagenais All rights reserved.
+ * Copyright (c) 2009, 2010, Barthelemy Dagenais All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,6 +45,8 @@ public class ReflectionEngine {
 
 	private final Logger logger = Logger.getLogger(ReflectionEngine.class
 			.getName());
+
+	public final static Object RETURN_VOID = new Object();
 
 	public Field getField(Class<?> clazz, String name) {
 		Field field = null;
@@ -95,56 +98,76 @@ public class ReflectionEngine {
 		return fieldValue;
 	}
 
-	public Method getMethod(Class<?> clazz, String name, Class<?>[] parameters) {
-		MethodDescriptor mDescriptor = new MethodDescriptor(name, clazz, parameters);
-		Method method = null;
-		List<Method> acceptableMethods = null;
-		LRUCache<MethodDescriptor, Method> cache = cacheHolder.get();
-		
-		method = cache.get(mDescriptor);
-		
-		if (method == null) {
-			acceptableMethods = getMethodsByNameAndLength(clazz, name, parameters.length);
-			
-			if (acceptableMethods.size() == 1) {
-				method = acceptableMethods.get(0);
-			} else {
-				method = getBestMethod(acceptableMethods, parameters);
-			}
-			
-			cache.put(mDescriptor, method);
-		}
-		
-		return method;
-	}
-
-	private Method getBestMethod(List<Method> acceptableMethods,
+	public MethodInvoker getMethod(Class<?> clazz, String name,
 			Class<?>[] parameters) {
-		List<Method> filteredMethods = new ArrayList<Method>();
-		List<Integer> cost = new ArrayList<Integer>();
-		
-		return null;
-	}
-	
-	private int getCompatibilityCost(Class<?> formal, Class<?> actual) {
-		int cost = -1;
-		
-		return cost;
+		MethodDescriptor mDescriptor = new MethodDescriptor(name, clazz,
+				parameters);
+		MethodInvoker mInvoker = null;
+		List<Method> acceptableMethods = null;
+		LRUCache<MethodDescriptor, MethodInvoker> cache = cacheHolder.get();
+
+		mInvoker = cache.get(mDescriptor);
+
+		if (mInvoker == null) {
+			acceptableMethods = getMethodsByNameAndLength(clazz, name,
+					parameters.length);
+
+			if (acceptableMethods.size() == 1) {
+				mInvoker = MethodInvoker.buildInvoker(acceptableMethods.get(0),
+						parameters);
+			} else {
+				mInvoker = getBestMethod(acceptableMethods, parameters);
+			}
+
+			if (mInvoker != null && mInvoker.getCost() != -1) {
+				cache.put(mDescriptor, mInvoker);
+			} else {
+				String errorMessage = "Method " + name + "("
+						+ Arrays.toString(parameters) + ") does not exist";
+				logger.log(Level.WARNING, errorMessage);
+				throw new Py4JException(errorMessage);
+			}
+		}
+
+		return mInvoker;
 	}
 
-	private List<Method> getMethodsByNameAndLength(Class<?> clazz, String name, int length) {
+	private MethodInvoker getBestMethod(List<Method> acceptableMethods,
+			Class<?>[] parameters) {
+		MethodInvoker lowestCost = null;
+
+		for (Method method : acceptableMethods) {
+			MethodInvoker temp = MethodInvoker.buildInvoker(method, parameters);
+			int cost = temp.getCost();
+			if (cost == -1) {
+				continue;
+			} else if (cost == 0) {
+				lowestCost = temp;
+				break;
+			} else if (lowestCost == null || cost < lowestCost.getCost()) {
+				lowestCost = temp;
+			}
+		}
+
+		return lowestCost;
+	}
+
+	private List<Method> getMethodsByNameAndLength(Class<?> clazz, String name,
+			int length) {
 		List<Method> methods = new ArrayList<Method>();
-		
+
 		for (Method method : clazz.getMethods()) {
-			if (method.getName().equals(name) && method.getParameterTypes().length == length) {
+			if (method.getName().equals(name)
+					&& method.getParameterTypes().length == length) {
 				methods.add(method);
 			}
 		}
-		
+
 		return methods;
 	}
 
-	public Method getMethod(String classFQN, String name, Object[] parameters) {
+	public MethodInvoker getMethod(String classFQN, String name,
+			Object[] parameters) {
 		Class<?> clazz = null;
 
 		try {
@@ -158,30 +181,40 @@ public class ReflectionEngine {
 		return getMethod(clazz, name, getClassParameters(parameters));
 	}
 
-	public Method getMethod(Object object, String name, Object[] parameters) {
-		return getMethod(object.getClass(), name, getClassParameters(parameters));
+	public MethodInvoker getMethod(Object object, String name,
+			Object[] parameters) {
+		return getMethod(object.getClass(), name,
+				getClassParameters(parameters));
 	}
-	
+
 	private Class<?>[] getClassParameters(Object[] parameters) {
 		int size = parameters.length;
 		Class<?>[] classes = new Class<?>[size];
-		
-		for (int i = 0; i<size; i++) {
+
+		for (int i = 0; i < size; i++) {
 			classes[i] = parameters[i].getClass();
 		}
-		
+
 		return classes;
 	}
 
-	public Object invokeMethod(Object object, String name, Object[] parameters) {
-		return null;
+	public Object invokeMethod(MethodInvoker invoker, Object object,
+			Object[] parameters) {
+		Object returnObject = null;
+
+		returnObject = invoker.invoke(object, parameters);
+		if (invoker.isVoid()) {
+			returnObject = RETURN_VOID;
+		}
+
+		return returnObject;
 	}
 
-	private static ThreadLocal<LRUCache<MethodDescriptor, Method>> cacheHolder = new ThreadLocal<LRUCache<MethodDescriptor, Method>>() {
+	private static ThreadLocal<LRUCache<MethodDescriptor, MethodInvoker>> cacheHolder = new ThreadLocal<LRUCache<MethodDescriptor, MethodInvoker>>() {
 
 		@Override
-		protected LRUCache<MethodDescriptor, Method> initialValue() {
-			return new LRUCache<MethodDescriptor, Method>(cacheSize);
+		protected LRUCache<MethodDescriptor, MethodInvoker> initialValue() {
+			return new LRUCache<MethodDescriptor, MethodInvoker>(cacheSize);
 		}
 
 	};
