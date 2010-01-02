@@ -36,6 +36,8 @@ import java.util.Set;
 
 public class TypeUtil {
 	private static Set<String> numericTypes;
+	
+	public final static int DISTANCE_FACTOR = 100;
 
 	static {
 		numericTypes = new HashSet<String>();
@@ -124,6 +126,10 @@ public class TypeUtil {
 					new HashSet<String>(), Arrays.asList(child.getInterfaces()));
 		}
 
+		if (distance != -1) {
+			distance *= DISTANCE_FACTOR;
+		}
+		
 		return distance;
 	}
 

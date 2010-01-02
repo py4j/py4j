@@ -169,9 +169,14 @@ public class MethodInvokerTest {
 			assertNull(invoker.invoke(tInvoker, new Object[] {new A(), new V(), new I0() {}, new J0() {}}));
 			
 			invoker = MethodInvoker.buildInvoker(m, new Class[] {B.class, W.class, I2.class, J0.class});
-			assertEquals(4, invoker.getCost());
+			assertEquals(400, invoker.getCost());
 			assertNull(invoker.getConverters());
 			assertNull(invoker.invoke(tInvoker, new Object[] {new B(), new W(), new I2() {}, new J0() {}}));
+			
+			m = TestInvoker.class.getMethod("m2", String.class, Object.class);
+			invoker = MethodInvoker.buildInvoker(m, new Class[] {String.class, String.class});
+			assertEquals(100, invoker.getCost());
+			assertNull(invoker.getConverters());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -182,6 +187,10 @@ public class MethodInvokerTest {
 
 class TestInvoker {
 	public void m1(A a, V v, I0 i0, J0 j0) {
+		
+	}
+	
+	public void m2(String s1, Object o1) {
 		
 	}
 }

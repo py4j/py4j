@@ -61,6 +61,10 @@ public class MethodInvoker {
 		return cost;
 	}
 
+	public Method getMethod() {
+		return method;
+	}
+
 	public Object invoke(Object obj, Object[] arguments) {
 		Object returnObject = null;
 

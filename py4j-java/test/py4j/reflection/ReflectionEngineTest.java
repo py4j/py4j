@@ -28,8 +28,12 @@
  *******************************************************************************/
 package py4j.reflection;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,43 +43,171 @@ import p1.Cat;
 public class ReflectionEngineTest {
 
 	private ReflectionEngine rEngine;
-	
+
 	@Before
 	public void setUp() {
 		rEngine = new ReflectionEngine();
 	}
-	
+
 	@Test
 	public void testGetField() {
 		Cat cat = new Cat();
 		// Private from super
 		assertNull(rEngine.getField(cat, "age"));
-		
+
 		// Inexistent
 		assertNull(rEngine.getField(cat, "age1"));
-		
+
 		// Field shadowing
-		assertEquals(rEngine.getField(cat, "age2").getType(),int.class);
-		assertEquals(rEngine.getField(Cat.class, "age2").getType(),int.class);
-		assertEquals(rEngine.getField("p1.Cat", "age2").getType(),int.class);
-		
+		assertEquals(rEngine.getField(cat, "age2").getType(), int.class);
+		assertEquals(rEngine.getField(Cat.class, "age2").getType(), int.class);
+		assertEquals(rEngine.getField("p1.Cat", "age2").getType(), int.class);
+
 		// Static field
-		assertEquals(rEngine.getField(cat, "CONSTANT").getType(),String.class);
-		
-		// Package 
+		assertEquals(rEngine.getField(cat, "CONSTANT").getType(), String.class);
+
+		// Package
 		assertNull(rEngine.getField(cat, "age4"));
-		
+
 		// Protected
 		assertNull(rEngine.getField(cat, "age5"));
 	}
-	
+
 	@Test
 	public void testGetFieldValue() {
 		Cat cat = new Cat();
-		
-		assertEquals(rEngine.getFieldValue(cat, rEngine.getField(cat, "age2")), 2);
-		assertEquals(rEngine.getFieldValue(cat, rEngine.getField(cat, "CONSTANT")), "Salut!");
-		assertEquals(rEngine.getFieldValue(null, rEngine.getField(cat, "CONSTANT")), "Salut!");
+
+		assertEquals(rEngine.getFieldValue(cat, rEngine.getField(cat, "age2")),
+				2);
+		assertEquals(rEngine.getFieldValue(cat, rEngine.getField(cat,
+				"CONSTANT")), "Salut!");
+		assertEquals(rEngine.getFieldValue(null, rEngine.getField(cat,
+				"CONSTANT")), "Salut!");
+	}
+
+	@Test
+	public void testGetMethod() {
+		try {
+			ReflectionEngine engine = new ReflectionEngine();
+			TestEngine2 tEngine = new TestEngine2();
+			MethodInvoker mInvoker = engine.getMethod(tEngine, "method1",
+					new Object[] { new Object(), new Object() });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
+					new Class[] { Object.class, Object.class });
+
+			// Test cache:
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
+					new Object(), new Object() });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
+					new Class[] { Object.class, Object.class });
+
+			// Test one only
+			mInvoker = engine.getMethod(tEngine, "method2",
+					new Object[] { new Object() });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
+					new Class[] { Object.class });
+			
+			// Test no param
+			mInvoker = engine.getMethod(tEngine, "method1",
+					new Object[] {});
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
+					new Class[] {});
+
+			// Test no match
+			try {
+				mInvoker = engine.getMethod(tEngine, "method3",
+						new Object[] { new Object() });
+				fail();
+			} catch (Exception e) {
+			}
+
+			// Test one invalid
+			try {
+				mInvoker = engine.getMethod(tEngine, "method2", new Object[] {
+						new Object(), new Object() });
+				fail();
+			} catch (Exception e) {
+			}
+
+			// Test many, but invalid
+			try {
+				mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
+						new Object(), new Object(), new Object() });
+				fail();
+			} catch (Exception e) {
+			}
+
+			// Test many
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
+					new String(), new ArrayList<String>() });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
+					new Class[] { String.class, Object.class });
+			
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
+					new String(), new String() });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
+					new Class[] { String.class, char.class });
+			
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
+					2, 2.2 });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
+					new Class[] { int.class, double.class });
+			
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
+					"2", true });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
+					new Class[] { Object.class, Boolean.class });
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+}
+
+class TestEngine {
+
+	public int method1(Object obj1, Object obj2) {
+		return 2;
+	}
+
+	public void method1(String s1, Object obj2) {
+
+	}
+
+	public boolean method1(String s1, char c2) {
+		return true;
+	}
+
+	public void method2(Object obj1) {
+
 	}
 	
+	public void method1() {
+		
+	}
+}
+
+class TestEngine2 extends TestEngine {
+
+	public int method1(Object obj1, Object obj2) {
+		return 3;
+	}
+
+	public void method1(long l1, float f2) {
+		// Not reachable because int, double is closer to python than long float
+	}
+
+	public void method1(short s1, double d2) {
+		// Still unreachable
+	}
+
+	public int method1(int i1, double d2) {
+		return 2;
+	}
+
+	public void method1(Object obj1, Boolean b2) {
+
+	}
+
 }
