@@ -21,7 +21,7 @@ logger = logging.getLogger("py4j.java_gateway")
 
 BUFFER_SIZE = 4096
 DEFAULT_PORT = 25333
-ENTRY_POINT_OBJECT_ID = 'e'
+ENTRY_POINT_OBJECT_ID = 't'
 INTEGER_TYPE = 'i'
 BOOLEAN_TYPE = 'b'
 DOUBLE_TYPE = 'd'
@@ -29,6 +29,7 @@ STRING_TYPE = 's'
 REFERENCE_TYPE = 'r'
 LIST_TYPE = 'l'
 NULL_TYPE = 'n'
+VOID_TYPE = 'v'
 END = 'e'
 ERROR = 'x'
 SUCCESS = 'y'
@@ -82,6 +83,8 @@ def get_return_value(answer, comm_channel, target_id = None, name = None):
         raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))
     elif answer[1] == NULL_TYPE:
         return None
+    elif answer[1] == VOID_TYPE:
+        return
     elif answer[1] == REFERENCE_TYPE:
         return JavaObject(answer[2:], comm_channel)
     elif answer[1] == LIST_TYPE:
@@ -128,11 +131,16 @@ class CommChannel(object):
         self.socket.connect((self.address, self.port))
         self.is_connected = True
     
-    def stop(self):
+    def stop(self, throw_exception=False):
         """Stops the communication channel by closing the socket."""
-        self.socket.shutdown(socket.SHUT_RDWR)
-        self.socket.close()
-        self.is_connected = False
+        try:
+            self.socket.shutdown(socket.SHUT_RDWR)
+            self.socket.close()
+        except Exception as e:
+            if throw_exception:
+                raise e
+        finally:
+            self.is_connected = False
         
     def shutdown(self):
         """Sends a shutdown command to the gateway. This will close the gateway server: all active 

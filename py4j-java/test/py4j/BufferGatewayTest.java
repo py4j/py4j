@@ -47,7 +47,7 @@ public class BufferGatewayTest {
 			Thread.sleep(250);
 			client.connect();
 			
-			client.write("c\ne\ngetStringBuffer\ne\n");
+			client.write("c\nt\ngetStringBuffer\ne\n");
 			assertEquals(client.getResponse(),"yro0");
 			client.write("c\no0\nappend\nd1.1\ne\n");
 			assertEquals(client.getResponse(),"yro1");

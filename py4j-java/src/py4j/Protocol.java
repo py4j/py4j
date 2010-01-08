@@ -72,8 +72,7 @@ public class Protocol {
 	// OUTPUT PROTOCOL
 	public final static char ERROR = 'x';
 	public final static char SUCCESS = 'y';
-	// TODO to change to v
-	public final static char VOID = 'n';
+	public final static char VOID = 'v';
 	
 	public final static String ERROR_COMMAND = "x";
 
@@ -292,6 +291,8 @@ public class Protocol {
 			builder.append(SUCCESS);
 			if (rObject.isNull()) {
 				builder.append(NULL_TYPE);
+			} else if (rObject.isVoid()) {
+				builder.append(VOID);
 			} else if (rObject.isList()) {
 				builder.append(LIST_TYPE);
 				builder.append(rObject.getName());

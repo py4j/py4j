@@ -38,6 +38,7 @@ public class ReturnObject {
 	private boolean isList;
 	private boolean isNull;
 	private boolean isError;
+	private boolean isVoid;
 	private int size;
 
 	private ReturnObject() {
@@ -67,6 +68,12 @@ public class ReturnObject {
 	public static ReturnObject getNullReturnObject() {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isNull = true;
+		return rObject;
+	}
+	
+	public static ReturnObject getVoidReturnObject() {
+		ReturnObject rObject = new ReturnObject();
+		rObject.isVoid = true;
 		return rObject;
 	}
 	
@@ -140,6 +147,13 @@ public class ReturnObject {
 		this.isReference = isReference;
 	}
 
-	
+	public boolean isVoid() {
+		return isVoid;
+	}
+
+	public void setVoid(boolean isVoid) {
+		this.isVoid = isVoid;
+	}
+
 	
 }

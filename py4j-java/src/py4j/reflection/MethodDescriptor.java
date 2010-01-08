@@ -28,7 +28,6 @@
  *******************************************************************************/
 package py4j.reflection;
 
-import java.lang.reflect.Method;
 
 @SuppressWarnings("unchecked")
 public class MethodDescriptor {

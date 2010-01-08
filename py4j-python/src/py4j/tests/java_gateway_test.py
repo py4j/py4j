@@ -51,7 +51,7 @@ class ProtocolTest(unittest.TestCase):
         testChannel = TestCommChannel()
         gateway = JavaGateway(testChannel, True)
         e = gateway.getExample()
-        self.assertEqual('c\ne\ngetExample\ne\n',testChannel.last_message)
+        self.assertEqual('c\nt\ngetExample\ne\n',testChannel.last_message)
         e.method1(1,True,'Hello\nWorld',e,None,1.5)
         self.assertEqual('c\no0\nmethod1\ni1\nbTrue\nsHello\\nWorld\nro0\nn\nd1.5\ne\n',testChannel.last_message)
     
@@ -101,15 +101,14 @@ class IntegrationTest(unittest.TestCase):
             testSocket.sendall('yro1\n'.encode('utf-8'))
             testSocket.sendall('ysHello World2\n'.encode('utf-8'))
             testSocket.close()
-        
+            time.sleep(1)
+            
             gateway = JavaGateway()
             ex = gateway.getNewExample()
             response = ex.method3(1, True)
-            print(response)
             self.assertEqual('Hello World',response)
             ex2 = gateway.entry_point.getNewExample();
             response = ex2.method3(1, True)
-            print(response)
             self.assertEqual('Hello World2',response)
             
             gateway.comm_channel.stop()
@@ -123,6 +122,7 @@ class IntegrationTest(unittest.TestCase):
             testSocket.sendall('yro0\n'.encode('utf-8'))
             testSocket.sendall('x\n')
             testSocket.close()
+            time.sleep(1)
             
             gateway = JavaGateway()
             ex = gateway.getNewExample()

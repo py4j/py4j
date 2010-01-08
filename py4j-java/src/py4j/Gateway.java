@@ -33,15 +33,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-
+import py4j.reflection.MethodInvoker;
 import py4j.reflection.ReflectionEngine;
 
 /**
@@ -70,29 +68,26 @@ import py4j.reflection.ReflectionEngine;
  */
 public class Gateway {
 
-	public final static String ENTRY_POINT_OBJECT_ID = "e";
+	public final static String ENTRY_POINT_OBJECT_ID = "t";
 
-	private final ScriptEngineManager mgr = new ScriptEngineManager();
-	private final ScriptEngine jsEngine = mgr.getEngineByName("JavaScript");
-	private final Bindings bindings = jsEngine
-			.getBindings(ScriptContext.ENGINE_SCOPE);
+	private final Map<String, Object> bindings = new ConcurrentHashMap<String, Object>();
 	private final AtomicInteger objCounter = new AtomicInteger();
 	private final AtomicInteger argCounter = new AtomicInteger();
 	private final static String OBJECT_NAME_PREFIX = "o";
-	private final static String ARG_NAME_PREFIX = "a";
 	private final Object entryPoint;
 	private final ReflectionEngine rEngine = new ReflectionEngine();
 
 	private final Logger logger = Logger.getLogger(Gateway.class.getName());
 
 	private boolean isStarted = false;
-	
+
+	@SuppressWarnings("unused")
 	private boolean cleanUpConnection = false;
 
 	public Gateway(Object entryPoint) {
-		this(entryPoint,false);
+		this(entryPoint, false);
 	}
-	
+
 	public Gateway(Object entryPoint, boolean cleanUpConnection) {
 		this.entryPoint = entryPoint;
 		this.cleanUpConnection = cleanUpConnection;
@@ -125,9 +120,9 @@ public class Gateway {
 	}
 
 	public void closeConnection() {
-		
+
 	}
-	
+
 	public void shutdown() {
 		isStarted = false;
 		bindings.clear();
@@ -170,7 +165,7 @@ public class Gateway {
 		return id;
 	}
 
-	protected Bindings getBindings() {
+	protected Map<String, Object> getBindings() {
 		return bindings;
 	}
 
@@ -180,22 +175,20 @@ public class Gateway {
 			args = new ArrayList<Argument>();
 		}
 		ReturnObject returnObject = null;
-		List<String> tempArgsIds = new ArrayList<String>();
+		List<Object> parametersList = new ArrayList<Object>();
 		try {
-			StringBuilder methodCall = new StringBuilder();
-			methodCall.append(targetObjectId);
-			methodCall.append(".");
-			methodCall.append(methodName);
-			methodCall.append(buildArgs(args, tempArgsIds));
-			methodCall.append(";");
-			logger.info("Calling: " + methodCall.toString());
-			Object object = jsEngine.eval(methodCall.toString());
+			Object targetObject = bindings.get(targetObjectId);
+			buildArgs(args, parametersList);
+			logger.info("Calling: " + methodName);
+			Object[] parameters = parametersList.toArray();
+			MethodInvoker method = rEngine.getMethod(targetObject, methodName,
+					parameters);
+			Object object = rEngine.invokeMethod(targetObject, method,
+					parameters);
 			returnObject = getReturnObject(object);
 			trackConnectionObject(returnObject);
 		} catch (Exception e) {
 			throw new Py4JException(e);
-		} finally {
-			cleanTempArgs(tempArgsIds);
 		}
 
 		return returnObject;
@@ -214,6 +207,8 @@ public class Gateway {
 		if (object != null) {
 			if (isPrimitiveObject(object)) {
 				returnObject = ReturnObject.getPrimitiveReturnObject(object);
+			} else if (object == ReflectionEngine.RETURN_VOID) {
+				returnObject = ReturnObject.getVoidReturnObject();
 			} else if (isList(object)) {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getListReturnObject(objectId,
@@ -239,35 +234,15 @@ public class Gateway {
 		return object instanceof List;
 	}
 
-	private void cleanTempArgs(List<String> tempArgsIds) {
-		for (String argId : tempArgsIds) {
-			bindings.remove(argId);
-		}
-	}
-
-	private String buildArgs(List<Argument> args, List<String> tempArgsIds) {
-		StringBuilder argsString = new StringBuilder();
-		argsString.append('(');
-		int i = 0;
+	private void buildArgs(List<Argument> args, List<Object> parametersList) {
 		for (Argument arg : args) {
-			if (i != 0) {
-				argsString.append(',');
-			}
-
-			String argumentRef = arg.getValue().toString();
 			if (!arg.isReference()) {
-				String tempArgId = ARG_NAME_PREFIX
-						+ argCounter.getAndIncrement();
-				bindings.put(tempArgId, arg.getValue());
-				tempArgsIds.add(tempArgId);
-				argumentRef = tempArgId;
+				parametersList.add(arg.getValue());
+			} else {
+				parametersList.add(bindings.get(arg.getValue().toString()));
 			}
 
-			argsString.append(argumentRef);
-			++i;
 		}
-		argsString.append(')');
-		return argsString.toString();
 	}
 
 	private static ThreadLocal<Set<String>> connectionObjects = new ThreadLocal<Set<String>>() {

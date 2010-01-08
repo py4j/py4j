@@ -78,7 +78,7 @@ public class MethodInvoker {
 					newArguments[i] = converters[i].convert(arguments[i]);
 				}
 			}
-
+			method.setAccessible(true);
 			returnObject = method.invoke(obj, newArguments);
 		} catch (Exception e) {
 			logger.log(Level.WARNING,"Could not invoke method or received an exception while invoking.",e);

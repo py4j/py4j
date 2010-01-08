@@ -34,16 +34,12 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Method;
 import java.net.Socket;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import py4j.reflection.LRUCache;
-import py4j.reflection.MethodDescriptor;
 
 public class GatewayConnection implements Runnable {
 
@@ -55,7 +51,6 @@ public class GatewayConnection implements Runnable {
 	private final BufferedReader reader;
 	private final Map<String,Command> commands;
 	private final Logger logger = Logger.getLogger(GatewayConnection.class.getName());
-	private final LRUCache<MethodDescriptor, Method> cache;
 	
 	public GatewayConnection(GatewayServer gatewayServer, Gateway gateway, Socket socket) throws IOException {
 		super();
@@ -65,7 +60,6 @@ public class GatewayConnection implements Runnable {
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
 		this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String,Command>();
-		this.cache = new LRUCache<MethodDescriptor, Method>();
 		initCommands(gateway);
 		Thread t = new Thread(this);
 		t.start();

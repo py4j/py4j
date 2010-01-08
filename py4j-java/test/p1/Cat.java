@@ -36,6 +36,7 @@ public class Cat extends Animal {
 	
 	public static final String CONSTANT = "Salut!";
 	
+	@SuppressWarnings("unused")
 	private String age3 = "";
 	
 	double age4 = 2.2;
@@ -58,6 +59,7 @@ public class Cat extends Animal {
 		System.out.println("meowobjectcat");
 	}
 	
+	@SuppressWarnings("unused")
 	private void meow2(Cat cat) {
 		System.out.println("meowcatcat");
 	}

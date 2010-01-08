@@ -71,7 +71,7 @@ public class DefaultJavaGatewayTest {
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument("This is a String!", false));
 		ReturnObject obj2 = gateway.invoke("method2", name, args);
-		assertTrue(obj2.isNull());
+		assertTrue(obj2.isVoid());
 	}
 
 	@Test
@@ -90,9 +90,10 @@ public class DefaultJavaGatewayTest {
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument('c', false));
 		ReturnObject obj2 = gateway.invoke("method4", name, args);
-		// Unfortunately, Rhino has no way of distinguishing from chars and
-		// strings.
-		assertEquals(3, ((ExampleClass) gateway.getObject(obj2.getName()))
+		
+		// In practice, the argument is a string when it comes from python
+		// So String parameters ALWAYS hide chars.
+		assertEquals(1, ((ExampleClass) gateway.getObject(obj2.getName()))
 				.getField1());
 	}
 
@@ -102,8 +103,6 @@ public class DefaultJavaGatewayTest {
 		List<Argument> args = new ArrayList<Argument>();
 		args.add(new Argument('c', false));
 		ReturnObject obj2 = gateway.invoke("method6", name, args);
-		// Unfortunately, Rhino has no way of distinguishing from chars and
-		// strings.
 		assertEquals(4, ((ExampleClass) gateway.getObject(obj2.getName()))
 				.getField1());
 	}
@@ -145,7 +144,7 @@ public class DefaultJavaGatewayTest {
 	public void testListMethod() {
 		String name = gateway.putNewObject(entryPoint.getNewExample());
 		List<Argument> args = new ArrayList<Argument>();
-		args.add(new Argument("3", false));
+		args.add(new Argument(3, false));
 		ReturnObject obj2 = gateway.invoke("getList", name, args);
 		List<String> myList = (List<String>) gateway.getObject(obj2.getName());
 		assertEquals(myList.size(), 3);

@@ -88,7 +88,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yn", sWriter.toString());
+			assertEquals("yv", sWriter.toString());
 			assertEquals(list.get(0), "1");
 			assertEquals(list.get(3), "9");
 		} catch (Exception e) {
@@ -116,7 +116,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yn", sWriter.toString());
+			assertEquals("yv", sWriter.toString());
 			assertEquals(list.get(0), "2");
 			assertEquals(list.get(1), "3");
 			assertEquals(list.get(2), "9");
@@ -133,7 +133,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yn", sWriter.toString());
+			assertEquals("yv", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -268,14 +268,14 @@ public class ListCommandTest {
 			assertEquals(4, list.size());
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yn", sWriter.toString());
+			assertEquals("yv", sWriter.toString());
 			assertEquals(12, list.size());
 			
 			// l *= -1
 			inputCommand = ListCommand.LIST_IMULT_COMMAND + "\n" + target + "\ni-1\ne\n";
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ynyn", sWriter.toString());
+			assertEquals("yvyv", sWriter.toString());
 			assertEquals(0, list.size());
 		} catch (Exception e) {
 			e.printStackTrace();

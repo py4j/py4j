@@ -89,7 +89,7 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yn", sWriter.toString());
+			assertEquals("yv", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

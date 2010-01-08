@@ -198,7 +198,7 @@ public class ReflectionEngine {
 		return classes;
 	}
 
-	public Object invokeMethod(MethodInvoker invoker, Object object,
+	public Object invokeMethod(Object object, MethodInvoker invoker,
 			Object[] parameters) {
 		Object returnObject = null;
 

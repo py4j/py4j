@@ -31,6 +31,7 @@ package py4j.reflection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@SuppressWarnings("hiding")
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
 	private static final long serialVersionUID = -3090703237387586885L;
