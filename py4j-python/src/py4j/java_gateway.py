@@ -21,7 +21,11 @@ logger = logging.getLogger("py4j.java_gateway")
 
 BUFFER_SIZE = 4096
 DEFAULT_PORT = 25333
+
+# Entry point
 ENTRY_POINT_OBJECT_ID = 't'
+
+# Types
 INTEGER_TYPE = 'i'
 BOOLEAN_TYPE = 'b'
 DOUBLE_TYPE = 'd'
@@ -30,22 +34,26 @@ REFERENCE_TYPE = 'r'
 LIST_TYPE = 'l'
 NULL_TYPE = 'n'
 VOID_TYPE = 'v'
+
+# Protocol
 END = 'e'
 ERROR = 'x'
 SUCCESS = 'y'
 
-CALL_COMMAND = 'c\n'
-SHUTDOWN_COMMAND = 's\n'
-LIST_COMMAND = 'l\n'
-LIST_SORT_COMMAND = 's\n'
-LIST_REVERSE_COMMAND = 'r\n'
-LIST_SLICE_COMMAND = 'l\n'
+# Commands
+CALL_COMMAND_NAME = 'c\n'
+STOP_SERVER_COMMAND_NAME = 's\n'
+LIST_COMMAND_NAME = 'l\n'
 
-# TODO
-LIST_CONCAT_COMMAND = 'a\n'
-LIST_MULT_COMMAND = 'm\n'
-LIST_IMULT_COMMAND = 'i\n'
-LIST_COUNT_COMMAND = 'f\n'
+
+# List subcommands
+LIST_SORT_SUBCOMMAND_NAME = 's\n'
+LIST_REVERSE_SUBCOMMAND_NAME = 'r\n'
+LIST_SLICE_SUBCOMMAND_NAME = 'l\n'
+LIST_CONCAT_SUBCOMMAND_NAME = 'a\n'
+LIST_MULT_SUBCOMMAND_NAME = 'm\n'
+LIST_IMULT_SUBCOMMAND_NAME = 'i\n'
+LIST_COUNT_SUBCOMMAND_NAME = 'f\n'
 
 
 def escape_new_line(original):
@@ -147,7 +155,7 @@ class CommChannel(object):
         connections will be closed. This may be useful if the lifecycle of the Java program must be 
         tied to the Python program."""
         try:
-            self.socket.sendall(SHUTDOWN_COMMAND.encode('utf-8'))
+            self.socket.sendall(STOP_SERVER_COMMAND_NAME.encode('utf-8'))
             self.socket.close()
             self.is_connected = False
         except Exception:
@@ -189,7 +197,7 @@ class JavaMember(object):
         
     def __call__(self, *args):
         args_command = ''.join([get_command_part(arg) for arg in args])
-        command = CALL_COMMAND + self.command_header + args_command + END + '\n'
+        command = CALL_COMMAND_NAME + self.command_header + args_command + END + '\n'
         answer = self.comm_channel.send_command(command)
         return_value = get_return_value(answer, self.comm_channel, self.target_id, self.name)
         return return_value
@@ -352,7 +360,7 @@ class JavaList(JavaObject):
             raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
     
     def __get_slice(self, indices):
-        command = LIST_COMMAND + LIST_SLICE_COMMAND + self.get_object_id() + '\n'
+        command = LIST_COMMAND_NAME + LIST_SLICE_SUBCOMMAND_NAME + self.get_object_id() + '\n'
         for index in indices:
             command += get_command_part(index)
         command += END + '\n'
@@ -385,7 +393,7 @@ class JavaList(JavaObject):
         return self.contains(item)
         
     def __add__(self, other):
-        command = LIST_COMMAND + LIST_CONCAT_COMMAND + self.get_object_id() + '\n' + other.get_object_id() + '\n' + END + '\n'
+        command = LIST_COMMAND_NAME + LIST_CONCAT_SUBCOMMAND_NAME + self.get_object_id() + '\n' + other.get_object_id() + '\n' + END + '\n'
         answer = self.comm_channel.send_command(command)
         return get_return_value(answer, self.comm_channel)
     
@@ -397,7 +405,7 @@ class JavaList(JavaObject):
         return self
     
     def __mul__(self, other):
-        command = LIST_COMMAND + LIST_MULT_COMMAND + self.get_object_id() + '\n' + get_command_part(other) + END + '\n'
+        command = LIST_COMMAND_NAME + LIST_MULT_SUBCOMMAND_NAME + self.get_object_id() + '\n' + get_command_part(other) + END + '\n'
         answer = self.comm_channel.send_command(command)
         return get_return_value(answer, self.comm_channel)
     
@@ -405,7 +413,7 @@ class JavaList(JavaObject):
         return self.__mul__(other)
     
     def __imul__(self, other):
-        command = LIST_COMMAND + LIST_IMULT_COMMAND + self.get_object_id() + '\n' + get_command_part(other) + END + '\n'
+        command = LIST_COMMAND_NAME + LIST_IMULT_SUBCOMMAND_NAME + self.get_object_id() + '\n' + get_command_part(other) + END + '\n'
         self.comm_channel.send_command(command)
         return self
         
@@ -433,16 +441,16 @@ class JavaList(JavaObject):
         return self.indexOf(value)
     
     def count(self, value):
-        command = LIST_COMMAND + LIST_COUNT_COMMAND + self.get_object_id() + '\n' + get_command_part(value) + END + '\n'
+        command = LIST_COMMAND_NAME + LIST_COUNT_SUBCOMMAND_NAME + self.get_object_id() + '\n' + get_command_part(value) + END + '\n'
         answer = self.comm_channel.send_command(command)
         return get_return_value(answer, self.comm_channel)
     
     def sort(self):
-        command = LIST_COMMAND + LIST_SORT_COMMAND + self.get_object_id() + '\n' + END + '\n'
+        command = LIST_COMMAND_NAME + LIST_SORT_SUBCOMMAND_NAME + self.get_object_id() + '\n' + END + '\n'
         self.comm_channel.send_command(command)
     
     def reverse(self):
-        command = LIST_COMMAND + LIST_REVERSE_COMMAND + self.get_object_id() + '\n' + END + '\n'
+        command = LIST_COMMAND_NAME + LIST_REVERSE_SUBCOMMAND_NAME + self.get_object_id() + '\n' + END + '\n'
         self.comm_channel.send_command(command)
     
     # remove is automatically supported by Java...
@@ -463,7 +471,15 @@ class JavaList(JavaObject):
             return srep[:-2] + ']'
 
 class JavaGateway(JavaObject):
-    """A `JavaGateway` is the Python entry point to the JVM. A `JavaGateway` instance must be connected to a `Gateway` instance on the Java side."""
+    """A `JavaGateway` is the main interaction point between a Python VM and a JVM. 
+    
+    * A `JavaGateway` instance is connected to a `Gateway` instance on the Java side.
+    
+    * The `entry_point` field of a `JavaGateway` instance is connected to the `Gateway.entryPoint` instance on the Java side.
+    
+    Methods that are not defined by `JavaGateway` are always redirected to `entry_point`. For example, ``gateway.doThat()`` is equivalent to ``gateway.entry_point.doThat()``.
+    This is a trade-off between convenience and potential confusion."""
+    
     
     def __init__(self, comm_channel=None, auto_start=True):
         """
