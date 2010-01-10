@@ -44,7 +44,7 @@ public abstract class AbstractCommand implements Command {
 	private final Logger logger = Logger.getLogger(AbstractCommand.class.getName());
 
 	@Override
-	public abstract void execute(String command, BufferedReader reader,
+	public abstract void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException;
 
 	@Override
@@ -68,7 +68,7 @@ public abstract class AbstractCommand implements Command {
 		return arguments;
 	}
 
-	protected ReturnObject getReturnObject(String methodName,
+	protected ReturnObject invokeMethod(String methodName,
 			String targetObjectId, List<Argument> arguments) {
 		ReturnObject returnObject = null;
 		try {

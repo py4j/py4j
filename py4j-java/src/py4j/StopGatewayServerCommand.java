@@ -32,16 +32,18 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-public class StopGatewayCommand extends AbstractCommand {
+public class StopGatewayServerCommand extends AbstractCommand {
 
 	private final GatewayServer gatewayServer;
 	
-	public StopGatewayCommand(GatewayServer gatewayServer) {
+	public static final String STOP_GATEWAY_SERVER_COMMAND_NAME = "s";
+	
+	public StopGatewayServerCommand(GatewayServer gatewayServer) {
 		this.gatewayServer = gatewayServer;
 	}
 	
 	@Override
-	public void execute(String command, BufferedReader reader,
+	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
 		this.gatewayServer.stop();
 	}

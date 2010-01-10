@@ -68,8 +68,6 @@ import py4j.reflection.ReflectionEngine;
  */
 public class Gateway {
 
-	public final static String ENTRY_POINT_OBJECT_ID = "t";
-
 	private final Map<String, Object> bindings = new ConcurrentHashMap<String, Object>();
 	private final AtomicInteger objCounter = new AtomicInteger();
 	private final AtomicInteger argCounter = new AtomicInteger();
@@ -131,7 +129,7 @@ public class Gateway {
 	public void startup() {
 		isStarted = true;
 		if (entryPoint != null) {
-			bindings.put(ENTRY_POINT_OBJECT_ID, entryPoint);
+			bindings.put(Protocol.ENTRY_POINT_OBJECT_ID, entryPoint);
 		}
 	}
 

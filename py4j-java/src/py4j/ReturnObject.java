@@ -29,6 +29,33 @@
 
 package py4j;
 
+/**
+ * <p>
+ * A ReturnObject wraps a value returned by a method. If the value is a
+ * primitive, a primitive wrapper object (e.g., Integer) or a String, the value
+ * is kept in the primitiveObject field.
+ * </p>
+ * 
+ * <p>
+ * If the return value is an object, a key to the reference is kept in the name
+ * field. This value can be retrieved by calling
+ * {@link py4j.Gateway#getObject(String)} with the key.
+ * </p>
+ * 
+ * <p>
+ * Various methods are defined to determine the type of the return value. For
+ * example, if the return value is void, the name and primitiveObject fields are
+ * null, but {@link #isVoid()} returns true.
+ * </p>
+ * 
+ * <p>
+ * ReturnObject objects can only be constructed through static factory methods
+ * such as {@link #getListReturnObject(String, int)}.
+ * </p>
+ * 
+ * @author barthelemy
+ * 
+ */
 public class ReturnObject {
 
 	private String name;
@@ -51,32 +78,32 @@ public class ReturnObject {
 		rObject.isList = true;
 		return rObject;
 	}
-	
+
 	public static ReturnObject getPrimitiveReturnObject(Object primitive) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.primitiveObject = primitive;
 		return rObject;
 	}
-	
+
 	public static ReturnObject getReferenceReturnObject(String name) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
 		rObject.isReference = true;
 		return rObject;
 	}
-	
+
 	public static ReturnObject getNullReturnObject() {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isNull = true;
 		return rObject;
 	}
-	
+
 	public static ReturnObject getVoidReturnObject() {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isVoid = true;
 		return rObject;
 	}
-	
+
 	public static ReturnObject getErrorReturnObject() {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isError = true;
@@ -155,5 +182,4 @@ public class ReturnObject {
 		this.isVoid = isVoid;
 	}
 
-	
 }

@@ -29,6 +29,7 @@
 
 package py4j;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -95,13 +96,18 @@ public class GatewayServer implements Runnable {
 		}
 	}
 
+	protected Object createConnection(GatewayServer server, Gateway gateway,
+			Socket socket) throws IOException {
+		return new GatewayConnection(server, gateway, socket);
+	}
+
 	private void processSocket(Socket socket) {
 		try {
 			if (acceptOnlyOne && isConnected()) {
 				socket.close();
 			} else {
 				socket.setSoTimeout(read_timeout);
-				new GatewayConnection(this, gateway, socket);
+				createConnection(this,gateway,socket);
 				if (acceptOnlyOne) {
 					currentSocket = socket;
 				}

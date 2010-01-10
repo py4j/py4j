@@ -36,29 +36,34 @@ package py4j;
  * </p>
  * <p>
  * Currently, the protocol requires type information (e.g., is this string an
- * integer, an object reference or a boolean?) to be embedded within a command.
+ * integer, an object reference or a boolean?) to be embedded with each command part.
  * The rational is that the source virtual machine is usually better at
  * determining the type of objects it sends.
  * </p>
  * <p>
- * There are two protocols defined in this class. The <em>input</em> protocol
- * defines the command parts expected to be received by the Java gateway. The
- * <em>output</em> protocol adds the command parts that can be sent to the
- * source virtual machine (e.g., an error has occurred while executing a
- * command).
+ * An input command is usually composed of:
  * </p>
+ * <ul>
+ * <li>A command name (e.g., c for call)</li>
+ * <li>Optionally, a sub command name (e.g., a for concatenate in the list command)</li>
+ * <li>A list of command parts (e.g., the name of a method, the value of a parameter, etc.)</li>
+ * <li>The End of Command marker (e)</li>
+ * </ul>
+ * 
  * <p>
- * <b>TODO:</b>Implement a protocol that discovers the type of parameters in a
- * command. This might be more efficient if the protocol is ever used by weakly
- * typed languages.
+ * An output command is usually composed of:
  * </p>
+ * <ul>
+ * <li>A success or error code (y for yes, x for exception)</li>
+ * <li>A return value (e.g., n for null, v for void, or any other value like a String)</li>
+ * </ul>
  * 
  * @author Barthelemy Dagenais
  * 
  */
 public class Protocol {
 
-	// INPUT PROTOCOL
+	// TYPES
 	public final static char INTEGER_TYPE = 'i';
 	public final static char BOOLEAN_TYPE = 'b';
 	public final static char DOUBLE_TYPE = 'd';
@@ -66,15 +71,21 @@ public class Protocol {
 	public final static char REFERENCE_TYPE = 'r';
 	public final static char LIST_TYPE = 'l';
 	public final static char NULL_TYPE = 'n';
+	public final static char VOID = 'v';
+	
+	// END OF COMMAND MARKER
 	public final static char END = 'e';
 	
 
-	// OUTPUT PROTOCOL
+	// OUTPUT VALUES
 	public final static char ERROR = 'x';
 	public final static char SUCCESS = 'y';
-	public final static char VOID = 'v';
-	
+
+	// SHORTCUT
 	public final static String ERROR_COMMAND = "x";
+	
+	// ENTRY POINT
+	public final static String ENTRY_POINT_OBJECT_ID = "t";
 
 	public final static boolean isEmpty(String commandPart) {
 		return commandPart == null || commandPart.trim().length() == 0;
@@ -260,7 +271,7 @@ public class Protocol {
 	public final static Object getObject(String commandPart) {
 		if (isEmpty(commandPart) || isEnd(commandPart)) {
 			throw new Py4JException(
-					"Command Part is Empty or is the End Command Part");
+					"Command Part is Empty or is the End of Command Part");
 		} else if (isReference(commandPart)) {
 			return getReference(commandPart);
 		} else if (isInteger(commandPart)) {

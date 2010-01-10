@@ -43,7 +43,7 @@ import java.util.logging.Logger;
  * <p>
  * Currently, the call command assumes that a command is well-formed and that
  * there is no communication problem (e.g., the source virtual machine
- * disconnected in the middle of a command). This is a reasonnable assumption
+ * disconnected in the middle of a command). This is a reasonable assumption
  * because the two virtual machines are assumed to be on the same host.
  * </p>
  * <p>
@@ -57,15 +57,17 @@ import java.util.logging.Logger;
 public class CallCommand extends AbstractCommand {
 	
 	private final Logger logger = Logger.getLogger(CallCommand.class.getName());
+	
+	public final static String CALL_COMMAND_NAME = "c";
 
 	@Override
-	public void execute(String command, BufferedReader reader,
+	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
 		String targetObjectId = reader.readLine();
 		String methodName = reader.readLine();
 		List<Argument> arguments = getArguments(reader);
 
-		ReturnObject returnObject = getReturnObject(methodName, targetObjectId, arguments);
+		ReturnObject returnObject = invokeMethod(methodName, targetObjectId, arguments);
 		
 		String returnCommand = Protocol.getOutputCommand(returnObject);
 		logger.info("Returning command: " + returnCommand);

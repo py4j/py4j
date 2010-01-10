@@ -65,16 +65,20 @@ public class GatewayConnection implements Runnable {
 		t.start();
 	}
 	
+	/**
+	 * <p>Override this method to initialize custom commands.</p>
+	 * @param gateway
+	 */
 	protected void initCommands(Gateway gateway) {
 		Command callCommand = new CallCommand();
 		Command listCommand = new ListCommand();
-		Command stopCommand = new StopGatewayCommand(gatewayServer);
+		Command stopCommand = new StopGatewayServerCommand(gatewayServer);
 		callCommand.init(gateway);
 		listCommand.init(gateway);
 		stopCommand.init(gateway);
-		commands.put("c",callCommand);
-		commands.put("l",listCommand);
-		commands.put("s",stopCommand);
+		commands.put(CallCommand.CALL_COMMAND_NAME,callCommand);
+		commands.put(ListCommand.LIST_COMMAND_NAME,listCommand);
+		commands.put(StopGatewayServerCommand.STOP_GATEWAY_SERVER_COMMAND_NAME,stopCommand);
 	}
 	
 	

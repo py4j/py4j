@@ -84,7 +84,7 @@ public class ListCommandTest {
 	
 	@Test
 	public void testSort() {
-		String inputCommand = ListCommand.LIST_SORT_COMMAND + "\n" + target + "\ne\n";
+		String inputCommand = ListCommand.LIST_SORT_SUB_COMMAND_NAME + "\n" + target + "\ne\n";
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -99,7 +99,7 @@ public class ListCommandTest {
 	
 	@Test
 	public void testSortException() {
-		String inputCommand = ListCommand.LIST_SORT_COMMAND + "\n" + target2 + "\ne\n";
+		String inputCommand = ListCommand.LIST_SORT_SUB_COMMAND_NAME + "\n" + target2 + "\ne\n";
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -112,7 +112,7 @@ public class ListCommandTest {
 	
 	@Test
 	public void testReverse() {
-		String inputCommand = ListCommand.LIST_REVERSE_COMMAND + "\n" + target + "\ne\n";
+		String inputCommand = ListCommand.LIST_REVERSE_SUB_COMMAND_NAME + "\n" + target + "\ne\n";
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -129,7 +129,7 @@ public class ListCommandTest {
 	
 	@Test
 	public void testReverseException() {
-		String inputCommand = ListCommand.LIST_REVERSE_COMMAND + "\n" + target2 + "\ne\n";
+		String inputCommand = ListCommand.LIST_REVERSE_SUB_COMMAND_NAME + "\n" + target2 + "\ne\n";
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -142,7 +142,7 @@ public class ListCommandTest {
 	
 	@Test
 	public void testMin() {
-		String inputCommand = ListCommand.LIST_MIN_COMMAND + "\n" + target + "\ne\n";
+		String inputCommand = ListCommand.LIST_MIN_SUB_COMMAND_NAME + "\n" + target + "\ne\n";
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -155,7 +155,7 @@ public class ListCommandTest {
 	
 	@Test
 	public void testMinException() {
-		String inputCommand = ListCommand.LIST_MIN_COMMAND + "\n" + target2 + "\ne\n";
+		String inputCommand = ListCommand.LIST_MIN_SUB_COMMAND_NAME + "\n" + target2 + "\ne\n";
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -168,7 +168,7 @@ public class ListCommandTest {
 	
 	@Test
 	public void testMax() {
-		String inputCommand = ListCommand.LIST_MAX_COMMAND + "\n" + target + "\ne\n";
+		String inputCommand = ListCommand.LIST_MAX_SUB_COMMAND_NAME + "\n" + target + "\ne\n";
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -181,7 +181,7 @@ public class ListCommandTest {
 	
 	@Test
 	public void testMaxException() {
-		String inputCommand = ListCommand.LIST_MAX_COMMAND + "\n" + target2 + "\ne\n";
+		String inputCommand = ListCommand.LIST_MAX_SUB_COMMAND_NAME + "\n" + target2 + "\ne\n";
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -194,7 +194,7 @@ public class ListCommandTest {
 	
 	@Test
 	public void testCount() {
-		String inputCommand = ListCommand.LIST_COUNT_COMMAND + "\n" + target + "\ns1\ne\n";
+		String inputCommand = ListCommand.LIST_COUNT_SUB_COMMAND_NAME + "\n" + target + "\ns1\ne\n";
 		list.add("1");
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
@@ -209,7 +209,7 @@ public class ListCommandTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testConcat() {
-		String inputCommand = ListCommand.LIST_CONCAT_COMMAND + "\n" + target + "\n" + target2 + "\ne\n";
+		String inputCommand = ListCommand.LIST_CONCAT_SUB_COMMAND_NAME + "\n" + target + "\n" + target2 + "\ne\n";
 		try {
 			// concat l + l2
 			command.execute("l", new BufferedReader(new StringReader(
@@ -222,7 +222,7 @@ public class ListCommandTest {
 			assertEquals(newList.get(4),list2.get(0));
 			
 			// concat l + l
-			inputCommand = ListCommand.LIST_CONCAT_COMMAND + "\n" + target + "\n" + target + "\ne\n";
+			inputCommand = ListCommand.LIST_CONCAT_SUB_COMMAND_NAME + "\n" + target + "\n" + target + "\ne\n";
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("ylo2ylo3", sWriter.toString());
@@ -237,7 +237,7 @@ public class ListCommandTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testMult() {
-		String inputCommand = ListCommand.LIST_MULT_COMMAND + "\n" + target + "\ni3\ne\n";
+		String inputCommand = ListCommand.LIST_MULT_SUB_COMMAND_NAME + "\n" + target + "\ni3\ne\n";
 		try {
 			// l3 = l1 * 3
 			command.execute("l", new BufferedReader(new StringReader(
@@ -248,7 +248,7 @@ public class ListCommandTest {
 			assertEquals(4, list.size());
 			
 			// l3 = l1 * -1
-			inputCommand = ListCommand.LIST_MULT_COMMAND + "\n" + target + "\ni-1\ne\n";
+			inputCommand = ListCommand.LIST_MULT_SUB_COMMAND_NAME + "\n" + target + "\ni-1\ne\n";
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("ylo2ylo3", sWriter.toString());
@@ -262,7 +262,7 @@ public class ListCommandTest {
 	
 	@Test
 	public void testiMult() {
-		String inputCommand = ListCommand.LIST_IMULT_COMMAND + "\n" + target + "\ni3\ne\n";
+		String inputCommand = ListCommand.LIST_IMULT_SUB_COMMAND_NAME + "\n" + target + "\ni3\ne\n";
 		try {
 			// l *= 3
 			assertEquals(4, list.size());
@@ -272,7 +272,7 @@ public class ListCommandTest {
 			assertEquals(12, list.size());
 			
 			// l *= -1
-			inputCommand = ListCommand.LIST_IMULT_COMMAND + "\n" + target + "\ni-1\ne\n";
+			inputCommand = ListCommand.LIST_IMULT_SUB_COMMAND_NAME + "\n" + target + "\ni-1\ne\n";
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("yvyv", sWriter.toString());
@@ -286,7 +286,7 @@ public class ListCommandTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testSlice() {
-		String inputCommand = ListCommand.LIST_SLICE_COMMAND + "\n" + target + "\ni1\ni2\ne\n";
+		String inputCommand = ListCommand.LIST_SLICE_SUB_COMMAND_NAME + "\n" + target + "\ni1\ni2\ne\n";
 		try {
 			// l3 = l1[1:3]
 			command.execute("l", new BufferedReader(new StringReader(
@@ -299,7 +299,7 @@ public class ListCommandTest {
 			assertEquals(4, list.size());
 			
 			// l3 = l[0:0]
-			inputCommand = ListCommand.LIST_SLICE_COMMAND + "\n" + target + "\ne\n";
+			inputCommand = ListCommand.LIST_SLICE_SUB_COMMAND_NAME + "\n" + target + "\ne\n";
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("ylo2ylo3", sWriter.toString());

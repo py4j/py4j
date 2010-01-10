@@ -40,37 +40,39 @@ public class ListCommand extends AbstractCommand {
 
 	private final Logger logger = Logger.getLogger(ListCommand.class.getName());
 
-	public static final char LIST_SORT_COMMAND = 's';
-	public static final char LIST_REVERSE_COMMAND = 'r';
-	public static final char LIST_MAX_COMMAND = 'x';
-	public static final char LIST_MIN_COMMAND = 'n';
-	public static final char LIST_SLICE_COMMAND = 'l';
+	public static final String LIST_COMMAND_NAME = "l";
+	
+	public static final char LIST_SORT_SUB_COMMAND_NAME = 's';
+	public static final char LIST_REVERSE_SUB_COMMAND_NAME = 'r';
+	public static final char LIST_MAX_SUB_COMMAND_NAME = 'x';
+	public static final char LIST_MIN_SUB_COMMAND_NAME = 'n';
+	public static final char LIST_SLICE_SUB_COMMAND_NAME = 'l';
 
-	public static final char LIST_CONCAT_COMMAND = 'a';
-	public static final char LIST_MULT_COMMAND = 'm';
-	public static final char LIST_IMULT_COMMAND = 'i';
-	public static final char LIST_COUNT_COMMAND = 'f';
+	public static final char LIST_CONCAT_SUB_COMMAND_NAME = 'a';
+	public static final char LIST_MULT_SUB_COMMAND_NAME = 'm';
+	public static final char LIST_IMULT_SUB_COMMAND_NAME = 'i';
+	public static final char LIST_COUNT_SUB_COMMAND_NAME = 'f';
 
 	public static final String RETURN_VOID = Protocol.SUCCESS + ""
 			+ Protocol.VOID;
 
 	@Override
-	public void execute(String command, BufferedReader reader,
+	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
-		char listCommand = reader.readLine().charAt(0);
+		char subCommand = reader.readLine().charAt(0);
 		String returnCommand = null;
-		if (listCommand == LIST_SLICE_COMMAND) {
+		if (subCommand == LIST_SLICE_SUB_COMMAND_NAME) {
 			returnCommand = slice_list(reader);
-		} else if (listCommand == LIST_CONCAT_COMMAND) {
+		} else if (subCommand == LIST_CONCAT_SUB_COMMAND_NAME) {
 			returnCommand = concat_list(reader);
-		} else if (listCommand == LIST_MULT_COMMAND) {
+		} else if (subCommand == LIST_MULT_SUB_COMMAND_NAME) {
 			returnCommand = mult_list(reader);
-		} else if (listCommand == LIST_IMULT_COMMAND) {
+		} else if (subCommand == LIST_IMULT_SUB_COMMAND_NAME) {
 			returnCommand = imult_list(reader);
-		} else if (listCommand == LIST_COUNT_COMMAND) {
+		} else if (subCommand == LIST_COUNT_SUB_COMMAND_NAME) {
 			returnCommand = count_list(reader);
 		} else {
-			returnCommand = call_collections_method(reader, listCommand);
+			returnCommand = call_collections_method(reader, subCommand);
 		}
 
 		logger.info("Returning command: " + returnCommand);
@@ -163,13 +165,13 @@ public class ListCommand extends AbstractCommand {
 
 		List list = (List) gateway.getObject(list_id);
 		try {
-			if (listCommand == LIST_SORT_COMMAND) {
+			if (listCommand == LIST_SORT_SUB_COMMAND_NAME) {
 				returnCommand = sort_list(list);
-			} else if (listCommand == LIST_REVERSE_COMMAND) {
+			} else if (listCommand == LIST_REVERSE_SUB_COMMAND_NAME) {
 				returnCommand = reverse_list(list);
-			} else if (listCommand == LIST_MAX_COMMAND) {
+			} else if (listCommand == LIST_MAX_SUB_COMMAND_NAME) {
 				returnCommand = max_list(list);
-			} else if (listCommand == LIST_MIN_COMMAND) {
+			} else if (listCommand == LIST_MIN_SUB_COMMAND_NAME) {
 				returnCommand = min_list(list);
 			} else {
 				returnCommand = Protocol.getOutputErrorCommand();
