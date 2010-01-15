@@ -37,7 +37,7 @@ class Test(unittest.TestCase):
         
     def tearDown(self):
         self.p.terminate()
-        self.gateway.comm_channel.shutdown_server()
+        self.gateway.shutdown()
         time.sleep(0.5)
         
     def testJavaListProtocol(self):

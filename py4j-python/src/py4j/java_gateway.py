@@ -42,7 +42,7 @@ SUCCESS = 'y'
 
 # Commands
 CALL_COMMAND_NAME = 'c\n'
-SHUTDOWN_SERVER_COMMAND_NAME = 's\n'
+SHUTDOWN_GATEWAY_COMMAND_NAME = 's\n'
 LIST_COMMAND_NAME = 'l\n'
 
 
@@ -150,12 +150,12 @@ class CommChannel(object):
         finally:
             self.is_connected = False
         
-    def shutdown_server(self):
+    def shutdown_gateway(self):
         """Sends a shutdown command to the gateway. This will close the gateway server: all active 
         connections will be closed. This may be useful if the lifecycle of the Java program must be 
         tied to the Python program."""
         try:
-            self.socket.sendall(SHUTDOWN_SERVER_COMMAND_NAME.encode('utf-8'))
+            self.socket.sendall(SHUTDOWN_GATEWAY_COMMAND_NAME.encode('utf-8'))
             self.socket.close()
             self.is_connected = False
         except Exception:
@@ -493,3 +493,6 @@ class JavaGateway(JavaObject):
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, comm_channel)
         if auto_start:
             self.comm_channel.start()
+            
+    def shutdown(self):
+        self.comm_channel.shutdown_gateway()
