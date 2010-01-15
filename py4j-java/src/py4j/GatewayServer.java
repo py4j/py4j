@@ -138,7 +138,7 @@ public class GatewayServer implements Runnable {
 		start(true);
 	}
 
-	public void stop() {
+	public void shutdown() {
 		NetworkUtil.quietlyClose(sSocket);
 		gateway.shutdown();
 	}

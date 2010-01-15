@@ -76,7 +76,7 @@ class ProtocolTest(unittest.TestCase):
             self.assertAlmostEqual(1.25,ex.method3())
             self.assertTrue(ex.method2() == None)
             self.assertTrue(ex.method4())
-            gateway.comm_channel.stop()
+            gateway.comm_channel.close()
             
         except Exception as e:
             print('Error has occurred', e)
@@ -111,7 +111,7 @@ class IntegrationTest(unittest.TestCase):
             response = ex2.method3(1, True)
             self.assertEqual('Hello World2',response)
             
-            gateway.comm_channel.stop()
+            gateway.comm_channel.close()
         except Exception as e:
             print('Error has occurred', e)
             self.fail('Problem occurred')
@@ -133,7 +133,7 @@ class IntegrationTest(unittest.TestCase):
             except Py4JError:
                 self.assertTrue(True)
             
-            gateway.comm_channel.stop()
+            gateway.comm_channel.close()
             
         except Exception as e:
             print('Error has occurred', e)   

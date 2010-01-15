@@ -32,20 +32,20 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-public class StopGatewayServerCommand extends AbstractCommand {
+public class ShutdownGatewayServerCommand extends AbstractCommand {
 
 	private final GatewayServer gatewayServer;
 	
-	public static final String STOP_GATEWAY_SERVER_COMMAND_NAME = "s";
+	public static final String SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME = "s";
 	
-	public StopGatewayServerCommand(GatewayServer gatewayServer) {
+	public ShutdownGatewayServerCommand(GatewayServer gatewayServer) {
 		this.gatewayServer = gatewayServer;
 	}
 	
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
-		this.gatewayServer.stop();
+		this.gatewayServer.shutdown();
 	}
 
 }

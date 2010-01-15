@@ -46,8 +46,8 @@ public class BufferEntryPoint {
 	
 	
 	// Useful for unit tests
-	public static void stopGateway() {
-		server.stop();
+	public static void shutdownGateway() {
+		server.shutdown();
 	}
 	
 }

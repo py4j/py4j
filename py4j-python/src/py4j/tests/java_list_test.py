@@ -15,7 +15,7 @@ def start_echo_server():
     subprocess.call(["java", "-cp", "../../../../py4j-java/bin/", "py4j.examples.ExampleApplication"])
     
     
-def start_echo_server_process():
+def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_echo_server)
 #    p.daemon = True
@@ -31,13 +31,13 @@ class Test(unittest.TestCase):
 #        logger = logging.getLogger("py4j")
 #        logger.setLevel(logging.DEBUG)
 #        logger.addHandler(logging.StreamHandler())
-        self.p = start_echo_server_process()
+        self.p = start_example_app_process()
         time.sleep(0.5)
         self.gateway = JavaGateway()
         
     def tearDown(self):
         self.p.terminate()
-        self.gateway.comm_channel.shutdown()
+        self.gateway.comm_channel.shutdown_server()
         time.sleep(0.5)
         
     def testJavaListProtocol(self):

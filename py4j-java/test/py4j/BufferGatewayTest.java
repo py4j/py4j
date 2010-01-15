@@ -58,7 +58,7 @@ public class BufferGatewayTest {
 			fail();
 		} finally {
 			client.close();
-			BufferEntryPoint.stopGateway();
+			BufferEntryPoint.shutdownGateway();
 		}
 	}
 

@@ -42,7 +42,7 @@ SUCCESS = 'y'
 
 # Commands
 CALL_COMMAND_NAME = 'c\n'
-STOP_SERVER_COMMAND_NAME = 's\n'
+SHUTDOWN_SERVER_COMMAND_NAME = 's\n'
 LIST_COMMAND_NAME = 'l\n'
 
 
@@ -139,8 +139,8 @@ class CommChannel(object):
         self.socket.connect((self.address, self.port))
         self.is_connected = True
     
-    def stop(self, throw_exception=False):
-        """Stops the communication channel by closing the socket."""
+    def close(self, throw_exception=False):
+        """Closes the communication channel by closing the socket."""
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
@@ -150,12 +150,12 @@ class CommChannel(object):
         finally:
             self.is_connected = False
         
-    def shutdown(self):
+    def shutdown_server(self):
         """Sends a shutdown command to the gateway. This will close the gateway server: all active 
         connections will be closed. This may be useful if the lifecycle of the Java program must be 
         tied to the Python program."""
         try:
-            self.socket.sendall(STOP_SERVER_COMMAND_NAME.encode('utf-8'))
+            self.socket.sendall(SHUTDOWN_SERVER_COMMAND_NAME.encode('utf-8'))
             self.socket.close()
             self.is_connected = False
         except Exception:
@@ -170,7 +170,7 @@ class CommChannel(object):
         is predictable) to explicitly close the socket by calling `CommChannel.close()`.
         """
         if self.auto_close and self.socket != None and self.is_connected:
-            self.stop()
+            self.close()
         
     def send_command(self, command):
         """Sends a command to the JVM. This method is not intended to be called directly by Py4J users: it is usually called by JavaMember instances.
