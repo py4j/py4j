@@ -30,6 +30,7 @@ package py4j.reflection;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
@@ -49,6 +50,20 @@ public class ReflectionEngineTest {
 		rEngine = new ReflectionEngine();
 	}
 
+	@Test
+	public void testGetSimpleMethod() {
+		assertNull(rEngine.getMethod(Cat.class, "methodABC"));
+		assertNotNull(rEngine.getMethod(Cat.class, "meow"));
+		assertNotNull(rEngine.getMethod(Cat.class, "meow15"));
+	}
+	
+	@Test
+	public void testGetClass() {
+		assertNull(rEngine.getClass(Cat.class,"smallcat"));
+		assertNotNull(rEngine.getClass(Cat.class,"SmallCat"));
+		assertNull(rEngine.getClass(ReflectionEngineTest.class,"smallcat"));
+	}
+	
 	@Test
 	public void testGetField() {
 		Cat cat = new Cat();

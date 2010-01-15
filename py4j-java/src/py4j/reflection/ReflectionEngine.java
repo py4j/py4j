@@ -48,6 +48,38 @@ public class ReflectionEngine {
 
 	public final static Object RETURN_VOID = new Object();
 
+	public Method getMethod(Class<?> clazz, String name) {
+		Method m = null;
+		try {
+			for (Method tempMethod : clazz.getMethods()) {
+				if (tempMethod.getName().equals(name)) {
+					m = tempMethod;
+					break;
+				}
+			}
+		} catch(Exception e) {
+			m = null;
+		}
+		return m;
+	}
+	
+	public Class<?> getClass(Class<?> clazz, String name) {
+		Class<?> memberClass = null;
+		
+		try {
+			for (Class<?> tempClass : clazz.getClasses()) {
+				if (tempClass.getSimpleName().equals(name)) {
+					memberClass = tempClass;
+					break;
+				}
+			}
+		} catch (Exception e) {
+			memberClass = null;
+		}
+		
+		return memberClass;
+	}
+	
 	public Field getField(Class<?> clazz, String name) {
 		Field field = null;
 

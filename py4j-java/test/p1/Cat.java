@@ -43,6 +43,8 @@ public class Cat extends Animal {
 	
 	protected char age5 = 'a';
 	
+	public static StringBuffer myBuffer = new StringBuffer("Hello");
+	
 	public static void meowmeow(String s) {
 		System.out.println("meowmoewcat");
 	}
@@ -90,6 +92,17 @@ public class Cat extends Animal {
 	
 	public int meow13(long p1, int p2, short p3, byte p4, double p5, Float p6, boolean p7, String p8, char p9) {
 		return 10;
+	}
+	
+	public static void meow15() {
+		
+	}
+	
+	public class SmallCat {
+		public int age = 2;
+		public void method1() {
+			
+		}
 	}
 	
 }

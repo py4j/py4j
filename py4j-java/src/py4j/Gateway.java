@@ -166,6 +166,10 @@ public class Gateway {
 	protected Map<String, Object> getBindings() {
 		return bindings;
 	}
+	
+	public ReflectionEngine getReflectionEngine() {
+		return rEngine;
+	}
 
 	public ReturnObject invoke(String methodName, String targetObjectId,
 			List<Argument> args) {

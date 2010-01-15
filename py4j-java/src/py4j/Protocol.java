@@ -71,6 +71,11 @@ public class Protocol {
 	public final static char REFERENCE_TYPE = 'r';
 	public final static char LIST_TYPE = 'l';
 	public final static char NULL_TYPE = 'n';
+	
+	public final static char PACKAGE_TYPE = 'p';
+	public final static char CLASS_TYPE = 'c';
+	public final static char METHOD_TYPE = 'm';
+	public final static char NO_MEMBER = 'o';
 	public final static char VOID = 'v';
 	
 	// END OF COMMAND MARKER
@@ -291,6 +296,15 @@ public class Protocol {
 
 	public final static String getOutputErrorCommand() {
 		return ERROR_COMMAND;
+	}
+	
+	public final static String getMemberOutputCommand(char memberType) {
+		StringBuilder builder = new StringBuilder();
+		
+		builder.append(SUCCESS);
+		builder.append(memberType);
+		
+		return builder.toString();
 	}
 	
 	public final static String getOutputCommand(ReturnObject rObject) {
