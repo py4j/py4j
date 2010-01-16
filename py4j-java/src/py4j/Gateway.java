@@ -171,6 +171,28 @@ public class Gateway {
 		return rEngine;
 	}
 
+	public ReturnObject invoke(String fqn, List<Argument> args) {
+		if (args == null) {
+			args = new ArrayList<Argument>();
+		}
+		ReturnObject returnObject = null;
+		List<Object> parametersList = new ArrayList<Object>();
+		try {
+			buildArgs(args, parametersList);
+			logger.info("Calling constructor: " + fqn);
+			Object[] parameters = parametersList.toArray();
+
+			MethodInvoker method = rEngine.getConstructor(fqn, parameters);
+			Object object = rEngine.invoke(null, method, parameters);
+			returnObject = getReturnObject(object);
+			trackConnectionObject(returnObject);
+		} catch (Exception e) {
+			throw new Py4JException(e);
+		}
+
+		return returnObject;
+	}
+
 	public ReturnObject invoke(String methodName, String targetObjectId,
 			List<Argument> args) {
 		if (args == null) {
@@ -183,7 +205,7 @@ public class Gateway {
 			buildArgs(args, parametersList);
 			logger.info("Calling: " + methodName);
 			Object[] parameters = parametersList.toArray();
-			
+
 			MethodInvoker method = null;
 			if (targetObject != null) {
 				method = rEngine
@@ -193,8 +215,8 @@ public class Gateway {
 						.substring(Protocol.STATIC_PREFIX.length()),
 						methodName, parameters);
 			}
-			
-			Object object = rEngine.invokeMethod(targetObject, method,
+
+			Object object = rEngine.invoke(targetObject, method,
 					parameters);
 			returnObject = getReturnObject(object);
 			trackConnectionObject(returnObject);

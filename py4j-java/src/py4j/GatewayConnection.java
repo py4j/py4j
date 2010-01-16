@@ -71,14 +71,17 @@ public class GatewayConnection implements Runnable {
 	 */
 	protected void initCommands(Gateway gateway) {
 		Command callCommand = new CallCommand();
+		Command constructorCommand = new ConstructorCommand();
 		Command listCommand = new ListCommand();
 		Command reflectionCommand = new ReflectionCommand();
 		Command shutdownCommand = new ShutdownGatewayServerCommand(gatewayServer);
 		callCommand.init(gateway);
+		constructorCommand.init(gateway);
 		listCommand.init(gateway);
 		reflectionCommand.init(gateway);
 		shutdownCommand.init(gateway);
 		commands.put(CallCommand.CALL_COMMAND_NAME,callCommand);
+		commands.put(ConstructorCommand.CONSTRUCTOR_COMMAND_NAME, constructorCommand);
 		commands.put(ListCommand.LIST_COMMAND_NAME,listCommand);
 		commands.put(ReflectionCommand.REFLECTION_COMMAND_NAME, reflectionCommand);
 		commands.put(ShutdownGatewayServerCommand.SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME,shutdownCommand);

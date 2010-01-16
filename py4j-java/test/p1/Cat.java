@@ -45,6 +45,30 @@ public class Cat extends Animal {
 	
 	public static StringBuffer myBuffer = new StringBuffer("Hello");
 	
+	public Cat() {
+		
+	}
+	
+	public Cat(int i) {
+		
+	}
+	
+	public Cat(String s1, String s2) {
+		
+	}
+	
+	public Cat(char c1, int i2) {
+		
+	}
+	
+	public Cat(boolean b1, short s1) {
+		
+	}
+	
+	public Cat(Object obj, String s2) {
+		
+	}
+	
 	public static void meowmeow(String s) {
 		System.out.println("meowmoewcat");
 	}

@@ -32,6 +32,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -100,6 +101,54 @@ public class ReflectionEngineTest {
 				"CONSTANT")), "Salut!");
 	}
 
+	@Test
+	public void testGetConstructor() {
+		ReflectionEngine engine = new ReflectionEngine();
+		MethodInvoker mInvoker = engine.getConstructor("p1.Cat",
+				new Object[] {});
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
+				new Class[] {});
+
+		// Test cache:
+		mInvoker = engine.getConstructor("p1.Cat",
+				new Object[] {});
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
+				new Class[] {});
+
+		// Test one only
+		mInvoker = engine.getConstructor("p1.Cat",
+				new Object[] {new Integer(2)});
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
+				new Class[] {int.class});
+		
+		// Test cost computation
+		mInvoker = engine.getConstructor("p1.Cat",
+				new Object[] {new ArrayList<String>(), new String()});
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
+				new Class[] {Object.class, String.class});
+		
+		mInvoker = engine.getConstructor("p1.Cat",
+				new Object[] {"", new String()});
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
+				new Class[] {String.class, String.class});
+		
+		mInvoker = engine.getConstructor("p1.Cat",
+				new Object[] {"a", 2});
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
+				new Class[] {char.class, int.class});
+		
+		mInvoker = engine.getConstructor("p1.Cat",
+				new Object[] {true, 2});
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
+				new Class[] {boolean.class, short.class});
+		
+		// Test invokation
+		mInvoker = engine.getConstructor("p1.Cat",
+				new Object[] {"a", 2});
+		Object obj = mInvoker.invoke(null, new Object[] {"a",2});
+		assertTrue(obj instanceof Cat);
+	}
+	
 	@Test
 	public void testGetMethod() {
 		try {
