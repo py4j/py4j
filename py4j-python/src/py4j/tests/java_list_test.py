@@ -11,14 +11,13 @@ import time
 import unittest
 
 
-def start_echo_server():
+def start_example_server():
     subprocess.call(["java", "-cp", "../../../../py4j-java/bin/", "py4j.examples.ExampleApplication"])
     
     
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    p = Process(target=start_echo_server)
-#    p.daemon = True
+    p = Process(target=start_example_server)
     p.start()
     return p
 

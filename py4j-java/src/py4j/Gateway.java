@@ -166,7 +166,7 @@ public class Gateway {
 	protected Map<String, Object> getBindings() {
 		return bindings;
 	}
-	
+
 	public ReflectionEngine getReflectionEngine() {
 		return rEngine;
 	}
@@ -179,12 +179,21 @@ public class Gateway {
 		ReturnObject returnObject = null;
 		List<Object> parametersList = new ArrayList<Object>();
 		try {
-			Object targetObject = bindings.get(targetObjectId);
+			Object targetObject = getObjectFromId(targetObjectId);
 			buildArgs(args, parametersList);
 			logger.info("Calling: " + methodName);
 			Object[] parameters = parametersList.toArray();
-			MethodInvoker method = rEngine.getMethod(targetObject, methodName,
-					parameters);
+			
+			MethodInvoker method = null;
+			if (targetObject != null) {
+				method = rEngine
+						.getMethod(targetObject, methodName, parameters);
+			} else {
+				method = rEngine.getMethod(targetObjectId
+						.substring(Protocol.STATIC_PREFIX.length()),
+						methodName, parameters);
+			}
+			
 			Object object = rEngine.invokeMethod(targetObject, method,
 					parameters);
 			returnObject = getReturnObject(object);
@@ -194,6 +203,14 @@ public class Gateway {
 		}
 
 		return returnObject;
+	}
+
+	protected Object getObjectFromId(String targetObjectId) {
+		if (targetObjectId.startsWith(Protocol.STATIC_PREFIX)) {
+			return null;
+		} else {
+			return bindings.get(targetObjectId);
+		}
 	}
 
 	private void trackConnectionObject(ReturnObject returnObject) {

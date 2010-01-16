@@ -91,6 +91,9 @@ public class Protocol {
 	
 	// ENTRY POINT
 	public final static String ENTRY_POINT_OBJECT_ID = "t";
+	
+	// STATIC REFERENCES
+	public final static String STATIC_PREFIX = "z:";
 
 	public final static boolean isEmpty(String commandPart) {
 		return commandPart == null || commandPart.trim().length() == 0;

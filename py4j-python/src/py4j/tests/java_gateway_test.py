@@ -24,6 +24,16 @@ def start_echo_server_process():
     p.start()
     return p
 
+def start_example_server():
+    subprocess.call(["java", "-cp", "../../../../py4j-java/bin/", "py4j.examples.ExampleApplication"])
+    
+    
+def start_example_app_process():
+    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    p = Process(target=start_example_server)
+    p.start()
+    return p
+
 def get_test_socket():
     testSocket = socket(AF_INET, SOCK_STREAM)
     testSocket.connect(('localhost', TEST_PORT))
@@ -76,7 +86,7 @@ class ProtocolTest(unittest.TestCase):
             self.assertAlmostEqual(1.25,ex.method3())
             self.assertTrue(ex.method2() == None)
             self.assertTrue(ex.method4())
-            gateway.comm_channel.close()
+            gateway.close()
             
         except Exception as e:
             print('Error has occurred', e)
@@ -111,7 +121,7 @@ class IntegrationTest(unittest.TestCase):
             response = ex2.method3(1, True)
             self.assertEqual('Hello World2',response)
             
-            gateway.comm_channel.close()
+            gateway.close()
         except Exception as e:
             print('Error has occurred', e)
             self.fail('Problem occurred')
@@ -133,14 +143,35 @@ class IntegrationTest(unittest.TestCase):
             except Py4JError:
                 self.assertTrue(True)
             
-            gateway.comm_channel.close()
+            gateway.close()
             
         except Exception as e:
             print('Error has occurred', e)   
             self.fail('Problem occurred')
     
-    
+class JVMTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
 
+    def tearDown(self):
+        self.p.join()
+        
+    def testStaticMethods(self):
+        gateway = JavaGateway()
+        System = gateway.jvm.java.lang.System
+        self.assertTrue(System.currentTimeMillis() > 0)
+        self.assertEqual(u'123', gateway.jvm.java.lang.String.valueOf(123))
+        gateway.shutdown()
+    
+    def testStaticFields(self):
+        gateway = JavaGateway()
+        Short = gateway.jvm.java.lang.Short
+        self.assertEqual(-32768, Short.MIN_VALUE)
+        System = gateway.jvm.java.lang.System
+        self.assertFalse(System.out.checkError())
+        gateway.shutdown()
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testGateway']

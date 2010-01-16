@@ -1,6 +1,9 @@
 # -*- coding: UTF-8 -*-
 """Module to interact with objects in a Java Virtual Machine from a Pyton Virtual Machine.
 
+Variables that might clash with the JVM start with an underscore (Java Naming Convention do not 
+recommend to start with an underscore so clashes become unlikely).
+
 Created on Dec 3, 2009
 
 @author: Barthelemy Dagenais
@@ -24,6 +27,7 @@ DEFAULT_PORT = 25333
 
 # Entry point
 ENTRY_POINT_OBJECT_ID = 't'
+STATIC_PREFIX = 'z:'
 
 # Types
 INTEGER_TYPE = 'i'
@@ -33,6 +37,10 @@ STRING_TYPE = 's'
 REFERENCE_TYPE = 'r'
 LIST_TYPE = 'l'
 NULL_TYPE = 'n'
+PACKAGE_TYPE = 'p';
+CLASS_TYPE = 'c';
+METHOD_TYPE = 'm';
+NO_MEMBER = 'o';
 VOID_TYPE = 'v'
 
 # Protocol
@@ -40,11 +48,21 @@ END = 'e'
 ERROR = 'x'
 SUCCESS = 'y'
 
+# Shortcuts
+SUCCESS_PACKAGE = SUCCESS + PACKAGE_TYPE
+SUCCESS_CLASS = SUCCESS + CLASS_TYPE
+END_COMMAND_PART = END + '\n'
+
 # Commands
 CALL_COMMAND_NAME = 'c\n'
 SHUTDOWN_GATEWAY_COMMAND_NAME = 's\n'
 LIST_COMMAND_NAME = 'l\n'
+REFLECTION_COMMAND_NAME = "r\n";
 
+# Reflection subcommands
+REFL_GET_UNKNOWN_SUB_COMMAND_NAME = 'u\n';
+REFL_GET_MEMBER_SUB_COMMAND_NAME = 'm\n';
+    
 
 # List subcommands
 LIST_SORT_SUBCOMMAND_NAME = 's\n'
@@ -82,7 +100,7 @@ def get_command_part(parameter):
     elif isinstance(parameter, basestring):
         command_part = STRING_TYPE + escape_new_line(parameter)
     else:
-        command_part = REFERENCE_TYPE + parameter.get_object_id()
+        command_part = REFERENCE_TYPE + parameter._get_object_id()
     
     return command_part + '\n'
 
@@ -197,7 +215,7 @@ class JavaMember(object):
         
     def __call__(self, *args):
         args_command = ''.join([get_command_part(arg) for arg in args])
-        command = CALL_COMMAND_NAME + self.command_header + args_command + END + '\n'
+        command = CALL_COMMAND_NAME + self.command_header + args_command + END_COMMAND_PART
         answer = self.comm_channel.send_command(command)
         return_value = get_return_value(answer, self.comm_channel, self.target_id, self.name)
         return return_value
@@ -212,17 +230,17 @@ class JavaObject(object):
         :param target_id: the identifier of the object on the JVM side. Given by the JVM.
         :param comm_channel: the communication channel used to communicate with the JVM.
         """
-        self.target_id = target_id
-        self.methods = {}
-        self.comm_channel = comm_channel
+        self._target_id = target_id
+        self._methods = {}
+        self._comm_channel = comm_channel
         
-    def get_object_id(self):
-        return self.target_id
+    def _get_object_id(self):
+        return self._target_id
         
     def __getattr__(self, name):
-        if name not in self.methods:
-            self.methods[name] = JavaMember(name, self.target_id, self.comm_channel)
-        return self.methods[name]
+        if name not in self._methods:
+            self._methods[name] = JavaMember(name, self._target_id, self._comm_channel)
+        return self._methods[name]
     
     def __eq__(self, other):
         if other == None:
@@ -246,16 +264,20 @@ class JavaListIterator(JavaObject):
     The `JavaListIterator` follows the Python iterator protocol and raises a `StopIteration` error when the iterator can no longer iterate."""
     def __init__(self, target_id, comm_channel):
         JavaObject.__init__(self, target_id, comm_channel)
-        self.next_name = 'next'
+        self._next_name = 'next'
         
     def __iter__(self):
         return self
     
     def next(self):
-        if self.next_name not in self.methods:
-            self.methods[self.next_name] = JavaMember(self.next_name, self.target_id, self.comm_channel)
+        """This next method wraps the `next` method in Java iterators. 
+        
+        The `Iterator.next()` method is called and if an exception occur (e.g., 
+        NoSuchElementException), a StopIteration exception is raised."""
+        if self._next_name not in self._methods:
+            self._methods[self._next_name] = JavaMember(self._next_name, self._target_id, self._comm_channel)
         try:
-            return self.methods[self.next_name]()
+            return self._methods[self._next_name]()
         except Py4JError:
             raise StopIteration()
     
@@ -274,7 +296,7 @@ class JavaList(JavaObject):
         return self.size()
 
     def __iter__(self):
-        return JavaListIterator(self.iterator().get_object_id(), self.comm_channel)
+        return JavaListIterator(self.iterator()._get_object_id(), self._comm_channel)
     
     def __compute_index(self, key, adjustLast = False):
         size = self.size()
@@ -360,12 +382,12 @@ class JavaList(JavaObject):
             raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
     
     def __get_slice(self, indices):
-        command = LIST_COMMAND_NAME + LIST_SLICE_SUBCOMMAND_NAME + self.get_object_id() + '\n'
+        command = LIST_COMMAND_NAME + LIST_SLICE_SUBCOMMAND_NAME + self._get_object_id() + '\n'
         for index in indices:
             command += get_command_part(index)
-        command += END + '\n'
-        answer = self.comm_channel.send_command(command)
-        return get_return_value(answer, self.comm_channel)
+        command += END_COMMAND_PART
+        answer = self._comm_channel.send_command(command)
+        return get_return_value(answer, self._comm_channel)
         
         
     def __getitem__(self, key):
@@ -393,9 +415,9 @@ class JavaList(JavaObject):
         return self.contains(item)
         
     def __add__(self, other):
-        command = LIST_COMMAND_NAME + LIST_CONCAT_SUBCOMMAND_NAME + self.get_object_id() + '\n' + other.get_object_id() + '\n' + END + '\n'
-        answer = self.comm_channel.send_command(command)
-        return get_return_value(answer, self.comm_channel)
+        command = LIST_COMMAND_NAME + LIST_CONCAT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + other._get_object_id() + '\n' + END_COMMAND_PART
+        answer = self._comm_channel.send_command(command)
+        return get_return_value(answer, self._comm_channel)
     
     def __radd__(self, other):
         return self.__add__(other)
@@ -405,16 +427,16 @@ class JavaList(JavaObject):
         return self
     
     def __mul__(self, other):
-        command = LIST_COMMAND_NAME + LIST_MULT_SUBCOMMAND_NAME + self.get_object_id() + '\n' + get_command_part(other) + END + '\n'
-        answer = self.comm_channel.send_command(command)
-        return get_return_value(answer, self.comm_channel)
+        command = LIST_COMMAND_NAME + LIST_MULT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + get_command_part(other) + END_COMMAND_PART
+        answer = self._comm_channel.send_command(command)
+        return get_return_value(answer, self._comm_channel)
     
     def __rmul__(self, other):
         return self.__mul__(other)
     
     def __imul__(self, other):
-        command = LIST_COMMAND_NAME + LIST_IMULT_SUBCOMMAND_NAME + self.get_object_id() + '\n' + get_command_part(other) + END + '\n'
-        self.comm_channel.send_command(command)
+        command = LIST_COMMAND_NAME + LIST_IMULT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + get_command_part(other) + END_COMMAND_PART
+        self._comm_channel.send_command(command)
         return self
         
     def append(self, value):
@@ -441,17 +463,17 @@ class JavaList(JavaObject):
         return self.indexOf(value)
     
     def count(self, value):
-        command = LIST_COMMAND_NAME + LIST_COUNT_SUBCOMMAND_NAME + self.get_object_id() + '\n' + get_command_part(value) + END + '\n'
-        answer = self.comm_channel.send_command(command)
+        command = LIST_COMMAND_NAME + LIST_COUNT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + get_command_part(value) + END_COMMAND_PART
+        answer = self._comm_channel.send_command(command)
         return get_return_value(answer, self.comm_channel)
     
     def sort(self):
-        command = LIST_COMMAND_NAME + LIST_SORT_SUBCOMMAND_NAME + self.get_object_id() + '\n' + END + '\n'
-        self.comm_channel.send_command(command)
+        command = LIST_COMMAND_NAME + LIST_SORT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + END_COMMAND_PART
+        self._comm_channel.send_command(command)
     
     def reverse(self):
-        command = LIST_COMMAND_NAME + LIST_REVERSE_SUBCOMMAND_NAME + self.get_object_id() + '\n' + END + '\n'
-        self.comm_channel.send_command(command)
+        command = LIST_COMMAND_NAME + LIST_REVERSE_SUBCOMMAND_NAME + self._get_object_id() + '\n' + END_COMMAND_PART
+        self._comm_channel.send_command(command)
     
     # remove is automatically supported by Java...
     
@@ -470,6 +492,53 @@ class JavaList(JavaObject):
                 
             return srep[:-2] + ']'
 
+class JavaClass():
+    def __init__(self, fqn, comm_channel):
+        self._fqn = fqn
+        self._comm_channel = comm_channel
+        
+    def __getattr__(self, name):
+        answer = self._comm_channel.send_command(REFLECTION_COMMAND_NAME + REFL_GET_MEMBER_SUB_COMMAND_NAME + self._fqn + '\n' + name + '\n' + END_COMMAND_PART)
+        if len(answer) > 1 and answer[0] == SUCCESS:
+            if answer[1] == METHOD_TYPE:
+                return JavaMember(name, STATIC_PREFIX + self._fqn, self._comm_channel)
+            elif answer[1] == CLASS_TYPE:
+                return JavaClass(self._fqn + name, self._comm_channel)
+            else:
+                return get_return_value(answer, self._comm_channel, self._fqn, name)
+        else:
+            raise Py4JError('%s does not exist in the JVM' % (self._fqn + name))
+
+class JavaPackage():
+    def __init__(self, fqn, comm_channel):
+        self._fqn = fqn
+        self._comm_channel = comm_channel
+        
+    def __getattr__(self, name):
+        new_fqn = self._fqn + '.' + name
+        answer = self._comm_channel.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + new_fqn + '\n' + END_COMMAND_PART)
+        if answer == SUCCESS_PACKAGE:
+            return JavaPackage(new_fqn,self._comm_channel)
+        elif answer == SUCCESS_CLASS:
+            return JavaClass(new_fqn, self._comm_channel)
+        else:
+            raise Py4JError('%s does not exist in the JVM' % new_fqn)
+
+class JVM():
+    """A `JVM` allows access to the Java Virtual Machine of a `JavaGateway`. This can be used to reference static members (fields and methods) and to call constructors."""
+    
+    def __init__(self, comm_channel):
+        self._comm_channel = comm_channel
+        
+    def __getattr__(self, name):
+        answer = self._comm_channel.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + END_COMMAND_PART)
+        if answer == SUCCESS_PACKAGE:
+            return JavaPackage(name,self._comm_channel)
+        elif answer == SUCCESS_CLASS:
+            return JavaClass(name, self._comm_channel)
+        else:
+            raise Py4JError('%s does not exist in the JVM' % name)
+    
 class JavaGateway(JavaObject):
     """A `JavaGateway` is the main interaction point between a Python VM and a JVM. 
     
@@ -491,8 +560,15 @@ class JavaGateway(JavaObject):
             
         JavaObject.__init__(self, ENTRY_POINT_OBJECT_ID, comm_channel)
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, comm_channel)
+        self.jvm = JVM(comm_channel)
         if auto_start:
-            self.comm_channel.start()
+            self._comm_channel.start()
+            
+    def start(self):
+        self._comm_channel.start()
+        
+    def close(self):
+        self._comm_channel.close()
             
     def shutdown(self):
-        self.comm_channel.shutdown_gateway()
+        self._comm_channel.shutdown_gateway()

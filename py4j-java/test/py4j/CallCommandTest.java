@@ -69,6 +69,19 @@ public class CallCommandTest {
 	public void tearDown() {
 		gateway.shutdown();
 	}
+	
+	@Test
+	public void testStatic() {
+		String inputCommand = "z:java.lang.String\nvalueOf\ni123\ne\n";
+		try {
+			command.execute("c", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("ys123", sWriter.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
 
 	@Test
 	public void testNoParam() {
