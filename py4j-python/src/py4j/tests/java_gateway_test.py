@@ -158,6 +158,25 @@ class JVMTest(unittest.TestCase):
     def tearDown(self):
         self.p.join()
         
+    def testConstructors(self):
+        gateway = JavaGateway()
+        jvm = gateway.jvm
+        sb = jvm.java.lang.StringBuffer()
+        sb.append('hello world')
+        sb.append(1)
+        self.assertEqual(sb.toString(), u'hello world1')
+        
+        l1 = jvm.java.util.ArrayList()
+        l1.append('hello world')
+        l1.append(1)
+        self.assertEqual(2, len(l1))
+        self.assertEqual(u'hello world', l1[0])
+        l2 = [u'hello world', 1]
+        self.assertEqual(str(l2), str(l1))
+        gateway.shutdown()
+        
+
+        
     def testStaticMethods(self):
         gateway = JavaGateway()
         System = gateway.jvm.java.lang.System

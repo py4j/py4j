@@ -55,6 +55,7 @@ END_COMMAND_PART = END + '\n'
 
 # Commands
 CALL_COMMAND_NAME = 'c\n'
+CONSTRUCTOR_COMMAND_NAME = 'i\n'
 SHUTDOWN_GATEWAY_COMMAND_NAME = 's\n'
 LIST_COMMAND_NAME = 'l\n'
 REFLECTION_COMMAND_NAME = "r\n";
@@ -172,6 +173,9 @@ class CommChannel(object):
         """Sends a shutdown command to the gateway. This will close the gateway server: all active 
         connections will be closed. This may be useful if the lifecycle of the Java program must be 
         tied to the Python program."""
+        if (not self.is_connected):
+            raise Py4JError('Communication channel must be connected to send shut down command.')
+        
         try:
             self.socket.sendall(SHUTDOWN_GATEWAY_COMMAND_NAME.encode('utf-8'))
             self.socket.close()
@@ -496,6 +500,7 @@ class JavaClass():
     def __init__(self, fqn, comm_channel):
         self._fqn = fqn
         self._comm_channel = comm_channel
+        self._command_header = fqn + '\n'
         
     def __getattr__(self, name):
         answer = self._comm_channel.send_command(REFLECTION_COMMAND_NAME + REFL_GET_MEMBER_SUB_COMMAND_NAME + self._fqn + '\n' + name + '\n' + END_COMMAND_PART)
@@ -508,6 +513,13 @@ class JavaClass():
                 return get_return_value(answer, self._comm_channel, self._fqn, name)
         else:
             raise Py4JError('%s does not exist in the JVM' % (self._fqn + name))
+        
+    def __call__(self, *args):
+        args_command = ''.join([get_command_part(arg) for arg in args])
+        command = CONSTRUCTOR_COMMAND_NAME + self._command_header + args_command + END_COMMAND_PART
+        answer = self._comm_channel.send_command(command)
+        return_value = get_return_value(answer, self._comm_channel, None, self._fqn)
+        return return_value
 
 class JavaPackage():
     def __init__(self, fqn, comm_channel):
