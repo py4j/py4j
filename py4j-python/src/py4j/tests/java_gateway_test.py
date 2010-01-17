@@ -161,10 +161,10 @@ class JVMTest(unittest.TestCase):
     def testConstructors(self):
         gateway = JavaGateway()
         jvm = gateway.jvm
-        sb = jvm.java.lang.StringBuffer()
+        sb = jvm.java.lang.StringBuffer('hello')
         sb.append('hello world')
         sb.append(1)
-        self.assertEqual(sb.toString(), u'hello world1')
+        self.assertEqual(sb.toString(), u'hellohello world1')
         
         l1 = jvm.java.util.ArrayList()
         l1.append('hello world')
