@@ -5,7 +5,7 @@ Created on Dec 10, 2009
 '''
 from IN import AF_INET, SOCK_STREAM
 from multiprocessing.process import Process
-from py4j.java_gateway import JavaGateway, Py4JError
+from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field
 from socket import socket
 import subprocess
 import time
@@ -59,7 +59,7 @@ class TestCommChannel(object):
 class ProtocolTest(unittest.TestCase):
     def testProtocolSend(self):
         testChannel = TestCommChannel()
-        gateway = JavaGateway(testChannel, True)
+        gateway = JavaGateway(testChannel, True,False)
         e = gateway.getExample()
         self.assertEqual('c\nt\ngetExample\ne\n',testChannel.last_message)
         e.method1(1,True,'Hello\nWorld',e,None,1.5)
@@ -70,11 +70,17 @@ class ProtocolTest(unittest.TestCase):
         time.sleep(1)
         try:
             testSocket = get_test_socket()
+            testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yro0\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ysHello World\n'.encode('utf-8'))
+            #testSocket.sendall('yo\n'.encode('utf-8')) Not necessary because method3 is cached!
             testSocket.sendall('yi123\n'.encode('utf-8'))
+            #testSocket.sendall('yo\n'.encode('utf-8')) Not necessary because method3 is cached!
             testSocket.sendall('yd1.25\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yn\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ybTrue\n'.encode('utf-8'))
             testSocket.close()
             time.sleep(1)
@@ -106,9 +112,13 @@ class IntegrationTest(unittest.TestCase):
     def testIntegration(self):
         try:
             testSocket = get_test_socket()
+            testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yro0\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ysHello World\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yro1\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ysHello World2\n'.encode('utf-8'))
             testSocket.close()
             time.sleep(1)
@@ -129,7 +139,9 @@ class IntegrationTest(unittest.TestCase):
     def testException(self):
         try:
             testSocket = get_test_socket()
+            testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yro0\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('x\n')
             testSocket.close()
             time.sleep(1)
@@ -148,7 +160,59 @@ class IntegrationTest(unittest.TestCase):
         except Exception as e:
             print('Error has occurred', e)   
             self.fail('Problem occurred')
+
+class FieldTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+
+    def tearDown(self):
+        self.p.join()
+        
+    def testAutoField(self):
+        gateway = JavaGateway()
+        ex = gateway.getNewExample()
+        self.assertEqual(ex.field10,10)
+        sb = ex.field20
+        sb.append('Hello')
+        self.assertEqual(u'Hello',sb.toString())
+        self.assertTrue(ex.field21 == None)
+        gateway.shutdown()
     
+    def testNoField(self):
+        gateway = JavaGateway()
+        ex = gateway.getNewExample()
+        member = ex.field50
+        self.assertTrue(isinstance(member, JavaMember))
+        gateway.shutdown()
+        
+    def testNoAutoField(self):
+        gateway = JavaGateway(auto_field = False)
+        ex = gateway.getNewExample()
+        self.assertTrue(isinstance(ex.field10, JavaMember))
+        self.assertTrue(isinstance(ex.field50, JavaMember))
+        self.assertEqual(10,get_field(ex,'field10'))
+        
+        try:
+            get_field(ex,'field50')
+            self.fail()
+        except:
+            self.assertTrue(True)
+            
+        ex._auto_field = True
+        sb = ex.field20
+        sb.append('Hello')
+        self.assertEqual(u'Hello',sb.toString())
+        
+        try:
+            get_field(ex,'field20')
+            self.fail()
+        except:
+            self.assertTrue(True)
+            
+        gateway.shutdown()
+        
 class JVMTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()

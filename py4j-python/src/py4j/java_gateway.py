@@ -48,13 +48,16 @@ END = 'e'
 ERROR = 'x'
 SUCCESS = 'y'
 
+
 # Shortcuts
 SUCCESS_PACKAGE = SUCCESS + PACKAGE_TYPE
 SUCCESS_CLASS = SUCCESS + CLASS_TYPE
 END_COMMAND_PART = END + '\n'
+NO_MEMBER_COMMAND = SUCCESS + NO_MEMBER
 
 # Commands
 CALL_COMMAND_NAME = 'c\n'
+FIELD_COMMAND_NAME = 'f\n'
 CONSTRUCTOR_COMMAND_NAME = 'i\n'
 SHUTDOWN_GATEWAY_COMMAND_NAME = 's\n'
 LIST_COMMAND_NAME = 'l\n'
@@ -73,6 +76,11 @@ LIST_CONCAT_SUBCOMMAND_NAME = 'a\n'
 LIST_MULT_SUBCOMMAND_NAME = 'm\n'
 LIST_IMULT_SUBCOMMAND_NAME = 'i\n'
 LIST_COUNT_SUBCOMMAND_NAME = 'f\n'
+
+# Field subcommands
+FIELD_GET_SUBCOMMAND_NAME = 'g\n'
+FIELD_SET_SUBCOMMAND_NAME = 's\n'
+
 
 
 def escape_new_line(original):
@@ -106,7 +114,7 @@ def get_command_part(parameter):
     return command_part + '\n'
 
 def get_return_value(answer, comm_channel, target_id = None, name = None):
-    if len(answer) == 0 or answer[0] != SUCCESS:
+    if is_error(answer)[0]:
         raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))
     elif answer[1] == NULL_TYPE:
         return None
@@ -124,6 +132,22 @@ def get_return_value(answer, comm_channel, target_id = None, name = None):
         return float(answer[2:])
     elif answer[1] == STRING_TYPE:
         return answer[2:]
+    
+def is_error(answer):
+    if len(answer)==0 or answer[0] != SUCCESS:
+        return (True, None)
+    else:
+        return (False, None)
+    
+def get_field(java_object, field_name):
+    command = FIELD_COMMAND_NAME + FIELD_GET_SUBCOMMAND_NAME + java_object._target_id + '\n' + field_name + '\n' + END_COMMAND_PART
+    answer = java_object._comm_channel.send_command(command)
+    if answer == NO_MEMBER_COMMAND or is_error(answer)[0]:
+        raise Py4JError('no field %s in object %s' % (field_name, java_object._target_id))
+    else:
+        return get_return_value(answer, java_object._comm_channel, java_object._target_id, field_name)
+        
+    
 
 class Py4JError(Exception):
     """Exception thrown when a problem occurs with Py4J."""
@@ -140,7 +164,7 @@ class Py4JError(Exception):
 class CommChannel(object):
     """Default communication channel (socket based) responsible for communicating with the Java Virtual Machine."""
     
-    def __init__(self, address='localhost', port=25333, auto_close=True):
+    def __init__(self, address='localhost', port=25333, auto_close=True, auto_field=True):
         """
         :param address: the address to which the comm channel will connect
         :param port: the port to which the comm channel will connect. Default is 25333.
@@ -152,6 +176,7 @@ class CommChannel(object):
         self.socket = socket.socket(AF_INET, SOCK_STREAM)
         self.is_connected = False
         self.auto_close = auto_close
+        self.auto_field = auto_field
         
     def start(self):
         """Starts the communication channel by connecting to the `address` and the `port`"""
@@ -237,14 +262,30 @@ class JavaObject(object):
         self._target_id = target_id
         self._methods = {}
         self._comm_channel = comm_channel
+        self._auto_field = comm_channel.auto_field
         
     def _get_object_id(self):
         return self._target_id
         
     def __getattr__(self, name):
         if name not in self._methods:
+            if (self._auto_field):
+                (is_field, return_value) = self._get_field(name)
+                if (is_field):
+                    return return_value
             self._methods[name] = JavaMember(name, self._target_id, self._comm_channel)
+        
+        # The name is a method
         return self._methods[name]
+    
+    def _get_field(self, name):
+        command = FIELD_COMMAND_NAME + FIELD_GET_SUBCOMMAND_NAME + self._target_id + '\n' + name + '\n' + END_COMMAND_PART
+        answer = self._comm_channel.send_command(command)
+        if answer == NO_MEMBER_COMMAND or is_error(answer)[0]:
+            return (False, None)
+        else:
+            return_value = get_return_value(answer, self._comm_channel, self._target_id, name)
+            return (True, return_value)
     
     def __eq__(self, other):
         if other == None:
@@ -562,13 +603,15 @@ class JavaGateway(JavaObject):
     This is a trade-off between convenience and potential confusion."""
     
     
-    def __init__(self, comm_channel=None, auto_start=True):
+    def __init__(self, comm_channel=None, auto_start=True, auto_field=True):
         """
         :param comm_channel: communication channel used to connect to the JVM. If `None`, a communication channel based on a socket with the default parameters is created.
         :param auto_start: if `True`, the JavaGateway connects to the JVM as soon as it is created. Otherwise, you need to explicitly call `gateway.comm_channel.start()`.
         """
         if comm_channel == None:
             comm_channel = CommChannel()
+            
+        comm_channel.auto_field = auto_field
             
         JavaObject.__init__(self, ENTRY_POINT_OBJECT_ID, comm_channel)
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, comm_channel)
