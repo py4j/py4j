@@ -5,7 +5,7 @@ Created on Dec 10, 2009
 '''
 from IN import AF_INET, SOCK_STREAM
 from multiprocessing.process import Process
-from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field
+from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, get_method
 from socket import socket
 import subprocess
 import time
@@ -213,6 +213,13 @@ class FieldTest(unittest.TestCase):
             
         gateway.shutdown()
         
+    def testGetMethod(self):
+        # This is necessary if a field hides a method...
+        gateway = JavaGateway()
+        ex = gateway.getNewExample()
+        self.assertEqual(1,get_method(ex,'method1')())
+        gateway.shutdown()
+        
 class JVMTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
@@ -238,8 +245,6 @@ class JVMTest(unittest.TestCase):
         l2 = [u'hello world', 1]
         self.assertEqual(str(l2), str(l1))
         gateway.shutdown()
-        
-
         
     def testStaticMethods(self):
         gateway = JavaGateway()

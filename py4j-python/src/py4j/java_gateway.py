@@ -147,7 +147,8 @@ def get_field(java_object, field_name):
     else:
         return get_return_value(answer, java_object._comm_channel, java_object._target_id, field_name)
         
-    
+def get_method(java_object, method_name):
+    return JavaMember(method_name, java_object._target_id, java_object._comm_channel)
 
 class Py4JError(Exception):
     """Exception thrown when a problem occurs with Py4J."""
