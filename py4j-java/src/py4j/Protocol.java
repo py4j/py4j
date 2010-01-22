@@ -88,6 +88,7 @@ public class Protocol {
 
 	// SHORTCUT
 	public final static String ERROR_COMMAND = "x";
+	public final static String NO_SUCH_FIELD = "yo";
 	
 	// ENTRY POINT
 	public final static String ENTRY_POINT_OBJECT_ID = "t";
@@ -352,5 +353,9 @@ public class Protocol {
 		}
 
 		return c;
+	}
+
+	public static String getNoSuchFieldOutputCommand() {
+		return NO_SUCH_FIELD;
 	}
 }

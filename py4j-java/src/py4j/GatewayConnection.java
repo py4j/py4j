@@ -49,45 +49,60 @@ public class GatewayConnection implements Runnable {
 	private final Socket socket;
 	private final BufferedWriter writer;
 	private final BufferedReader reader;
-	private final Map<String,Command> commands;
-	private final Logger logger = Logger.getLogger(GatewayConnection.class.getName());
-	
-	public GatewayConnection(GatewayServer gatewayServer, Gateway gateway, Socket socket) throws IOException {
+	private final Map<String, Command> commands;
+	private final Logger logger = Logger.getLogger(GatewayConnection.class
+			.getName());
+
+	public GatewayConnection(GatewayServer gatewayServer, Gateway gateway,
+			Socket socket) throws IOException {
 		super();
 		this.gateway = gateway;
 		this.gatewayServer = gatewayServer;
 		this.socket = socket;
-		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
-		this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
-		this.commands = new HashMap<String,Command>();
+		this.reader = new BufferedReader(new InputStreamReader(socket
+				.getInputStream(), Charset.forName("UTF-8")));
+		this.writer = new BufferedWriter(new OutputStreamWriter(socket
+				.getOutputStream(), Charset.forName("UTF-8")));
+		this.commands = new HashMap<String, Command>();
 		initCommands(gateway);
 		Thread t = new Thread(this);
 		t.start();
 	}
-	
+
 	/**
-	 * <p>Override this method to initialize custom commands.</p>
+	 * <p>
+	 * Override this method to initialize custom commands.
+	 * </p>
+	 * 
 	 * @param gateway
 	 */
 	protected void initCommands(Gateway gateway) {
 		Command callCommand = new CallCommand();
+		Command fieldCommand = new FieldCommand();
 		Command constructorCommand = new ConstructorCommand();
 		Command listCommand = new ListCommand();
 		Command reflectionCommand = new ReflectionCommand();
-		Command shutdownCommand = new ShutdownGatewayServerCommand(gatewayServer);
+		Command shutdownCommand = new ShutdownGatewayServerCommand(
+				gatewayServer);
 		callCommand.init(gateway);
+		fieldCommand.init(gateway);
 		constructorCommand.init(gateway);
 		listCommand.init(gateway);
 		reflectionCommand.init(gateway);
 		shutdownCommand.init(gateway);
-		commands.put(CallCommand.CALL_COMMAND_NAME,callCommand);
-		commands.put(ConstructorCommand.CONSTRUCTOR_COMMAND_NAME, constructorCommand);
-		commands.put(ListCommand.LIST_COMMAND_NAME,listCommand);
-		commands.put(ReflectionCommand.REFLECTION_COMMAND_NAME, reflectionCommand);
-		commands.put(ShutdownGatewayServerCommand.SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME,shutdownCommand);
+		commands.put(CallCommand.CALL_COMMAND_NAME, callCommand);
+		commands.put(FieldCommand.FIELD_COMMAND_NAME, fieldCommand);
+		commands.put(ConstructorCommand.CONSTRUCTOR_COMMAND_NAME,
+				constructorCommand);
+		commands.put(ListCommand.LIST_COMMAND_NAME, listCommand);
+		commands.put(ReflectionCommand.REFLECTION_COMMAND_NAME,
+				reflectionCommand);
+		commands
+				.put(
+						ShutdownGatewayServerCommand.SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME,
+						shutdownCommand);
 	}
-	
-	
+
 	@Override
 	public void run() {
 		try {
@@ -100,8 +115,9 @@ public class GatewayConnection implements Runnable {
 					command.execute(commandLine, reader, writer);
 				}
 			} while (commandLine != null && !commandLine.equals('q'));
-		} catch(Exception e) {
-			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,
+					"Error occurred while waiting for a command.", e);
 		} finally {
 			logger.log(Level.INFO, "Closing connection.");
 			NetworkUtil.quietlyClose(writer);

@@ -133,6 +133,11 @@ public class Gateway {
 		}
 	}
 
+	/**
+	 * 
+	 * @param objectId
+	 * @return The object associated with the id or null if the object id is unknown.
+	 */
 	public Object getObject(String objectId) {
 		return bindings.get(objectId);
 	}
@@ -185,7 +190,7 @@ public class Gateway {
 			MethodInvoker method = rEngine.getConstructor(fqn, parameters);
 			Object object = rEngine.invoke(null, method, parameters);
 			returnObject = getReturnObject(object);
-			trackConnectionObject(returnObject);
+			
 		} catch (Exception e) {
 			throw new Py4JException(e);
 		}
@@ -216,10 +221,8 @@ public class Gateway {
 						methodName, parameters);
 			}
 
-			Object object = rEngine.invoke(targetObject, method,
-					parameters);
+			Object object = rEngine.invoke(targetObject, method, parameters);
 			returnObject = getReturnObject(object);
-			trackConnectionObject(returnObject);
 		} catch (Exception e) {
 			throw new Py4JException(e);
 		}
@@ -258,6 +261,7 @@ public class Gateway {
 				String objectId = putNewObject(object);
 				// TODO Handle lists, maps, etc.
 				returnObject = ReturnObject.getReferenceReturnObject(objectId);
+				trackConnectionObject(returnObject);
 			}
 		} else {
 			returnObject = ReturnObject.getNullReturnObject();

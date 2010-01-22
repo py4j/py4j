@@ -31,39 +31,67 @@ package py4j;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.List;
-import java.util.logging.Level;
+import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
-public class ConstructorCommand extends AbstractCommand {
+import py4j.reflection.ReflectionEngine;
 
-	private final Logger logger = Logger.getLogger(CallCommand.class.getName());
+public class FieldCommand extends AbstractCommand {
 
-	public final static String CONSTRUCTOR_COMMAND_NAME = "i";
+	private final Logger logger = Logger
+			.getLogger(FieldCommand.class.getName());
+
+	public final static String FIELD_COMMAND_NAME = "f";
+
+	public final static String FIELD_GET_SUB_COMMAND_NAME = "g";
+
+	public final static String FIELD_SET_SUB_COMMAND_NAME = "s";
+
+	private ReflectionEngine reflectionEngine;
+
+	@Override
+	public void init(Gateway gateway) {
+		super.init(gateway);
+		reflectionEngine = gateway.getReflectionEngine();
+	}
 
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
-		String fqn = reader.readLine();
-		List<Argument> arguments = getArguments(reader);
+		String returnCommand = null;
+		String subCommand = reader.readLine();
 
-		ReturnObject returnObject = invokeConstructor(fqn, arguments);
-		
-		String returnCommand = Protocol.getOutputCommand(returnObject);
+		if (subCommand.equals(FIELD_GET_SUB_COMMAND_NAME)) {
+			returnCommand = getField(reader);
+		} else {
+			returnCommand = setField(reader);
+		}
 		logger.info("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}
-	
-	protected ReturnObject invokeConstructor(String fqn, List<Argument> arguments) {
-		ReturnObject returnObject = null;
-		try {
-			returnObject = gateway.invoke(fqn, arguments);
-		} catch (Exception e) {
-			logger.log(Level.INFO, "Received exception while executing this command: " + fqn, e);
-			returnObject = ReturnObject.getErrorReturnObject();
+
+	private String getField(BufferedReader reader) throws IOException {
+		String targetObjectId = reader.readLine();
+		String fieldName = reader.readLine();
+		reader.readLine(); // read EndOfCommand.
+
+		Object object = gateway.getObject(targetObjectId);
+		Field field = reflectionEngine.getField(object, fieldName);
+		String returnCommand = null;
+		if (field == null) {
+			returnCommand = Protocol.getNoSuchFieldOutputCommand();
+		} else {
+			Object fieldObject = reflectionEngine.getFieldValue(object, field);
+			ReturnObject rObject = gateway.getReturnObject(fieldObject);
+			returnCommand = Protocol.getOutputCommand(rObject);
 		}
-		return returnObject;
+		return returnCommand;
+	}
+
+	private String setField(BufferedReader reader) throws IOException {
+		// TODO Implement this method!
+		return Protocol.getOutputErrorCommand();
 	}
 
 }

@@ -36,6 +36,12 @@ public class ExampleClass {
 
 	private int field1 = 2;
 	
+	public int field10 = 10;
+	
+	public StringBuffer field20 = new StringBuffer();
+	
+	public StringBuffer field21;
+	
 	public ExampleClass() {
 		
 	}

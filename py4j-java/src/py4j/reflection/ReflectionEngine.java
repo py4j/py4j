@@ -63,7 +63,8 @@ public class ReflectionEngine {
 		MethodInvoker lowestCost = null;
 
 		for (Constructor<?> constructor : acceptableConstructors) {
-			MethodInvoker temp = MethodInvoker.buildInvoker(constructor, parameters);
+			MethodInvoker temp = MethodInvoker.buildInvoker(constructor,
+					parameters);
 			int cost = temp.getCost();
 			if (cost == -1) {
 				continue;
@@ -127,8 +128,8 @@ public class ReflectionEngine {
 	}
 
 	public MethodInvoker getConstructor(Class<?> clazz, Class<?>[] parameters) {
-		MethodDescriptor mDescriptor = new MethodDescriptor(clazz.getName(), clazz,
-				parameters);
+		MethodDescriptor mDescriptor = new MethodDescriptor(clazz.getName(),
+				clazz, parameters);
 		MethodInvoker mInvoker = null;
 		List<Constructor<?>> acceptableConstructors = null;
 		LRUCache<MethodDescriptor, MethodInvoker> cache = cacheHolder.get();
@@ -136,13 +137,15 @@ public class ReflectionEngine {
 		mInvoker = cache.get(mDescriptor);
 
 		if (mInvoker == null) {
-			acceptableConstructors = getConstructorsByLength(clazz, parameters.length);
+			acceptableConstructors = getConstructorsByLength(clazz,
+					parameters.length);
 
 			if (acceptableConstructors.size() == 1) {
-				mInvoker = MethodInvoker.buildInvoker(acceptableConstructors.get(0),
-						parameters);
+				mInvoker = MethodInvoker.buildInvoker(acceptableConstructors
+						.get(0), parameters);
 			} else {
-				mInvoker = getBestConstructor(acceptableConstructors, parameters);
+				mInvoker = getBestConstructor(acceptableConstructors,
+						parameters);
 			}
 
 			if (mInvoker != null && mInvoker.getCost() != -1) {
@@ -172,7 +175,8 @@ public class ReflectionEngine {
 		return getConstructor(clazz, getClassParameters(parameters));
 	}
 
-	private List<Constructor<?>> getConstructorsByLength(Class<?> clazz, int length) {
+	private List<Constructor<?>> getConstructorsByLength(Class<?> clazz,
+			int length) {
 		List<Constructor<?>> methods = new ArrayList<Constructor<?>>();
 
 		for (Constructor<?> constructor : clazz.getConstructors()) {
@@ -184,6 +188,13 @@ public class ReflectionEngine {
 		return methods;
 	}
 
+	/**
+	 * 
+	 * @param clazz
+	 * @param name
+	 * @return The field or null if a field with this name does not exist in
+	 *         this class or in its hierarchy.
+	 */
 	public Field getField(Class<?> clazz, String name) {
 		Field field = null;
 
@@ -202,6 +213,13 @@ public class ReflectionEngine {
 		return field;
 	}
 
+	/**
+	 * 
+	 * @param obj
+	 * @param name
+	 * @return The field or null if a field with this name does not exist in
+	 *         the class of this object or in its hierarchy.
+	 */
 	public Field getField(Object obj, String name) {
 		return getField(obj.getClass(), name);
 	}
