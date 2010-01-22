@@ -171,6 +171,7 @@ class CommChannel(object):
         :param port: the port to which the comm channel will connect. Default is 25333.
         :param auto_close: if `True`, the communication channel closes the socket when it is garbage 
           collected (i.e., when `CommChannel.__del__()` is called).
+        :param auto_field: if `False`, each object accessed through this communication channel won't try to lookup fields (they will be accessible only by calling get_field). If `True`, fields will be automatically looked up, possibly hiding methods of the same name and making method calls less efficient.
         """
         self.address = address
         self.port = port
@@ -608,6 +609,7 @@ class JavaGateway(JavaObject):
         """
         :param comm_channel: communication channel used to connect to the JVM. If `None`, a communication channel based on a socket with the default parameters is created.
         :param auto_start: if `True`, the JavaGateway connects to the JVM as soon as it is created. Otherwise, you need to explicitly call `gateway.comm_channel.start()`.
+        :param auto_field: if `False`, each object accessed through this gateway won't try to lookup fields (they will be accessible only by calling get_field). If `True`, fields will be automatically looked up, possibly hiding methods of the same name and making method calls less efficient.
         """
         if comm_channel == None:
             comm_channel = CommChannel()
