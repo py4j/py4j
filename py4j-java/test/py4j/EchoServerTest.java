@@ -44,6 +44,7 @@ public class EchoServerTest {
 	@Test
 	public void testConnection() {
 		try {
+			Thread.sleep(250);
 			EchoServer.main(null);
 			Thread.sleep(250);
 			Socket testSocket = new Socket("localhost", EchoServer.TEST_PORT);
@@ -67,11 +68,11 @@ public class EchoServerTest {
 			BufferedWriter clientWriter = new BufferedWriter(
 					new OutputStreamWriter(clientSocket.getOutputStream()));
 
-			clientWriter.write("c\ng\ngetExample\ne\n");
+			clientWriter.write("c\nt\ngetExample\ne\n");
 			clientWriter.flush();
 			int count = clientReader.read(buffer);
 			assertEquals(new String(buffer, 0, count), "yi7");
-			clientWriter.write("c\no1\nmethod1\ni1\nbtrue\ne\n");
+			clientWriter.write("c\no0\nmethod1\ni1\nbtrue\ne\n");
 			clientWriter.flush();
 			count = clientReader.read(buffer);
 			assertEquals(new String(buffer, 0, count), "x");

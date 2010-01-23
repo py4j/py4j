@@ -42,7 +42,7 @@ import py4j.examples.ExampleEntryPoint;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class DefaultJavaGatewayTest {
+public class GatewayTest {
 
 	private Gateway gateway;
 	private ExampleEntryPoint entryPoint;
@@ -56,6 +56,12 @@ public class DefaultJavaGatewayTest {
 	@After
 	public void tearDown() {
 		gateway.shutdown();
+	}
+	
+	@Test
+	public void testConnectionProperty() {
+		ConnectionProperty cProperty = (ConnectionProperty) gateway.getObject(Protocol.CONNECTION_PROPERTY_OBJECT_ID);
+		assertTrue(cProperty.isCleanConnection());
 	}
 
 	@Test

@@ -42,6 +42,7 @@ public class EchoClientTest {
 	@Test
 	public void testConnection() {
 		try {
+			Thread.sleep(250);
 			EchoServer.main(null);
 			Socket testSocket = new Socket("localhost",EchoServer.TEST_PORT);
 			BufferedWriter testWriter = new BufferedWriter(new OutputStreamWriter(testSocket.getOutputStream()));

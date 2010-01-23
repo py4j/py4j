@@ -117,8 +117,22 @@ public class Gateway {
 		return buffer.toString();
 	}
 
+	/**
+	 * <p>
+	 * Called when a connection is closed. Access ThreadLocal data to perform
+	 * cleanup if necessary.
+	 * </p>
+	 * <p>
+	 * Because there is one thread per connection, ThreadLocal data belong to a
+	 * single connection.
+	 * </p>
+	 */
 	public void closeConnection() {
-
+		if (connectionProperty.get().isCleanConnection()) {
+			for (String objectId : connectionObjects.get()) {
+				this.bindings.remove(objectId);
+			}
+		}
 	}
 
 	public void shutdown() {
@@ -136,10 +150,15 @@ public class Gateway {
 	/**
 	 * 
 	 * @param objectId
-	 * @return The object associated with the id or null if the object id is unknown.
+	 * @return The object associated with the id or null if the object id is
+	 *         unknown.
 	 */
 	public Object getObject(String objectId) {
-		return bindings.get(objectId);
+		if (objectId.equals(Protocol.CONNECTION_PROPERTY_OBJECT_ID)) {
+			return connectionProperty.get();
+		} else {
+			return bindings.get(objectId);
+		}
 	}
 
 	public boolean isStarted() {
@@ -190,7 +209,7 @@ public class Gateway {
 			MethodInvoker method = rEngine.getConstructor(fqn, parameters);
 			Object object = rEngine.invoke(null, method, parameters);
 			returnObject = getReturnObject(object);
-			
+
 		} catch (Exception e) {
 			throw new Py4JException(e);
 		}
@@ -289,6 +308,15 @@ public class Gateway {
 
 		}
 	}
+
+	private static ThreadLocal<ConnectionProperty> connectionProperty = new ThreadLocal<ConnectionProperty>() {
+
+		@Override
+		protected ConnectionProperty initialValue() {
+			return new ConnectionProperty();
+		}
+
+	};
 
 	private static ThreadLocal<Set<String>> connectionObjects = new ThreadLocal<Set<String>>() {
 

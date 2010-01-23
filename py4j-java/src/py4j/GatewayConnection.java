@@ -43,7 +43,6 @@ import java.util.logging.Logger;
 
 public class GatewayConnection implements Runnable {
 
-	@SuppressWarnings("unused")
 	private final Gateway gateway;
 	private final GatewayServer gatewayServer;
 	private final Socket socket;
@@ -52,7 +51,7 @@ public class GatewayConnection implements Runnable {
 	private final Map<String, Command> commands;
 	private final Logger logger = Logger.getLogger(GatewayConnection.class
 			.getName());
-
+	
 	public GatewayConnection(GatewayServer gatewayServer, Gateway gateway,
 			Socket socket) throws IOException {
 		super();
@@ -123,6 +122,7 @@ public class GatewayConnection implements Runnable {
 			NetworkUtil.quietlyClose(writer);
 			NetworkUtil.quietlyClose(reader);
 			NetworkUtil.quietlyClose(socket);
+			gateway.closeConnection();
 		}
 	}
 
