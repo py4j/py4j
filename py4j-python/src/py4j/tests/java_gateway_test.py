@@ -15,7 +15,7 @@ SERVER_PORT = 25333
 TEST_PORT = 25332
 
 def start_echo_server():
-    subprocess.call(["java","-cp", "../../../../py4j-java/bin/","py4j.EchoServer"])
+    subprocess.call(["java", "-cp", "../../../../py4j-java/bin/", "py4j.EchoServer"])
     
     
 def start_echo_server_process():
@@ -59,11 +59,11 @@ class TestCommChannel(object):
 class ProtocolTest(unittest.TestCase):
     def testProtocolSend(self):
         testChannel = TestCommChannel()
-        gateway = JavaGateway(testChannel, True,False)
+        gateway = JavaGateway(testChannel, True, False)
         e = gateway.getExample()
-        self.assertEqual('c\nt\ngetExample\ne\n',testChannel.last_message)
-        e.method1(1,True,'Hello\nWorld',e,None,1.5)
-        self.assertEqual('c\no0\nmethod1\ni1\nbTrue\nsHello\\nWorld\nro0\nn\nd1.5\ne\n',testChannel.last_message)
+        self.assertEqual('c\nt\ngetExample\ne\n', testChannel.last_message)
+        e.method1(1, True, 'Hello\nWorld', e, None, 1.5)
+        self.assertEqual('c\no0\nmethod1\ni1\nbTrue\nsHello\\nWorld\nro0\nn\nd1.5\ne\n', testChannel.last_message)
     
     def testProtocolReceive(self):
         p = start_echo_server_process()
@@ -85,11 +85,11 @@ class ProtocolTest(unittest.TestCase):
             testSocket.close()
             time.sleep(1)
             
-            gateway = JavaGateway()
+            gateway = JavaGateway(auto_field=True)
             ex = gateway.getNewExample()
-            self.assertEqual('Hello World',ex.method3(1, True))
-            self.assertEqual(123,ex.method3())
-            self.assertAlmostEqual(1.25,ex.method3())
+            self.assertEqual('Hello World', ex.method3(1, True))
+            self.assertEqual(123, ex.method3())
+            self.assertAlmostEqual(1.25, ex.method3())
             self.assertTrue(ex.method2() == None)
             self.assertTrue(ex.method4())
             gateway.close()
@@ -123,13 +123,13 @@ class IntegrationTest(unittest.TestCase):
             testSocket.close()
             time.sleep(1)
             
-            gateway = JavaGateway()
+            gateway = JavaGateway(auto_field=True)
             ex = gateway.getNewExample()
             response = ex.method3(1, True)
-            self.assertEqual('Hello World',response)
+            self.assertEqual('Hello World', response)
             ex2 = gateway.entry_point.getNewExample();
             response = ex2.method3(1, True)
-            self.assertEqual('Hello World2',response)
+            self.assertEqual('Hello World2', response)
             
             gateway.close()
         except Exception as e:
@@ -146,7 +146,7 @@ class IntegrationTest(unittest.TestCase):
             testSocket.close()
             time.sleep(1)
             
-            gateway = JavaGateway()
+            gateway = JavaGateway(auto_field=True)
             ex = gateway.getNewExample()
                 
             try:
@@ -171,31 +171,31 @@ class FieldTest(unittest.TestCase):
         self.p.join()
         
     def testAutoField(self):
-        gateway = JavaGateway()
+        gateway = JavaGateway(auto_field=True)
         ex = gateway.getNewExample()
-        self.assertEqual(ex.field10,10)
+        self.assertEqual(ex.field10, 10)
         sb = ex.field20
         sb.append('Hello')
-        self.assertEqual(u'Hello',sb.toString())
+        self.assertEqual(u'Hello', sb.toString())
         self.assertTrue(ex.field21 == None)
         gateway.shutdown()
     
     def testNoField(self):
-        gateway = JavaGateway()
+        gateway = JavaGateway(auto_field=True)
         ex = gateway.getNewExample()
         member = ex.field50
         self.assertTrue(isinstance(member, JavaMember))
         gateway.shutdown()
         
     def testNoAutoField(self):
-        gateway = JavaGateway(auto_field = False)
+        gateway = JavaGateway(auto_field=False)
         ex = gateway.getNewExample()
         self.assertTrue(isinstance(ex.field10, JavaMember))
         self.assertTrue(isinstance(ex.field50, JavaMember))
-        self.assertEqual(10,get_field(ex,'field10'))
+        self.assertEqual(10, get_field(ex, 'field10'))
         
         try:
-            get_field(ex,'field50')
+            get_field(ex, 'field50')
             self.fail()
         except:
             self.assertTrue(True)
@@ -203,10 +203,10 @@ class FieldTest(unittest.TestCase):
         ex._auto_field = True
         sb = ex.field20
         sb.append('Hello')
-        self.assertEqual(u'Hello',sb.toString())
+        self.assertEqual(u'Hello', sb.toString())
         
         try:
-            get_field(ex,'field20')
+            get_field(ex, 'field20')
             self.fail()
         except:
             self.assertTrue(True)
@@ -217,7 +217,7 @@ class FieldTest(unittest.TestCase):
         # This is necessary if a field hides a method...
         gateway = JavaGateway()
         ex = gateway.getNewExample()
-        self.assertEqual(1,get_method(ex,'method1')())
+        self.assertEqual(1, get_method(ex, 'method1')())
         gateway.shutdown()
         
 class JVMTest(unittest.TestCase):
