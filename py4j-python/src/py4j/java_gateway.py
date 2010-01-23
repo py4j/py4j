@@ -367,6 +367,8 @@ class JavaGateway(JavaObject):
     
     * The `entry_point` field of a `JavaGateway` instance is connected to the `Gateway.entryPoint` instance on the Java side.
     
+    * The `jvm` field of `JavaGateway` enables user to access classes, static members (fields and methods) and call constructors.
+    
     Methods that are not defined by `JavaGateway` are always redirected to `entry_point`. For example, ``gateway.doThat()`` is equivalent to ``gateway.entry_point.doThat()``.
     This is a trade-off between convenience and potential confusion."""
     
@@ -400,4 +402,4 @@ class JavaGateway(JavaObject):
         
 # For circular dependencies
 # Purists should close their eyes
-from py4j.special_types import JavaList
+from py4j.collections import JavaList

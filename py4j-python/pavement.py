@@ -78,6 +78,7 @@ def big_release():
 @task
 @needs('html')
 def html_complete():
+    """Build Py4J documentation: python documentation, web site, and javadoc. Put documentation into our py4j-python/doc."""
     sh('ant clean-doc', False, False, '../py4j-java')
     sh('ant javadoc', False, False, '../py4j-java')
     
