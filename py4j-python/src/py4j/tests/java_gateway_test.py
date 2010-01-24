@@ -220,6 +220,66 @@ class FieldTest(unittest.TestCase):
         self.assertEqual(1, get_method(ex, 'method1')())
         gateway.shutdown()
         
+class ConnectionPropertyTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+        
+    def tearDown(self):
+        self.p.join()
+        
+    def testDefaultProperties(self):
+        gateway = JavaGateway()
+        gateway2 = JavaGateway()
+        
+        sb = gateway.jvm.java.lang.StringBuffer()
+        sb.append('Hello World')
+        self.assertEqual(u'Hello World', sb.toString())
+        gateway.close()
+        
+        try:
+            # Should not work because sb reference has been removed from the gateway when the
+            # gateway connection closed.
+            l = gateway2.jvm.java.util.ArrayList()
+            l.append(sb)
+            self.fail()
+        except:
+            self.assertTrue(True)
+            
+        gateway2.shutdown()
+        # TODO FOR MORE FUN, ONLY ADD SB IN LIST AFTER GATEWAY IS CLOSE. OTHER, SB WILL ALWAYS FAIL BECAUSE COMM_CHANNEL IS CLOSED! DUH!
+        
+        
+    def testCleanConnection(self):
+        gateway = JavaGateway()
+        gateway.connection_property.setCleanConnection(False)
+        gateway2 = JavaGateway()
+        
+        sb = gateway.jvm.java.lang.StringBuffer()
+        sb.append('Hello World')
+        
+        self.assertEqual(u'Hello World', sb.toString())
+        gateway.close()
+        
+        l = gateway2.jvm.java.util.ArrayList()
+        l.append(sb)
+        sb2 = l[0]
+        self.assertEqual(u'Hello World', sb2.toString())
+            
+        sb2.append('Should Work Now')
+        self.assertEqual(u'Hello WorldShould Work Now', sb2.toString())
+        
+        gateway2.shutdown()
+        
+        try:
+            # Should not work because gateway has shutdown.
+            sb2.append('Should not work')
+            self.fail()
+        except:
+            self.assertTrue(True)
+
+        
 class JVMTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()

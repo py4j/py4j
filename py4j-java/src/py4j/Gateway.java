@@ -129,6 +129,7 @@ public class Gateway {
 	 */
 	public void closeConnection() {
 		if (connectionProperty.get().isCleanConnection()) {
+			logger.info("Cleaning Connection");
 			for (String objectId : connectionObjects.get()) {
 				this.bindings.remove(objectId);
 			}
@@ -253,7 +254,7 @@ public class Gateway {
 		if (targetObjectId.startsWith(Protocol.STATIC_PREFIX)) {
 			return null;
 		} else {
-			return bindings.get(targetObjectId);
+			return getObject(targetObjectId);
 		}
 	}
 
