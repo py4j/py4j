@@ -82,6 +82,24 @@ public class Gateway {
 	@SuppressWarnings("unused")
 	private boolean cleanUpConnection = false;
 
+	private static ThreadLocal<ConnectionProperty> connectionProperty = new ThreadLocal<ConnectionProperty>() {
+
+		@Override
+		protected ConnectionProperty initialValue() {
+			return new ConnectionProperty();
+		}
+
+	};
+
+	private static ThreadLocal<Set<String>> connectionObjects = new ThreadLocal<Set<String>>() {
+
+		@Override
+		protected Set<String> initialValue() {
+			return new HashSet<String>();
+		}
+
+	};
+
 	public Gateway(Object entryPoint) {
 		this(entryPoint, false);
 	}
@@ -89,6 +107,57 @@ public class Gateway {
 	public Gateway(Object entryPoint, boolean cleanUpConnection) {
 		this.entryPoint = entryPoint;
 		this.cleanUpConnection = cleanUpConnection;
+	}
+
+	public ReturnObject attachObject(String objectId) {
+		Object object = getObjectFromId(objectId);
+		if (object == null) {
+			throw new Py4JException("Cannot attach " + objectId + ": it does not exist.");
+		}
+		return getReturnObject(object);
+	}
+	
+	private void buildArgs(List<Argument> args, List<Object> parametersList) {
+		for (Argument arg : args) {
+			if (!arg.isReference()) {
+				parametersList.add(arg.getValue());
+			} else {
+				parametersList.add(bindings.get(arg.getValue().toString()));
+			}
+
+		}
+	}
+
+	/**
+	 * <p>
+	 * Called when a connection is closed. Access ThreadLocal data to perform
+	 * cleanup if necessary.
+	 * </p>
+	 * <p>
+	 * Because there is one thread per connection, ThreadLocal data belong to a
+	 * single connection.
+	 * </p>
+	 */
+	public void closeConnection() {
+		if (connectionProperty.get().isCleanConnection()) {
+			logger.info("Cleaning Connection");
+			for (String objectId : connectionObjects.get()) {
+				this.bindings.remove(objectId);
+			}
+		}
+	}
+	
+	public void deleteObject(String objectId) {
+		bindings.remove(objectId);
+		connectionObjects.get().remove(objectId);
+	}
+	
+	protected AtomicInteger getArgCounter() {
+		return argCounter;
+	}
+
+	protected Map<String, Object> getBindings() {
+		return bindings;
 	}
 
 	public Object getEntryPoint() {
@@ -117,35 +186,12 @@ public class Gateway {
 		return buffer.toString();
 	}
 
-	/**
-	 * <p>
-	 * Called when a connection is closed. Access ThreadLocal data to perform
-	 * cleanup if necessary.
-	 * </p>
-	 * <p>
-	 * Because there is one thread per connection, ThreadLocal data belong to a
-	 * single connection.
-	 * </p>
-	 */
-	public void closeConnection() {
-		if (connectionProperty.get().isCleanConnection()) {
-			logger.info("Cleaning Connection");
-			for (String objectId : connectionObjects.get()) {
-				this.bindings.remove(objectId);
-			}
-		}
+	protected String getNextObjectId() {
+		return OBJECT_NAME_PREFIX + objCounter.getAndIncrement();
 	}
 
-	public void shutdown() {
-		isStarted = false;
-		bindings.clear();
-	}
-
-	public void startup() {
-		isStarted = true;
-		if (entryPoint != null) {
-			bindings.put(Protocol.ENTRY_POINT_OBJECT_ID, entryPoint);
-		}
+	protected AtomicInteger getObjCounter() {
+		return objCounter;
 	}
 
 	/**
@@ -162,38 +208,40 @@ public class Gateway {
 		}
 	}
 
-	public boolean isStarted() {
-		return isStarted;
-	}
-
-	public void setStarted(boolean isStarted) {
-		this.isStarted = isStarted;
-	}
-
-	protected String getNextObjectId() {
-		return OBJECT_NAME_PREFIX + objCounter.getAndIncrement();
-	}
-
-	protected AtomicInteger getObjCounter() {
-		return objCounter;
-	}
-
-	protected AtomicInteger getArgCounter() {
-		return argCounter;
-	}
-
-	protected String putNewObject(Object object) {
-		String id = getNextObjectId();
-		bindings.put(id, object);
-		return id;
-	}
-
-	protected Map<String, Object> getBindings() {
-		return bindings;
+	protected Object getObjectFromId(String targetObjectId) {
+		if (targetObjectId.startsWith(Protocol.STATIC_PREFIX)) {
+			return null;
+		} else {
+			return getObject(targetObjectId);
+		}
 	}
 
 	public ReflectionEngine getReflectionEngine() {
 		return rEngine;
+	}
+
+	@SuppressWarnings("unchecked")
+	public ReturnObject getReturnObject(Object object) {
+		ReturnObject returnObject;
+		if (object != null) {
+			if (isPrimitiveObject(object)) {
+				returnObject = ReturnObject.getPrimitiveReturnObject(object);
+			} else if (object == ReflectionEngine.RETURN_VOID) {
+				returnObject = ReturnObject.getVoidReturnObject();
+			} else if (isList(object)) {
+				String objectId = putNewObject(object);
+				returnObject = ReturnObject.getListReturnObject(objectId,
+						((List) object).size());
+			} else {
+				String objectId = putNewObject(object);
+				// TODO Handle lists, maps, etc.
+				returnObject = ReturnObject.getReferenceReturnObject(objectId);
+				trackConnectionObject(returnObject);
+			}
+		} else {
+			returnObject = ReturnObject.getNullReturnObject();
+		}
+		return returnObject;
 	}
 
 	public ReturnObject invoke(String fqn, List<Argument> args) {
@@ -250,11 +298,39 @@ public class Gateway {
 		return returnObject;
 	}
 
-	protected Object getObjectFromId(String targetObjectId) {
-		if (targetObjectId.startsWith(Protocol.STATIC_PREFIX)) {
-			return null;
-		} else {
-			return getObject(targetObjectId);
+	@SuppressWarnings("unchecked")
+	protected boolean isList(Object object) {
+		return object instanceof List;
+	}
+
+	protected boolean isPrimitiveObject(Object object) {
+		return object instanceof Boolean || object instanceof String
+				|| object instanceof Number || object instanceof Character;
+	}
+
+	public boolean isStarted() {
+		return isStarted;
+	}
+
+	protected String putNewObject(Object object) {
+		String id = getNextObjectId();
+		bindings.put(id, object);
+		return id;
+	}
+
+	public void setStarted(boolean isStarted) {
+		this.isStarted = isStarted;
+	}
+
+	public void shutdown() {
+		isStarted = false;
+		bindings.clear();
+	}
+
+	public void startup() {
+		isStarted = true;
+		if (entryPoint != null) {
+			bindings.put(Protocol.ENTRY_POINT_OBJECT_ID, entryPoint);
 		}
 	}
 
@@ -264,67 +340,4 @@ public class Gateway {
 			connectionObjects.get().add(returnObject.getName());
 		}
 	}
-
-	@SuppressWarnings("unchecked")
-	public ReturnObject getReturnObject(Object object) {
-		ReturnObject returnObject;
-		if (object != null) {
-			if (isPrimitiveObject(object)) {
-				returnObject = ReturnObject.getPrimitiveReturnObject(object);
-			} else if (object == ReflectionEngine.RETURN_VOID) {
-				returnObject = ReturnObject.getVoidReturnObject();
-			} else if (isList(object)) {
-				String objectId = putNewObject(object);
-				returnObject = ReturnObject.getListReturnObject(objectId,
-						((List) object).size());
-			} else {
-				String objectId = putNewObject(object);
-				// TODO Handle lists, maps, etc.
-				returnObject = ReturnObject.getReferenceReturnObject(objectId);
-				trackConnectionObject(returnObject);
-			}
-		} else {
-			returnObject = ReturnObject.getNullReturnObject();
-		}
-		return returnObject;
-	}
-
-	protected boolean isPrimitiveObject(Object object) {
-		return object instanceof Boolean || object instanceof String
-				|| object instanceof Number || object instanceof Character;
-	}
-
-	@SuppressWarnings("unchecked")
-	protected boolean isList(Object object) {
-		return object instanceof List;
-	}
-
-	private void buildArgs(List<Argument> args, List<Object> parametersList) {
-		for (Argument arg : args) {
-			if (!arg.isReference()) {
-				parametersList.add(arg.getValue());
-			} else {
-				parametersList.add(bindings.get(arg.getValue().toString()));
-			}
-
-		}
-	}
-
-	private static ThreadLocal<ConnectionProperty> connectionProperty = new ThreadLocal<ConnectionProperty>() {
-
-		@Override
-		protected ConnectionProperty initialValue() {
-			return new ConnectionProperty();
-		}
-
-	};
-
-	private static ThreadLocal<Set<String>> connectionObjects = new ThreadLocal<Set<String>>() {
-
-		@Override
-		protected Set<String> initialValue() {
-			return new HashSet<String>();
-		}
-
-	};
 }

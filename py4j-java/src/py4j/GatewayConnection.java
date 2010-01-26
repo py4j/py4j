@@ -79,6 +79,7 @@ public class GatewayConnection implements Runnable {
 		Command callCommand = new CallCommand();
 		Command fieldCommand = new FieldCommand();
 		Command constructorCommand = new ConstructorCommand();
+		Command memoryCommand = new MemoryCommand();
 		Command listCommand = new ListCommand();
 		Command reflectionCommand = new ReflectionCommand();
 		Command shutdownCommand = new ShutdownGatewayServerCommand(
@@ -86,6 +87,7 @@ public class GatewayConnection implements Runnable {
 		callCommand.init(gateway);
 		fieldCommand.init(gateway);
 		constructorCommand.init(gateway);
+		memoryCommand.init(gateway);
 		listCommand.init(gateway);
 		reflectionCommand.init(gateway);
 		shutdownCommand.init(gateway);
@@ -93,6 +95,7 @@ public class GatewayConnection implements Runnable {
 		commands.put(FieldCommand.FIELD_COMMAND_NAME, fieldCommand);
 		commands.put(ConstructorCommand.CONSTRUCTOR_COMMAND_NAME,
 				constructorCommand);
+		commands.put(MemoryCommand.MEMORY_COMMAND_NAME, memoryCommand);
 		commands.put(ListCommand.LIST_COMMAND_NAME, listCommand);
 		commands.put(ReflectionCommand.REFLECTION_COMMAND_NAME,
 				reflectionCommand);

@@ -87,8 +87,9 @@ public class Protocol {
 	public final static char SUCCESS = 'y';
 
 	// SHORTCUT
-	public final static String ERROR_COMMAND = "x";
-	public final static String NO_SUCH_FIELD = "yo";
+	public final static String ERROR_COMMAND = "" + ERROR;
+	public final static String VOID_COMMAND = "" + SUCCESS + VOID;
+	public final static String NO_SUCH_FIELD = "" + SUCCESS + NO_MEMBER;
 	
 	// ENTRY POINT
 	public final static String ENTRY_POINT_OBJECT_ID = "t";
@@ -303,6 +304,10 @@ public class Protocol {
 
 	public final static String getOutputErrorCommand() {
 		return ERROR_COMMAND;
+	}
+	
+	public final static String getOutputVoidCommand() {
+		return VOID_COMMAND;
 	}
 	
 	public final static String getMemberOutputCommand(char memberType) {
