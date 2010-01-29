@@ -63,6 +63,7 @@ CONSTRUCTOR_COMMAND_NAME = 'i\n'
 SHUTDOWN_GATEWAY_COMMAND_NAME = 's\n'
 LIST_COMMAND_NAME = 'l\n'
 REFLECTION_COMMAND_NAME = "r\n";
+MEMORY_COMMAND_NAME = "m\n";
 
 # Reflection subcommands
 REFL_GET_UNKNOWN_SUB_COMMAND_NAME = 'u\n';
@@ -82,7 +83,9 @@ LIST_COUNT_SUBCOMMAND_NAME = 'f\n'
 FIELD_GET_SUBCOMMAND_NAME = 'g\n'
 FIELD_SET_SUBCOMMAND_NAME = 's\n'
 
-
+# Memory subcommands
+MEMORY_DEL_SUBCOMMAND_NAME = 'd\n'
+MEMORY_ATTACH_SUBCOMMAND_NAME = 'a\n'
 
 def escape_new_line(original):
     """Replaces new line characters by a backslash followed by a n.
@@ -178,6 +181,7 @@ class CommChannel(object):
         self.socket = socket.socket(AF_INET, SOCK_STREAM)
         self.is_connected = False
         self.auto_close = auto_close
+        self.queue = []
         
     def start(self):
         """Starts the communication channel by connecting to the `address` and the `port`"""
@@ -219,6 +223,16 @@ class CommChannel(object):
         """
         if self.auto_close and self.socket != None and self.is_connected:
             self.close()
+            
+    def delay_command(self, command):
+        self.queue.append(command)
+        
+    def send_delay(self):
+        if len(self.queue) > 0 and self.is_connected:
+            logger.debug('')
+            return self.send_command(self.queue.pop(0))
+        else:
+            return None
         
     def send_command(self, command):
         """Sends a command to the JVM. This method is not intended to be called directly by Py4J users: it is usually called by JavaMember instances.
@@ -231,6 +245,7 @@ class CommChannel(object):
         self.socket.sendall(command.encode('utf-8'))
         answer = self.socket.recv(BUFFER_SIZE).decode('utf-8')
         logger.debug("Answer received: %s" % (answer))
+        self.send_delay()
         return answer
 
 class JavaMember(object):
@@ -303,6 +318,10 @@ class JavaObject(object):
     def __repr__(self):
         # For now...
         return self.toString()
+    
+    def __del__(self):
+        if self._comm_channel.is_connected:
+            self._comm_channel.delay_command(MEMORY_COMMAND_NAME + MEMORY_DEL_SUBCOMMAND_NAME + self._target_id + '\ne\n')
     
 
 
@@ -404,6 +423,10 @@ class JavaGateway(JavaObject):
             
     def shutdown(self):
         self._comm_channel.shutdown_gateway()
+        
+    def attach(self, java_object):
+        answer = self._comm_channel.send_command(MEMORY_COMMAND_NAME + MEMORY_ATTACH_SUBCOMMAND_NAME + java_object._target_id + '\ne\n')
+        return get_return_value(answer, self._comm_channel, None, None)
         
 # For circular dependencies
 # Purists should close their eyes

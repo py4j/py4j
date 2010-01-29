@@ -44,6 +44,7 @@ class TestCommChannel(object):
     
     def __init__(self, return_message='yro0'):
         self.return_message = return_message
+        self.is_connected = True
         pass
     
     def start(self):
@@ -55,6 +56,14 @@ class TestCommChannel(object):
     def send_command(self, command):
         self.last_message = command
         return self.return_message
+    
+    def delay_command(self, command):
+        pass
+    
+    def send_delay(self):
+        pass
+    
+    
 
 class ProtocolTest(unittest.TestCase):
     def testProtocolSend(self):
@@ -303,6 +312,8 @@ class JVMTest(unittest.TestCase):
         self.assertEqual(2, len(l1))
         self.assertEqual(u'hello world', l1[0])
         l2 = [u'hello world', 1]
+        print(l1)
+        print(l2)
         self.assertEqual(str(l2), str(l1))
         gateway.shutdown()
         

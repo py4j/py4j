@@ -9,9 +9,11 @@ class JavaListIterator(JavaObject):
     """Maps a Python list iterator to a Java list iterator.
     
     The `JavaListIterator` follows the Python iterator protocol and raises a `StopIteration` error when the iterator can no longer iterate."""
-    def __init__(self, target_id, comm_channel):
-        JavaObject.__init__(self, target_id, comm_channel)
+    def __init__(self, java_object, comm_channel):
+        JavaObject.__init__(self, java_object._get_object_id(), comm_channel)
         self._next_name = 'next'
+        # To bind lifecycle of this iterator to the java iterator. To prevent gc of the iterator. 
+        self._java_object = java_object
         
     def __iter__(self):
         return self
@@ -43,7 +45,7 @@ class JavaList(JavaObject):
         return self.size()
 
     def __iter__(self):
-        return JavaListIterator(self.iterator()._get_object_id(), self._comm_channel)
+        return JavaListIterator(self.iterator(), self._comm_channel)
     
     def __compute_index(self, key, adjustLast = False):
         size = self.size()
