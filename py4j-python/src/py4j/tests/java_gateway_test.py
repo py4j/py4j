@@ -243,10 +243,29 @@ class MemoryManagementText(unittest.TestCase):
         gateway2 = JavaGateway()
         sb = gateway.jvm.java.lang.StringBuffer()
         sb.append('Hello World')
-        gateway.close()
         sb2 = gateway2.attach(sb)
+        gateway.close()
         sb2.append('Python')
         self.assertEqual(u'Hello WorldPython',sb2.toString())
+        gateway2.shutdown()
+        
+    def testAttachException(self):
+        gateway = JavaGateway()
+        gateway2 = JavaGateway()
+        sb = gateway.jvm.java.lang.StringBuffer()
+        sb.append('Hello World')
+        gateway.close()
+        
+        # Wait is necessary, otherwise, it may happen that sb is still not deleted when attach is sent:
+        # This is because close and attach can be executed in parallel on the Java side. The joy of multiple gateways...
+        time.sleep(1)
+        
+        try:
+            gateway2.attach(sb)
+            self.fail('Should have failed')
+        except:
+            self.assertTrue(True)
+
         gateway2.shutdown()
         
     def testNoAttach(self):
@@ -290,10 +309,9 @@ class ConnectionPropertyTest(unittest.TestCase):
             self.assertTrue(True)
             
         gateway2.shutdown()
-        # TODO FOR MORE FUN, ONLY ADD SB IN LIST AFTER GATEWAY IS CLOSE. OTHER, SB WILL ALWAYS FAIL BECAUSE COMM_CHANNEL IS CLOSED! DUH!
         
         
-    def testCleanConnection(self):
+    def testDontCleanConnection(self):
         gateway = JavaGateway()
         gateway.connection_property.setCleanConnection(False)
         gateway2 = JavaGateway()
