@@ -229,6 +229,39 @@ class FieldTest(unittest.TestCase):
         self.assertEqual(1, get_method(ex, 'method1')())
         gateway.shutdown()
         
+class MemoryManagementText(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+        
+    def tearDown(self):
+        self.p.join()
+        
+    def testAttach(self):
+        gateway = JavaGateway()
+        gateway2 = JavaGateway()
+        sb = gateway.jvm.java.lang.StringBuffer()
+        sb.append('Hello World')
+        gateway.close()
+        sb2 = gateway2.attach(sb)
+        sb2.append('Python')
+        self.assertEqual(u'Hello WorldPython',sb2.toString())
+        gateway2.shutdown()
+        
+    def testNoAttach(self):
+        gateway = JavaGateway()
+        gateway2 = JavaGateway()
+        sb = gateway.jvm.java.lang.StringBuffer()
+        sb.append('Hello World')
+        gateway.close()
+        try:
+            sb.append('Python')
+            self.fail('Should have failed')
+        except:
+            self.assertTrue(True)
+        gateway2.shutdown()
+        
 class ConnectionPropertyTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
