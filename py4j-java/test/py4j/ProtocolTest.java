@@ -255,6 +255,7 @@ public class ProtocolTest {
 		ReturnObject rObject10 = ReturnObject.getNullReturnObject();
 		ReturnObject rObject11 = ReturnObject.getReferenceReturnObject("o123");
 		ReturnObject rObject12 = ReturnObject.getListReturnObject("o123", 2);
+		ReturnObject rObject13 = ReturnObject.getMapReturnObject("o124", 3);
 		
 		assertEquals("x", Protocol.getOutputCommand(rObject1));
 		assertEquals("yi2", Protocol.getOutputCommand(rObject2));
@@ -268,6 +269,7 @@ public class ProtocolTest {
 		assertEquals("yn", Protocol.getOutputCommand(rObject10));
 		assertEquals("yro123", Protocol.getOutputCommand(rObject11));
 		assertEquals("ylo123", Protocol.getOutputCommand(rObject12));
+		assertEquals("yao124", Protocol.getOutputCommand(rObject13));
 	}
 
 }

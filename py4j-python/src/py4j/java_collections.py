@@ -3,12 +3,13 @@ Created on Jan 22, 2010
 
 @author: barthelemy
 '''
+from collections import MutableMapping
 from py4j.java_gateway import *
     
-class JavaListIterator(JavaObject):
+class JavaIterator(JavaObject):
     """Maps a Python list iterator to a Java list iterator.
     
-    The `JavaListIterator` follows the Python iterator protocol and raises a `StopIteration` error when the iterator can no longer iterate."""
+    The `JavaIterator` follows the Python iterator protocol and raises a `StopIteration` error when the iterator can no longer iterate."""
     def __init__(self, java_object, comm_channel):
         JavaObject.__init__(self, java_object._get_object_id(), comm_channel)
         self._next_name = 'next'
@@ -30,6 +31,33 @@ class JavaListIterator(JavaObject):
         except Py4JError:
             raise StopIteration()
     
+class JavaMap(JavaObject, MutableMapping):
+    """Maps a Python Dictionary to a Java Map.
+    
+    All operations possible on a Python dict are implemented."""
+    
+    def __init__(self, target_id, comm_channel):
+        JavaObject.__init__(self, target_id, comm_channel)
+        self._get = get_method(self,'get')
+    
+    def __getitem__(self, key):
+        return self._get(key)
+    
+    def __setitem__(self, key, value):
+        self.put(key,value)
+    
+    def __len__(self, key, value):
+        return self.size()
+    
+    def __delitem__(self, key):
+        self.remove(key)
+    
+    def __iter__(self):
+        return JavaIterator(self.keySet().iterator(), self._comm_channel)
+    
+    def __contains__(self, key):
+        return self.containsKey(key)
+        
 class JavaList(JavaObject):
     """Maps a Python list to a Java list.
     
@@ -45,7 +73,7 @@ class JavaList(JavaObject):
         return self.size()
 
     def __iter__(self):
-        return JavaListIterator(self.iterator(), self._comm_channel)
+        return JavaIterator(self.iterator(), self._comm_channel)
     
     def __compute_index(self, key, adjustLast = False):
         size = self.size()

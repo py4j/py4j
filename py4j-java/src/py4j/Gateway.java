@@ -112,11 +112,12 @@ public class Gateway {
 	public ReturnObject attachObject(String objectId) {
 		Object object = getObjectFromId(objectId);
 		if (object == null) {
-			throw new Py4JException("Cannot attach " + objectId + ": it does not exist.");
+			throw new Py4JException("Cannot attach " + objectId
+					+ ": it does not exist.");
 		}
 		return getReturnObject(object);
 	}
-	
+
 	private void buildArgs(List<Argument> args, List<Object> parametersList) {
 		for (Argument arg : args) {
 			if (!arg.isReference()) {
@@ -146,12 +147,12 @@ public class Gateway {
 			}
 		}
 	}
-	
+
 	public void deleteObject(String objectId) {
 		bindings.remove(objectId);
 		connectionObjects.get().remove(objectId);
 	}
-	
+
 	protected AtomicInteger getArgCounter() {
 		return argCounter;
 	}
@@ -232,6 +233,10 @@ public class Gateway {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getListReturnObject(objectId,
 						((List) object).size());
+			} else if (isMap(object)) {
+				String objectId = putNewObject(object);
+				returnObject = ReturnObject.getMapReturnObject(objectId,
+						((Map) object).size());
 			} else {
 				String objectId = putNewObject(object);
 				// TODO Handle lists, maps, etc.
@@ -301,6 +306,11 @@ public class Gateway {
 	@SuppressWarnings("unchecked")
 	protected boolean isList(Object object) {
 		return object instanceof List;
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected boolean isMap(Object object) {
+		return object instanceof Map;
 	}
 
 	protected boolean isPrimitiveObject(Object object) {

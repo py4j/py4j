@@ -36,8 +36,8 @@ package py4j;
  * </p>
  * <p>
  * Currently, the protocol requires type information (e.g., is this string an
- * integer, an object reference or a boolean?) to be embedded with each command part.
- * The rational is that the source virtual machine is usually better at
+ * integer, an object reference or a boolean?) to be embedded with each command
+ * part. The rational is that the source virtual machine is usually better at
  * determining the type of objects it sends.
  * </p>
  * <p>
@@ -45,8 +45,10 @@ package py4j;
  * </p>
  * <ul>
  * <li>A command name (e.g., c for call)</li>
- * <li>Optionally, a sub command name (e.g., a for concatenate in the list command)</li>
- * <li>A list of command parts (e.g., the name of a method, the value of a parameter, etc.)</li>
+ * <li>Optionally, a sub command name (e.g., a for concatenate in the list
+ * command)</li>
+ * <li>A list of command parts (e.g., the name of a method, the value of a
+ * parameter, etc.)</li>
  * <li>The End of Command marker (e)</li>
  * </ul>
  * 
@@ -55,7 +57,8 @@ package py4j;
  * </p>
  * <ul>
  * <li>A success or error code (y for yes, x for exception)</li>
- * <li>A return value (e.g., n for null, v for void, or any other value like a String)</li>
+ * <li>A return value (e.g., n for null, v for void, or any other value like a
+ * String)</li>
  * </ul>
  * 
  * @author Barthelemy Dagenais
@@ -70,17 +73,17 @@ public class Protocol {
 	public final static char STRING_TYPE = 's';
 	public final static char REFERENCE_TYPE = 'r';
 	public final static char LIST_TYPE = 'l';
+	public final static char MAP_TYPE = 'a';
 	public final static char NULL_TYPE = 'n';
-	
+
 	public final static char PACKAGE_TYPE = 'p';
 	public final static char CLASS_TYPE = 'c';
 	public final static char METHOD_TYPE = 'm';
 	public final static char NO_MEMBER = 'o';
 	public final static char VOID = 'v';
-	
+
 	// END OF COMMAND MARKER
 	public final static char END = 'e';
-	
 
 	// OUTPUT VALUES
 	public final static char ERROR = 'x';
@@ -90,13 +93,13 @@ public class Protocol {
 	public final static String ERROR_COMMAND = "" + ERROR;
 	public final static String VOID_COMMAND = "" + SUCCESS + VOID;
 	public final static String NO_SUCH_FIELD = "" + SUCCESS + NO_MEMBER;
-	
+
 	// ENTRY POINT
 	public final static String ENTRY_POINT_OBJECT_ID = "t";
-	
+
 	// CONNECTION PROPERTY
 	public final static String CONNECTION_PROPERTY_OBJECT_ID = "c";
-	
+
 	// STATIC REFERENCES
 	public final static String STATIC_PREFIX = "z:";
 
@@ -276,11 +279,11 @@ public class Protocol {
 	public final static Object getObject(String commandPart, Gateway gateway) {
 		Object obj = getObject(commandPart);
 		if (isReference(commandPart)) {
-			obj = gateway.getObject((String)obj);
+			obj = gateway.getObject((String) obj);
 		}
 		return obj;
 	}
-	
+
 	public final static Object getObject(String commandPart) {
 		if (isEmpty(commandPart) || isEnd(commandPart)) {
 			throw new Py4JException(
@@ -305,20 +308,20 @@ public class Protocol {
 	public final static String getOutputErrorCommand() {
 		return ERROR_COMMAND;
 	}
-	
+
 	public final static String getOutputVoidCommand() {
 		return VOID_COMMAND;
 	}
-	
+
 	public final static String getMemberOutputCommand(char memberType) {
 		StringBuilder builder = new StringBuilder();
-		
+
 		builder.append(SUCCESS);
 		builder.append(memberType);
-		
+
 		return builder.toString();
 	}
-	
+
 	public final static String getOutputCommand(ReturnObject rObject) {
 		StringBuilder builder = new StringBuilder();
 
@@ -332,6 +335,9 @@ public class Protocol {
 				builder.append(VOID);
 			} else if (rObject.isList()) {
 				builder.append(LIST_TYPE);
+				builder.append(rObject.getName());
+			} else if (rObject.isMap()) {
+				builder.append(MAP_TYPE);
 				builder.append(rObject.getName());
 			} else if (rObject.isReference()) {
 				// TODO Handle list, map, etc.

@@ -10,9 +10,9 @@ Created on Dec 3, 2009
 """
 
 from IN import AF_INET, SOCK_STREAM
-
 import logging
 import socket
+
 
 class NullHandler(logging.Handler):
     def emit(self, record):
@@ -37,6 +37,7 @@ DOUBLE_TYPE = 'd'
 STRING_TYPE = 's'
 REFERENCE_TYPE = 'r'
 LIST_TYPE = 'l'
+MAP_TYPE = 'a'
 NULL_TYPE = 'n'
 PACKAGE_TYPE = 'p';
 CLASS_TYPE = 'c';
@@ -128,6 +129,8 @@ def get_return_value(answer, comm_channel, target_id = None, name = None):
         return JavaObject(answer[2:], comm_channel)
     elif answer[1] == LIST_TYPE:
         return JavaList(answer[2:], comm_channel)
+    elif answer[1] == MAP_TYPE:
+        return JavaMap(answer[2:], comm_channel)
     elif answer[1] == INTEGER_TYPE:
         return int(answer[2:])
     elif answer[1] == BOOLEAN_TYPE:
@@ -430,4 +433,4 @@ class JavaGateway(JavaObject):
         
 # For circular dependencies
 # Purists should close their eyes
-from py4j.collections import JavaList
+from py4j.java_collections import JavaList, JavaMap
