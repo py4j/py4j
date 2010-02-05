@@ -36,6 +36,7 @@ Examples
 
 Using the ``jvm`` property:
 ::
+
   >>> gateway = JavaGateway()
   >>> jvm = gateway.jvm
   >>> l = jvm.java.util.ArrayList()
@@ -161,7 +162,7 @@ JavaMember
 
     TBD
 
-.. module:: py4j.collections
+.. module:: py4j.java_collections
   :synopsis: Converts Java Collection Types to Python Collection Types.
 .. moduleauthor:: Barthelemy Dagenais <barthe@users.sourceforge.net>
 
@@ -170,7 +171,7 @@ JavaMember
 JavaList
 --------
 
-.. autoclass:: py4j.collections.JavaList
+.. autoclass:: py4j.java_collections.JavaList
    :members:
    :undoc-members:
 
