@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         self.p.terminate()
         self.gateway.shutdown()
         time.sleep(0.5)
-        
+    
     def testJavaListProtocol(self):
         ex = self.gateway.getNewExample()
         pList = get_list(3)
@@ -291,7 +291,18 @@ class Test(unittest.TestCase):
         except IndexError:
             self.assertTrue(True)
         
-        
+    def testBinaryOp(self):
+        ex = self.gateway.getNewExample()
+        pList = get_list(3)
+        jList = ex.getList(3)
+        jList2 = ex.getList(4)
+        self.assertTrue(jList == jList)
+        self.assertTrue(jList != jList2)
+        self.assertTrue(jList < jList2)
+        self.assertTrue(jList != pList)
+        #self.assertTrue(jList == pList)
+#        self.assertTrue(jList2 != pList)
+#        self.assertTrue(jList2 > pList)
         
         
 

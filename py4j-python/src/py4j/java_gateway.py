@@ -309,8 +309,10 @@ class JavaObject(object):
     def __eq__(self, other):
         if other == None:
             return False
-        else:
+        elif (hasattr(other,'_get_object_id')):
             return self.equals(other)
+        else:
+            return other.__eq__(self)
     
     def __hash__(self):
         return self.hashCode()

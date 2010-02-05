@@ -3,6 +3,7 @@ Created on Jan 22, 2010
 
 @author: barthelemy
 '''
+from _abcoll import MutableSequence
 from collections import MutableMapping
 from py4j.java_gateway import *
     
@@ -46,7 +47,7 @@ class JavaMap(JavaObject, MutableMapping):
     def __setitem__(self, key, value):
         self.put(key,value)
     
-    def __len__(self, key, value):
+    def __len__(self):
         return self.size()
     
     def __delitem__(self, key):
@@ -57,6 +58,21 @@ class JavaMap(JavaObject, MutableMapping):
     
     def __contains__(self, key):
         return self.containsKey(key)
+    
+    def __str__(self):
+        return self.__repr__()
+    
+    def __repr__(self):
+        # TODO Make it more efficient/pythonic
+        # TODO Debug why strings are not outputed with apostrophes.
+        if len(self) == 0:
+            return '{}'
+        else:
+            srep = '{'
+            for key in self:
+                srep += repr(key) + ': ' + repr(self[key]) + ', '
+                
+            return srep[:-2] + '}'
         
 class JavaList(JavaObject):
     """Maps a Python list to a Java list.
