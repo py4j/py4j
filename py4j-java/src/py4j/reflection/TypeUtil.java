@@ -258,4 +258,36 @@ public class TypeUtil {
 
 		return cost;
 	}
+	
+	public static String getName(String name, boolean shortName) {
+		if (!shortName) {
+			return name;
+		} else {
+			int index = name.lastIndexOf(".");
+			if (index >= 0 && index < name.length() + 1) {
+				return name.substring(index+1);
+			} else {
+				return name;
+			}
+		}
+	}
+	
+	public static String getPackage(String name) {
+		int index = name.lastIndexOf(".");
+		if (index < 0) {
+			return name;
+		} else {
+			return name.substring(0,index);
+		}
+	}
+	
+	public static String[] getNames(Class<?>[] classes) {
+		String[] names = new String[classes.length];
+		
+		for (int i = 0; i<classes.length; i++) {
+			names[i] = classes[i].getName();
+		}
+		
+		return names;
+	}
 }

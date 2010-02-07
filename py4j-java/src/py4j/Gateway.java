@@ -39,6 +39,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
+import py4j.model.Py4JMember;
+import py4j.reflection.LRUCache;
 import py4j.reflection.MethodInvoker;
 import py4j.reflection.ReflectionEngine;
 
@@ -82,6 +84,13 @@ public class Gateway {
 	@SuppressWarnings("unused")
 	private boolean cleanUpConnection = false;
 
+	private static ThreadLocal<LRUCache<String,Py4JMember>> helpPages = new ThreadLocal<LRUCache<String,Py4JMember>>() {
+		@Override
+		protected LRUCache<String,Py4JMember> initialValue() {
+			return new LRUCache<String,Py4JMember>();
+		}
+	};
+	
 	private static ThreadLocal<ConnectionProperty> connectionProperty = new ThreadLocal<ConnectionProperty>() {
 
 		@Override
@@ -108,7 +117,7 @@ public class Gateway {
 		this.entryPoint = entryPoint;
 		this.cleanUpConnection = cleanUpConnection;
 	}
-
+	
 	public ReturnObject attachObject(String objectId) {
 		Object object = getObjectFromId(objectId);
 		if (object == null) {
@@ -163,6 +172,10 @@ public class Gateway {
 
 	public Object getEntryPoint() {
 		return this.entryPoint;
+	}
+
+	public LRUCache<String,Py4JMember> getHelpPages() {
+		return helpPages.get();
 	}
 
 	@SuppressWarnings("unchecked")
