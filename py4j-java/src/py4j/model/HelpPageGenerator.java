@@ -9,19 +9,27 @@ public class HelpPageGenerator {
 	public final static String PREFIX_INDENT = PREFIX + INDENT;
 	public final static String DOUBLE_LINES = "\n" + PREFIX_INDENT + "\n";
 	public final static String SEPARATOR = "------------------------------------------------------------";
-	public final static String PREFIX_SEPARATOR = PREFIX + INDENT + SEPARATOR + "\n";
-	
-	public final static String getHelpPage(Py4JClass clazz, String objectName, boolean shortName) {
+	public final static String PREFIX_SEPARATOR = PREFIX + INDENT + SEPARATOR
+			+ "\n";
+
+	public final static String getHelpPage(Py4JMethod method, boolean shortName) {
 		StringBuilder builder = new StringBuilder();
-		
-		if (objectName != null) {
-			builder.append("Object \"");
-			builder.append(objectName);
-			builder.append("\" of ");
-		} else {
-			builder.append("Help on ");
-		}
-		
+		builder.append("Method \"");
+		builder.append(method.getName());
+		builder.append("\" of class ");
+		builder.append(method.getContainer());
+		builder.append("\n{\n");
+		builder.append(PREFIX_INDENT);
+		builder.append(method.getSignature(shortName));
+		builder.append("\n}");
+		return builder.toString();
+	}
+
+	public final static String getHelpPage(Py4JClass clazz, boolean shortName) {
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("Help on ");
+
 		builder.append("class ");
 		builder.append(TypeUtil.getName(clazz.getName(), true));
 		builder.append(" in package ");
@@ -38,7 +46,7 @@ public class HelpPageGenerator {
 			builder.append(method.getSignature(shortName));
 			builder.append(DOUBLE_LINES);
 		}
-		
+
 		builder.append(PREFIX_SEPARATOR);
 		builder.append(PREFIX_INDENT);
 		builder.append("Fields defined here:");
@@ -48,7 +56,7 @@ public class HelpPageGenerator {
 			builder.append(field.getSignature(shortName));
 			builder.append(DOUBLE_LINES);
 		}
-		
+
 		builder.append(PREFIX_SEPARATOR);
 		builder.append(PREFIX_INDENT);
 		builder.append("Internal classes defined here:");
@@ -61,5 +69,5 @@ public class HelpPageGenerator {
 		builder.append("}");
 		return builder.toString();
 	}
-	
+
 }

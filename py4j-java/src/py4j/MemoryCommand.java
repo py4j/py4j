@@ -12,7 +12,7 @@ public class MemoryCommand extends AbstractCommand {
 
 	public final static String MEMORY_COMMAND_NAME = "m";
 
-	public final static String MEMORY_DEL_COMMAND_NAME = "d";
+	public final static String MEMORY_DEL_SUB_COMMAND_NAME = "d";
 
 	public final static String MEMORY_ATTACH_SUB_COMMAND_NAME = "a";
 
@@ -22,7 +22,7 @@ public class MemoryCommand extends AbstractCommand {
 		String returnCommand = null;
 		String subCommand = reader.readLine();
 
-		if (subCommand.equals(MEMORY_DEL_COMMAND_NAME)) {
+		if (subCommand.equals(MEMORY_DEL_SUB_COMMAND_NAME)) {
 			returnCommand = deleteObject(reader);
 		} else {
 			returnCommand = attachObject(reader);

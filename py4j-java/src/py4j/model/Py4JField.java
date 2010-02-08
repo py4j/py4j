@@ -8,17 +8,28 @@ public class Py4JField extends Py4JMember{
 
 	private final String type;
 
-	public Py4JField(String name, String javadoc, String type) {
+	private final String container;
+	
+	
+	public Py4JField(String name, String javadoc, String type,
+			String container) {
 		super(name, javadoc);
 		this.type = type;
-	}
-	
-	public final static Py4JField buildField(Field field) {
-		return new Py4JField(field.getName(),null,field.getType().getName());
+		this.container = container;
 	}
 
+	public final static Py4JField buildField(Field field) {
+		return new Py4JField(field.getName(),null,field.getType().getName(), field.getDeclaringClass().getName());
+	}
+	
 	public String getType() {
 		return type;
+	}
+
+	
+	
+	public String getContainer() {
+		return container;
 	}
 
 	@Override

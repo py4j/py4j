@@ -340,7 +340,6 @@ public class Protocol {
 				builder.append(MAP_TYPE);
 				builder.append(rObject.getName());
 			} else if (rObject.isReference()) {
-				// TODO Handle list, map, etc.
 				builder.append(REFERENCE_TYPE);
 				builder.append(rObject.getName());
 			} else {

@@ -45,9 +45,25 @@ public class ModelTester {
 	}
 	
 	@Test
-	public void testHelpPage() {
+	public void testClassHelpPage() {
+		// This is manual testing, to see how it will look like.
 		Py4JClass clazz = Py4JClass.buildClass(AnObject.class);
-		String helpPage = HelpPageGenerator.getHelpPage(clazz, "variable1", false);
+		String helpPage = HelpPageGenerator.getHelpPage(clazz, false);
+		System.out.println("BEGIN");
+		System.out.println(helpPage);
+		System.out.println("END");
+		
+		helpPage = HelpPageGenerator.getHelpPage(clazz, true);
+		System.out.println("BEGIN");
+		System.out.println(helpPage);
+		System.out.println("END");
+	}
+	
+	@Test
+	public void testMethodHelpPage() {
+		// This is manual testing, to see how it will look like.
+		Py4JClass clazz = Py4JClass.buildClass(AnObject.class);
+		String helpPage = HelpPageGenerator.getHelpPage(clazz.getMethods()[0], false);
 		System.out.println("BEGIN");
 		System.out.println(helpPage);
 		System.out.println("END");
