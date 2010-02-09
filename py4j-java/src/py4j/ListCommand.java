@@ -54,7 +54,7 @@ public class ListCommand extends AbstractCommand {
 	public static final char LIST_COUNT_SUB_COMMAND_NAME = 'f';
 
 	public static final String RETURN_VOID = Protocol.SUCCESS + ""
-			+ Protocol.VOID;
+			+ Protocol.VOID + Protocol.END_OUTPUT;
 
 	@Override
 	public void execute(String commandName, BufferedReader reader,

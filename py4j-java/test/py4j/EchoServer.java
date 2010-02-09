@@ -121,7 +121,7 @@ public class EchoServer {
 						}
 						String returnCommand = queue.poll();
 						System.out.println(returnCommand);
-						writer.write(returnCommand);
+						writer.write(returnCommand+"\n");
 						writer.flush();
 					}
 				} catch (Exception e) {

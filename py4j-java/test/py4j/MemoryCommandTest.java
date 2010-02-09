@@ -48,11 +48,11 @@ public class MemoryCommandTest {
 			assertTrue(gateway.getBindings().containsKey(target));
 			command.execute("m", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv", sWriter.toString());
+			assertEquals("yv\n", sWriter.toString());
 			assertFalse(gateway.getBindings().containsKey(target));
 			command.execute("m", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yvyv", sWriter.toString());
+			assertEquals("yv\nyv\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -66,7 +66,7 @@ public class MemoryCommandTest {
 			assertTrue(gateway.getBindings().containsKey(target));
 			command.execute("m", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yro1", sWriter.toString());
+			assertEquals("yro1\n", sWriter.toString());
 			assertTrue(gateway.getBindings().containsKey(target));
 			assertTrue(gateway.getBindings().containsKey("o1"));
 		} catch (Exception e) {

@@ -33,6 +33,10 @@ public class StringUtil {
 
 	public final static char ESCAPE_CHAR = '\\';
 
+	public static String escape(String original) {
+		return original.replace("\\", "\\\\").replace("\n","\\n");
+	}
+	
 	public static String unescape(String escaped) {
 		boolean escaping = false;
 		StringBuilder newString = new StringBuilder();

@@ -60,4 +60,13 @@ public class StringUtilTest {
 		assertEquals("Hello\\\nWorld!",StringUtil.unescape("Hello\\\\\\nWorld!"));
 	}
 	
+	@Test
+	public void testEscape() {
+		assertEquals("Hello\\\\nWorld!",StringUtil.escape("Hello\\nWorld!"));
+		assertEquals("Hello\\nWorld!",StringUtil.escape("Hello\nWorld!"));
+		assertEquals("Hello\\\\\\nWorld!",StringUtil.escape("Hello\\\nWorld!"));
+		assertEquals("Hello\tWorld",StringUtil.escape("Hello\tWorld"));
+		assertEquals("Hello\\\\World!",StringUtil.escape("Hello\\World!"));
+	}
+	
 }

@@ -45,7 +45,7 @@ public class FieldCommandTest {
 		try {
 			command.execute("f", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yo", sWriter.toString());
+			assertEquals("yo\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -58,7 +58,7 @@ public class FieldCommandTest {
 		try {
 			command.execute("f", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yi10", sWriter.toString());
+			assertEquals("yi10\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -71,7 +71,7 @@ public class FieldCommandTest {
 		try {
 			command.execute("f", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yro1", sWriter.toString());
+			assertEquals("yro1\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -84,7 +84,7 @@ public class FieldCommandTest {
 		try {
 			command.execute("f", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yn", sWriter.toString());
+			assertEquals("yn\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

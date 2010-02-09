@@ -73,16 +73,16 @@ public class ReflectionCommandTest {
 		try {
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand1)), writer);
-			assertEquals("yp", sWriter.toString());
+			assertEquals("yp\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand2)), writer);
-			assertEquals("ypyp", sWriter.toString());
+			assertEquals("yp\nyp\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand3)), writer);
-			assertEquals("ypypyc", sWriter.toString());
+			assertEquals("yp\nyp\nyc\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand4)), writer);
-			assertEquals("ypypycyc", sWriter.toString());
+			assertEquals("yp\nyp\nyc\nyc\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -100,22 +100,22 @@ public class ReflectionCommandTest {
 		try {
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand1)), writer);
-			assertEquals("ym", sWriter.toString());
+			assertEquals("ym\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand2)), writer);
-			assertEquals("ymx", sWriter.toString());
+			assertEquals("ym\nx\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand3)), writer);
-			assertEquals("ymxx", sWriter.toString());
+			assertEquals("ym\nx\nx\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand4)), writer);
-			assertEquals("ymxxx", sWriter.toString());
+			assertEquals("ym\nx\nx\nx\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand5)), writer);
-			assertEquals("ymxxxym", sWriter.toString());
+			assertEquals("ym\nx\nx\nx\nym\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand6)), writer);
-			assertEquals("ymxxxymysSalut!", sWriter.toString());
+			assertEquals("ym\nx\nx\nx\nym\nysSalut!\n", sWriter.toString());
 		} catch(Exception e) {
 			e.printStackTrace();
 			fail();

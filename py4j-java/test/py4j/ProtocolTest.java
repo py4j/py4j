@@ -257,19 +257,19 @@ public class ProtocolTest {
 		ReturnObject rObject12 = ReturnObject.getListReturnObject("o123", 2);
 		ReturnObject rObject13 = ReturnObject.getMapReturnObject("o124", 3);
 		
-		assertEquals("x", Protocol.getOutputCommand(rObject1));
-		assertEquals("yi2", Protocol.getOutputCommand(rObject2));
-		assertEquals("yd2.2", Protocol.getOutputCommand(rObject3));
-		assertEquals("yd2.2", Protocol.getOutputCommand(rObject4));
-		assertEquals("ysc", Protocol.getOutputCommand(rObject5));
-		assertEquals("ysHello\nWorld", Protocol.getOutputCommand(rObject6));
-		assertEquals("yi5", Protocol.getOutputCommand(rObject7));
-		assertEquals("ybtrue", Protocol.getOutputCommand(rObject8));
-		assertEquals("ybfalse", Protocol.getOutputCommand(rObject9));
-		assertEquals("yn", Protocol.getOutputCommand(rObject10));
-		assertEquals("yro123", Protocol.getOutputCommand(rObject11));
-		assertEquals("ylo123", Protocol.getOutputCommand(rObject12));
-		assertEquals("yao124", Protocol.getOutputCommand(rObject13));
+		assertEquals("x\n", Protocol.getOutputCommand(rObject1));
+		assertEquals("yi2\n", Protocol.getOutputCommand(rObject2));
+		assertEquals("yd2.2\n", Protocol.getOutputCommand(rObject3));
+		assertEquals("yd2.2\n", Protocol.getOutputCommand(rObject4));
+		assertEquals("ysc\n", Protocol.getOutputCommand(rObject5));
+		assertEquals("ysHello\\nWorld\n", Protocol.getOutputCommand(rObject6));
+		assertEquals("yi5\n", Protocol.getOutputCommand(rObject7));
+		assertEquals("ybtrue\n", Protocol.getOutputCommand(rObject8));
+		assertEquals("ybfalse\n", Protocol.getOutputCommand(rObject9));
+		assertEquals("yn\n", Protocol.getOutputCommand(rObject10));
+		assertEquals("yro123\n", Protocol.getOutputCommand(rObject11));
+		assertEquals("ylo123\n", Protocol.getOutputCommand(rObject12));
+		assertEquals("yao124\n", Protocol.getOutputCommand(rObject13));
 	}
 
 }

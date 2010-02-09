@@ -71,11 +71,11 @@ public class EchoServerTest {
 			clientWriter.write("c\nt\ngetExample\ne\n");
 			clientWriter.flush();
 			int count = clientReader.read(buffer);
-			assertEquals(new String(buffer, 0, count), "yi7");
+			assertEquals(new String(buffer, 0, count), "yi7\n");
 			clientWriter.write("c\no0\nmethod1\ni1\nbtrue\ne\n");
 			clientWriter.flush();
 			count = clientReader.read(buffer);
-			assertEquals(new String(buffer, 0, count), "x");
+			assertEquals(new String(buffer, 0, count), "x\n");
 
 			clientReader.close();
 			clientWriter.close();

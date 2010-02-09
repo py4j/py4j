@@ -56,9 +56,9 @@ public class EchoClientTest {
 			EchoClient client = new EchoClient();
 			client.connect();
 			client.write("c\ng\ngetExample\ne\n");
-			assertEquals(client.getResponse(), "yi7");
+			assertEquals(client.getResponse(), "yi7\n");
 			client.write("c\no1\nmethod1\ni1\nbtrue\ne\n");
-			assertEquals(client.getResponse(), "x");
+			assertEquals(client.getResponse(), "x\n");
 			client.close();
 		} catch(Exception e) {
 			e.printStackTrace();

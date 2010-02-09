@@ -26,6 +26,8 @@ logger = logging.getLogger("py4j.java_gateway")
 BUFFER_SIZE = 4096
 DEFAULT_PORT = 25333
 
+ESCAPE_CHAR = "\\"
+
 # Entry point
 ENTRY_POINT_OBJECT_ID = 't'
 CONNECTION_PROPERTY_OBJECT_ID = 'c'
@@ -106,6 +108,25 @@ def escape_new_line(original):
     temp = original.replace('\\', '\\\\')
     final = temp.replace('\n', '\\n')
     return final
+
+def unescape_new_line(escaped):
+    escaping = False
+    original = ''
+    for c in escaped:
+        if not escaping:
+            if c == ESCAPE_CHAR:
+                escaping = True
+            else:
+                original += c
+        else:
+            if c == 'n':
+                original += '\n'
+            else:
+                original += c
+            escaping = False
+            
+    return original
+
     
 def get_command_part(parameter):
     command_part = ''
@@ -144,7 +165,7 @@ def get_return_value(answer, comm_channel, target_id = None, name = None):
     elif answer[1] == DOUBLE_TYPE:
         return float(answer[2:])
     elif answer[1] == STRING_TYPE:
-        return answer[2:]
+        return unescape_new_line(answer[2:])
     
 def is_error(answer):
     if len(answer)==0 or answer[0] != SUCCESS:
@@ -196,10 +217,12 @@ class CommChannel(object):
         """Starts the communication channel by connecting to the `address` and the `port`"""
         self.socket.connect((self.address, self.port))
         self.is_connected = True
+        self.stream = self.socket.makefile('r',0)
     
     def close(self, throw_exception=False):
         """Closes the communication channel by closing the socket."""
         try:
+            self.stream.close()
             self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
         except Exception as e:
@@ -216,6 +239,7 @@ class CommChannel(object):
             raise Py4JError('Communication channel must be connected to send shut down command.')
         
         try:
+            self.stream.close()
             self.socket.sendall(SHUTDOWN_GATEWAY_COMMAND_NAME.encode('utf-8'))
             self.socket.close()
             self.is_connected = False
@@ -252,7 +276,7 @@ class CommChannel(object):
         
         logger.debug("Command to send: %s" % (command))
         self.socket.sendall(command.encode('utf-8'))
-        answer = self.socket.recv(BUFFER_SIZE).decode('utf-8')
+        answer = self.stream.readline().decode('utf-8')[:-1]
         logger.debug("Answer received: %s" % (answer))
         self.send_delay()
         return answer

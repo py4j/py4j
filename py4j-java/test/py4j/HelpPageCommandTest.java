@@ -49,7 +49,7 @@ public class HelpPageCommandTest {
 					inputCommand)), writer);
 			String page = sWriter.toString();
 			System.out.println(page);
-			assertEquals(827,page.length());
+			assertEquals(866,page.length());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -65,7 +65,7 @@ public class HelpPageCommandTest {
 					inputCommand)), writer);
 			String page = sWriter.toString();
 			System.out.println(page);
-			assertEquals(3441,page.length());
+			assertEquals(3588,page.length());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

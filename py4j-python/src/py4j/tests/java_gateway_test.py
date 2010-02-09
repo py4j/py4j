@@ -5,7 +5,8 @@ Created on Dec 10, 2009
 '''
 from IN import AF_INET, SOCK_STREAM
 from multiprocessing.process import Process
-from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, get_method
+from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, get_method, \
+    unescape_new_line, escape_new_line
 from socket import socket
 import subprocess
 import time
@@ -63,9 +64,11 @@ class TestCommChannel(object):
     def send_delay(self):
         pass
     
-    
-
 class ProtocolTest(unittest.TestCase):
+    
+    def testEscape(self):
+        self.assertEqual("Hello\tWorld\n\\",unescape_new_line(escape_new_line("Hello\tWorld\n\\")))
+    
     def testProtocolSend(self):
         testChannel = TestCommChannel()
         gateway = JavaGateway(testChannel, True, False)

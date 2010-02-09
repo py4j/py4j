@@ -66,6 +66,7 @@ package py4j;
  */
 public class Protocol {
 
+	
 	// TYPES
 	public final static char INTEGER_TYPE = 'i';
 	public final static char BOOLEAN_TYPE = 'b';
@@ -84,15 +85,16 @@ public class Protocol {
 
 	// END OF COMMAND MARKER
 	public final static char END = 'e';
+	public final static char END_OUTPUT = '\n';
 
 	// OUTPUT VALUES
 	public final static char ERROR = 'x';
 	public final static char SUCCESS = 'y';
 
 	// SHORTCUT
-	public final static String ERROR_COMMAND = "" + ERROR;
-	public final static String VOID_COMMAND = "" + SUCCESS + VOID;
-	public final static String NO_SUCH_FIELD = "" + SUCCESS + NO_MEMBER;
+	public final static String ERROR_COMMAND = "" + ERROR + END_OUTPUT;
+	public final static String VOID_COMMAND = "" + SUCCESS + VOID + END_OUTPUT;
+	public final static String NO_SUCH_FIELD = "" + SUCCESS + NO_MEMBER + END_OUTPUT;
 
 	// ENTRY POINT
 	public final static String ENTRY_POINT_OBJECT_ID = "t";
@@ -318,6 +320,7 @@ public class Protocol {
 
 		builder.append(SUCCESS);
 		builder.append(memberType);
+		builder.append(END_OUTPUT);
 
 		return builder.toString();
 	}
@@ -344,10 +347,18 @@ public class Protocol {
 				builder.append(rObject.getName());
 			} else {
 				Object primitiveObject = rObject.getPrimitiveObject();
+				char primitiveType = getPrimitiveType(primitiveObject);
 				builder.append(getPrimitiveType(primitiveObject));
-				builder.append(primitiveObject.toString());
+				if (primitiveType == STRING_TYPE) {
+					builder.append(StringUtil.escape(primitiveObject.toString()));
+				} else {
+					builder.append(primitiveObject.toString());
+				}
+				
+				
 			}
 		}
+		builder.append(END_OUTPUT);
 
 		return builder.toString();
 	}
