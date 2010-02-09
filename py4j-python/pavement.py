@@ -55,23 +55,26 @@ def scp_dir(source, dest):
 @task
 @needs('generate_setup', 'minilib', 'html_complete', 'py4j_java', 'setuptools.command.sdist')
 def sdist():
-    """Overrides sdist to make sure that our setup.py is generated."""
+    """Generate source distribution with documentation."""
     pass
 
 @task
 @needs('py4j_java')
 def set_jar():
+    """Move jar file in python source folder (for distribution)."""
     jar = path('../py4j-java/dist') / RELEASE / JAR_FILE
     jar.copy('src/' + JAR_FILE)
 
 @task
 @needs('set_jar','setuptools.command.bdist_egg')
 def bdist_egg():
+    """Generate binary (egg) distribution with jar file."""
     pass
 
 @task
 @needs('generate_setup', 'minilib', 'html_complete', 'py4j_java', 'setuptools.command.sdist','bdist_egg','soft_clean')
 def big_release():
+    """Generate source distribution with documentation and binary distribution."""
     # Don't forget to run with --formats=zip,gztar
     pass
 
@@ -89,6 +92,7 @@ def html_complete():
 
 @task
 def py4j_java():
+    """Generate Java source distribution (source files and jar)."""
     sh('ant clean-dist', False, False, '../py4j-java')
     sh('ant dist', False, False, '../py4j-java')
     
@@ -99,7 +103,7 @@ def py4j_java():
 @task
 @needs('paver.doctools.html')
 def html(options):
-    """Build the docs and put them into our package."""
+    """Build the py4j web site and put them into python distribution."""
     destdir = path(DOC_DIR)
     destdir.rmtree()
     builtdocs = path("../py4j-web") / options.builddir / "html"
@@ -108,6 +112,7 @@ def html(options):
 @task
 @needs('html_complete')
 def deploy():
+    """Deploy web site on sourceforge."""
     docdir = path(DOC_DIR)
     docdir.symlink('htdocs')
     scp_dir('htdocs', 'barthe,py4j@web.sourceforge.net:/home/groups/p/py/py4j')
@@ -121,11 +126,13 @@ def deploy():
 @task
 @needs('paver.doctools.doc_clean', 'distutils.command.clean','soft_clean')
 def clean():
+    """Remove the whole distribution directory."""
     distdir = path(DIST_DIR)
     distdir.rmtree()
     
 @task
 def soft_clean():
+    """Remove the temp directories, i.e., build, egg, doc, py4j-java, and jar directory."""
     docdir = path(DOC_DIR)
     build = path('build')
     eggdir = path('Py4J.egg-info')
