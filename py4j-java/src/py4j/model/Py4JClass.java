@@ -57,7 +57,7 @@ public class Py4JClass extends Py4JMember {
 		Class<?> superClass = clazz.getSuperclass();
 		String extend = null;
 		if (superClass != null && superClass != Object.class) {
-			extend = superClass.getName();
+			extend = superClass.getCanonicalName();
 		} 
 
 		Class<?>[] interfaces = clazz.getInterfaces();
@@ -65,7 +65,7 @@ public class Py4JClass extends Py4JMember {
 				.getNames(interfaces)
 				: null;
 
-		return new Py4JClass(clazz.getName(), null, extend, implementTypes,
+		return new Py4JClass(clazz.getCanonicalName(), null, extend, implementTypes,
 				methods.toArray(new Py4JMethod[0]), fields
 						.toArray(new Py4JField[0]), classes
 						.toArray(new Py4JClass[0]));

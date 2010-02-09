@@ -29,8 +29,8 @@ public class ModelTester {
 		assertEquals(m2.getSignature(true), "m2(int) : String");
 		assertEquals(f1.getSignature(false), "value1 : java.lang.Integer");
 		assertEquals(f1.getSignature(true), "value1 : Integer");
-		assertEquals(clazz2.getSignature(false),"p1.AnObject$InternalClass");
-		assertEquals(clazz2.getSignature(true),"AnObject$InternalClass");
+		assertEquals(clazz2.getSignature(false),"p1.AnObject.InternalClass");
+		assertEquals(clazz2.getSignature(true),"InternalClass");
 	}
 	
 	@Test

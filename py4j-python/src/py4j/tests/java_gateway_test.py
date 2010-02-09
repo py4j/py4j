@@ -383,6 +383,31 @@ class JVMTest(unittest.TestCase):
         self.assertFalse(System.out.checkError())
         gateway.shutdown()
 
+class HelpTest(unittest.TestCase):
+    
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+        self.gateway = JavaGateway()
+
+    def tearDown(self):
+        self.gateway.shutdown()
+        self.p.join()
+        
+    def testHelpObject(self):
+        ex = self.gateway.getNewExample()
+        help_page = self.gateway.help(ex, short_name=True, display=False)
+        print(help_page)
+        self.assertEqual(695,len(help_page))
+        
+    def testHelpClass(self):
+        String = self.gateway.jvm.java.lang.String
+        help_page = self.gateway.help(String, short_name=False, display=False)
+        print(help_page)
+        self.assertEqual(3439,len(help_page))
+        
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testGateway']
 #    logger = logging.getLogger("py4j")

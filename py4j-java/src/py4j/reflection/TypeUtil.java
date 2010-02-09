@@ -285,7 +285,7 @@ public class TypeUtil {
 		String[] names = new String[classes.length];
 		
 		for (int i = 0; i<classes.length; i++) {
-			names[i] = classes[i].getName();
+			names[i] = classes[i].getCanonicalName();
 		}
 		
 		return names;

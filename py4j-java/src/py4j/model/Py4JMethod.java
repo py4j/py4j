@@ -26,7 +26,7 @@ public class Py4JMethod extends Py4JMember {
 
 	public final static Py4JMethod buildMethod(Method method) {
 		return new Py4JMethod(method.getName(), null, TypeUtil.getNames(method
-				.getParameterTypes()), null, method.getReturnType().getName(), method.getDeclaringClass().getName());
+				.getParameterTypes()), null, method.getReturnType().getCanonicalName(), method.getDeclaringClass().getCanonicalName());
 	}
 	
 	public String[] getParameterTypes() {

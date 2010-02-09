@@ -19,7 +19,7 @@ public class Py4JField extends Py4JMember{
 	}
 
 	public final static Py4JField buildField(Field field) {
-		return new Py4JField(field.getName(),null,field.getType().getName(), field.getDeclaringClass().getName());
+		return new Py4JField(field.getName(),null,field.getType().getCanonicalName(), field.getDeclaringClass().getCanonicalName());
 	}
 	
 	public String getType() {

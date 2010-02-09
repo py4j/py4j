@@ -10,6 +10,7 @@ Created on Dec 3, 2009
 """
 
 from IN import AF_INET, SOCK_STREAM
+from pydoc import ttypager
 import logging
 import socket
 
@@ -65,6 +66,7 @@ SHUTDOWN_GATEWAY_COMMAND_NAME = 's\n'
 LIST_COMMAND_NAME = 'l\n'
 REFLECTION_COMMAND_NAME = "r\n";
 MEMORY_COMMAND_NAME = "m\n";
+HELP_COMMAND_NAME = 'h\n'
 
 # Reflection subcommands
 REFL_GET_UNKNOWN_SUB_COMMAND_NAME = 'u\n';
@@ -87,6 +89,10 @@ FIELD_SET_SUBCOMMAND_NAME = 's\n'
 # Memory subcommands
 MEMORY_DEL_SUBCOMMAND_NAME = 'd\n'
 MEMORY_ATTACH_SUBCOMMAND_NAME = 'a\n'
+
+# Help subcommands
+HELP_OBJECT_SUBCOMMAND_NAME = 'o\n'
+HELP_CLASS_SUBCOMMAND_NAME = 'c\n'
 
 def escape_new_line(original):
     """Replaces new line characters by a backslash followed by a n.
@@ -430,8 +436,22 @@ class JavaGateway(JavaObject):
         self._comm_channel.shutdown_gateway()
         
     def attach(self, java_object):
-        answer = self._comm_channel.send_command(MEMORY_COMMAND_NAME + MEMORY_ATTACH_SUBCOMMAND_NAME + java_object._target_id + '\ne\n')
+        answer = self._comm_channel.send_command(MEMORY_COMMAND_NAME + MEMORY_ATTACH_SUBCOMMAND_NAME + java_object._get_object_id() + '\ne\n')
         return get_return_value(answer, self._comm_channel, None, None)
+    
+    def help(self, var, short_name=True, display=True):
+        if hasattr(var, '_get_object_id'):
+            answer = self._comm_channel.send_command(HELP_COMMAND_NAME + HELP_OBJECT_SUBCOMMAND_NAME + var._get_object_id() + '\n' + get_command_part(short_name) + 'e\n')
+        elif hasattr(var, '_fqn'):
+            answer = self._comm_channel.send_command(HELP_COMMAND_NAME + HELP_CLASS_SUBCOMMAND_NAME + var._fqn + '\n' + get_command_part(short_name) + 'e\n')
+        else:
+            raise Py4JError('var is neither a Java Object nor a Java Class')
+        help_page = get_return_value(answer, self._comm_channel, None, None)
+        if (display):
+            ttypager(help_page)
+        else:
+            return help_page
+            
         
 # For circular dependencies
 # Purists should close their eyes
