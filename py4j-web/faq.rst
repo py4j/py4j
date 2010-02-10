@@ -8,10 +8,11 @@ Frequently Asked Questions
 How to turn logging on/off?
 ---------------------------
 
-In Java, simply call ``GatewayServer.turnLoggingOn()`` or ``GatewayServer.turnLoggingOn()``. Py4J-java uses the
-``java.util.logging`` framework. To get fined-grained control over the logging behavior, just obtain a Logger instance
-by calling ``Logger.getLogger("py4j")``. You can also look at the `Java Logging Overview <http://java.sun.com/javase/6/docs/technotes/guides/logging/overview.html>`_ 
-for more information on this framework.
+Logging is turned off by default. In Java, simply call ``GatewayServer.turnLoggingOn()`` or
+``GatewayServer.turnLoggingOff()``. Py4J-java uses the ``java.util.logging`` framework. To get fined-grained control
+over the logging behavior, just obtain a Logger instance by calling ``Logger.getLogger("py4j")``. You can also look at
+the `Java Logging Overview <http://java.sun.com/javase/6/docs/technotes/guides/logging/overview.html>`_ for more
+information on this framework.
 
 In Python, logging can be enabled this way:
 
@@ -22,32 +23,41 @@ In Python, logging can be enabled this way:
   logger.addHandler(logging.StreamHandler())
 
 
-How to prevent memory leak?
----------------------------
+How to call a constructor?
+--------------------------
 
-Every time that an object is returned by the Java Gateway, it is cached in a map by the gateway. If the same object is
-returned multiple times, it might be cached under different names. As long as the gateway is not shut down on the Java
-side, the objects are still referenced by the cache and will **never** be garbage collected. This is to ensure that a
-Python program does not access a dead Java object and that multiple Python programs connected to the same gateway can
-access the same objects.
+Use the ``jvm`` member of a gateway followed by the class's fully qualified name:
 
-You can manually interact with the cache by calling the protected method `DefaultGateway.getBindings() <_static/javadoc/py4j/DefaultGateway.html#getBindings()>`_ 
-from your custom Gateway implementation. We plan to implement a few methods to make cache management easier and we might
-change the main cache management strategy in the future.
+::
+
+  >>> gateway = JavaGateway()
+  >>> java_list = gateway.jvm.java.util.ArrayList()
+
+
+How to call a static method?
+----------------------------
+
+Use the ``jvm`` member of a gateway followed by the fully qualified name of the method's class. Do the same for static
+fields.
+
+::
+
+  >>> gateway = JavaGateway()
+  >>> timestamp = gateway.jvm.java.lang.System.currentTimeMillis()
+
+
+What is the memory model of Py4J?
+---------------------------------
+
+Everytime an object is returned through a gateway, a reference to the object is kept on the Java side. Once the object
+is garbage collected on the Python VM (reference count = 0), the reference is removed on the Java VM: if this was the
+last reference, the object will likely be garbage collected too. When a gateway is closed or shut down, the remaining
+references are also removed on the Java VM.
 
 
 Is Py4J thread-safe?
 --------------------
 
-The short answer is: it's complicated. Multiple Python programs can connect to the same Java gateway. When this happens, 
-each connection is executed by its own Java thread, so each thread can access the Gateway (and any Java object in the 
-JVM) concurrently.
-
-As of version 0.1., we recommend that you serialize the accesses to the JVM by extending the `DefaultSynchronizedGateway <_static/javadoc/index.html?py4j/DefaultSynchronizedGateway.html>`_
-instead of the `DefaultGateway <_static/javadoc/index.html?py4j/DefaultGateway.html>`_. This will ensure that only one 
-Java method is executed at a time.
-
-When we will implement a better cache management strategy and dynamic invocation strategy (i.e., how Java methods are
-called), we will make Py4J completely thread-safe without requiring you to serialize the access to the JVM. Obviously,
-if your application is not thread-safe, but want multiple Python programs to access it concurrently, you will still need
-to extend `DefaultSynchronizedGateway <_static/javadoc/index.html?py4j/DefaultSynchronizedGateway.html>`_. 
+Py4J itself is thread-safe, but multiple threads could access the same entry point. Each gateway connection is executed
+in is own thread (e.g., each time ``JavaGateway()`` is called in Python) so if multiple Python programs (or processes)
+access the same entry point, mutiple threads may call the entry point's methods concurrently.

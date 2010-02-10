@@ -30,7 +30,7 @@ package py4j.examples;
 
 import py4j.GatewayServer;
 
-public class BufferEntryPoint {
+public class BufferGenerator {
 
 	private static GatewayServer server;
 	
@@ -40,7 +40,8 @@ public class BufferEntryPoint {
 	}
 	
 	public static void main(String[] args) {
-		server = new GatewayServer(new BufferEntryPoint());
+		GatewayServer.turnLoggingOff();
+		server = new GatewayServer(new BufferGenerator());
 		server.start();
 	}
 	

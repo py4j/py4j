@@ -59,6 +59,10 @@ public class GatewayServer implements Runnable {
 	private Socket currentSocket;
 
 	private ServerSocket sSocket;
+	
+	static {
+		GatewayServer.turnLoggingOff();
+	}
 
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout, boolean acceptOnlyOne) {

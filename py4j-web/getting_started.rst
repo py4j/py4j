@@ -49,73 +49,64 @@ Here is the code of the stack:
       }
   }
 
-To make the stack available to a Python program, you need an entry point, something that will allow Python programs to:
+To make the stack available to a Python program, you need something that will allow Python programs to:
 
 1. Access the JVM running your program.
-2. Access the objects that you created on the JVM.
+2. Access the objects that you created in the JVM.
 
-This entry point is implemented by two classes. The first class is a `GatewayServer <_static/javadoc/index.html?py4j/GatewayServer.html>`_: 
-it allows Python programs to communicate with the JVM through a local network socket. The second class is *Gateway* that
-allows Python programs to get specific objects that you created in the JVM. 
+These features are provided by two objects. The first object is a `GatewayServer
+<_static/javadoc/index.html?py4j/GatewayServer.html>`_ instance: it allows Python programs to communicate with the JVM through a
+local network socket. The second object is called an *entry point* and it can be any object (e.g., a Facade, a singleton, a list, etc.). 
 
-The `GatewayServer <_static/javadoc/index.html?py4j/GatewayServer.html>`_ provided by Py4J can be used as is. At most,
-you will need to configure it to specify a network address and port, if the defaults (localhost, 25333) do not work for
-you.
+The `GatewayServer <_static/javadoc/index.html?py4j/GatewayServer.html>`_ provided by Py4J can be used as is but you can
+also configure it and specify a network address and port, if the defaults (localhost, 25333) do not work for you. The
+``GatewayServer`` constructor takes an object (the entry point) as a parameter.
 
-You still need to create your Gateway class and for that you can extend the `DefaultGateway <_static/javadoc/index.html?py4j/DefaultGateway.html>`_ class.
-
-.. note::
-   
-   If you do not want to extend `DefaultGateway <_static/javadoc/index.html?py4j/DefaultGateway.html>`_, you can simply 
-   implement the `Gateway <_static/javadoc/index.html?py4j/Gateway.html>`_ interface. Looking at the `code of DefaultGateway <http://sourceforge.net/apps/trac/py4j/browser/trunk/py4j-java/src/py4j/DefaultGateway.java>`_  
-   will give you good examples on how to implement these methods.
-
-Here is an example of a custom Gateway class that would allow a Python program to access stacks:
+Here is an example of an example of an entry point that would allow a Python program to access a pre-configured stack:
 
 .. code-block:: java
 
   package py4j.examples;
 
-  import py4j.DefaultGateway;
   import py4j.GatewayServer;
 
-  public class StackGateway extends DefaultGateway {
+  public class StackEntryPoint {
 
-      public Stack createNewStack() {
-          return new Stack();
+      private Stack stack;
+
+      public StackEntryPoint() {
+        stack = new Stack();
+	stack.push("Initial Item");
+      }
+
+      public Stack getStack() {
+          return stack;
       }
       
       public static void main(String[] args) {
-          GatewayServer gatewayServer = new GatewayServer(new StackGateway());
+          GatewayServer gatewayServer = new GatewayServer(new StackEntryPoint());
           gatewayServer.start();
           System.out.println("Gateway Server Started");
       }
       
   }
 
-There are a few important lines in this code. First, you declare a class that extends the `DefaultGateway <_static/javadoc/index.html?py4j/DefaultGateway.html>`_.
+There are a few important lines in this code. First, you declare a class that will provide an access to a pre-configured stack:
 
 .. code-block:: java
 
-   public class StackGateway extends DefaultGateway
-
-Then, you create a method that creates stacks. This method could do anything and could return anything you want. Here it
-just creates new stacks, but it could access existing stacks too or anything you can think of.
-
-.. code-block:: java
-
-      public Stack createNewStack() {
-          return new Stack();
-      }
+   public Stack getStack() {
+       return stack;
+   }
 
 Then, you create a main method. This main method could be located in another class. The first thing you do in the main
 method is to initialize a `GatewayServer <_static/javadoc/index.html?py4j/GatewayServer.html>`_ and link it to an
-instance of our custom gateway. Essentially, you are saying that you want Python programs to access our custom gateway.
+entry point.
 
 .. code-block:: java
 
     public static void main(String[] args) {
-          GatewayServer gatewayServer = new GatewayServer(new StackGateway());
+        GatewayServer gatewayServer = new GatewayServer(new StackEntryPoint());
 
 Finally, you need to start the gateway so it can accept incoming Python requests:
 
@@ -123,27 +114,28 @@ Finally, you need to start the gateway so it can accept incoming Python requests
 
       gatewayServer.start();
 
-You are now ready to try your Java program. Just executes the StackGateway class in your favorite development environment and check that you see the message ``Gateway Server Started``
+You are now ready to try your Java program. Just execute the StackGateway class in your favorite development environment
+and check that you see the message ``Gateway Server Started``
 
 .. warning:: 
    
    When running your application, you may get a ``java.net.BindException: Address already in use`` exception. There are 
    two common causes: either you are already running another instance of your program or another program on your 
-   computer is listening to the port 25333. To change the port, replace this line (use any port number):
+   computer is listening to the port 25333. To change the port, replace this line:
 
    .. code-block:: java
 
-     GatewayServer gatewayServer = new GatewayServer(new StackGateway());
+     GatewayServer gatewayServer = new GatewayServer(new StackEntryPoint());
 
-   by this line:
+   by this line (use any port number):
 
    .. code-block:: java
      
-     GatewayServer gatewayServer = new GatewayServer(new StackGateway(), 25334);
+     GatewayServer gatewayServer = new GatewayServer(new StackEntryPoint(), 25334);
      
 You are now done. Because your program will wait for connections, it will never exit. To terminate your program, you
 have to kill it (e.g., Ctrl-C). If you initialize the GatewayServer in another method, you can also call
-``gatewayServer.stop()``.
+``gatewayServer.shutdown()``.
 
 Writing the Python Program
 --------------------------
@@ -157,7 +149,9 @@ The first step is to import the necessary Py4J class:
 
   >>> from py4j.java_gateway import JavaGateway
 
-Next, initialize a :ref:`JavaGateway <api_javagateway>`. The default parameters are usually sufficient for common cases. When you create a :ref:`JavaGateway <api_javagateway>`, Python tries to connect to a JVM with a gateway (localhost on port 25333).
+Next, initialize a :ref:`JavaGateway <api_javagateway>`. The default parameters are usually sufficient for common cases.
+When you create a :ref:`JavaGateway <api_javagateway>`, Python tries to connect to a JVM with a gateway (localhost on
+port 25333).
 
 :: 
 
@@ -169,11 +163,11 @@ Next, initialize a :ref:`JavaGateway <api_javagateway>`. The default parameters 
   waiting for a connection. Check that your Java program is still running, or if you did not start it, now would be a good
   time to do so :-)
 
-From the gateway object, we can access the StackGateway by calling methods. Since StackGateway only declares one method, we can call it now:
+From the gateway object, we can access the entry point by referring to its ``entry_point`` member:
 
 :: 
 
-  >>> stack = gateway.createNewStack()
+  >>> stack = gateway.entry_point.getStack()
 
 The stack variable now contains a stack. Try to push and pop a few elements:
 
@@ -184,7 +178,9 @@ The stack variable now contains a stack. Try to push and pop a few elements:
   >>> stack.pop()                                        
   u'Second item'                                         
   >>> stack.pop()                                        
-  u'First item'       
+  u'First item'    
+  >>> stack.pop()
+  u'Initial Item'   
 
 Now the stack is supposed to be empty. Here is what happens if you try to pop it again.
 
@@ -199,12 +195,7 @@ Now the stack is supposed to be empty. Here is what happens if you try to pop it
       raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))   
   py4j.java_gateway.Py4JError: u'An error occurred while calling o0.pop'                   
 
-You get a :ref:`Py4JError <api_py4jerror>` because there was an exception on the JVM side. Actually, if you look at the
-console of your JVM, you will see a bunch of logging sentences, including this exception:
-
-.. code-block:: java 
-
-  py4j.Py4JException: javax.script.ScriptException: sun.org.mozilla.javascript.internal.WrappedException: Wrapped java.lang.IndexOutOfBoundsException: Index: 0, Size: 0 (<Unknown source>#1) in <Unknown source> at line number 1
+You get a :ref:`Py4JError <api_py4jerror>` because there was an exception on the JVM side.
 
 Now, you will experiment with lists. Add another element and get the internal list of the stack:
 
@@ -249,7 +240,7 @@ you are really accessing a Java list contained in the JVM.
 .. note::
   For the keen Java programmers among you, note that the slice operation is **NOT** implemented with the ``subList`` 
   method in Java, because ``subList`` returns a view, not a copy, of the list: when the original list changes, the view 
-  generally becomes invalid.
+  generally becomes invalid so this is not a suitable replacement for a slice.
 
 In the previous example, you also tried to pass a list as a parameter of the pushAll method. See what happens if you try 
 to pass a pure Python list that was not returned by the JVM:
@@ -267,23 +258,47 @@ to pass a pure Python list that was not returned by the JVM:
   >>> stack.getInternalList()
   [u'Third item', u'First item', u'First item', u'Second item']
 
-As of version 0.1, Py4J does not support the conversion from pure Python lists to Java list. This is a feature that will 
-likely be implemented in version 0.2 or 0.3. Finally, Python has powerful introspection abilities that are slowly being
-replicated by Py4J. For example, a JavaGateway always allow you to list all the methods available on an object:
+As of version 0.2, Py4J does not support the conversion from pure Python lists to Java list. This is a feature that will 
+likely be implemented in version 0.3 or 0.4. 
+
+Python has powerful introspection abilities that are slowly being replicated by Py4J. For example, a JavaGateway
+allow you to list all the members available in an object:
 
 :: 
 
-  >>> gateway.getMethodNames(stack)
-  [u'getClass', u'equals', u'notify', u'hashCode', u'toString', u'pushAll', u'pop', u'wait', u'push', u'notifyAll',u'getInternalList']
+  >>> gateway.help(stack)
+  Help on class Stack in package py4j.examples:
+
+  Stack {
+  |  
+  |  Methods defined here:
+  |  
+  |  pop() : String
+  |  
+  |  push(String) : void
+  |  
+  |  getInternalList() : List
+  |  
+  |  pushAll(List) : void
+  |  
+  |  ------------------------------------------------------------
+  |  Fields defined here:
+  |  
+  |  ------------------------------------------------------------
+  |  Internal classes defined here:
+  |  
+  }
   
-And in case you are wondering, here is how Py4J implement the Java objects in Python:
+Finally, you do not need an entry point to create and access objects. You can use the ``jvm`` member to call constructors and static members:
 
 ::
 
-  >>> type(stack)
-  <class 'py4j.java_gateway.JavaObject'>
-  >>> type(internal_list)
-  <class 'py4j.java_gateway.JavaList'>
+  >>> java_list = gateway.jvm.java.util.ArrayList()
+  >>> java_list.append(214)
+  >>> java_list.append(120)
+  >>> gateway.jvm.java.util.Collections.sort(java_list)
+  >>> java_list
+  [120, 214]
 
 
 Where to go from here

@@ -33,13 +33,13 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import py4j.examples.BufferEntryPoint;
+import py4j.examples.BufferGenerator;
 
 public class BufferGatewayTest {
 
 	@Test
 	public void testBufferedGateway1() {
-		BufferEntryPoint.main(null);
+		BufferGenerator.main(null);
 		
 		EchoClient client = new EchoClient();
 
@@ -58,7 +58,7 @@ public class BufferGatewayTest {
 			fail();
 		} finally {
 			client.close();
-			BufferEntryPoint.shutdownGateway();
+			BufferGenerator.shutdownGateway();
 		}
 	}
 

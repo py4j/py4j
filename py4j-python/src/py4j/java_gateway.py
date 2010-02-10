@@ -110,6 +110,14 @@ def escape_new_line(original):
     return final
 
 def unescape_new_line(escaped):
+    """Replaces escaped characters by unescaped characters.
+    
+    For example, double backslashes are replaced by a single backslash.
+    
+    :param escaped: the escaped string
+    
+    :rtype: the original string
+    """
     escaping = False
     original = ''
     for c in escaped:

@@ -32,14 +32,21 @@ import py4j.GatewayServer;
 
 public class StackEntryPoint {
 
-	public Stack createNewStack() {
-		return new Stack();
+	private Stack stack;
+
+	public StackEntryPoint() {
+		stack = new Stack();
+		stack.push("Initial Item");
 	}
-	
+
+	public Stack getStack() {
+		return stack;
+	}
+
 	public static void main(String[] args) {
 		GatewayServer gateway = new GatewayServer(new StackEntryPoint());
 		gateway.start();
 		System.out.println("Gateway Server Started");
 	}
-	
+
 }
