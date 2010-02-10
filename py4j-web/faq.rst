@@ -46,10 +46,29 @@ fields.
   >>> timestamp = gateway.jvm.java.lang.System.currentTimeMillis()
 
 
+How to access a field?
+----------------------
+
+Use the :ref:`get_field <api_functions_get_field>` function:
+
+::
+
+  >>> field_value = py4j.java_gateway.get_field(object,'public_field')
+  
+  
+Or you can also set the :ref:`auto_field <api_javagateway>` parameter to `True` when you create the gateway:
+
+::
+
+  >>> gateway = JavaGateway(auto_field=True)
+  >>> object = gateway.entry_point.getObject()
+  >>> field_value = object.public_field
+
+
 What is the memory model of Py4J?
 ---------------------------------
 
-Everytime an object is returned through a gateway, a reference to the object is kept on the Java side. Once the object
+Every time an object is returned through a gateway, a reference to the object is kept on the Java side. Once the object
 is garbage collected on the Python VM (reference count = 0), the reference is removed on the Java VM: if this was the
 last reference, the object will likely be garbage collected too. When a gateway is closed or shut down, the remaining
 references are also removed on the Java VM.
@@ -60,4 +79,14 @@ Is Py4J thread-safe?
 
 Py4J itself is thread-safe, but multiple threads could access the same entry point. Each gateway connection is executed
 in is own thread (e.g., each time ``JavaGateway()`` is called in Python) so if multiple Python programs (or processes)
-access the same entry point, mutiple threads may call the entry point's methods concurrently.
+access the same entry point, multiple threads may call the entry point's methods concurrently.
+
+In the following example, two threads are accessing the same entry point. If `gateway1` and `gateway2` were created in 
+separate processes, `method1` would be accessed concurrently.
+
+::
+
+  gateway1 = JavaGateway() # Thread One is accessing the JVM.
+  gateway2 = JavaGateway() # Thread Two is accessing the JVM.
+  gateway1.entry_point.method1() # Thread One is calling method1
+  gateway2.entry_point.method1() # Thread Two is calling method1

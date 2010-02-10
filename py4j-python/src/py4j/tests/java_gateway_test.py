@@ -3,7 +3,7 @@ Created on Dec 10, 2009
 
 @author: barthelemy
 '''
-from IN import AF_INET, SOCK_STREAM
+from socket import AF_INET, SOCK_STREAM
 from multiprocessing.process import Process
 from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, get_method, \
     unescape_new_line, escape_new_line

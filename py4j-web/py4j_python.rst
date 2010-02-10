@@ -182,4 +182,25 @@ JavaList
   ::
 
     TBD
+    
+ .. _api_functions:
+ 
+
+Py4J Functions
+--------------
+
+.. _api_functions_get_field:
+ 
+    
+.. autofunction:: py4j.java_gateway.get_field
+
+.. autofunction:: py4j.java_gateway.get_method
    
+.. autofunction:: py4j.java_gateway.escape_new_line
+
+.. autofunction:: py4j.java_gateway.unescape_new_line 
+
+.. autofunction:: py4j.java_gateway.get_command_part
+
+.. autofunction:: py4j.java_gateway.get_return_value
+

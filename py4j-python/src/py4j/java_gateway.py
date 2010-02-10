@@ -9,7 +9,7 @@ Created on Dec 3, 2009
 @author: Barthelemy Dagenais
 """
 
-from IN import AF_INET, SOCK_STREAM
+from socket import AF_INET, SOCK_STREAM
 from pydoc import ttypager
 import logging
 import socket
@@ -137,6 +137,12 @@ def unescape_new_line(escaped):
 
     
 def get_command_part(parameter):
+    """Converts a Python object into a string representation respecting the Py4J protocol.
+    
+    For example, the integer `1` is converted to `u'i1'`
+    
+    :param parameter: the object to convert
+    """
     command_part = ''
     if parameter == None:
         command_part = NULL_TYPE
@@ -154,6 +160,16 @@ def get_command_part(parameter):
     return command_part + '\n'
 
 def get_return_value(answer, comm_channel, target_id = None, name = None):
+    """Converts an answer received from the Java gateway into a Python object.
+    
+    For example, string representation of integers are converted to Python integer, 
+    string representation of objects are converted to JavaObject instances, etc.
+    
+    :param answer: the string returned by the Java gateway
+    :param comm_channel: the communication channel used to communicate with the Java Gateway. Only necessary if the answer is a reference (e.g., object, list, map)
+    :param target_id: the name of the object from which the answer comes from (e.g., *object1* in `object1.hello()`). Optional.
+    :param name: the name of the member from which the answer comes from (e.g., *hello* in `object1.hello()`). Optional.
+    """
     if is_error(answer)[0]:
         raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))
     elif answer[1] == NULL_TYPE:
@@ -182,6 +198,13 @@ def is_error(answer):
         return (False, None)
     
 def get_field(java_object, field_name):
+    """Retrieves the field named `field_name` from the `java_object`.
+    
+    This function is useful when `auto_field=false` in a gateway or Java object.
+    
+    :param java_object: the instance containing the field
+    :param field_name: the name of the field to retrieve
+    """
     command = FIELD_COMMAND_NAME + FIELD_GET_SUBCOMMAND_NAME + java_object._target_id + '\n' + field_name + '\n' + END_COMMAND_PART
     answer = java_object._comm_channel.send_command(command)
     if answer == NO_MEMBER_COMMAND or is_error(answer)[0]:
@@ -190,6 +213,14 @@ def get_field(java_object, field_name):
         return get_return_value(answer, java_object._comm_channel, java_object._target_id, field_name)
         
 def get_method(java_object, method_name):
+    """Retrieves a reference to the method of an object.
+    
+    This function is useful when `auto_field=true` and an instance field has the same name as a method. 
+    The full signature of the method is not required: it is determined when the method is called.
+    
+    :param java_object: the instance containing the method
+    :param method_name: the name of the method to retrieve
+    """
     return JavaMember(method_name, java_object._target_id, java_object._comm_channel)
 
 class Py4JError(Exception):
@@ -472,6 +503,12 @@ class JavaGateway(JavaObject):
         return get_return_value(answer, self._comm_channel, None, None)
     
     def help(self, var, short_name=True, display=True):
+        """Displays a help page about a class or an object.
+        
+        :param var: JavaObject or JavaClass for which a help page will be generated.
+        :param short_name: If True, only the simple name of the parameter types and return types will be displayed. If False, the fully qualified name of the types will be displayed.
+        :param display: If True, the help page is displayed in an interactive page similar to the `help` command in Python. If False, the page is returned as a string.
+        """
         if hasattr(var, '_get_object_id'):
             answer = self._comm_channel.send_command(HELP_COMMAND_NAME + HELP_OBJECT_SUBCOMMAND_NAME + var._get_object_id() + '\n' + get_command_part(short_name) + 'e\n')
         elif hasattr(var, '_fqn'):

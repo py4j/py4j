@@ -213,7 +213,7 @@ Now, you will experiment with lists. Add another element and get the internal li
   >>> stack.getInternalList()
   [u'First item', u'Second item']
 
-As you can see, lists created on the JVM act like Python strings: you can use the ``[]`` operator and the usual list
+As you can see, lists created on the JVM act like Python lists: you can use the ``[]`` operator and the usual list
 methods like ``len`` and ``append``. Notice that when you change the list on the Python side, it is also changed on the
 Java side. Now try to slice the list:
 
