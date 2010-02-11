@@ -1,0 +1,13 @@
+{% extends "basic_layout.html" %}
+
+{# put the sidebar before the body #}
+{% block rootrellink %}
+    <li><a href="{{ pathto('index') }}">Home</a> |</li>
+	<li><a href="{{ pathto('download') }}">Download</a> |</li>
+	<li><a href="{{ pathto('contents') }}">Documentation</a> |</li>
+	<li><a href="http://py4j.sourceforge.net/blog">Blog</a> |</li>
+	<li><a href="https://sourceforge.net/apps/trac/py4j/wiki">Trac</a> |</li>
+	<li><a href="{{ pathto('about') }}">About</a> &raquo;</li>
+{% endblock %}
+{% block sidebar1 %}{{ sidebar() }}{% endblock %}
+{% block sidebar2 %}{% endblock %}

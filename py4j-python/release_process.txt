@@ -1,0 +1,11 @@
+1. paver big_release
+1.5 test release file on windows and ubuntu
+2. create signature using gpg (gpg -b --armor)
+3. create folder on sourceforge
+4. upload to sourceforge using scp command
+5. paver register
+6. upload to PyPI
+7. paver deploy
+8. close milestone on Trac
+9. tag the release on SVN
+10. send an email to the mailing list.
