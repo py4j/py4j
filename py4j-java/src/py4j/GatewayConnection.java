@@ -41,6 +41,30 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * <p>
+ * Manage the connection between a Python program and a Gateway. A
+ * GatewayConnection lives in its own thread and is created every time a Python
+ * program starts a <code>JavaGateway</code>
+ * </p>
+ * 
+ * <p>
+ * <code>gateway = JavaGateway()</code>
+ * </p>
+ * 
+ * <p>
+ * The request to connect to the JVM goes through the {@link py4j.GatewayServer
+ * GatewayServer} first and is then passed to a GatewayConnection.
+ * </p>
+ * 
+ * <p>
+ * This class is not intended to be directly accessed by users.
+ * </p>
+ * 
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class GatewayConnection implements Runnable {
 
 	private final Gateway gateway;
@@ -51,7 +75,7 @@ public class GatewayConnection implements Runnable {
 	private final Map<String, Command> commands;
 	private final Logger logger = Logger.getLogger(GatewayConnection.class
 			.getName());
-	
+
 	public GatewayConnection(GatewayServer gatewayServer, Gateway gateway,
 			Socket socket) throws IOException {
 		super();

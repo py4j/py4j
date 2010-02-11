@@ -53,6 +53,12 @@ package py4j;
  * </ul>
  * 
  * <p>
+ * The various parts of a command are separated by \n characters. These
+ * characters are automatically escaped and unescaped in Strings on both sides
+ * (Java and Python).
+ * </p>
+ * 
+ * <p>
  * An output command is usually composed of:
  * </p>
  * <ul>
@@ -61,12 +67,13 @@ package py4j;
  * String)</li>
  * </ul>
  * 
+ * <p>This class should be used only if the user creates new commands.</p>
+ * 
  * @author Barthelemy Dagenais
  * 
  */
 public class Protocol {
 
-	
 	// TYPES
 	public final static char INTEGER_TYPE = 'i';
 	public final static char BOOLEAN_TYPE = 'b';
@@ -94,7 +101,8 @@ public class Protocol {
 	// SHORTCUT
 	public final static String ERROR_COMMAND = "" + ERROR + END_OUTPUT;
 	public final static String VOID_COMMAND = "" + SUCCESS + VOID + END_OUTPUT;
-	public final static String NO_SUCH_FIELD = "" + SUCCESS + NO_MEMBER + END_OUTPUT;
+	public final static String NO_SUCH_FIELD = "" + SUCCESS + NO_MEMBER
+			+ END_OUTPUT;
 
 	// ENTRY POINT
 	public final static String ENTRY_POINT_OBJECT_ID = "t";
@@ -347,12 +355,12 @@ public class Protocol {
 				char primitiveType = getPrimitiveType(primitiveObject);
 				builder.append(getPrimitiveType(primitiveObject));
 				if (primitiveType == STRING_TYPE) {
-					builder.append(StringUtil.escape(primitiveObject.toString()));
+					builder.append(StringUtil
+							.escape(primitiveObject.toString()));
 				} else {
 					builder.append(primitiveObject.toString());
 				}
-				
-				
+
 			}
 		}
 		builder.append(END_OUTPUT);

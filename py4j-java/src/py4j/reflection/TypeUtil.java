@@ -34,9 +34,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * <p>
+ * This class is responsible for the type conversion between Python types and
+ * Java types.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class TypeUtil {
 	private static Set<String> numericTypes;
-	
+
 	public final static int DISTANCE_FACTOR = 100;
 
 	static {
@@ -129,7 +138,7 @@ public class TypeUtil {
 		if (distance != -1) {
 			distance *= DISTANCE_FACTOR;
 		}
-		
+
 		return distance;
 	}
 
@@ -258,36 +267,36 @@ public class TypeUtil {
 
 		return cost;
 	}
-	
+
 	public static String getName(String name, boolean shortName) {
 		if (!shortName) {
 			return name;
 		} else {
 			int index = name.lastIndexOf(".");
 			if (index >= 0 && index < name.length() + 1) {
-				return name.substring(index+1);
+				return name.substring(index + 1);
 			} else {
 				return name;
 			}
 		}
 	}
-	
+
 	public static String getPackage(String name) {
 		int index = name.lastIndexOf(".");
 		if (index < 0) {
 			return name;
 		} else {
-			return name.substring(0,index);
+			return name.substring(0, index);
 		}
 	}
-	
+
 	public static String[] getNames(Class<?>[] classes) {
 		String[] names = new String[classes.length];
-		
-		for (int i = 0; i<classes.length; i++) {
+
+		for (int i = 0; i < classes.length; i++) {
 			names[i] = classes[i].getCanonicalName();
 		}
-		
+
 		return names;
 	}
 }

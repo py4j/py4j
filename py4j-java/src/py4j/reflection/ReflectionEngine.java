@@ -40,6 +40,15 @@ import java.util.logging.Logger;
 
 import py4j.Py4JException;
 
+/**
+ * <p>
+ * The reflection engine is responsible for accessing the classes, the instances
+ * and members in a JVM.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class ReflectionEngine {
 
 	public static int cacheSize = 100;
@@ -217,8 +226,8 @@ public class ReflectionEngine {
 	 * 
 	 * @param obj
 	 * @param name
-	 * @return The field or null if a field with this name does not exist in
-	 *         the class of this object or in its hierarchy.
+	 * @return The field or null if a field with this name does not exist in the
+	 *         class of this object or in its hierarchy.
 	 */
 	public Field getField(Object obj, String name) {
 		return getField(obj.getClass(), name);

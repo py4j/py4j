@@ -37,6 +37,23 @@ import java.util.logging.Logger;
 
 import py4j.Py4JException;
 
+/**
+ * <p>
+ * A MethodInvoker translates a call made in a Python Program into a call to a
+ * Java method.
+ * </p>
+ * <p>
+ * A MethodInvoker is tailored to a particular set of actual parameters and
+ * indicates how far the calling context is from the method signature.
+ * </p>
+ * <p>
+ * For example, a call to method1(String) from Python can be translated to a
+ * call to method1(char) in Java, with a cost of 1.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class MethodInvoker {
 
 	public final static int INVALID_INVOKER_COST = -1;

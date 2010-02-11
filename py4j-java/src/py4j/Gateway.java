@@ -47,23 +47,13 @@ import py4j.reflection.ReflectionEngine;
 /**
  * 
  * <p>
- * Provides default implementation of a JavaGateway.
+ * A Gateway is manages various states: entryPoint, references to objects
+ * returned to a Python program, etc.
  * </p>
  * 
  * <p>
- * This class is <b>not</b> thread-safe. If the {@link py4j.GatewayServer
- * GatewayServer} allows multiple connections to the same gateway (acceptOnlyOne
- * == false), the javascript engine might be invoked by multiple threads with
- * unexpected consequences. The object and argument identifiers used by the
- * script engine are allocated in a thread-safe manner though.
+ * This class is not intended to be directly accessed by users.
  * </p>
- * 
- * <p>
- * If you plan to allow concurrent connections to a gateway, use
- * {@link py4j.DefaultSynchronizedGateway DefaultSynchronizedGateway} instead.
- * </p>
- * 
- * @see py4j.DefaultSynchronizedGateway DefaultSynchronizedGateway
  * 
  * @author Barthelemy Dagenais
  * 

@@ -35,6 +35,38 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * <p>
+ * This class enables Python programs to access a Java program. When a
+ * GatewayServer instance is started, Python programs can connect to the JVM by
+ * calling:
+ * </p>
+ * 
+ * <p>
+ * <code>gateway = JavaGateway()</code>
+ * </p>
+ * 
+ * <p>
+ * The
+ * <code>entryPoint</entry> passed to a GatewayServer can be accessed with the <code>entry_point</code>
+ * member:
+ * </p>
+ * 
+ * <p>
+ * <code>gateway.entry_point</code>
+ * </p>
+ * 
+ * <p>
+ * Technically, a GatewayServer is only responsible for accepting connection.
+ * Each connection is then handled by a {@link py4j.GatewayConnection
+ * GatewayConnection} instance and the various states (e.g., entryPoint,
+ * reference to returned objects) are managed by a {@link py4j.Gateway Gateway}
+ * instance.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class GatewayServer implements Runnable {
 
 	public static final int DEFAULT_PORT = 25333;
@@ -59,11 +91,30 @@ public class GatewayServer implements Runnable {
 	private Socket currentSocket;
 
 	private ServerSocket sSocket;
-	
+
 	static {
 		GatewayServer.turnLoggingOff();
 	}
 
+	/**
+	 * 
+	 * @param entryPoint
+	 *            The entry point of this Gateway. Can be null.
+	 * @param port
+	 *            The port the GatewayServer is listening to.
+	 * @param connectTimeout
+	 *            Time in milliseconds (0 = infinite). If a GatewayServer does
+	 *            not receive a connection request after this time, it closes
+	 *            the server socket and no other connection is accepted.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once a Python program is
+	 *            connected, if a GatewayServer does not receive a request
+	 *            (e.g., a method call) after this time, the connection with the
+	 *            Python program is closed.
+	 * @param acceptOnlyOne
+	 *            If true, only one Python program can connect to this
+	 *            GatewayServer at a time.
+	 */
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout, boolean acceptOnlyOne) {
 		super();
@@ -74,11 +125,27 @@ public class GatewayServer implements Runnable {
 		this.acceptOnlyOne = acceptOnlyOne;
 	}
 
+	/**
+	 * <p>
+	 * Creates a GatewayServer instance with default port (25333), default
+	 * address (localhost), and default timeout value (no timeout).
+	 * </p>
+	 * 
+	 * @param entryPoint
+	 *            The entry point of this Gateway. Can be null.
+	 */
 	public GatewayServer(Object entryPoint) {
 		this(entryPoint, DEFAULT_PORT, DEFAULT_CONNECT_TIMEOUT,
 				DEFAULT_READ_TIMEOUT, false);
 	}
 
+	/**
+	 * 
+	 * @param entryPoint
+	 *            The entry point of this Gateway. Can be null.
+	 * @param port
+	 *            The port the GatewayServer is listening to.
+	 */
 	public GatewayServer(Object entryPoint, int port) {
 		this(entryPoint, port, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT,
 				false);
@@ -111,7 +178,7 @@ public class GatewayServer implements Runnable {
 				socket.close();
 			} else {
 				socket.setSoTimeout(read_timeout);
-				createConnection(this,gateway,socket);
+				createConnection(this, gateway, socket);
 				if (acceptOnlyOne) {
 					currentSocket = socket;
 				}
@@ -129,6 +196,14 @@ public class GatewayServer implements Runnable {
 		return currentSocket != null && currentSocket.isConnected();
 	}
 
+	/**
+	 * <p>Starts to accept connections.</p>
+	 * @param fork
+	 *            If true, the GatewayServer accepts connection in another
+	 *            thread and this call is non-blocking. If False, the
+	 *            GatewayServer accepts connection in this thread and the call
+	 *            is blocking (until the Gateway is shutdown by another thread).
+	 */
 	public void start(boolean fork) {
 		if (fork) {
 			Thread t = new Thread(this);
@@ -138,11 +213,20 @@ public class GatewayServer implements Runnable {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Starts to accept connections in a second thread (non-blocking call).
+	 * </p>
+	 */
 	public void start() {
 		start(true);
 	}
 
+	/**
+	 * <p>Stops accepting connections, closes all current connections, and calls {@link py4j.Gateway#shutdown() Gateway.shutdown()}</p>
+	 */
 	public void shutdown() {
+		// TODO Check that all connections are indeed closed!
 		NetworkUtil.quietlyClose(sSocket);
 		gateway.shutdown();
 	}
@@ -159,10 +243,16 @@ public class GatewayServer implements Runnable {
 		return read_timeout;
 	}
 
+	/**
+	 * <p>Utility method to turn logging off. Logging is turned off by default.</p>
+	 */
 	public static void turnLoggingOff() {
 		Logger.getLogger("py4j").setLevel(Level.OFF);
 	}
 
+	/**
+	 * <p>Utility method to turn logging on. Logging is turned off by default.</p>
+	 */
 	public static void turnLoggingOn() {
 		Logger.getLogger("py4j").setLevel(Level.ALL);
 	}

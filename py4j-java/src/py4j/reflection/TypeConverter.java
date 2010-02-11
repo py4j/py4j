@@ -28,6 +28,16 @@
  *******************************************************************************/
 package py4j.reflection;
 
+/**
+ * <p>
+ * A TypeConverter converts a Python type into a Java Type. For example, a
+ * Python String might be converted to a Java character (e.g., when calling a
+ * method that only accepts characters).
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class TypeConverter {
 
 	public final static int NO_CONVERSION = -1;
@@ -39,15 +49,19 @@ public class TypeConverter {
 	private final int conversion;
 
 	public final static TypeConverter NO_CONVERTER = new TypeConverter();
-	public final static TypeConverter FLOAT_CONVERTER = new TypeConverter(DOUBLE_TO_FLOAT);
-	public final static TypeConverter SHORT_CONVERTER = new TypeConverter(INT_TO_SHORT);
-	public final static TypeConverter BYTE_CONVERTER = new TypeConverter(INT_TO_BYTE);
-	public final static TypeConverter CHAR_CONVERTER = new TypeConverter(STRING_TO_CHAR);
-	
+	public final static TypeConverter FLOAT_CONVERTER = new TypeConverter(
+			DOUBLE_TO_FLOAT);
+	public final static TypeConverter SHORT_CONVERTER = new TypeConverter(
+			INT_TO_SHORT);
+	public final static TypeConverter BYTE_CONVERTER = new TypeConverter(
+			INT_TO_BYTE);
+	public final static TypeConverter CHAR_CONVERTER = new TypeConverter(
+			STRING_TO_CHAR);
+
 	public TypeConverter() {
 		this(NO_CONVERSION);
 	}
-	
+
 	public TypeConverter(int conversion) {
 		this.conversion = conversion;
 	}
