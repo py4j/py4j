@@ -9,14 +9,15 @@ resided in the Python interpreter and Java collections can be accessed through s
 Py4J is distributed under the `BSD license <http://sourceforge.net/apps/trac/py4j/browser/trunk/py4j-python/LICENSE.txt>`_.
 
 Here is a brief example of what you can do with Py4J. The following Python program creates a `java.util.ArrayList`
-instance from a JVM and calls some of its methods using the standard Python list methods:
+instance from a JVM and calls some of its methods using the standard Python list methods. It also accesses a custom
+Java class, `ListPrinter` to print the list as a String.
 
 ::
 
   >>> from py4j.java_gateway import JavaGateway
   >>> gateway = JavaGateway()                        # connect to the JVM        
   >>> java_list = gateway.jvm.java.util.ArrayList()  # create an ArrayList
-  >>> java_list.append('Hello ')                      # call ArrayList.add in the JVM 
+  >>> java_list.append('Hello ')                     # call ArrayList.add in the JVM 
   >>> java_list.append('World')
   >>> java_list.append('Now')
   >>> liststr = gateway.entry_point.getListAsString(java_list[:-1])
@@ -56,7 +57,7 @@ Resources
 News
 ====
 
-* **February Xth 2009** - Py4J 0.2 has been released. See the :doc:`changelog` for more details about all the new features that found their way in the latest release!
+* **February 11th 2009** - Py4J 0.2 has been released. See the :doc:`changelog` for more details about all the new features that found their way in the latest release!
 * **December 23rd 2009** - Py4J 0.1 has been released. Rejoice!
 * **December 11th 2009** - Py4J is still in the planning phase, but the `code <https://sourceforge.net/projects/py4j/develop>`_ 
   currently works for basic scenarios. A release and a tutorial should be available in the following weeks.
