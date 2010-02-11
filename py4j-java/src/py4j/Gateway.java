@@ -84,20 +84,11 @@ public class Gateway {
 	@SuppressWarnings("unused")
 	private boolean cleanUpConnection = false;
 
-	private static ThreadLocal<LRUCache<String,Py4JMember>> helpPages = new ThreadLocal<LRUCache<String,Py4JMember>>() {
+	private static ThreadLocal<LRUCache<String, Py4JMember>> helpPages = new ThreadLocal<LRUCache<String, Py4JMember>>() {
 		@Override
-		protected LRUCache<String,Py4JMember> initialValue() {
-			return new LRUCache<String,Py4JMember>();
+		protected LRUCache<String, Py4JMember> initialValue() {
+			return new LRUCache<String, Py4JMember>();
 		}
-	};
-	
-	private static ThreadLocal<ConnectionProperty> connectionProperty = new ThreadLocal<ConnectionProperty>() {
-
-		@Override
-		protected ConnectionProperty initialValue() {
-			return new ConnectionProperty();
-		}
-
 	};
 
 	private static ThreadLocal<Set<String>> connectionObjects = new ThreadLocal<Set<String>>() {
@@ -117,7 +108,7 @@ public class Gateway {
 		this.entryPoint = entryPoint;
 		this.cleanUpConnection = cleanUpConnection;
 	}
-	
+
 	public ReturnObject attachObject(String objectId) {
 		Object object = getObjectFromId(objectId);
 		if (object == null) {
@@ -149,11 +140,9 @@ public class Gateway {
 	 * </p>
 	 */
 	public void closeConnection() {
-		if (connectionProperty.get().isCleanConnection()) {
-			logger.info("Cleaning Connection");
-			for (String objectId : connectionObjects.get()) {
-				this.bindings.remove(objectId);
-			}
+		logger.info("Cleaning Connection");
+		for (String objectId : connectionObjects.get()) {
+			this.bindings.remove(objectId);
 		}
 	}
 
@@ -174,7 +163,7 @@ public class Gateway {
 		return this.entryPoint;
 	}
 
-	public LRUCache<String,Py4JMember> getHelpPages() {
+	public LRUCache<String, Py4JMember> getHelpPages() {
 		return helpPages.get();
 	}
 
@@ -215,11 +204,7 @@ public class Gateway {
 	 *         unknown.
 	 */
 	public Object getObject(String objectId) {
-		if (objectId.equals(Protocol.CONNECTION_PROPERTY_OBJECT_ID)) {
-			return connectionProperty.get();
-		} else {
-			return bindings.get(objectId);
-		}
+		return bindings.get(objectId);
 	}
 
 	protected Object getObjectFromId(String targetObjectId) {
@@ -320,7 +305,7 @@ public class Gateway {
 	protected boolean isList(Object object) {
 		return object instanceof List;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	protected boolean isMap(Object object) {
 		return object instanceof Map;

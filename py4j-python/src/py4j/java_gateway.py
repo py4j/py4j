@@ -463,9 +463,6 @@ class JavaGateway(JavaObject):
     
     * The `jvm` field of `JavaGateway` enables user to access classes, static members (fields and methods) and call constructors.
     
-    * The `connection_property` field of `JavaGateway` enables user to modify the connection 
-      properties (e.g., should the objects be deleted once the gateway is closed). It is connected to the `ConnectionProperty` instance associated to the `GatewayConnection`
-    
     Methods that are not defined by `JavaGateway` are always redirected to `entry_point`. For example, ``gateway.doThat()`` is equivalent to ``gateway.entry_point.doThat()``.
     This is a trade-off between convenience and potential confusion."""
     
@@ -484,7 +481,6 @@ class JavaGateway(JavaObject):
             
         JavaObject.__init__(self, ENTRY_POINT_OBJECT_ID, comm_channel)
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, comm_channel)
-        self.connection_property = JavaObject(CONNECTION_PROPERTY_OBJECT_ID, comm_channel)
         self.jvm = JVM(comm_channel)
         if auto_start:
             self._comm_channel.start()

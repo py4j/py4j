@@ -59,12 +59,6 @@ public class GatewayTest {
 	}
 	
 	@Test
-	public void testConnectionProperty() {
-		ConnectionProperty cProperty = (ConnectionProperty) gateway.getObject(Protocol.CONNECTION_PROPERTY_OBJECT_ID);
-		assertTrue(cProperty.isCleanConnection());
-	}
-
-	@Test
 	public void testNoParam() {
 		String name = gateway.putNewObject(entryPoint.getNewExample());
 		ReturnObject obj2 = gateway.invoke("method1", name, null);

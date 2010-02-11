@@ -99,9 +99,6 @@ public class Protocol {
 	// ENTRY POINT
 	public final static String ENTRY_POINT_OBJECT_ID = "t";
 
-	// CONNECTION PROPERTY
-	public final static String CONNECTION_PROPERTY_OBJECT_ID = "c";
-
 	// STATIC REFERENCES
 	public final static String STATIC_PREFIX = "z:";
 

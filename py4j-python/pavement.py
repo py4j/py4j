@@ -9,7 +9,7 @@ from paver.setuputils import setup, find_package_data
 
 DOC_DIR = 'doc'
 DIST_DIR = 'dist'
-VERSION = '0.1'
+VERSION = '0.2'
 RELEASE = 'py4j-' + VERSION
 JAR_FILE = 'py4j' + VERSION + '.jar'
 
@@ -19,7 +19,7 @@ setup(
     package_dir={'':'src'},
     include_package_data = True,
     package_data = {'':['*.jar']},
-    version="0.1",
+    version="0.2",
     url="http://py4j.sourceforge.net/",
     author="Barthelemy Dagenais",
     author_email="barthe@users.sourceforge.net",
