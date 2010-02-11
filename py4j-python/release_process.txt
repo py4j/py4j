@@ -1,4 +1,5 @@
 1. paver big_release
+1.5 test release file on windows and ubuntu
 2. create signature using gpg (gpg -b --armor)
 3. create folder on sourceforge
 4. upload to sourceforge using scp command
