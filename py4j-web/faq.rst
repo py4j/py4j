@@ -77,9 +77,10 @@ references are also removed on the Java VM.
 Is Py4J thread-safe?
 --------------------
 
-Py4J itself is thread-safe, but multiple threads could access the same entry point. Each gateway connection is executed
-in is own thread (e.g., each time ``JavaGateway()`` is called in Python) so if multiple Python programs (or processes)
-access the same entry point, multiple threads may call the entry point's methods concurrently.
+The Java component of Py4J is thread-safe, but multiple threads could access the same entry point. Each gateway
+connection is executed in is own thread (e.g., each time ``JavaGateway()`` is called in Python) so if multiple Python
+programs are connected to the same gateway, i.e., the same address and the same port, multiple threads
+may call the entry point's methods concurrently.
 
 In the following example, two threads are accessing the same entry point. If `gateway1` and `gateway2` were created in 
 separate processes, `method1` would be accessed concurrently.
@@ -90,3 +91,15 @@ separate processes, `method1` would be accessed concurrently.
   gateway2 = JavaGateway() # Thread Two is accessing the JVM.
   gateway1.entry_point.method1() # Thread One is calling method1
   gateway2.entry_point.method1() # Thread Two is calling method1
+
+
+The Python component of Py4J is not thread-safe by default to optimize the performance. Only one thread should access
+the same JavaGateway instance. If multiple threads must access the same JavaGateway instance, a communication channel
+with thread_safe=True should be created:
+
+::
+  comm_channel = CommChannel(thread_safe=True)
+  gateway = JavaGateway(comm_channel=comm_channel)
+  # gateway can now be accessed by multiple threads.
+
+
