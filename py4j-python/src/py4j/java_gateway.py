@@ -9,8 +9,9 @@ Created on Dec 3, 2009
 @author: Barthelemy Dagenais
 """
 
-from socket import AF_INET, SOCK_STREAM
 from pydoc import ttypager
+from socket import AF_INET, SOCK_STREAM
+from threading import RLock
 import logging
 import socket
 
@@ -223,6 +224,23 @@ def get_method(java_object, method_name):
     """
     return JavaMember(method_name, java_object._target_id, java_object._comm_channel)
 
+class DummyRLock(object):
+    def __init__(self):
+        pass
+    
+    def acquire(self,blocking=1):
+        pass
+    
+    def release(self):
+        pass
+    
+    def __enter__(self):
+        pass
+    
+    def __exit__(self, type, value, tb):
+        pass
+    
+
 class Py4JError(Exception):
     """Exception thrown when a problem occurs with Py4J."""
     def __init__(self, value):
@@ -238,12 +256,13 @@ class Py4JError(Exception):
 class CommChannel(object):
     """Default communication channel (socket based) responsible for communicating with the Java Virtual Machine."""
     
-    def __init__(self, address='localhost', port=25333, auto_close=True):
+    def __init__(self, address='localhost', port=25333, auto_close=True, thread_safe=False):
         """
         :param address: the address to which the comm channel will connect
         :param port: the port to which the comm channel will connect. Default is 25333.
         :param auto_close: if `True`, the communication channel closes the socket when it is garbage 
           collected (i.e., when `CommChannel.__del__()` is called).
+        :param thread_safe: if `True`, the communication channel must acquire a lock before using the socket.
         """
         self.address = address
         self.port = port
@@ -251,40 +270,47 @@ class CommChannel(object):
         self.is_connected = False
         self.auto_close = auto_close
         self.queue = []
+        if thread_safe:
+            self.lock = RLock()
+        else:
+            self.lock = DummyRLock()
         
     def start(self):
         """Starts the communication channel by connecting to the `address` and the `port`"""
-        self.socket.connect((self.address, self.port))
-        self.is_connected = True
-        self.stream = self.socket.makefile('r',0)
+        with self.lock:
+            self.socket.connect((self.address, self.port))
+            self.is_connected = True
+            self.stream = self.socket.makefile('r',0)
     
     def close(self, throw_exception=False):
         """Closes the communication channel by closing the socket."""
-        try:
-            self.stream.close()
-            self.socket.shutdown(socket.SHUT_RDWR)
-            self.socket.close()
-        except Exception as e:
-            if throw_exception:
-                raise e
-        finally:
-            self.is_connected = False
+        with self.lock:
+            try:
+                self.stream.close()
+                self.socket.shutdown(socket.SHUT_RDWR)
+                self.socket.close()
+            except Exception as e:
+                if throw_exception:
+                    raise e
+            finally:
+                self.is_connected = False
         
     def shutdown_gateway(self):
         """Sends a shutdown command to the gateway. This will close the gateway server: all active 
         connections will be closed. This may be useful if the lifecycle of the Java program must be 
         tied to the Python program."""
-        if (not self.is_connected):
-            raise Py4JError('Communication channel must be connected to send shut down command.')
-        
-        try:
-            self.stream.close()
-            self.socket.sendall(SHUTDOWN_GATEWAY_COMMAND_NAME.encode('utf-8'))
-            self.socket.close()
-            self.is_connected = False
-        except Exception:
-            # Do nothing! Exceptions might occur anyway.
-            pass
+        with self.lock:
+            if (not self.is_connected):
+                raise Py4JError('Communication channel must be connected to send shut down command.')
+            
+            try:
+                self.stream.close()
+                self.socket.sendall(SHUTDOWN_GATEWAY_COMMAND_NAME.encode('utf-8'))
+                self.socket.close()
+                self.is_connected = False
+            except Exception:
+                # Do nothing! Exceptions might occur anyway.
+                pass
 
     def __del__(self):
         """Closes the socket if auto_delete is True and the socket is opened. 
@@ -293,18 +319,21 @@ class CommChannel(object):
         and closing sockets immediately is not a concern. Otherwise, it is always better (because it 
         is predictable) to explicitly close the socket by calling `CommChannel.close()`.
         """
-        if self.auto_close and self.socket != None and self.is_connected:
-            self.close()
+        with self.lock:
+            if self.auto_close and self.socket != None and self.is_connected:
+                self.close()
             
     def delay_command(self, command):
-        self.queue.append(command)
+        with self.lock:
+            self.queue.append(command)
         
     def send_delay(self):
-        if len(self.queue) > 0 and self.is_connected:
-            logger.debug('')
-            return self.send_command(self.queue.pop(0))
-        else:
-            return None
+        with self.lock:
+            if len(self.queue) > 0 and self.is_connected:
+                logger.debug('')
+                return self.send_command(self.queue.pop(0))
+            else:
+                return None
         
     def send_command(self, command):
         """Sends a command to the JVM. This method is not intended to be called directly by Py4J users: it is usually called by JavaMember instances.
@@ -312,13 +341,13 @@ class CommChannel(object):
         :param command: the `string` command to send to the JVM. The command must follow the Py4J protocol.
         :rtype: the `string` answer received from the JVM. The answer follows the Py4J protocol.
         """
-        
-        logger.debug("Command to send: %s" % (command))
-        self.socket.sendall(command.encode('utf-8'))
-        answer = self.stream.readline().decode('utf-8')[:-1]
-        logger.debug("Answer received: %s" % (answer))
-        self.send_delay()
-        return answer
+        with self.lock:
+            logger.debug("Command to send: %s" % (command))
+            self.socket.sendall(command.encode('utf-8'))
+            answer = self.stream.readline().decode('utf-8')[:-1]
+            logger.debug("Answer received: %s" % (answer))
+            self.send_delay()
+            return answer
 
 class JavaMember(object):
     """Represents a member (field, method) of a Java Object. For now, only methods are supported.
@@ -361,6 +390,7 @@ class JavaObject(object):
                 (is_field, return_value) = self._get_field(name)
                 if (is_field):
                     return return_value
+            # Theoretically, not thread safe, but the worst case scenario = cache miss or double overwrite of the same method...
             self._methods[name] = JavaMember(name, self._target_id, self._comm_channel)
         
         # The name is a method

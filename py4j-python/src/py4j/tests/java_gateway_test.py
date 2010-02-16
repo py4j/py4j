@@ -3,11 +3,11 @@ Created on Dec 10, 2009
 
 @author: barthelemy
 '''
-from socket import AF_INET, SOCK_STREAM
 from multiprocessing.process import Process
 from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, get_method, \
-    unescape_new_line, escape_new_line
-from socket import socket
+    unescape_new_line, escape_new_line, CommChannel
+from socket import AF_INET, SOCK_STREAM, socket
+from threading import Thread
 import subprocess
 import time
 import unittest
@@ -350,6 +350,45 @@ class HelpTest(unittest.TestCase):
         help_page = self.gateway.help(String, short_name=False, display=False)
         print(help_page)
         self.assertEqual(3439,len(help_page))
+
+class Runner(Thread):
+    def __init__(self,runner_range,gateway):
+        Thread.__init__(self)
+        self.range = runner_range
+        self.gateway = gateway
+        self.ok = True
+        
+    def run(self):
+        ex = self.gateway.getNewExample()
+        for i in self.range:
+            l = ex.getList(i)
+            if len(l) != i:
+                self.ok = False
+                break
+
+class ThreadTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+        comm_channel = CommChannel(thread_safe=True)
+        self.gateway = JavaGateway(comm_channel=comm_channel)
+
+    def tearDown(self):
+        self.gateway.shutdown()
+        self.p.join()
+        
+    def testStress(self):
+        runner1 = Runner(xrange(1,10000,2),self.gateway)
+        runner2 = Runner(xrange(1000,1000000,10000), self.gateway)
+        runner1.start()
+        runner2.start()
+        runner1.join()
+        runner2.join()
+        self.assertTrue(runner1.ok)
+        self.assertTrue(runner2.ok)
+        
+    
         
 
 if __name__ == "__main__":
