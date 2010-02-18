@@ -140,7 +140,7 @@
         </javadoc>
     </target>
 	<target depends="build" name="jar">
-		<jar destfile="${jar.name}" basedir="${build.dir}" excludes="**/*Test.class"/>
+		<jar destfile="${jar.name}" basedir="${build.dir}" excludes="p1/**,**/*Test*.class"/>
 	</target>
 	<target depends="init_dist,build,jar" name="dist">
 		<copy todir="${dist.dir}/${release.name}/src">

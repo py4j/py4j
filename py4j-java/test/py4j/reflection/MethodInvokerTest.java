@@ -161,17 +161,17 @@ public class MethodInvokerTest {
 	public void testBuildInvokerObject() {
 		try {
 			TestInvoker tInvoker = new TestInvoker();
-			Method m = TestInvoker.class.getMethod("m1", A.class, V.class, I0.class, J0.class);
+			Method m = TestInvoker.class.getMethod("m1", ATest.class, VTest.class, I0Test.class, J0Test.class);
 		
-			MethodInvoker invoker = MethodInvoker.buildInvoker(m, new Class[] {A.class, V.class, I0.class, J0.class});
+			MethodInvoker invoker = MethodInvoker.buildInvoker(m, new Class[] {ATest.class, VTest.class, I0Test.class, J0Test.class});
 			assertEquals(0, invoker.getCost());
 			assertNull(invoker.getConverters());
-			assertNull(invoker.invoke(tInvoker, new Object[] {new A(), new V(), new I0() {}, new J0() {}}));
+			assertNull(invoker.invoke(tInvoker, new Object[] {new ATest(), new VTest(), new I0Test() {}, new J0Test() {}}));
 			
-			invoker = MethodInvoker.buildInvoker(m, new Class[] {B.class, W.class, I2.class, J0.class});
+			invoker = MethodInvoker.buildInvoker(m, new Class[] {BTest.class, WTest.class, I2Test.class, J0Test.class});
 			assertEquals(400, invoker.getCost());
 			assertNull(invoker.getConverters());
-			assertNull(invoker.invoke(tInvoker, new Object[] {new B(), new W(), new I2() {}, new J0() {}}));
+			assertNull(invoker.invoke(tInvoker, new Object[] {new BTest(), new WTest(), new I2Test() {}, new J0Test() {}}));
 			
 			m = TestInvoker.class.getMethod("m2", String.class, Object.class);
 			invoker = MethodInvoker.buildInvoker(m, new Class[] {String.class, String.class});
@@ -186,7 +186,7 @@ public class MethodInvokerTest {
 }
 
 class TestInvoker {
-	public void m1(A a, V v, I0 i0, J0 j0) {
+	public void m1(ATest a, VTest v, I0Test i0, J0Test j0) {
 		
 	}
 	

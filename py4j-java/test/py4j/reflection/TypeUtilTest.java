@@ -32,71 +32,73 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import py4j.reflection.TypeUtil;
+
 public class TypeUtilTest {
 
 	@Test
 	public void testDistance() {
-		assertEquals(0, TypeUtil.computeDistance(A.class, A.class));
-		assertEquals(100, TypeUtil.computeDistance(A.class, B.class));
-		assertEquals(200, TypeUtil.computeDistance(A.class, C.class));
-		assertEquals(300, TypeUtil.computeDistance(A.class, D.class));
-		assertEquals(400, TypeUtil.computeDistance(Object.class, D.class));
-		assertEquals(-1, TypeUtil.computeDistance(int.class, D.class));
-		assertEquals(-1, TypeUtil.computeDistance(String.class, D.class));
-		assertEquals(100, TypeUtil.computeDistance(I0.class, I1.class));
-		assertEquals(100, TypeUtil.computeDistance(I0.class, V.class));
-		assertEquals(200, TypeUtil.computeDistance(I0.class, W.class));
-		assertEquals(100, TypeUtil.computeDistance(I1.class, W.class));
-		assertEquals(100, TypeUtil.computeDistance(I0.class, X.class));
-		assertEquals(200, TypeUtil.computeDistance(I0.class, Y.class));
-		assertEquals(300, TypeUtil.computeDistance(J0.class, Y.class));
+		assertEquals(0, TypeUtil.computeDistance(ATest.class, ATest.class));
+		assertEquals(100, TypeUtil.computeDistance(ATest.class, BTest.class));
+		assertEquals(200, TypeUtil.computeDistance(ATest.class, CTest.class));
+		assertEquals(300, TypeUtil.computeDistance(ATest.class, DTest.class));
+		assertEquals(400, TypeUtil.computeDistance(Object.class, DTest.class));
+		assertEquals(-1, TypeUtil.computeDistance(int.class, DTest.class));
+		assertEquals(-1, TypeUtil.computeDistance(String.class, DTest.class));
+		assertEquals(100, TypeUtil.computeDistance(I0Test.class, I1Test.class));
+		assertEquals(100, TypeUtil.computeDistance(I0Test.class, VTest.class));
+		assertEquals(200, TypeUtil.computeDistance(I0Test.class, WTest.class));
+		assertEquals(100, TypeUtil.computeDistance(I1Test.class, WTest.class));
+		assertEquals(100, TypeUtil.computeDistance(I0Test.class, XTest.class));
+		assertEquals(200, TypeUtil.computeDistance(I0Test.class, YTest.class));
+		assertEquals(300, TypeUtil.computeDistance(J0Test.class, YTest.class));
 	}
 }
 
-class A {
+class ATest {
 	
 }
 
-class B extends A {
+class BTest extends ATest {
 	
 }
 
-class C extends B {
+class CTest extends BTest {
 	
 }
 
-class D extends C {
+class DTest extends CTest {
 	
 }
 
-interface I0 {
+interface I0Test {
 	
 }
 
-interface I1 extends I0 {
+interface I1Test extends I0Test {
 	
 }
 
-interface I2 extends I1 {
+interface I2Test extends I1Test {
 	
 }
 
-interface J0 {
+interface J0Test {
 	
 }
 
-class V implements I0, J0 {
+class VTest implements I0Test, J0Test {
 	
 }
 
-class W extends V implements I1 {
+class WTest extends VTest implements I1Test {
 	
 }
 
-class X extends V implements I0 {
+class XTest extends VTest implements I0Test {
 	
 }
 
-class Y extends X implements I2 {
+class YTest extends XTest implements I2Test {
 	
 }
