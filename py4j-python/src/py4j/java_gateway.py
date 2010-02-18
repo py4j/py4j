@@ -97,6 +97,16 @@ MEMORY_ATTACH_SUBCOMMAND_NAME = 'a\n'
 HELP_OBJECT_SUBCOMMAND_NAME = 'o\n'
 HELP_CLASS_SUBCOMMAND_NAME = 'c\n'
 
+CONVERSION = {NULL_TYPE: (lambda x, y: None),
+              REFERENCE_TYPE: (lambda target_id, comm_channel: JavaObject(target_id, comm_channel)),
+              MAP_TYPE: (lambda target_id, comm_channel: JavaMap(target_id, comm_channel)),
+              LIST_TYPE: (lambda target_id, comm_channel: JavaList(target_id, comm_channel)),
+              BOOLEAN_TYPE: (lambda value, y: value.lower() == 'true'),
+              INTEGER_TYPE: (lambda value, y: int(value)),
+              DOUBLE_TYPE: (lambda value, y: float(value)),
+              STRING_TYPE: (lambda value, y: unescape_new_line(value)),
+              }
+
 def escape_new_line(original):
     """Replaces new line characters by a backslash followed by a n.
     
@@ -173,24 +183,12 @@ def get_return_value(answer, comm_channel, target_id = None, name = None):
     """
     if is_error(answer)[0]:
         raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))
-    elif answer[1] == NULL_TYPE:
-        return None
-    elif answer[1] == VOID_TYPE:
-        return
-    elif answer[1] == REFERENCE_TYPE:
-        return JavaObject(answer[2:], comm_channel)
-    elif answer[1] == LIST_TYPE:
-        return JavaList(answer[2:], comm_channel)
-    elif answer[1] == MAP_TYPE:
-        return JavaMap(answer[2:], comm_channel)
-    elif answer[1] == INTEGER_TYPE:
-        return int(answer[2:])
-    elif answer[1] == BOOLEAN_TYPE:
-        return answer[2:].lower() == 'true'
-    elif answer[1] == DOUBLE_TYPE:
-        return float(answer[2:])
-    elif answer[1] == STRING_TYPE:
-        return unescape_new_line(answer[2:])
+    else:
+        type = answer[1]
+        if type == VOID_TYPE:
+            return
+        else:
+            return CONVERSION.get(type)(answer[2:], comm_channel)
     
 def is_error(answer):
     if len(answer)==0 or answer[0] != SUCCESS:
