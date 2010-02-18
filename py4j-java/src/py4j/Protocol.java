@@ -295,20 +295,23 @@ public class Protocol {
 		if (isEmpty(commandPart) || isEnd(commandPart)) {
 			throw new Py4JException(
 					"Command Part is Empty or is the End of Command Part");
-		} else if (isReference(commandPart)) {
-			return getReference(commandPart);
-		} else if (isInteger(commandPart)) {
-			return getInteger(commandPart);
-		} else if (isBoolean(commandPart)) {
-			return getBoolean(commandPart);
-		} else if (isDouble(commandPart)) {
-			return getDouble(commandPart);
-		} else if (isString(commandPart)) {
-			return getString(commandPart);
-		} else if (isNull(commandPart)) {
-			return getNull(commandPart);
 		} else {
-			throw new Py4JException("Command Part is unknown.");
+			switch (commandPart.charAt(0)) {
+			case BOOLEAN_TYPE:
+				return getBoolean(commandPart);
+			case DOUBLE_TYPE:
+				return getDouble(commandPart);
+			case INTEGER_TYPE:
+				return getInteger(commandPart);
+			case NULL_TYPE:
+				return getNull(commandPart);
+			case REFERENCE_TYPE:
+				return getReference(commandPart);
+			case STRING_TYPE:
+				return getString(commandPart);
+			default:
+				throw new Py4JException("Command Part is unknown.");
+			}
 		}
 	}
 
@@ -337,38 +340,14 @@ public class Protocol {
 			builder.append(ERROR);
 		} else {
 			builder.append(SUCCESS);
-			if (rObject.isNull()) {
-				builder.append(NULL_TYPE);
-			} else if (rObject.isVoid()) {
-				builder.append(VOID);
-			} else if (rObject.isList()) {
-				builder.append(LIST_TYPE);
-				builder.append(rObject.getName());
-			} else if (rObject.isMap()) {
-				builder.append(MAP_TYPE);
-				builder.append(rObject.getName());
-			} else if (rObject.isReference()) {
-				builder.append(REFERENCE_TYPE);
-				builder.append(rObject.getName());
-			} else {
-				Object primitiveObject = rObject.getPrimitiveObject();
-				char primitiveType = getPrimitiveType(primitiveObject);
-				builder.append(getPrimitiveType(primitiveObject));
-				if (primitiveType == STRING_TYPE) {
-					builder.append(StringUtil
-							.escape(primitiveObject.toString()));
-				} else {
-					builder.append(primitiveObject.toString());
-				}
-
-			}
+			builder.append(rObject.getCommandPart());
 		}
 		builder.append(END_OUTPUT);
 
 		return builder.toString();
 	}
 
-	private static char getPrimitiveType(Object primitiveObject) {
+	public static char getPrimitiveType(Object primitiveObject) {
 		char c = INTEGER_TYPE;
 
 		if (primitiveObject instanceof String

@@ -58,136 +58,160 @@ package py4j;
  */
 public class ReturnObject {
 
-	private String name;
-	private Object primitiveObject;
-	private boolean isReference;
-	private boolean isMap;
-	private boolean isList;
-	private boolean isNull;
-	private boolean isError;
-	private boolean isVoid;
-	private int size;
-
-	private ReturnObject() {
-	}
-
-	public static ReturnObject getMapReturnObject(String name, int size) {
+	public static ReturnObject getErrorReturnObject() {
 		ReturnObject rObject = new ReturnObject();
-		rObject.name = name;
-		rObject.size = size;
-		rObject.isMap = true;
+		rObject.isError = true;
+		rObject.commandPart = String.valueOf(Protocol.ERROR);
 		return rObject;
 	}
-	
 	public static ReturnObject getListReturnObject(String name, int size) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
 		rObject.size = size;
 		rObject.isList = true;
+		rObject.commandPart = Protocol.LIST_TYPE + name;
 		return rObject;
 	}
-
+	public static ReturnObject getMapReturnObject(String name, int size) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.name = name;
+		rObject.size = size;
+		rObject.isMap = true;
+		rObject.commandPart = Protocol.MAP_TYPE + name;
+		return rObject;
+	}
+	public static ReturnObject getNullReturnObject() {
+		ReturnObject rObject = new ReturnObject();
+		rObject.isNull = true;
+		rObject.commandPart = String.valueOf(Protocol.NULL_TYPE);
+		return rObject;
+	}
 	public static ReturnObject getPrimitiveReturnObject(Object primitive) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.primitiveObject = primitive;
+		char primitiveType = Protocol.getPrimitiveType(primitive);
+		if (primitiveType == Protocol.STRING_TYPE) {
+			rObject.commandPart = primitiveType
+					+ StringUtil.escape(primitive.toString());
+		} else {
+			rObject.commandPart = primitiveType + primitive.toString();
+		}
 		return rObject;
 	}
-
 	public static ReturnObject getReferenceReturnObject(String name) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
 		rObject.isReference = true;
+		rObject.commandPart = Protocol.REFERENCE_TYPE + name;
 		return rObject;
 	}
-
-	public static ReturnObject getNullReturnObject() {
-		ReturnObject rObject = new ReturnObject();
-		rObject.isNull = true;
-		return rObject;
-	}
-
 	public static ReturnObject getVoidReturnObject() {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isVoid = true;
+		rObject.commandPart = String.valueOf(Protocol.VOID);
 		return rObject;
 	}
+	private String name;
+	private Object primitiveObject;
+	private boolean isReference;
 
-	public static ReturnObject getErrorReturnObject() {
-		ReturnObject rObject = new ReturnObject();
-		rObject.isError = true;
-		return rObject;
+	private boolean isMap;
+
+	private boolean isList;
+
+	private boolean isNull;
+
+	private boolean isError;
+
+	private boolean isVoid;
+
+	private int size;
+
+	private String commandPart;
+
+	private ReturnObject() {
+	}
+
+	public String getCommandPart() {
+		return commandPart;
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public boolean isMap() {
-		return isMap;
-	}
-
-	public void setMap(boolean isMap) {
-		this.isMap = isMap;
-	}
-
-	public boolean isList() {
-		return isList;
-	}
-
-	public void setList(boolean isList) {
-		this.isList = isList;
+	public Object getPrimitiveObject() {
+		return primitiveObject;
 	}
 
 	public int getSize() {
 		return size;
 	}
 
-	public void setSize(int size) {
-		this.size = size;
+	public boolean isError() {
+		return isError;
+	}
+
+	public boolean isList() {
+		return isList;
+	}
+
+	public boolean isMap() {
+		return isMap;
 	}
 
 	public boolean isNull() {
 		return isNull;
 	}
 
-	public void setNull(boolean isNull) {
-		this.isNull = isNull;
-	}
-
-	public boolean isError() {
-		return isError;
-	}
-
-	public void setError(boolean isError) {
-		this.isError = isError;
-	}
-
-	public Object getPrimitiveObject() {
-		return primitiveObject;
-	}
-
-	public void setPrimitiveObject(Object primitiveObject) {
-		this.primitiveObject = primitiveObject;
-	}
-
 	public boolean isReference() {
 		return isReference;
-	}
-
-	public void setReference(boolean isReference) {
-		this.isReference = isReference;
 	}
 
 	public boolean isVoid() {
 		return isVoid;
 	}
 
+	public void setCommandPart(String commandPart) {
+		this.commandPart = commandPart;
+	}
+
+	public void setError(boolean isError) {
+		this.isError = isError;
+	}
+
+	public void setList(boolean isList) {
+		this.isList = isList;
+	}
+
+	public void setMap(boolean isMap) {
+		this.isMap = isMap;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setNull(boolean isNull) {
+		this.isNull = isNull;
+	}
+
+	public void setPrimitiveObject(Object primitiveObject) {
+		this.primitiveObject = primitiveObject;
+	}
+
+	public void setReference(boolean isReference) {
+		this.isReference = isReference;
+	}
+
+	public void setSize(int size) {
+		this.size = size;
+	}
+
 	public void setVoid(boolean isVoid) {
 		this.isVoid = isVoid;
 	}
+	
+	
 
 }
