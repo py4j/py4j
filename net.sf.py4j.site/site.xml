@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description name="Py4J Main Update Site" url="http://py4j.sourceforge.net/update">
+      Main update site for Py4J
+   </description>
+   <feature url="features/net.sf.py4j.feature_0.2.0.201002181035.jar" id="net.sf.py4j.feature" version="0.2.0.201002181035">
+      <category name="py4j"/>
+   </feature>
+   <category-def name="py4j" label="Py4J"/>
+</site>
