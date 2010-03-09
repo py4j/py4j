@@ -3,7 +3,6 @@ Created on Jan 22, 2010
 
 @author: barthelemy
 '''
-from _abcoll import MutableSequence
 from collections import MutableMapping
 from py4j.java_gateway import *
     
@@ -26,7 +25,7 @@ class JavaIterator(JavaObject):
         The `Iterator.next()` method is called and if an exception occur (e.g., 
         NoSuchElementException), a StopIteration exception is raised."""
         if self._next_name not in self._methods:
-            self._methods[self._next_name] = JavaMember(self._next_name, self._target_id, self._comm_channel)
+            self._methods[self._next_name] = JavaMember(self._next_name, self, self._target_id, self._comm_channel)
         try:
             return self._methods[self._next_name]()
         except Py4JError:

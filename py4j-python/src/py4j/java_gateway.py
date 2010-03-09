@@ -9,11 +9,13 @@ Created on Dec 3, 2009
 @author: Barthelemy Dagenais
 """
 
+from py4j.finalizer import ThreadSafeFinalizer
 from pydoc import ttypager
 from socket import AF_INET, SOCK_STREAM
 from threading import RLock
 import logging
 import socket
+import weakref
 
 
 class NullHandler(logging.Handler):
@@ -170,7 +172,7 @@ def get_command_part(parameter):
     
     return command_part + '\n'
 
-def get_return_value(answer, comm_channel, target_id = None, name = None):
+def get_return_value(answer, comm_channel, target_id=None, name=None):
     """Converts an answer received from the Java gateway into a Python object.
     
     For example, string representation of integers are converted to Python integer, 
@@ -191,7 +193,7 @@ def get_return_value(answer, comm_channel, target_id = None, name = None):
             return CONVERSION.get(type)(answer[2:], comm_channel)
     
 def is_error(answer):
-    if len(answer)==0 or answer[0] != SUCCESS:
+    if len(answer) == 0 or answer[0] != SUCCESS:
         return (True, None)
     else:
         return (False, None)
@@ -220,13 +222,37 @@ def get_method(java_object, method_name):
     :param java_object: the instance containing the method
     :param method_name: the name of the method to retrieve
     """
-    return JavaMember(method_name, java_object._target_id, java_object._comm_channel)
+    return JavaMember(method_name, java_object, java_object._target_id, java_object._comm_channel)
 
+def garbage_collect_object(comm_channel, target_id):
+    print(target_id + ' deleted')
+    ThreadSafeFinalizer.remove_finalizer(target_id)
+    if comm_channel.is_connected:
+        comm_channel.send_command(MEMORY_COMMAND_NAME + MEMORY_DEL_SUBCOMMAND_NAME + target_id + '\ne\n')
+
+def garbage_collect_channel(socket, auto_close, is_connected):
+    """Closes the socket if auto_delete is True and the socket is opened. 
+        
+    This is an acceptable practice if you know that your Python VM implements garbage collection 
+    and closing sockets immediately is not a concern. Otherwise, it is always better (because it 
+    is predictable) to explicitly close the socket by calling `CommChannel.close()`.
+    """
+    print('delete channel')
+    if auto_close and socket != None and is_connected:
+        try:
+            socket.shutdown(socket.SHUT_RDWR)
+            socket.close()
+        except Exception:
+            pass
+        
+def test_del(weak_ref):
+    print('Test Deleted')
+        
 class DummyRLock(object):
     def __init__(self):
         pass
     
-    def acquire(self,blocking=1):
+    def acquire(self, blocking=1):
         pass
     
     def release(self):
@@ -254,12 +280,12 @@ class Py4JError(Exception):
 class CommChannel(object):
     """Default communication channel (socket based) responsible for communicating with the Java Virtual Machine."""
     
-    def __init__(self, address='localhost', port=25333, auto_close=True, thread_safe=False):
+    def __init__(self, address='localhost', port=25333, auto_close=True, thread_safe=False, gateway_property=None):
         """
         :param address: the address to which the comm channel will connect
         :param port: the port to which the comm channel will connect. Default is 25333.
         :param auto_close: if `True`, the communication channel closes the socket when it is garbage 
-          collected (i.e., when `CommChannel.__del__()` is called).
+          collected.
         :param thread_safe: if `True`, the communication channel must acquire a lock before using the socket.
         """
         self.address = address
@@ -267,18 +293,19 @@ class CommChannel(object):
         self.socket = socket.socket(AF_INET, SOCK_STREAM)
         self.is_connected = False
         self.auto_close = auto_close
-        self.queue = []
+        self.gateway_property = gateway_property
         if thread_safe:
             self.lock = RLock()
         else:
             self.lock = DummyRLock()
+        self.wr = weakref.ref(self, lambda wr, socket=self.socket, auto_close=self.auto_close, is_connected=self.is_connected: garbage_collect_channel(socket, auto_close, is_connected))
         
     def start(self):
         """Starts the communication channel by connecting to the `address` and the `port`"""
         with self.lock:
             self.socket.connect((self.address, self.port))
             self.is_connected = True
-            self.stream = self.socket.makefile('r',0)
+            self.stream = self.socket.makefile('r', 0)
     
     def close(self, throw_exception=False):
         """Closes the communication channel by closing the socket."""
@@ -309,30 +336,7 @@ class CommChannel(object):
             except Exception:
                 # Do nothing! Exceptions might occur anyway.
                 pass
-
-    def __del__(self):
-        """Closes the socket if auto_delete is True and the socket is opened. 
-        
-        This is an acceptable practice if you know that your Python VM implements garbage collection 
-        and closing sockets immediately is not a concern. Otherwise, it is always better (because it 
-        is predictable) to explicitly close the socket by calling `CommChannel.close()`.
-        """
-        with self.lock:
-            if self.auto_close and self.socket != None and self.is_connected:
-                self.close()
             
-    def delay_command(self, command):
-        with self.lock:
-            self.queue.append(command)
-        
-    def send_delay(self):
-        with self.lock:
-            if len(self.queue) > 0 and self.is_connected:
-                logger.debug('')
-                return self.send_command(self.queue.pop(0))
-            else:
-                return None
-        
     def send_command(self, command):
         """Sends a command to the JVM. This method is not intended to be called directly by Py4J users: it is usually called by JavaMember instances.
         
@@ -344,15 +348,15 @@ class CommChannel(object):
             self.socket.sendall(command.encode('utf-8'))
             answer = self.stream.readline().decode('utf-8')[:-1]
             logger.debug("Answer received: %s" % (answer))
-            self.send_delay()
             return answer
 
 class JavaMember(object):
     """Represents a member (field, method) of a Java Object. For now, only methods are supported.
     """
     
-    def __init__(self, name, target_id, comm_channel):
+    def __init__(self, name, container, target_id, comm_channel):
         self.name = name
+        self.container = container
         self.target_id = target_id
         self.comm_channel = comm_channel
         self.command_header = self.target_id + '\n' + self.name + '\n'
@@ -374,10 +378,15 @@ class JavaObject(object):
         :param target_id: the identifier of the object on the JVM side. Given by the JVM.
         :param comm_channel: the communication channel used to communicate with the JVM.
         """
+        print(target_id + ' created.')
         self._target_id = target_id
-        self._methods = {}
         self._comm_channel = comm_channel
-        self._auto_field = comm_channel.gateway._auto_field
+        self._auto_field = comm_channel.gateway_property.auto_field
+        self._methods = {}
+        ThreadSafeFinalizer.add_finalizer(target_id,weakref.ref(self, lambda wr, cc = self._comm_channel, id = self._target_id: garbage_collect_object(cc, id)))
+    
+    def _detach(self):
+        garbage_collect_object(self._comm_channel, self._target_id)
         
     def _get_object_id(self):
         return self._target_id
@@ -389,7 +398,7 @@ class JavaObject(object):
                 if (is_field):
                     return return_value
             # Theoretically, not thread safe, but the worst case scenario = cache miss or double overwrite of the same method...
-            self._methods[name] = JavaMember(name, self._target_id, self._comm_channel)
+            self._methods[name] = JavaMember(name, self, self._target_id, self._comm_channel)
         
         # The name is a method
         return self._methods[name]
@@ -406,7 +415,7 @@ class JavaObject(object):
     def __eq__(self, other):
         if other == None:
             return False
-        elif (hasattr(other,'_get_object_id')):
+        elif (hasattr(other, '_get_object_id')):
             return self.equals(other)
         else:
             return other.__eq__(self)
@@ -419,14 +428,8 @@ class JavaObject(object):
     
     def __repr__(self):
         # For now...
-        return self.toString()
+        return 'JavaObject id=' + self._target_id
     
-    def __del__(self):
-        if self._comm_channel.is_connected:
-            self._comm_channel.delay_command(MEMORY_COMMAND_NAME + MEMORY_DEL_SUBCOMMAND_NAME + self._target_id + '\ne\n')
-    
-
-
 class JavaClass():
     def __init__(self, fqn, comm_channel):
         self._fqn = fqn
@@ -437,7 +440,7 @@ class JavaClass():
         answer = self._comm_channel.send_command(REFLECTION_COMMAND_NAME + REFL_GET_MEMBER_SUB_COMMAND_NAME + self._fqn + '\n' + name + '\n' + END_COMMAND_PART)
         if len(answer) > 1 and answer[0] == SUCCESS:
             if answer[1] == METHOD_TYPE:
-                return JavaMember(name, STATIC_PREFIX + self._fqn, self._comm_channel)
+                return JavaMember(name, None, STATIC_PREFIX + self._fqn, self._comm_channel)
             elif answer[1] == CLASS_TYPE:
                 return JavaClass(self._fqn + name, self._comm_channel)
             else:
@@ -461,13 +464,13 @@ class JavaPackage():
         new_fqn = self._fqn + '.' + name
         answer = self._comm_channel.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + new_fqn + '\n' + END_COMMAND_PART)
         if answer == SUCCESS_PACKAGE:
-            return JavaPackage(new_fqn,self._comm_channel)
+            return JavaPackage(new_fqn, self._comm_channel)
         elif answer == SUCCESS_CLASS:
             return JavaClass(new_fqn, self._comm_channel)
         else:
             raise Py4JError('%s does not exist in the JVM' % new_fqn)
 
-class JVM():
+class JVM(object):
     """A `JVM` allows access to the Java Virtual Machine of a `JavaGateway`. This can be used to reference static members (fields and methods) and to call constructors."""
     
     def __init__(self, comm_channel):
@@ -476,13 +479,17 @@ class JVM():
     def __getattr__(self, name):
         answer = self._comm_channel.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + END_COMMAND_PART)
         if answer == SUCCESS_PACKAGE:
-            return JavaPackage(name,self._comm_channel)
+            return JavaPackage(name, self._comm_channel)
         elif answer == SUCCESS_CLASS:
             return JavaClass(name, self._comm_channel)
         else:
             raise Py4JError('%s does not exist in the JVM' % name)
     
-class JavaGateway(JavaObject):
+class GatewayProperty(object):
+    def __init__(self, auto_field):
+        self.auto_field = auto_field
+    
+class JavaGateway(object):
     """A `JavaGateway` is the main interaction point between a Python VM and a JVM. 
     
     * A `JavaGateway` instance is connected to a `Gateway` instance on the Java side.
@@ -501,17 +508,23 @@ class JavaGateway(JavaObject):
         :param auto_start: if `True`, the JavaGateway connects to the JVM as soon as it is created. Otherwise, you need to explicitly call `gateway.comm_channel.start()`.
         :param auto_field: if `False`, each object accessed through this gateway won't try to lookup fields (they will be accessible only by calling get_field). If `True`, fields will be automatically looked up, possibly hiding methods of the same name and making method calls less efficient.
         """
+        self.gateway_property = GatewayProperty(auto_field)
+        
         if comm_channel == None:
             comm_channel = CommChannel()
+        
+        comm_channel.gateway_property = self.gateway_property
+        
+        self._comm_channel = comm_channel
             
-        self._auto_field = auto_field
-        comm_channel.gateway = self
-            
-        JavaObject.__init__(self, ENTRY_POINT_OBJECT_ID, comm_channel)
+        #JavaObject.__init__(self, ENTRY_POINT_OBJECT_ID, comm_channel)
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, comm_channel)
         self.jvm = JVM(comm_channel)
         if auto_start:
             self._comm_channel.start()
+            
+    def __getattr__(self, name):
+        return self.entry_point.__getattr__(name)
             
     def start(self):
         self._comm_channel.start()
@@ -525,6 +538,9 @@ class JavaGateway(JavaObject):
     def attach(self, java_object):
         answer = self._comm_channel.send_command(MEMORY_COMMAND_NAME + MEMORY_ATTACH_SUBCOMMAND_NAME + java_object._get_object_id() + '\ne\n')
         return get_return_value(answer, self._comm_channel, None, None)
+    
+    def detach(self, java_object):
+        java_object._detach()
     
     def help(self, var, short_name=True, display=True):
         """Displays a help page about a class or an object.

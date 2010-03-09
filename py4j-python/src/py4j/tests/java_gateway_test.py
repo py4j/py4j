@@ -8,9 +8,11 @@ from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, get
     unescape_new_line, escape_new_line, CommChannel
 from socket import AF_INET, SOCK_STREAM, socket
 from threading import Thread
+import gc
 import subprocess
 import time
 import unittest
+from py4j.finalizer import ThreadSafeFinalizer
 
 SERVER_PORT = 25333
 TEST_PORT = 25332
@@ -43,10 +45,11 @@ def get_test_socket():
 class TestCommChannel(object):
     """Communication Channel that does nothing. Useful for testing."""
     
-    def __init__(self, return_message='yro0'):
+    counter = -1
+    
+    def __init__(self, return_message='yro'):
         self.return_message = return_message
         self.is_connected = True
-        pass
     
     def start(self):
         pass
@@ -55,14 +58,10 @@ class TestCommChannel(object):
         pass
     
     def send_command(self, command):
-        self.last_message = command
-        return self.return_message
-    
-    def delay_command(self, command):
-        pass
-    
-    def send_delay(self):
-        pass
+        TestCommChannel.counter += 1
+        if not command.startswith('m\nd\n'):
+            self.last_message = command
+        return self.return_message + str(TestCommChannel.counter)
     
 class ProtocolTest(unittest.TestCase):
     
@@ -74,8 +73,11 @@ class ProtocolTest(unittest.TestCase):
         gateway = JavaGateway(testChannel, True, False)
         e = gateway.getExample()
         self.assertEqual('c\nt\ngetExample\ne\n', testChannel.last_message)
+        print('before method1a')
         e.method1(1, True, 'Hello\nWorld', e, None, 1.5)
+        print('after method1')
         self.assertEqual('c\no0\nmethod1\ni1\nbTrue\nsHello\\nWorld\nro0\nn\nd1.5\ne\n', testChannel.last_message)
+        del(e)
     
     def testProtocolReceive(self):
         p = start_echo_server_process()
@@ -128,7 +130,7 @@ class IntegrationTest(unittest.TestCase):
             testSocket.sendall('yro0\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ysHello World\n'.encode('utf-8'))
-            testSocket.sendall('yo\n'.encode('utf-8'))
+#            testSocket.sendall('yo\n'.encode('utf-8')) # No need because getNewExampe is in cache now!
             testSocket.sendall('yro1\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ysHello World2\n'.encode('utf-8'))
@@ -180,27 +182,29 @@ class FieldTest(unittest.TestCase):
         time.sleep(1)
 
     def tearDown(self):
+        self.gateway.shutdown()
         self.p.join()
         
     def testAutoField(self):
-        gateway = JavaGateway(auto_field=True)
+        self.gateway = JavaGateway(auto_field=True)
+        gateway = self.gateway
         ex = gateway.getNewExample()
         self.assertEqual(ex.field10, 10)
         sb = ex.field20
         sb.append('Hello')
         self.assertEqual(u'Hello', sb.toString())
         self.assertTrue(ex.field21 == None)
-        gateway.shutdown()
     
     def testNoField(self):
-        gateway = JavaGateway(auto_field=True)
+        self.gateway = JavaGateway(auto_field=True)
+        gateway = self.gateway
         ex = gateway.getNewExample()
         member = ex.field50
         self.assertTrue(isinstance(member, JavaMember))
-        gateway.shutdown()
         
     def testNoAutoField(self):
-        gateway = JavaGateway(auto_field=False)
+        self.gateway = JavaGateway(auto_field=False)
+        gateway = self.gateway
         ex = gateway.getNewExample()
         self.assertTrue(isinstance(ex.field10, JavaMember))
         self.assertTrue(isinstance(ex.field50, JavaMember))
@@ -223,14 +227,13 @@ class FieldTest(unittest.TestCase):
         except:
             self.assertTrue(True)
             
-        gateway.shutdown()
         
     def testGetMethod(self):
         # This is necessary if a field hides a method...
-        gateway = JavaGateway()
+        self.gateway = JavaGateway()
+        gateway = self.gateway
         ex = gateway.getNewExample()
         self.assertEqual(1, get_method(ex, 'method1')())
-        gateway.shutdown()
         
 class MemoryManagementText(unittest.TestCase):
     def setUp(self):
@@ -240,17 +243,27 @@ class MemoryManagementText(unittest.TestCase):
         
     def tearDown(self):
         self.p.join()
+        gc.collect()
         
-    def testAttach(self):
+    def do_work1(self):
         gateway = JavaGateway()
         gateway2 = JavaGateway()
         sb = gateway.jvm.java.lang.StringBuffer()
+        print(sb._target_id)
         sb.append('Hello World')
         sb2 = gateway2.attach(sb)
+        print(sb2._get_object_id())
         gateway.close()
         sb2.append('Python')
-        self.assertEqual(u'Hello WorldPython',sb2.toString())
+        self.assertEqual(u'Hello WorldPython', sb2.toString())
         gateway2.shutdown()
+        
+    def testAttach(self):
+        
+        self.do_work1()
+        ThreadSafeFinalizer.clean_finalizers(False)
+        gc.collect()
+        self.assertEqual(len(ThreadSafeFinalizer.finalizers),0)
         
     def testAttachException(self):
         gateway = JavaGateway()
@@ -284,18 +297,30 @@ class MemoryManagementText(unittest.TestCase):
             self.assertTrue(True)
         gateway2.shutdown()
         
+    def testDetach(self):
+        gateway = JavaGateway()
+        sb = gateway.jvm.java.lang.StringBuffer()
+        sb.append('Hello World')
+        gateway.detach(sb)
+        sb2 = gateway.jvm.java.lang.StringBuffer()
+        sb2.append('Hello World')
+        sb2._detach()
+        self.assertEqual(len(ThreadSafeFinalizer.finalizers),1)
+        gateway.shutdown()
+        
 class JVMTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
         # This is to ensure that the server is started before connecting to it!
         time.sleep(1)
+        self.gateway = JavaGateway()
 
     def tearDown(self):
+        self.gateway.shutdown()
         self.p.join()
         
     def testConstructors(self):
-        gateway = JavaGateway()
-        jvm = gateway.jvm
+        jvm = self.gateway.jvm
         sb = jvm.java.lang.StringBuffer('hello')
         sb.append('hello world')
         sb.append(1)
@@ -310,22 +335,17 @@ class JVMTest(unittest.TestCase):
         print(l1)
         print(l2)
         self.assertEqual(str(l2), str(l1))
-        gateway.shutdown()
         
     def testStaticMethods(self):
-        gateway = JavaGateway()
-        System = gateway.jvm.java.lang.System
+        System = self.gateway.jvm.java.lang.System
         self.assertTrue(System.currentTimeMillis() > 0)
-        self.assertEqual(u'123', gateway.jvm.java.lang.String.valueOf(123))
-        gateway.shutdown()
+        self.assertEqual(u'123', self.gateway.jvm.java.lang.String.valueOf(123))
     
     def testStaticFields(self):
-        gateway = JavaGateway()
-        Short = gateway.jvm.java.lang.Short
+        Short = self.gateway.jvm.java.lang.Short
         self.assertEqual(-32768, Short.MIN_VALUE)
-        System = gateway.jvm.java.lang.System
+        System = self.gateway.jvm.java.lang.System
         self.assertFalse(System.out.checkError())
-        gateway.shutdown()
 
 class HelpTest(unittest.TestCase):
     
@@ -352,7 +372,7 @@ class HelpTest(unittest.TestCase):
         self.assertEqual(3439,len(help_page))
 
 class Runner(Thread):
-    def __init__(self,runner_range,gateway):
+    def __init__(self, runner_range, gateway):
         Thread.__init__(self)
         self.range = runner_range
         self.gateway = gateway
@@ -361,32 +381,62 @@ class Runner(Thread):
     def run(self):
         ex = self.gateway.getNewExample()
         for i in self.range:
-            l = ex.getList(i)
-            if len(l) != i:
+            if i % 10 == 0:
+                gc.collect()
+            try:
+                l = ex.getList(i)
+                if len(l) != i:
+                    self.ok = False
+                    break
+            except:
+                self.ok = False
+                break
+            
+class Runner2(Thread):
+    def __init__(self, runner_range, gateway):
+        Thread.__init__(self)
+        self.range = runner_range
+        self.gateway = gateway
+        self.ok = True
+        
+    def run(self):
+        ex = self.gateway.getNewExample()
+        for i in self.range:
+            try:
+                l = ex.getList(i)
+                if len(l) != i:
+                    self.ok = False
+                    break
+                self.gateway.detach(l)
+            except:
                 self.ok = False
                 break
 
-class ThreadTest(unittest.TestCase):
-    def setUp(self):
-        self.p = start_example_app_process()
-        # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
-        comm_channel = CommChannel(thread_safe=True)
-        self.gateway = JavaGateway(comm_channel=comm_channel)
-
-    def tearDown(self):
-        self.gateway.shutdown()
-        self.p.join()
-        
-    def testStress(self):
-        runner1 = Runner(xrange(1,10000,2),self.gateway)
-        runner2 = Runner(xrange(1000,1000000,10000), self.gateway)
-        runner1.start()
-        runner2.start()
-        runner1.join()
-        runner2.join()
-        self.assertTrue(runner1.ok)
-        self.assertTrue(runner2.ok)
+#class ThreadTest(unittest.TestCase):
+#    def setUp(self):
+#        self.p = start_example_app_process()
+#        # This is to ensure that the server is started before connecting to it!
+#        time.sleep(1)
+#        comm_channel = CommChannel(thread_safe=True)
+#        self.gateway = JavaGateway(comm_channel=comm_channel)
+#
+#    def tearDown(self):
+#        self.gateway.shutdown()
+#        self.p.join()
+#        
+#    def testStress(self):
+#        runner1 = Runner(xrange(1,10000,2),self.gateway)
+#        runner2 = Runner(xrange(1000,1000000,10000), self.gateway)
+#        runner3 = Runner2(xrange(1000,1000000,10000), self.gateway)
+#        runner1.start()
+#        runner2.start()
+#        runner3.start()
+#        runner1.join()
+#        runner2.join()
+#        runner3.join()
+#        self.assertTrue(runner1.ok)
+#        self.assertTrue(runner2.ok)
+#        self.assertTrue(runner3.ok)
         
     
         
