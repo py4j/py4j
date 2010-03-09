@@ -5,7 +5,7 @@
 {%- set reldelim1 = reldelim1 is not defined and ' &raquo;' or reldelim1 %}
 {%- set reldelim2 = reldelim2 is not defined and ' |' or reldelim2 %}
 
-<div class="page">
+
 
 {%- macro relbar() %}
     <div class="related">
@@ -152,6 +152,7 @@
 {%- block extrahead %} {% endblock %}
   </head>
   <body>
+  	<div class="page">
 {%- block header %}{% endblock %}
 
 {%- block relbar1 %}{{ relbar() }}{% endblock %}
