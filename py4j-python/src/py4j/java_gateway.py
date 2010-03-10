@@ -10,6 +10,7 @@ Created on Dec 3, 2009
 """
 
 from py4j.finalizer import ThreadSafeFinalizer
+from collections import deque
 from pydoc import ttypager
 from socket import AF_INET, SOCK_STREAM
 from threading import RLock
@@ -228,9 +229,12 @@ def garbage_collect_object(comm_channel, target_id):
     print(target_id + ' deleted')
     ThreadSafeFinalizer.remove_finalizer(str(comm_channel.address) + str(comm_channel.port) + target_id)
     if comm_channel.is_connected:
-        comm_channel.send_command(MEMORY_COMMAND_NAME + MEMORY_DEL_SUBCOMMAND_NAME + target_id + '\ne\n')
-
-def garbage_collect_channel(socket, auto_close, is_connected):
+        try:
+            comm_channel.send_command(MEMORY_COMMAND_NAME + MEMORY_DEL_SUBCOMMAND_NAME + target_id + '\ne\n')
+        except:
+            pass
+        
+def garbage_collect_channel(socket):
     """Closes the socket if auto_delete is True and the socket is opened. 
         
     This is an acceptable practice if you know that your Python VM implements garbage collection 
@@ -238,7 +242,7 @@ def garbage_collect_channel(socket, auto_close, is_connected):
     is predictable) to explicitly close the socket by calling `CommChannel.close()`.
     """
     print('delete channel')
-    if auto_close and socket != None and is_connected:
+    if socket != None:
         try:
             socket.shutdown(socket.SHUT_RDWR)
             socket.close()
@@ -277,10 +281,98 @@ class Py4JError(Exception):
     def __str__(self):
         return repr(self.value)
 
+
+class Py4JNetworkError(Exception):
+    """Exception thrown when a network error occurs with Py4J."""
+    def __init__(self, value):
+        """
+        
+        :param value: the error message
+        """
+        self.value = value
+    
+    def __str__(self):
+        return repr(self.value)
+
+class CommChannelFactory(object):
+    """Responsible for managing connections to the JavaGateway.
+    
+    This implementation is thread-safe and connections are created on-demand. 
+    This means that Py4J-Python can be accessed by multiple threads and 
+    messages are sent and processed concurrently to the Java Gateway.
+    """
+    
+    def __init__(self, address='localhost', port=25333, auto_close=True, thread_safe=False, gateway_property=None):
+        """
+        :param address: the address to which the comm channel will connect
+        :param port: the port to which the comm channel will connect. Default is 25333.
+        :param auto_close: if `True`, the communication channel closes the socket when it is garbage 
+          collected.
+        :param thread_safe: if `True`, the communication channel must acquire a lock before using the socket.
+        """
+        self.address = address
+        self.port = port
+        self.is_connected = True
+        self.auto_close = auto_close
+        self.gateway_property = gateway_property
+        self.deque = deque()
+        
+    def _get_comm_channel(self):
+        if not self.is_connected:
+            raise Py4JNetworkError('Gateway is not connected.')
+        try:
+            comm_channel = self.deque.pop()
+        except:
+            comm_channel = self._create_comm_channel() 
+        return comm_channel
+    
+    def _create_comm_channel(self):
+        print('Creating comm channel')
+        comm_channel = CommChannel(self.address,self.port,self.auto_close,self.gateway_property)
+        comm_channel.start()
+        return comm_channel
+    
+    def _give_back_channel(self,comm_channel):
+        try:
+            self.deque.append(comm_channel)
+        except:
+            pass
+    
+    def close(self, throw_exception=False):
+        """Closes the communication channel by closing the socket."""
+        # Do nothing for now! This method will eventually go!
+        
+    def shutdown_gateway(self):
+        """Sends a shutdown command to the gateway. This will close the gateway server: all active 
+        connections will be closed. This may be useful if the lifecycle of the Java program must be 
+        tied to the Python program."""
+        comm_channel = self._get_comm_channel()
+        try:
+            comm_channel.shutdown_gateway()
+            self.is_connected = False
+        except Py4JNetworkError:
+            self.shutdown_gateway()
+            
+    def send_command(self, command):
+        """Sends a command to the JVM. This method is not intended to be called directly by Py4J users: it is usually called by JavaMember instances.
+        
+        :param command: the `string` command to send to the JVM. The command must follow the Py4J protocol.
+        :rtype: the `string` answer received from the JVM. The answer follows the Py4J protocol.
+        """
+        comm_channel = self._get_comm_channel()
+        try:
+            response = comm_channel.send_command(command)
+            self._give_back_channel(comm_channel)
+        except Py4JNetworkError:
+            response = self.send_command(command)
+            
+        return response
+        
+
 class CommChannel(object):
     """Default communication channel (socket based) responsible for communicating with the Java Virtual Machine."""
     
-    def __init__(self, address='localhost', port=25333, auto_close=True, thread_safe=False, gateway_property=None):
+    def __init__(self, address='localhost', port=25333, auto_close=True, gateway_property=None):
         """
         :param address: the address to which the comm channel will connect
         :param port: the port to which the comm channel will connect. Default is 25333.
@@ -294,48 +386,41 @@ class CommChannel(object):
         self.is_connected = False
         self.auto_close = auto_close
         self.gateway_property = gateway_property
-        if thread_safe:
-            self.lock = RLock()
-        else:
-            self.lock = DummyRLock()
-        self.wr = weakref.ref(self, lambda wr, socket=self.socket, auto_close=self.auto_close, is_connected=self.is_connected: garbage_collect_channel(socket, auto_close, is_connected))
+        self.wr = weakref.ref(self, lambda wr, socket=self.socket: garbage_collect_channel(socket))
         
     def start(self):
         """Starts the communication channel by connecting to the `address` and the `port`"""
-        with self.lock:
-            self.socket.connect((self.address, self.port))
-            self.is_connected = True
-            self.stream = self.socket.makefile('r', 0)
+        self.socket.connect((self.address, self.port))
+        self.is_connected = True
+        self.stream = self.socket.makefile('r', 0)
     
     def close(self, throw_exception=False):
         """Closes the communication channel by closing the socket."""
-        with self.lock:
-            try:
-                self.stream.close()
-                self.socket.shutdown(socket.SHUT_RDWR)
-                self.socket.close()
-            except Exception as e:
-                if throw_exception:
-                    raise e
-            finally:
-                self.is_connected = False
+        try:
+            self.stream.close()
+            self.socket.shutdown(socket.SHUT_RDWR)
+            self.socket.close()
+        except Exception as e:
+            if throw_exception:
+                raise e
+        finally:
+            self.is_connected = False
         
     def shutdown_gateway(self):
         """Sends a shutdown command to the gateway. This will close the gateway server: all active 
         connections will be closed. This may be useful if the lifecycle of the Java program must be 
         tied to the Python program."""
-        with self.lock:
-            if (not self.is_connected):
-                raise Py4JError('Communication channel must be connected to send shut down command.')
-            
-            try:
-                self.stream.close()
-                self.socket.sendall(SHUTDOWN_GATEWAY_COMMAND_NAME.encode('utf-8'))
-                self.socket.close()
-                self.is_connected = False
-            except Exception:
-                # Do nothing! Exceptions might occur anyway.
-                pass
+        if (not self.is_connected):
+            raise Py4JError('Communication channel must be connected to send shut down command.')
+        
+        try:
+            self.stream.close()
+            self.socket.sendall(SHUTDOWN_GATEWAY_COMMAND_NAME.encode('utf-8'))
+            self.socket.close()
+            self.is_connected = False
+        except Exception:
+            # Do nothing! Exceptions might occur anyway.
+            pass
             
     def send_command(self, command):
         """Sends a command to the JVM. This method is not intended to be called directly by Py4J users: it is usually called by JavaMember instances.
@@ -343,12 +428,11 @@ class CommChannel(object):
         :param command: the `string` command to send to the JVM. The command must follow the Py4J protocol.
         :rtype: the `string` answer received from the JVM. The answer follows the Py4J protocol.
         """
-        with self.lock:
-            logger.debug("Command to send: %s" % (command))
-            self.socket.sendall(command.encode('utf-8'))
-            answer = self.stream.readline().decode('utf-8')[:-1]
-            logger.debug("Answer received: %s" % (answer))
-            return answer
+        logger.debug("Command to send: %s" % (command))
+        self.socket.sendall(command.encode('utf-8'))
+        answer = self.stream.readline().decode('utf-8')[:-1]
+        logger.debug("Answer received: %s" % (answer))
+        return answer
 
 class JavaMember(object):
     """Represents a member (field, method) of a Java Object. For now, only methods are supported.
@@ -513,7 +597,7 @@ class JavaGateway(object):
         self.gateway_property = GatewayProperty(auto_field)
         
         if comm_channel == None:
-            comm_channel = CommChannel()
+            comm_channel = CommChannelFactory()
         
         comm_channel.gateway_property = self.gateway_property
         
@@ -522,22 +606,22 @@ class JavaGateway(object):
         #JavaObject.__init__(self, ENTRY_POINT_OBJECT_ID, comm_channel)
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, comm_channel)
         self.jvm = JVM(comm_channel)
-        if auto_start:
-            self._comm_channel.start()
             
     def __getattr__(self, name):
         return self.entry_point.__getattr__(name)
-            
-    def start(self):
-        self._comm_channel.start()
-        
-    def close(self):
-        self._comm_channel.close()
             
     def shutdown(self):
         self._comm_channel.shutdown_gateway()
         
     def detach(self, java_object):
+        """Makes the Java Gateway dereference this object. 
+        
+        The equivalent of this method is called when a JavaObject instance 
+        is garbage collected on the Python side. This method, or gc.collect()
+        should still be invoked when memory is limited or when too many objects
+        are created on the Java side.
+        :param java_object: The JavaObject instance to dereference (free) on the Java side.
+        """
         java_object._detach()
     
     def help(self, var, short_name=True, display=True):

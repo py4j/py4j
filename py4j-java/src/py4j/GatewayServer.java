@@ -32,6 +32,8 @@ package py4j;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -87,6 +89,8 @@ public class GatewayServer implements Runnable {
 
 	private final Logger logger = Logger.getLogger(GatewayServer.class
 			.getName());
+	
+	private final List<Socket> connections = new ArrayList<Socket>();
 
 	private Socket currentSocket;
 
@@ -177,6 +181,7 @@ public class GatewayServer implements Runnable {
 			if (acceptOnlyOne && isConnected()) {
 				socket.close();
 			} else {
+				connections.add(socket);
 				socket.setSoTimeout(read_timeout);
 				createConnection(this, gateway, socket);
 				if (acceptOnlyOne) {
@@ -228,6 +233,10 @@ public class GatewayServer implements Runnable {
 	public void shutdown() {
 		// TODO Check that all connections are indeed closed!
 		NetworkUtil.quietlyClose(sSocket);
+		for (Socket socket: connections) {
+			NetworkUtil.quietlyClose(socket);
+		}
+		connections.clear();
 		gateway.shutdown();
 	}
 
