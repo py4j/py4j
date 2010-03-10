@@ -87,19 +87,4 @@ public class MemoryCommandTest {
 		}
 	}
 	
-	@Test
-	public void testAttach() {
-		String inputCommand = "a\n" + target + "\ne\n";
-		try {
-			assertTrue(gateway.getBindings().containsKey(target));
-			command.execute("m", new BufferedReader(new StringReader(
-					inputCommand)), writer);
-			assertEquals("yro1\n", sWriter.toString());
-			assertTrue(gateway.getBindings().containsKey(target));
-			assertTrue(gateway.getBindings().containsKey("o1"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
-		}
-	}
 }

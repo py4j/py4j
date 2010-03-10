@@ -42,8 +42,6 @@ public class MemoryCommand extends AbstractCommand {
 
 	public final static String MEMORY_DEL_SUB_COMMAND_NAME = "d";
 
-	public final static String MEMORY_ATTACH_SUB_COMMAND_NAME = "a";
-
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
@@ -52,27 +50,10 @@ public class MemoryCommand extends AbstractCommand {
 
 		if (subCommand.equals(MEMORY_DEL_SUB_COMMAND_NAME)) {
 			returnCommand = deleteObject(reader);
-		} else {
-			returnCommand = attachObject(reader);
 		}
 		logger.info("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
-	}
-
-	private String attachObject(BufferedReader reader) throws IOException {
-		String objectId = reader.readLine();
-		// EoC
-		reader.readLine();
-		String returnCommand = Protocol.getOutputErrorCommand();
-		try {
-			ReturnObject rObject = gateway.attachObject(objectId);
-			returnCommand = Protocol.getOutputCommand(rObject);
-		} catch(Exception e) {
-			
-		}
-		
-		return returnCommand;
 	}
 
 	private String deleteObject(BufferedReader reader) throws IOException {

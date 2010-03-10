@@ -81,15 +81,6 @@ public class Gateway {
 		}
 	};
 
-	private static ThreadLocal<Set<String>> connectionObjects = new ThreadLocal<Set<String>>() {
-
-		@Override
-		protected Set<String> initialValue() {
-			return new HashSet<String>();
-		}
-
-	};
-
 	public Gateway(Object entryPoint) {
 		this(entryPoint, false);
 	}
@@ -97,15 +88,6 @@ public class Gateway {
 	public Gateway(Object entryPoint, boolean cleanUpConnection) {
 		this.entryPoint = entryPoint;
 		this.cleanUpConnection = cleanUpConnection;
-	}
-
-	public ReturnObject attachObject(String objectId) {
-		Object object = getObjectFromId(objectId);
-		if (object == null) {
-			throw new Py4JException("Cannot attach " + objectId
-					+ ": it does not exist.");
-		}
-		return getReturnObject(object);
 	}
 
 	private void buildArgs(List<Argument> args, List<Object> parametersList) {
@@ -121,24 +103,15 @@ public class Gateway {
 
 	/**
 	 * <p>
-	 * Called when a connection is closed. Access ThreadLocal data to perform
-	 * cleanup if necessary.
-	 * </p>
-	 * <p>
-	 * Because there is one thread per connection, ThreadLocal data belong to a
-	 * single connection.
+	 * Called when a connection is closed.
 	 * </p>
 	 */
 	public void closeConnection() {
 		logger.info("Cleaning Connection");
-		for (String objectId : connectionObjects.get()) {
-			this.bindings.remove(objectId);
-		}
 	}
 
 	public void deleteObject(String objectId) {
 		bindings.remove(objectId);
-		connectionObjects.get().remove(objectId);
 	}
 
 	protected AtomicInteger getArgCounter() {
@@ -229,7 +202,6 @@ public class Gateway {
 				String objectId = putNewObject(object);
 				// TODO Handle lists, maps, etc.
 				returnObject = ReturnObject.getReferenceReturnObject(objectId);
-				trackConnectionObject(returnObject);
 			}
 		} else {
 			returnObject = ReturnObject.getNullReturnObject();
@@ -332,10 +304,4 @@ public class Gateway {
 		}
 	}
 
-	private void trackConnectionObject(ReturnObject returnObject) {
-		String name = returnObject.getName();
-		if (name != null) {
-			connectionObjects.get().add(returnObject.getName());
-		}
-	}
 }

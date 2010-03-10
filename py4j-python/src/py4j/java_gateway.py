@@ -226,7 +226,7 @@ def get_method(java_object, method_name):
 
 def garbage_collect_object(comm_channel, target_id):
     print(target_id + ' deleted')
-    ThreadSafeFinalizer.remove_finalizer(target_id)
+    ThreadSafeFinalizer.remove_finalizer(str(comm_channel.address) + str(comm_channel.port) + target_id)
     if comm_channel.is_connected:
         comm_channel.send_command(MEMORY_COMMAND_NAME + MEMORY_DEL_SUBCOMMAND_NAME + target_id + '\ne\n')
 
@@ -383,7 +383,9 @@ class JavaObject(object):
         self._comm_channel = comm_channel
         self._auto_field = comm_channel.gateway_property.auto_field
         self._methods = {}
-        ThreadSafeFinalizer.add_finalizer(target_id,weakref.ref(self, lambda wr, cc = self._comm_channel, id = self._target_id: garbage_collect_object(cc, id)))
+        ThreadSafeFinalizer.add_finalizer( \
+            str(self._comm_channel.address) + str(self._comm_channel.port) + self._target_id, \
+            weakref.ref(self, lambda wr, cc=self._comm_channel, id=self._target_id: garbage_collect_object(cc, id)))
     
     def _detach(self):
         garbage_collect_object(self._comm_channel, self._target_id)
@@ -535,10 +537,6 @@ class JavaGateway(object):
     def shutdown(self):
         self._comm_channel.shutdown_gateway()
         
-    def attach(self, java_object):
-        answer = self._comm_channel.send_command(MEMORY_COMMAND_NAME + MEMORY_ATTACH_SUBCOMMAND_NAME + java_object._get_object_id() + '\ne\n')
-        return get_return_value(answer, self._comm_channel, None, None)
-    
     def detach(self, java_object):
         java_object._detach()
     

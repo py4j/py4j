@@ -48,6 +48,8 @@ class TestCommChannel(object):
     counter = -1
     
     def __init__(self, return_message='yro'):
+        self.address = 'localhost'
+        self.port = 1234
         self.return_message = return_message
         self.is_connected = True
     
@@ -66,16 +68,14 @@ class TestCommChannel(object):
 class ProtocolTest(unittest.TestCase):
     
     def testEscape(self):
-        self.assertEqual("Hello\tWorld\n\\",unescape_new_line(escape_new_line("Hello\tWorld\n\\")))
+        self.assertEqual("Hello\tWorld\n\\", unescape_new_line(escape_new_line("Hello\tWorld\n\\")))
     
     def testProtocolSend(self):
         testChannel = TestCommChannel()
         gateway = JavaGateway(testChannel, True, False)
         e = gateway.getExample()
         self.assertEqual('c\nt\ngetExample\ne\n', testChannel.last_message)
-        print('before method1a')
         e.method1(1, True, 'Hello\nWorld', e, None, 1.5)
-        print('after method1')
         self.assertEqual('c\no0\nmethod1\ni1\nbTrue\nsHello\\nWorld\nro0\nn\nd1.5\ne\n', testChannel.last_message)
         del(e)
     
@@ -245,44 +245,6 @@ class MemoryManagementText(unittest.TestCase):
         self.p.join()
         gc.collect()
         
-    def do_work1(self):
-        gateway = JavaGateway()
-        gateway2 = JavaGateway()
-        sb = gateway.jvm.java.lang.StringBuffer()
-        print(sb._target_id)
-        sb.append('Hello World')
-        sb2 = gateway2.attach(sb)
-        print(sb2._get_object_id())
-        gateway.close()
-        sb2.append('Python')
-        self.assertEqual(u'Hello WorldPython', sb2.toString())
-        gateway2.shutdown()
-        
-    def testAttach(self):
-        
-        self.do_work1()
-        ThreadSafeFinalizer.clean_finalizers(False)
-        gc.collect()
-        self.assertEqual(len(ThreadSafeFinalizer.finalizers),0)
-        
-    def testAttachException(self):
-        gateway = JavaGateway()
-        gateway2 = JavaGateway()
-        sb = gateway.jvm.java.lang.StringBuffer()
-        sb.append('Hello World')
-        gateway.close()
-        
-        # Wait is necessary, otherwise, it may happen that sb is still not deleted when attach is sent:
-        # This is because close and attach can be executed in parallel on the Java side. The joy of multiple gateways...
-        time.sleep(1)
-        
-        try:
-            gateway2.attach(sb)
-            self.fail('Should have failed')
-        except:
-            self.assertTrue(True)
-
-        gateway2.shutdown()
         
     def testNoAttach(self):
         gateway = JavaGateway()
@@ -305,7 +267,8 @@ class MemoryManagementText(unittest.TestCase):
         sb2 = gateway.jvm.java.lang.StringBuffer()
         sb2.append('Hello World')
         sb2._detach()
-        self.assertEqual(len(ThreadSafeFinalizer.finalizers),1)
+        gc.collect()
+        self.assertEqual(len(ThreadSafeFinalizer.finalizers), 1)
         gateway.shutdown()
         
 class JVMTest(unittest.TestCase):
@@ -363,13 +326,13 @@ class HelpTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, short_name=True, display=False)
         print(help_page)
-        self.assertEqual(695,len(help_page))
+        self.assertEqual(695, len(help_page))
         
     def testHelpClass(self):
         String = self.gateway.jvm.java.lang.String
         help_page = self.gateway.help(String, short_name=False, display=False)
         print(help_page)
-        self.assertEqual(3439,len(help_page))
+        self.assertEqual(3439, len(help_page))
 
 class Runner(Thread):
     def __init__(self, runner_range, gateway):
