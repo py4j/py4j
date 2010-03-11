@@ -72,7 +72,7 @@ class ProtocolTest(unittest.TestCase):
     
     def testProtocolSend(self):
         testChannel = TestCommChannel()
-        gateway = JavaGateway(testChannel, True, False)
+        gateway = JavaGateway(testChannel, False)
         e = gateway.getExample()
         self.assertEqual('c\nt\ngetExample\ne\n', testChannel.last_message)
         e.method1(1, True, 'Hello\nWorld', e, None, 1.5)
@@ -355,6 +355,7 @@ class Runner(Thread):
                     self.ok = False
                     break
                 self.gateway.detach(l)
+#                gc.collect()
             except Exception:
                 self.ok = False
                 break
