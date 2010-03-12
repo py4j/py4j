@@ -52,17 +52,28 @@ public abstract class AbstractCommand implements Command {
 		this.gateway = gateway;
 	}
 
-	protected List<Argument> getArguments(BufferedReader reader)
-			throws IOException {
-		List<Argument> arguments = new ArrayList<Argument>();
+	protected List<String> getStringArguments(BufferedReader reader) throws IOException {
+		List<String> arguments = new ArrayList<String>();
 		String line = reader.readLine();
 
 		while (!Protocol.isEmpty(line) && !Protocol.isEnd(line)) {
-			logger.info("Raw Argument: " + line);
-			Argument argument = new Argument(Protocol.getObject(line), Protocol
-					.isReference(line));
-			arguments.add(argument);
+			logger.info("Raw String Argument: " + line);
+			arguments.add(line);
 			line = reader.readLine();
+		}
+
+		return arguments;
+	}
+	
+	protected List<Argument> getArguments(BufferedReader reader)
+			throws IOException {
+		List<Argument> arguments = new ArrayList<Argument>();
+		List<String> stringArguments = getStringArguments(reader);
+		
+		for (String stringArgument : stringArguments) {
+			Argument argument = new Argument(Protocol.getObject(stringArgument), Protocol
+					.isReference(stringArgument));
+			arguments.add(argument);
 		}
 
 		return arguments;

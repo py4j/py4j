@@ -287,6 +287,10 @@ public class Gateway {
 		bindings.put(id, object);
 		return id;
 	}
+	
+	public Object putObject(String id, Object object) {
+		return bindings.put(id,object);
+	}
 
 	public void setStarted(boolean isStarted) {
 		this.isStarted = isStarted;

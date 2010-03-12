@@ -109,6 +109,7 @@ public class GatewayConnection implements Runnable {
 		Command shutdownCommand = new ShutdownGatewayServerCommand(
 				gatewayServer);
 		Command helpCommand = new HelpPageCommand();
+		Command pythonProxyCommand = new PythonProxyCommand();
 		callCommand.init(gateway);
 		fieldCommand.init(gateway);
 		constructorCommand.init(gateway);
@@ -117,6 +118,7 @@ public class GatewayConnection implements Runnable {
 		reflectionCommand.init(gateway);
 		shutdownCommand.init(gateway);
 		helpCommand.init(gateway);
+		pythonProxyCommand.init(gateway);
 		commands.put(CallCommand.CALL_COMMAND_NAME, callCommand);
 		commands.put(FieldCommand.FIELD_COMMAND_NAME, fieldCommand);
 		commands.put(ConstructorCommand.CONSTRUCTOR_COMMAND_NAME,
@@ -130,6 +132,7 @@ public class GatewayConnection implements Runnable {
 						ShutdownGatewayServerCommand.SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME,
 						shutdownCommand);
 		commands.put(HelpPageCommand.HELP_COMMAND_NAME, helpCommand);
+		commands.put(PythonProxyCommand.PYTHON_PROXY_COMMAND_NAME, pythonProxyCommand);
 	}
 
 	@Override
