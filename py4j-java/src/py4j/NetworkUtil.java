@@ -51,6 +51,8 @@ public class NetworkUtil {
 	public static void quietlyClose(Socket closeable) {
 		try {
 			if (closeable != null) {
+				closeable.shutdownInput();
+				closeable.shutdownOutput();
 				closeable.close();
 			}
 		} catch(Exception e) {
