@@ -65,22 +65,20 @@ public abstract class AbstractCommand implements Command {
 		return arguments;
 	}
 	
-	protected List<Argument> getArguments(BufferedReader reader)
+	protected List<Object> getArguments(BufferedReader reader)
 			throws IOException {
-		List<Argument> arguments = new ArrayList<Argument>();
+		List<Object> arguments = new ArrayList<Object>();
 		List<String> stringArguments = getStringArguments(reader);
 		
 		for (String stringArgument : stringArguments) {
-			Argument argument = new Argument(Protocol.getObject(stringArgument), Protocol
-					.isReference(stringArgument));
-			arguments.add(argument);
+			arguments.add(Protocol.getObject(stringArgument,this.gateway));
 		}
 
 		return arguments;
 	}
 
 	protected ReturnObject invokeMethod(String methodName,
-			String targetObjectId, List<Argument> arguments) {
+			String targetObjectId, List<Object> arguments) {
 		ReturnObject returnObject = null;
 		try {
 			returnObject = gateway

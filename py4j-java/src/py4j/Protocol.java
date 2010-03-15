@@ -29,6 +29,10 @@
  *******************************************************************************/
 package py4j;
 
+import java.lang.reflect.Proxy;
+
+import py4j.reflection.PythonProxyHandler;
+
 /**
  * <p>
  * This class defines the protocol used to communicate between two virtual
@@ -67,7 +71,9 @@ package py4j;
  * String)</li>
  * </ul>
  * 
- * <p>This class should be used only if the user creates new commands.</p>
+ * <p>
+ * This class should be used only if the user creates new commands.
+ * </p>
  * 
  * @author Barthelemy Dagenais
  * 
@@ -83,6 +89,7 @@ public class Protocol {
 	public final static char LIST_TYPE = 'l';
 	public final static char MAP_TYPE = 'a';
 	public final static char NULL_TYPE = 'n';
+	public final static char PYTHON_PROXY_TYPE = 'p';
 
 	public final static char PACKAGE_TYPE = 'p';
 	public final static char CLASS_TYPE = 'c';
@@ -218,16 +225,16 @@ public class Protocol {
 	 * </p>
 	 * 
 	 * @param commandPart
-	 * @return The reference contained in this command part.
+	 * @return The object referenced in this command part.
 	 */
-	public final static String getReference(String commandPart) {
+	public final static Object getReference(String commandPart, Gateway gateway) {
 		String reference = commandPart.substring(1, commandPart.length());
 
 		if (reference.trim().length() == 0) {
 			throw new Py4JException("Reference is empty.");
 		}
 
-		return reference;
+		return gateway.getObject(reference);
 	}
 
 	/**
@@ -284,14 +291,6 @@ public class Protocol {
 	}
 
 	public final static Object getObject(String commandPart, Gateway gateway) {
-		Object obj = getObject(commandPart);
-		if (isReference(commandPart)) {
-			obj = gateway.getObject((String) obj);
-		}
-		return obj;
-	}
-
-	public final static Object getObject(String commandPart) {
 		if (isEmpty(commandPart) || isEnd(commandPart)) {
 			throw new Py4JException(
 					"Command Part is Empty or is the End of Command Part");
@@ -306,13 +305,62 @@ public class Protocol {
 			case NULL_TYPE:
 				return getNull(commandPart);
 			case REFERENCE_TYPE:
-				return getReference(commandPart);
+				return getReference(commandPart,gateway);
 			case STRING_TYPE:
 				return getString(commandPart);
+			case PYTHON_PROXY_TYPE:
+				return getPythonProxy(commandPart, gateway);
 			default:
 				throw new Py4JException("Command Part is unknown.");
 			}
 		}
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is a python proxy
+	 */
+	public final static boolean isPythonProxy(String commandPart) {
+		return commandPart.charAt(0) == PYTHON_PROXY_TYPE;
+	}
+	
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return A Python proxy specified in this command part.
+	 */
+	public static Object getPythonProxy(String commandPart, Gateway gateway) {
+		String proxyString = commandPart.substring(1, commandPart.length());
+		String[] parts = proxyString.split(";");
+		int length = parts.length;
+		Class<?>[] interfaces = new Class<?>[length - 1];
+		if (length < 2) {
+			throw new Py4JException("Invalid Python Proxy.");
+		}
+
+		for (int i = 1; i < length; i++) {
+			try {
+				interfaces[i-1] = Class.forName(parts[i]);
+				if (!interfaces[i-1].isInterface()) {
+					throw new Py4JException("This class " + parts[i] + " is not an interface and cannot be used as a Python Proxy.");
+				}
+			} catch (ClassNotFoundException e) {
+				throw new Py4JException("Invalid interface name: " + parts[i]);
+			}
+		}
+
+		Object proxy = Proxy.newProxyInstance(gateway.getClass()
+				.getClassLoader(), interfaces, new PythonProxyHandler(
+				parts[0], gateway.getCommunicationChannelFactory()));
+		
+		return proxy;
 	}
 
 	public final static String getOutputErrorCommand() {

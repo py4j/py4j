@@ -83,11 +83,11 @@ public class ListCommand extends AbstractCommand {
 	@SuppressWarnings("unchecked")
 	private String slice_list(BufferedReader reader) throws IOException {
 		List list1 = (List) gateway.getObject(reader.readLine());
-		List<Argument> arguments = getArguments(reader);
+		List<Object> arguments = getArguments(reader);
 		
 		List slice = new ArrayList();
-		for (Argument argument : arguments) {
-			slice.add(list1.get((Integer)argument.getValue()));
+		for (Object argument : arguments) {
+			slice.add(list1.get((Integer)argument));
 		}
 		
 		ReturnObject returnObject = gateway.getReturnObject(slice);

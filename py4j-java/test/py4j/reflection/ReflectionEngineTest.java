@@ -217,10 +217,12 @@ public class ReflectionEngineTest {
 			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
 					new Class[] { int.class, double.class });
 			
+			// Two methods are equal. Selected method will depend on how methods are given
+			// during reflection.
 			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
 					"2", true });
 			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
-					new Class[] { Object.class, Boolean.class });
+					new Class[] { String.class, Object.class });
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

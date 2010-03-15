@@ -68,8 +68,8 @@ public class GatewayTest {
 	@Test
 	public void testVoidMethod() {
 		String name = gateway.putNewObject(entryPoint.getNewExample());
-		List<Argument> args = new ArrayList<Argument>();
-		args.add(new Argument("This is a String!", false));
+		List<Object> args = new ArrayList<Object>();
+		args.add(new String("This is a String!"));
 		ReturnObject obj2 = gateway.invoke("method2", name, args);
 		assertTrue(obj2.isVoid());
 	}
@@ -77,9 +77,9 @@ public class GatewayTest {
 	@Test
 	public void testMethodWithParams() {
 		String name = gateway.putNewObject(entryPoint.getNewExample());
-		List<Argument> args = new ArrayList<Argument>();
-		args.add(new Argument(1, false));
-		args.add(new Argument(false, false));
+		List<Object> args = new ArrayList<Object>();
+		args.add(new Integer(1));
+		args.add(new Boolean(false));
 		ReturnObject obj2 = gateway.invoke("method3", name, args);
 		assertEquals("Hello World", obj2.getPrimitiveObject());
 	}
@@ -87,8 +87,8 @@ public class GatewayTest {
 	@Test
 	public void testCharMethod() {
 		String name = gateway.putNewObject(entryPoint.getNewExample());
-		List<Argument> args = new ArrayList<Argument>();
-		args.add(new Argument('c', false));
+		List<Object> args = new ArrayList<Object>();
+		args.add(new Character('c'));
 		ReturnObject obj2 = gateway.invoke("method4", name, args);
 		
 		// In practice, the argument is a string when it comes from python
@@ -100,8 +100,8 @@ public class GatewayTest {
 	@Test
 	public void testCharMethod2() {
 		String name = gateway.putNewObject(entryPoint.getNewExample());
-		List<Argument> args = new ArrayList<Argument>();
-		args.add(new Argument('c', false));
+		List<Object> args = new ArrayList<Object>();
+		args.add(new Character('c'));
 		ReturnObject obj2 = gateway.invoke("method6", name, args);
 		assertEquals(4, ((ExampleClass) gateway.getObject(obj2.getName()))
 				.getField1());
@@ -110,8 +110,8 @@ public class GatewayTest {
 	@Test
 	public void testStringMethod() {
 		String name = gateway.putNewObject(entryPoint.getNewExample());
-		List<Argument> args = new ArrayList<Argument>();
-		args.add(new Argument("c", false));
+		List<Object> args = new ArrayList<Object>();
+		args.add(new String("c"));
 		ReturnObject obj2 = gateway.invoke("method4", name, args);
 		assertEquals(3, ((ExampleClass) gateway.getObject(obj2.getName()))
 				.getField1());
@@ -120,37 +120,27 @@ public class GatewayTest {
 	@Test
 	public void testUsingMethodReturn() {
 		String name = gateway.putNewObject(entryPoint.getNewExample());
-		List<Argument> args = new ArrayList<Argument>();
-		args.add(new Argument("c", false));
+		List<Object> args = new ArrayList<Object>();
+		args.add(new String("c"));
 		ReturnObject obj2 = gateway.invoke("method4", name, args);
-		args = new ArrayList<Argument>();
-		args.add(new Argument(obj2.getName(), true));
+		args = new ArrayList<Object>();
+		args.add(gateway.getObject(obj2.getName()));
 		ReturnObject obj3 = gateway.invoke("method5", name, args);
 		assertEquals(2, obj3.getPrimitiveObject());
-	}
-
-	@Test
-	public void testGetMethodsAsString() {
-		String name = gateway.putNewObject(entryPoint.getNewExample());
-		Object obj = gateway.getObject(name);
-		String methods = gateway.getMethodNamesAsString(obj);
-		assertEquals(
-				"getClass,equals,getField1,hashCode,method6,setField1,method5,wait,method4,method3,method2,method1,notify,getList,toString,notifyAll,",
-				methods);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testListMethod() {
 		String name = gateway.putNewObject(entryPoint.getNewExample());
-		List<Argument> args = new ArrayList<Argument>();
-		args.add(new Argument(3, false));
+		List<Object> args = new ArrayList<Object>();
+		args.add(new Integer(3));
 		ReturnObject obj2 = gateway.invoke("getList", name, args);
 		List<String> myList = (List<String>) gateway.getObject(obj2.getName());
 		assertEquals(myList.size(), 3);
 
-		args = new ArrayList<Argument>();
-		args.add(new Argument("\"3\"", false));
+		args = new ArrayList<Object>();
+		args.add(new String("\"3\""));
 		gateway.invoke("add", obj2.getName(), args);
 		assertEquals(myList.size(), 4);
 	}

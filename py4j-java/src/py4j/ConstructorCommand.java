@@ -45,7 +45,7 @@ public class ConstructorCommand extends AbstractCommand {
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
 		String fqn = reader.readLine();
-		List<Argument> arguments = getArguments(reader);
+		List<Object> arguments = getArguments(reader);
 
 		ReturnObject returnObject = invokeConstructor(fqn, arguments);
 		
@@ -55,7 +55,7 @@ public class ConstructorCommand extends AbstractCommand {
 		writer.flush();
 	}
 	
-	protected ReturnObject invokeConstructor(String fqn, List<Argument> arguments) {
+	protected ReturnObject invokeConstructor(String fqn, List<Object> arguments) {
 		ReturnObject returnObject = null;
 		try {
 			returnObject = gateway.invoke(fqn, arguments);

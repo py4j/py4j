@@ -65,7 +65,7 @@ public class CallCommand extends AbstractCommand {
 			BufferedWriter writer) throws Py4JException, IOException {
 		String targetObjectId = reader.readLine();
 		String methodName = reader.readLine();
-		List<Argument> arguments = getArguments(reader);
+		List<Object> arguments = getArguments(reader);
 
 		ReturnObject returnObject = invokeMethod(methodName, targetObjectId, arguments);
 		

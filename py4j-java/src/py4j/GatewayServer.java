@@ -78,20 +78,24 @@ public class GatewayServer implements Runnable {
 	public static final int DEFAULT_READ_TIMEOUT = 0;
 
 	private final int port;
+	
+	private final int pythonPort;
 
 	private final Gateway gateway;
 
 	private final boolean acceptOnlyOne;
 
-	private final int connect_timeout;
+	private final int connectTimeout;
 
-	private final int read_timeout;
+	private final int readTimeout;
 
 	private final Logger logger = Logger.getLogger(GatewayServer.class
 			.getName());
 	
 	private final List<Socket> connections = new ArrayList<Socket>();
 
+	private final CommunicationChannelFactory ccFactory;
+	
 	private Socket currentSocket;
 
 	private ServerSocket sSocket;
@@ -121,12 +125,40 @@ public class GatewayServer implements Runnable {
 	 */
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout, boolean acceptOnlyOne) {
+		this(entryPoint,port,-1,connectTimeout,readTimeout,acceptOnlyOne);
+	}
+	
+	/**
+	 * 
+	 * @param entryPoint
+	 *            The entry point of this Gateway. Can be null.
+	 * @param port
+	 *            The port the GatewayServer is listening to.
+	 * @param port
+	 * 			  The port used by a PythonProxyHandler to connect to a Python gateway.
+	 * @param connectTimeout
+	 *            Time in milliseconds (0 = infinite). If a GatewayServer does
+	 *            not receive a connection request after this time, it closes
+	 *            the server socket and no other connection is accepted.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once a Python program is
+	 *            connected, if a GatewayServer does not receive a request
+	 *            (e.g., a method call) after this time, the connection with the
+	 *            Python program is closed.
+	 * @param acceptOnlyOne
+	 *            If true, only one Python program can connect to this
+	 *            GatewayServer at a time.
+	 */
+	public GatewayServer(Object entryPoint, int port, int pythonPort, int connectTimeout,
+			int readTimeout, boolean acceptOnlyOne) {
 		super();
-		this.gateway = new Gateway(entryPoint);
 		this.port = port;
-		connect_timeout = connectTimeout;
-		read_timeout = readTimeout;
+		this.pythonPort = pythonPort;
+		this.connectTimeout = connectTimeout;
+		this.readTimeout = readTimeout;
 		this.acceptOnlyOne = acceptOnlyOne;
+		this.ccFactory = new CommunicationChannelFactory(pythonPort);
+		this.gateway = new Gateway(entryPoint, ccFactory);
 	}
 
 	/**
@@ -160,7 +192,7 @@ public class GatewayServer implements Runnable {
 		try {
 			gateway.startup();
 			sSocket = new ServerSocket(port);
-			sSocket.setSoTimeout(connect_timeout);
+			sSocket.setSoTimeout(connectTimeout);
 
 			while (true) {
 				Socket socket = sSocket.accept();
@@ -182,7 +214,7 @@ public class GatewayServer implements Runnable {
 				socket.close();
 			} else {
 				connections.add(socket);
-				socket.setSoTimeout(read_timeout);
+				socket.setSoTimeout(readTimeout);
 				createConnection(this, gateway, socket);
 				if (acceptOnlyOne) {
 					currentSocket = socket;
@@ -244,12 +276,20 @@ public class GatewayServer implements Runnable {
 		return acceptOnlyOne;
 	}
 
-	public int getConnect_timeout() {
-		return connect_timeout;
+	public int getConnectTimeout() {
+		return connectTimeout;
 	}
 
-	public int getRead_timeout() {
-		return read_timeout;
+	public int getReadTimeout() {
+		return readTimeout;
+	}
+	
+	public int getPythonPort() {
+		return pythonPort;
+	}
+	
+	public CommunicationChannelFactory getCommunicationChannelFactory() {
+		return ccFactory;
 	}
 
 	/**

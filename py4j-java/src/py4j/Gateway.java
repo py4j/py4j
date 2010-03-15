@@ -29,12 +29,9 @@
 
 package py4j;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -66,13 +63,12 @@ public class Gateway {
 	private final static String OBJECT_NAME_PREFIX = "o";
 	private final Object entryPoint;
 	private final ReflectionEngine rEngine = new ReflectionEngine();
+	private final CommunicationChannelFactory ccFactory;
 
 	private final Logger logger = Logger.getLogger(Gateway.class.getName());
 
 	private boolean isStarted = false;
 
-	@SuppressWarnings("unused")
-	private boolean cleanUpConnection = false;
 
 	private static ThreadLocal<LRUCache<String, Py4JMember>> helpPages = new ThreadLocal<LRUCache<String, Py4JMember>>() {
 		@Override
@@ -82,23 +78,16 @@ public class Gateway {
 	};
 
 	public Gateway(Object entryPoint) {
-		this(entryPoint, false);
+		this(entryPoint, null);
 	}
 
-	public Gateway(Object entryPoint, boolean cleanUpConnection) {
+	public Gateway(Object entryPoint, CommunicationChannelFactory ccFactory) {
 		this.entryPoint = entryPoint;
-		this.cleanUpConnection = cleanUpConnection;
+		this.ccFactory = ccFactory;
 	}
-
-	private void buildArgs(List<Argument> args, List<Object> parametersList) {
-		for (Argument arg : args) {
-			if (!arg.isReference()) {
-				parametersList.add(arg.getValue());
-			} else {
-				parametersList.add(bindings.get(arg.getValue().toString()));
-			}
-
-		}
+	
+	public CommunicationChannelFactory getCommunicationChannelFactory() {
+		return ccFactory;
 	}
 
 	/**
@@ -128,28 +117,6 @@ public class Gateway {
 
 	public LRUCache<String, Py4JMember> getHelpPages() {
 		return helpPages.get();
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<String> getMethodNames(Object obj) {
-		Class clazz = obj.getClass();
-		Method[] methods = clazz.getMethods();
-		Set<String> methodNames = new HashSet<String>();
-		for (Method method : methods) {
-			methodNames.add(method.getName());
-		}
-
-		return new ArrayList<String>(methodNames);
-	}
-
-	public String getMethodNamesAsString(Object obj) {
-		List<String> methodNames = getMethodNames(obj);
-		StringBuilder buffer = new StringBuilder();
-		for (String methodName : methodNames) {
-			buffer.append(methodName);
-			buffer.append(",");
-		}
-		return buffer.toString();
 	}
 
 	protected String getNextObjectId() {
@@ -209,16 +176,14 @@ public class Gateway {
 		return returnObject;
 	}
 
-	public ReturnObject invoke(String fqn, List<Argument> args) {
+	public ReturnObject invoke(String fqn, List<Object> args) {
 		if (args == null) {
-			args = new ArrayList<Argument>();
+			args = new ArrayList<Object>();
 		}
 		ReturnObject returnObject = null;
-		List<Object> parametersList = new ArrayList<Object>();
 		try {
-			buildArgs(args, parametersList);
 			logger.info("Calling constructor: " + fqn);
-			Object[] parameters = parametersList.toArray();
+			Object[] parameters = args.toArray();
 
 			MethodInvoker method = rEngine.getConstructor(fqn, parameters);
 			Object object = rEngine.invoke(null, method, parameters);
@@ -232,17 +197,15 @@ public class Gateway {
 	}
 
 	public ReturnObject invoke(String methodName, String targetObjectId,
-			List<Argument> args) {
+			List<Object> args) {
 		if (args == null) {
-			args = new ArrayList<Argument>();
+			args = new ArrayList<Object>();
 		}
 		ReturnObject returnObject = null;
-		List<Object> parametersList = new ArrayList<Object>();
 		try {
 			Object targetObject = getObjectFromId(targetObjectId);
-			buildArgs(args, parametersList);
 			logger.info("Calling: " + methodName);
-			Object[] parameters = parametersList.toArray();
+			Object[] parameters = args.toArray();
 
 			MethodInvoker method = null;
 			if (targetObject != null) {

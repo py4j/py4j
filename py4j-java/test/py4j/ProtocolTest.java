@@ -120,6 +120,11 @@ public class ProtocolTest {
 
 	@Test
 	public void testReferences() {
+		Gateway gateway = new Gateway(null);
+		Object object1 = new Object();
+		Object object2 = new Object();
+		gateway.putObject("o123", object1);
+		gateway.putObject("o2", object2);
 		assertTrue(Protocol.isReference("ro123"));
 		assertFalse(Protocol.isReference("btrue"));
 		try {
@@ -135,13 +140,40 @@ public class ProtocolTest {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getReference("r");
+			Protocol.getReference("r",null);
 			fail();
 		} catch (Exception e) {
 			assertTrue(true);
 		}
-		assertEquals("o123", Protocol.getReference("ro123"));
-		assertEquals("o2", Protocol.getReference("ro2"));
+		assertEquals(object1, Protocol.getReference("ro123",gateway));
+		assertEquals(object2, Protocol.getReference("ro2",gateway));
+	}
+	
+	@Test
+	public void testPythonProxies() {
+		Gateway gateway = new Gateway(null);
+		assertTrue(Protocol.isPythonProxy("pp123;java.lang.CharSequence"));
+		assertFalse(Protocol.isPythonProxy("btrue"));
+		try {
+			Protocol.isPythonProxy(null);
+			fail();
+		} catch (NullPointerException e) {
+			assertTrue(true);
+		}
+		try {
+			Protocol.isPythonProxy("");
+			fail();
+		} catch (Exception e) {
+			assertTrue(true);
+		}
+		try {
+			Protocol.getPythonProxy("pp123",null);
+			fail();
+		} catch (Exception e) {
+			assertTrue(true);
+		}
+		assertTrue(Protocol.getPythonProxy("pp123;java.lang.CharSequence",gateway) instanceof CharSequence);
+		assertTrue(Protocol.getPythonProxy("pp1;java.lang.CharSequence;java.lang.Runnable",gateway) instanceof Runnable);
 	}
 
 	@Test
@@ -209,32 +241,35 @@ public class ProtocolTest {
 	
 	@Test
 	public void testGetObject() {
-		assertEquals(1, Protocol.getObject("i1"));
-		assertEquals(true, Protocol.getObject("bTrue"));
-		assertEquals(1.234,(Double)Protocol.getObject("d1.234"),0.001);
-		assertEquals("o123",Protocol.getObject("ro123"));
-		assertEquals("Hello\nWorld\t", Protocol.getObject("sHello\\nWorld\t"));
-		assertNull(Protocol.getObject("n"));
+		Gateway gateway = new Gateway(null);
+		Object obj1 = new Object();
+		gateway.putObject("o123", obj1);
+		assertEquals(1, Protocol.getObject("i1",null));
+		assertEquals(true, Protocol.getObject("bTrue",null));
+		assertEquals(1.234,(Double)Protocol.getObject("d1.234",null),0.001);
+		assertEquals(obj1,Protocol.getObject("ro123",gateway));
+		assertEquals("Hello\nWorld\t", Protocol.getObject("sHello\\nWorld\t",null));
+		assertNull(Protocol.getObject("n",null));
 		try {
-			Protocol.getObject(null);
+			Protocol.getObject(null,null);
 			fail();
 		} catch (Py4JException e) {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getObject("");
+			Protocol.getObject("",null);
 			fail();
 		} catch (Py4JException e) {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getObject("e");
+			Protocol.getObject("e",null);
 			fail();
 		} catch (Py4JException e) {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getObject("z123");
+			Protocol.getObject("z123",null);
 			fail();
 		} catch (Py4JException e) {
 			assertTrue(true);
