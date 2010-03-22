@@ -226,7 +226,7 @@ def get_method(java_object, method_name):
     return JavaMember(method_name, java_object, java_object._target_id, java_object._comm_channel)
 
 def garbage_collect_object(comm_channel, target_id):
-    print(target_id + ' deleted')
+#    print(target_id + ' deleted')
     ThreadSafeFinalizer.remove_finalizer(str(comm_channel.address) + str(comm_channel.port) + target_id)
     if comm_channel.is_connected:
         try:
@@ -241,16 +241,13 @@ def garbage_collect_channel(socket):
     and closing sockets immediately is not a concern. Otherwise, it is always better (because it 
     is predictable) to explicitly close the socket by calling `CommChannel.close()`.
     """
-    print('delete channel')
+#    print('delete channel')
     if socket != None:
         try:
             socket.shutdown(socket.SHUT_RDWR)
             socket.close()
         except Exception:
             pass
-        
-def test_del(weak_ref):
-    print('Test Deleted')
         
 class DummyRLock(object):
     def __init__(self):
@@ -327,7 +324,7 @@ class CommChannelFactory(object):
         return comm_channel
     
     def _create_comm_channel(self):
-        print('Creating comm channel')
+#        print('Creating comm channel')
         comm_channel = CommChannel(self.address,self.port,self.auto_close,self.gateway_property)
         comm_channel.start()
         return comm_channel
@@ -472,7 +469,7 @@ class JavaObject(object):
         :param target_id: the identifier of the object on the JVM side. Given by the JVM.
         :param comm_channel: the communication channel used to communicate with the JVM.
         """
-        print(target_id + ' created.')
+#        print(target_id + ' created.')
         self._target_id = target_id
         self._comm_channel = comm_channel
         self._auto_field = comm_channel.gateway_property.auto_field
