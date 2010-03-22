@@ -338,10 +338,6 @@ class CommChannelFactory(object):
         except:
             pass
     
-    def close(self, throw_exception=False):
-        """Closes the communication channel by closing the socket."""
-        # Do nothing for now! This method will eventually go!
-        
     def shutdown_gateway(self):
         """Sends a shutdown command to the gateway. This will close the gateway server: all active 
         connections will be closed. This may be useful if the lifecycle of the Java program must be 
@@ -367,6 +363,20 @@ class CommChannelFactory(object):
             response = self.send_command(command)
             
         return response
+    
+    def close(self):
+        """Closes all currently opened communication channels.
+        
+        This operation is not thread safe and is only a best effort strategy to close active channels. 
+        All channels are guaranteed to be closed only if no other thread is accessing the factory and no call is pending.
+        """
+        size = len(self.deque)
+        for _ in range(0,size):
+            try:
+                channel = deque.pop()
+                channel.close()
+            except:
+                pass
         
 
 class CommChannel(object):
@@ -611,6 +621,9 @@ class JavaGateway(object):
             
     def shutdown(self):
         self._comm_channel.shutdown_gateway()
+        
+    def close(self):
+        self._comm_channel.close()
         
     def detach(self, java_object):
         """Makes the Java Gateway dereference this object. 
