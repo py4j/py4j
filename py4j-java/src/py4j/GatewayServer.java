@@ -190,6 +190,7 @@ public class GatewayServer implements Runnable {
 	@Override
 	public void run() {
 		try {
+			logger.info("Gateway Server Starting");
 			gateway.startup();
 			sSocket = new ServerSocket(port);
 			sSocket.setSoTimeout(connectTimeout);
@@ -201,6 +202,7 @@ public class GatewayServer implements Runnable {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Error while waiting for connection.", e);
 		}
+		logger.info("Gateway Server Stopping");
 	}
 
 	protected Object createConnection(GatewayServer server, Gateway gateway,

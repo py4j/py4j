@@ -228,7 +228,7 @@ def get_method(java_object, method_name):
 def garbage_collect_object(comm_channel, target_id):
 #    print(target_id + ' deleted')
     ThreadSafeFinalizer.remove_finalizer(str(comm_channel.address) + str(comm_channel.port) + target_id)
-    if comm_channel.is_connected:
+    if target_id != ENTRY_POINT_OBJECT_ID and comm_channel.is_connected:
         try:
             comm_channel.send_command(MEMORY_COMMAND_NAME + MEMORY_DEL_SUBCOMMAND_NAME + target_id + '\ne\n')
         except:
