@@ -43,6 +43,7 @@ BOOLEAN_TYPE = 'b'
 DOUBLE_TYPE = 'd'
 STRING_TYPE = 's'
 REFERENCE_TYPE = 'r'
+ARRAY_TYPE = 't'
 LIST_TYPE = 'l'
 MAP_TYPE = 'a'
 NULL_TYPE = 'n'
@@ -70,13 +71,20 @@ FIELD_COMMAND_NAME = 'f\n'
 CONSTRUCTOR_COMMAND_NAME = 'i\n'
 SHUTDOWN_GATEWAY_COMMAND_NAME = 's\n'
 LIST_COMMAND_NAME = 'l\n'
-REFLECTION_COMMAND_NAME = "r\n";
-MEMORY_COMMAND_NAME = "m\n";
+REFLECTION_COMMAND_NAME = "r\n"
+MEMORY_COMMAND_NAME = "m\n"
 HELP_COMMAND_NAME = 'h\n'
+ARRAY_COMMAND_NAME = "a\n"
+
+# Array subcommands
+ARRAY_GET_SUB_COMMAND_NAME = 'g\n'
+ARRAY_SET_SUB_COMMAND_NAME = 's\n'
+ARRAY_SLICE_SUB_COMMAND_NAME = 'l\n'
+ARRAY_LEN_SUB_COMMAND_NAME = 'e\n'
 
 # Reflection subcommands
-REFL_GET_UNKNOWN_SUB_COMMAND_NAME = 'u\n';
-REFL_GET_MEMBER_SUB_COMMAND_NAME = 'm\n';
+REFL_GET_UNKNOWN_SUB_COMMAND_NAME = 'u\n'
+REFL_GET_MEMBER_SUB_COMMAND_NAME = 'm\n'
     
 
 # List subcommands
@@ -104,10 +112,12 @@ CONVERSION = {NULL_TYPE: (lambda x, y: None),
               REFERENCE_TYPE: (lambda target_id, comm_channel: JavaObject(target_id, comm_channel)),
               MAP_TYPE: (lambda target_id, comm_channel: JavaMap(target_id, comm_channel)),
               LIST_TYPE: (lambda target_id, comm_channel: JavaList(target_id, comm_channel)),
+              ARRAY_TYPE: (lambda target_id, comm_channel: JavaArray(target_id, comm_channel)),
               BOOLEAN_TYPE: (lambda value, y: value.lower() == 'true'),
               INTEGER_TYPE: (lambda value, y: int(value)),
               DOUBLE_TYPE: (lambda value, y: float(value)),
               STRING_TYPE: (lambda value, y: unescape_new_line(value)),
+              
               }
 
 def escape_new_line(original):
@@ -342,6 +352,7 @@ class CommChannelFactory(object):
         comm_channel = self._get_comm_channel()
         try:
             comm_channel.shutdown_gateway()
+            self.close()
             self.is_connected = False
         except Py4JNetworkError:
             self.shutdown_gateway()
@@ -655,4 +666,4 @@ class JavaGateway(object):
         
 # For circular dependencies
 # Purists should close their eyes
-from py4j.java_collections import JavaList, JavaMap
+from py4j.java_collections import JavaList, JavaMap, JavaArray

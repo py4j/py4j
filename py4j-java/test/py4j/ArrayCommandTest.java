@@ -83,4 +83,10 @@ public class ArrayCommandTest {
 			fail();
 		}
 	}
+	
+	@Test
+	public void testArrayType() {
+		ReturnObject rObject = ReturnObject.getArrayReturnObject(target, 2);
+		assertEquals("yt"+target+"\n",Protocol.getOutputCommand(rObject));
+	}
 }

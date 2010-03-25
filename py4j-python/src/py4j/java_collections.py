@@ -3,7 +3,7 @@ Created on Jan 22, 2010
 
 @author: barthelemy
 '''
-from collections import MutableMapping
+from collections import MutableMapping, Sequence
 from py4j.java_gateway import *
     
 class JavaIterator(JavaObject):
@@ -72,6 +72,79 @@ class JavaMap(JavaObject, MutableMapping):
                 srep += repr(key) + ': ' + repr(self[key]) + ', '
                 
             return srep[:-2] + '}'
+        
+class JavaArray(JavaObject, Sequence):
+    def __init__(self, target_id, comm_channel):
+        JavaObject.__init__(self, target_id, comm_channel)
+    
+    def __compute_index(self, key, adjustLast = False):
+        size = len(self)
+        if 0 <= key < size:
+            return key
+        elif key < 0 and abs(key) <= size:
+            return size + key
+        elif adjustLast:
+            return size
+        else:
+            raise IndexError("list index out of range")
+    
+    def __compute_item(self, key):
+        new_key = self.__compute_index(key)
+        command = ARRAY_COMMAND_NAME + ARRAY_GET_SUB_COMMAND_NAME + self._get_object_id() + '\n'
+        command += get_command_part(new_key)
+        command += END_COMMAND_PART
+        answer = self._comm_channel.send_command(command)
+        return get_return_value(answer, self._comm_channel)
+    
+    def __get_slice(self, slice):
+        pass
+    
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            indices = key.indices(len(self))
+            return self.__get_slice(range(*indices))
+        elif isinstance(key, int):
+            return self.__compute_item(key)
+        else:
+            raise TypeError("array indices must be integers, not %s" % key.__class__.__name__)
+        
+    def __repl_item_from_slice(self, range, iterable):
+        value_iter = iter(iterable)
+        for i in range:
+            value = value_iter.next()
+            self.__set_item(i, value)
+    
+    def __set_item(self, key, value):
+        new_key = self.__compute_index(key)
+        command = ARRAY_COMMAND_NAME + ARRAY_SET_SUB_COMMAND_NAME + self._get_object_id() + '\n'
+        command += get_command_part(new_key)
+        command += get_command_part(value)
+        command += END_COMMAND_PART
+        answer = self._comm_channel.send_command(command)
+        return get_return_value(answer, self._comm_channel)
+        
+    def __setitem__(self, key, value):
+        if isinstance(key, slice):
+            self_len = len(self)
+            indices = key.indices(self_len)
+            self_range = range(*indices)
+            lenr = len(self_range)
+            lenv = len(value)
+            if lenr != lenv:
+                raise ValueError("attempt to assign sequence of size %d to extended slice of size %d" % (lenv,lenr))
+            else:
+                return self.__repl_item_from_slice(self_range,value)
+            
+        elif isinstance(key, int):
+            return self.__set_item(key, value)
+        else:
+            raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+        
+    def __len__(self):
+        command = ARRAY_COMMAND_NAME + ARRAY_LEN_SUB_COMMAND_NAME + self._get_object_id() + '\n'
+        command += END_COMMAND_PART
+        answer = self._comm_channel.send_command(command)
+        return get_return_value(answer, self._comm_channel)
         
 class JavaList(JavaObject):
     """Maps a Python list to a Java list.
