@@ -99,4 +99,12 @@ public class ExampleClass {
 		ex.field1 = 4;
 		return ex;
 	}
+	
+	public Object[] getStringArray() {
+		return new String[] {"222","111","333"};
+	}
+	
+	public int[] getIntArray() {
+		return new int[] {2, 5, 1, 10};
+	}
 }

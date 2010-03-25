@@ -87,6 +87,7 @@ public class Protocol {
 	public final static char STRING_TYPE = 's';
 	public final static char REFERENCE_TYPE = 'r';
 	public final static char LIST_TYPE = 'l';
+	public final static char ARRAY_TYPE = 't';
 	public final static char MAP_TYPE = 'a';
 	public final static char NULL_TYPE = 'n';
 	public final static char PYTHON_PROXY_TYPE = 'p';
@@ -117,58 +118,6 @@ public class Protocol {
 	// STATIC REFERENCES
 	public final static String STATIC_PREFIX = "z:";
 
-	public final static boolean isEmpty(String commandPart) {
-		return commandPart == null || commandPart.trim().length() == 0;
-	}
-
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return True if the command part is the end token
-	 */
-	public final static boolean isEnd(String commandPart) {
-		return commandPart.length() == 1 && commandPart.charAt(0) == 'e';
-	}
-
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return True if the command part is an integer
-	 */
-	public final static boolean isInteger(String commandPart) {
-		return commandPart.charAt(0) == INTEGER_TYPE;
-	}
-
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return The integer value corresponding to this command part.
-	 */
-	public final static int getInteger(String commandPart) {
-		return Integer.parseInt(commandPart.substring(1, commandPart.length()));
-	}
-
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return True if the command part is a boolean
-	 */
-	public final static boolean isBoolean(String commandPart) {
-		return commandPart.charAt(0) == BOOLEAN_TYPE;
-	}
-
 	/**
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
@@ -180,18 +129,6 @@ public class Protocol {
 	public final static boolean getBoolean(String commandPart) {
 		return Boolean.parseBoolean(commandPart.substring(1, commandPart
 				.length()));
-	}
-
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return True if the command part is a double
-	 */
-	public final static boolean isDouble(String commandPart) {
-		return commandPart.charAt(0) == DOUBLE_TYPE;
 	}
 
 	/**
@@ -213,69 +150,24 @@ public class Protocol {
 	 * </p>
 	 * 
 	 * @param commandPart
-	 * @return True if the command part is a reference
+	 * @return The integer value corresponding to this command part.
 	 */
-	public final static boolean isReference(String commandPart) {
-		return commandPart.charAt(0) == REFERENCE_TYPE;
+	public final static int getInteger(String commandPart) {
+		return Integer.parseInt(commandPart.substring(1, commandPart.length()));
 	}
 
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return The object referenced in this command part.
-	 */
-	public final static Object getReference(String commandPart, Gateway gateway) {
-		String reference = commandPart.substring(1, commandPart.length());
+	public final static String getMemberOutputCommand(char memberType) {
+		StringBuilder builder = new StringBuilder();
 
-		if (reference.trim().length() == 0) {
-			throw new Py4JException("Reference is empty.");
-		}
+		builder.append(SUCCESS);
+		builder.append(memberType);
+		builder.append(END_OUTPUT);
 
-		return gateway.getObject(reference);
+		return builder.toString();
 	}
 
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return True if the command part is a reference
-	 */
-	public final static boolean isString(String commandPart) {
-		return commandPart.charAt(0) == STRING_TYPE;
-	}
-
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return The reference contained in this command part.
-	 */
-	public final static String getString(String commandPart) {
-		String toReturn = "";
-		if (commandPart.length() >= 2) {
-			toReturn = StringUtil.unescape(commandPart.substring(1, commandPart
-					.length()));
-		}
-		return toReturn;
-	}
-
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return True if the command part is null
-	 */
-	public final static boolean isNull(String commandPart) {
-		return commandPart.charAt(0) == NULL_TYPE;
+	public static String getNoSuchFieldOutputCommand() {
+		return NO_SUCH_FIELD;
 	}
 
 	/**
@@ -316,18 +208,44 @@ public class Protocol {
 		}
 	}
 
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return True if the command part is a python proxy
-	 */
-	public final static boolean isPythonProxy(String commandPart) {
-		return commandPart.charAt(0) == PYTHON_PROXY_TYPE;
+	public final static String getOutputCommand(ReturnObject rObject) {
+		StringBuilder builder = new StringBuilder();
+
+		if (rObject.isError()) {
+			builder.append(ERROR);
+		} else {
+			builder.append(SUCCESS);
+			builder.append(rObject.getCommandPart());
+		}
+		builder.append(END_OUTPUT);
+
+		return builder.toString();
 	}
-	
+
+	public final static String getOutputErrorCommand() {
+		return ERROR_COMMAND;
+	}
+
+	public final static String getOutputVoidCommand() {
+		return VOID_COMMAND;
+	}
+
+	public static char getPrimitiveType(Object primitiveObject) {
+		char c = INTEGER_TYPE;
+
+		if (primitiveObject instanceof String
+				|| primitiveObject instanceof Character) {
+			c = STRING_TYPE;
+		} else if (primitiveObject instanceof Double
+				|| primitiveObject instanceof Float) {
+			c = DOUBLE_TYPE;
+		} else if (primitiveObject instanceof Boolean) {
+			c = BOOLEAN_TYPE;
+		}
+
+		return c;
+	}
+
 	/**
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
@@ -363,55 +281,138 @@ public class Protocol {
 		return proxy;
 	}
 
-	public final static String getOutputErrorCommand() {
-		return ERROR_COMMAND;
-	}
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return The object referenced in this command part.
+	 */
+	public final static Object getReference(String commandPart, Gateway gateway) {
+		String reference = commandPart.substring(1, commandPart.length());
 
-	public final static String getOutputVoidCommand() {
-		return VOID_COMMAND;
-	}
-
-	public final static String getMemberOutputCommand(char memberType) {
-		StringBuilder builder = new StringBuilder();
-
-		builder.append(SUCCESS);
-		builder.append(memberType);
-		builder.append(END_OUTPUT);
-
-		return builder.toString();
-	}
-
-	public final static String getOutputCommand(ReturnObject rObject) {
-		StringBuilder builder = new StringBuilder();
-
-		if (rObject.isError()) {
-			builder.append(ERROR);
-		} else {
-			builder.append(SUCCESS);
-			builder.append(rObject.getCommandPart());
-		}
-		builder.append(END_OUTPUT);
-
-		return builder.toString();
-	}
-
-	public static char getPrimitiveType(Object primitiveObject) {
-		char c = INTEGER_TYPE;
-
-		if (primitiveObject instanceof String
-				|| primitiveObject instanceof Character) {
-			c = STRING_TYPE;
-		} else if (primitiveObject instanceof Double
-				|| primitiveObject instanceof Float) {
-			c = DOUBLE_TYPE;
-		} else if (primitiveObject instanceof Boolean) {
-			c = BOOLEAN_TYPE;
+		if (reference.trim().length() == 0) {
+			throw new Py4JException("Reference is empty.");
 		}
 
-		return c;
+		return gateway.getObject(reference);
 	}
 
-	public static String getNoSuchFieldOutputCommand() {
-		return NO_SUCH_FIELD;
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return The reference contained in this command part.
+	 */
+	public final static String getString(String commandPart) {
+		String toReturn = "";
+		if (commandPart.length() >= 2) {
+			toReturn = StringUtil.unescape(commandPart.substring(1, commandPart
+					.length()));
+		}
+		return toReturn;
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is a boolean
+	 */
+	public final static boolean isBoolean(String commandPart) {
+		return commandPart.charAt(0) == BOOLEAN_TYPE;
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is a double
+	 */
+	public final static boolean isDouble(String commandPart) {
+		return commandPart.charAt(0) == DOUBLE_TYPE;
+	}
+	
+	public final static boolean isEmpty(String commandPart) {
+		return commandPart == null || commandPart.trim().length() == 0;
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is the end token
+	 */
+	public final static boolean isEnd(String commandPart) {
+		return commandPart.length() == 1 && commandPart.charAt(0) == 'e';
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is an integer
+	 */
+	public final static boolean isInteger(String commandPart) {
+		return commandPart.charAt(0) == INTEGER_TYPE;
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is null
+	 */
+	public final static boolean isNull(String commandPart) {
+		return commandPart.charAt(0) == NULL_TYPE;
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is a python proxy
+	 */
+	public final static boolean isPythonProxy(String commandPart) {
+		return commandPart.charAt(0) == PYTHON_PROXY_TYPE;
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is a reference
+	 */
+	public final static boolean isReference(String commandPart) {
+		return commandPart.charAt(0) == REFERENCE_TYPE;
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is a reference
+	 */
+	public final static boolean isString(String commandPart) {
+		return commandPart.charAt(0) == STRING_TYPE;
 	}
 }

@@ -58,12 +58,22 @@ package py4j;
  */
 public class ReturnObject {
 
+	public static ReturnObject getArrayReturnObject(String name, int size) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.name = name;
+		rObject.size = size;
+		rObject.isArray = true;
+		rObject.commandPart = Protocol.ARRAY_TYPE + name;
+		return rObject;
+	}
+
 	public static ReturnObject getErrorReturnObject() {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isError = true;
 		rObject.commandPart = String.valueOf(Protocol.ERROR);
 		return rObject;
 	}
+
 	public static ReturnObject getListReturnObject(String name, int size) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
@@ -72,6 +82,7 @@ public class ReturnObject {
 		rObject.commandPart = Protocol.LIST_TYPE + name;
 		return rObject;
 	}
+
 	public static ReturnObject getMapReturnObject(String name, int size) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
@@ -80,12 +91,14 @@ public class ReturnObject {
 		rObject.commandPart = Protocol.MAP_TYPE + name;
 		return rObject;
 	}
+
 	public static ReturnObject getNullReturnObject() {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isNull = true;
 		rObject.commandPart = String.valueOf(Protocol.NULL_TYPE);
 		return rObject;
 	}
+
 	public static ReturnObject getPrimitiveReturnObject(Object primitive) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.primitiveObject = primitive;
@@ -98,6 +111,7 @@ public class ReturnObject {
 		}
 		return rObject;
 	}
+
 	public static ReturnObject getReferenceReturnObject(String name) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
@@ -105,14 +119,17 @@ public class ReturnObject {
 		rObject.commandPart = Protocol.REFERENCE_TYPE + name;
 		return rObject;
 	}
+
 	public static ReturnObject getVoidReturnObject() {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isVoid = true;
 		rObject.commandPart = String.valueOf(Protocol.VOID);
 		return rObject;
 	}
+
 	private String name;
 	private Object primitiveObject;
+
 	private boolean isReference;
 
 	private boolean isMap;
@@ -124,6 +141,10 @@ public class ReturnObject {
 	private boolean isError;
 
 	private boolean isVoid;
+
+	private boolean isArray;
+
+	private boolean isSet;
 
 	private int size;
 
@@ -148,6 +169,10 @@ public class ReturnObject {
 		return size;
 	}
 
+	public boolean isArray() {
+		return isArray;
+	}
+
 	public boolean isError() {
 		return isError;
 	}
@@ -168,8 +193,16 @@ public class ReturnObject {
 		return isReference;
 	}
 
+	public boolean isSet() {
+		return isSet;
+	}
+
 	public boolean isVoid() {
 		return isVoid;
+	}
+
+	public void setArray(boolean isArray) {
+		this.isArray = isArray;
 	}
 
 	public void setCommandPart(String commandPart) {
@@ -204,6 +237,10 @@ public class ReturnObject {
 		this.isReference = isReference;
 	}
 
+	public void setSet(boolean isSet) {
+		this.isSet = isSet;
+	}
+
 	public void setSize(int size) {
 		this.size = size;
 	}
@@ -211,7 +248,5 @@ public class ReturnObject {
 	public void setVoid(boolean isVoid) {
 		this.isVoid = isVoid;
 	}
-	
-	
 
 }

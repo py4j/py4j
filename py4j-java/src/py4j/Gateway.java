@@ -29,6 +29,7 @@
 
 package py4j;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -86,10 +87,6 @@ public class Gateway {
 		this.ccFactory = ccFactory;
 	}
 	
-	public CommunicationChannelFactory getCommunicationChannelFactory() {
-		return ccFactory;
-	}
-
 	/**
 	 * <p>
 	 * Called when a connection is closed.
@@ -109,6 +106,10 @@ public class Gateway {
 
 	protected Map<String, Object> getBindings() {
 		return bindings;
+	}
+
+	public CommunicationChannelFactory getCommunicationChannelFactory() {
+		return ccFactory;
 	}
 
 	public Object getEntryPoint() {
@@ -165,9 +166,11 @@ public class Gateway {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getMapReturnObject(objectId,
 						((Map) object).size());
+			} else if (isArray(object)) { 
+				String objectId = putNewObject(object);
+				returnObject = ReturnObject.getArrayReturnObject(objectId,Array.getLength(object));
 			} else {
 				String objectId = putNewObject(object);
-				// TODO Handle lists, maps, etc.
 				returnObject = ReturnObject.getReferenceReturnObject(objectId);
 			}
 		} else {
@@ -224,6 +227,10 @@ public class Gateway {
 		}
 
 		return returnObject;
+	}
+
+	protected boolean isArray(Object object) {
+		return object.getClass().isArray();
 	}
 
 	@SuppressWarnings("unchecked")
