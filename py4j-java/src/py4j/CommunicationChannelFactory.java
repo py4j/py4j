@@ -102,13 +102,14 @@ public class CommunicationChannelFactory {
 	}
 
 	public void shutdown() {
+		logger.info("Shutting down Communication Channel Factory");
 		try {
 			lock.lock();
 			isShutdown = true;
 			for (CommunicationChannel cc : channels) {
 				cc.shutdown();
 			}
-
+			executor.shutdownNow();
 			channels.clear();
 		} finally {
 			lock.unlock();

@@ -265,6 +265,7 @@ public class GatewayServer implements Runnable {
 	 * <p>Stops accepting connections, closes all current connections, and calls {@link py4j.Gateway#shutdown() Gateway.shutdown()}</p>
 	 */
 	public void shutdown() {
+		logger.info("Shutting down Gateway");
 		// TODO Check that all connections are indeed closed!
 		NetworkUtil.quietlyClose(sSocket);
 		for (Socket socket: connections) {
@@ -272,6 +273,7 @@ public class GatewayServer implements Runnable {
 		}
 		connections.clear();
 		gateway.shutdown();
+		ccFactory.shutdown();
 	}
 
 	public boolean isAcceptOnlyOne() {
