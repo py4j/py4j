@@ -32,13 +32,12 @@ class Test(unittest.TestCase):
         
     def tearDown(self):
         self.p.terminate()
-        print('Shutting Down Gateway')
         self.gateway.shutdown()
         
         time.sleep(0.5)
     
     def testArray(self):
-        self.gateway.jvm.py4j.GatewayServer.turnLoggingOn()
+#        self.gateway.jvm.py4j.GatewayServer.turnLoggingOn()
         example = self.gateway.entry_point.getNewExample()
         array1 = example.getStringArray()
         array2 = example.getIntArray()
@@ -52,6 +51,16 @@ class Test(unittest.TestCase):
         array2[1] = 6
         self.assertEqual(u'aaa',array1[2])
         self.assertEqual(6,array2[1])
+        
+    def testCreateArray(self):
+        int_class = self.gateway.jvm.int
+        string_class = self.gateway.jvm.java.lang.String
+        int_array = self.gateway.new_array(int_class, 2)
+        string_array = self.gateway.new_array(string_class, 3, 5)
+        self.assertEqual(2, len(int_array))
+        self.assertEqual(3, len(string_array))
+        self.assertEqual(5, len(string_array[0]))
+        
         
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

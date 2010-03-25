@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class ArrayCommand extends AbstractCommand {
@@ -17,7 +18,8 @@ public class ArrayCommand extends AbstractCommand {
 	public static final char ARRAY_SET_SUB_COMMAND_NAME = 's';
 	public static final char ARRAY_SLICE_SUB_COMMAND_NAME = 'l';
 	public static final char ARRAY_LEN_SUB_COMMAND_NAME = 'e';
-
+	public static final char ARRAY_CREATE_SUB_COMMAND_NAME = 'c';
+	
 	public static final String RETURN_VOID = Protocol.SUCCESS + ""
 			+ Protocol.VOID + Protocol.END_OUTPUT;
 
@@ -34,6 +36,8 @@ public class ArrayCommand extends AbstractCommand {
 			returnCommand = sliceArray(reader);
 		} else if (subCommand == ARRAY_LEN_SUB_COMMAND_NAME) {
 			returnCommand = lenArray(reader);
+		} else if (subCommand == ARRAY_CREATE_SUB_COMMAND_NAME) {
+			returnCommand = createArray(reader);
 		} else {
 			returnCommand = Protocol.getOutputErrorCommand();
 		}
@@ -42,6 +46,19 @@ public class ArrayCommand extends AbstractCommand {
 		writer.write(returnCommand);
 		writer.flush();
 
+	}
+
+	private String createArray(BufferedReader reader) throws IOException {
+		String fqn = (String) Protocol.getObject(reader.readLine(), gateway);
+		List<Object> dimensions = getArguments(reader);
+		int size = dimensions.size();
+		int[] dimensionsInt = new int[size];
+		for (int i = 0; i<size; i++) {
+			dimensionsInt[i] = (Integer)dimensions.get(i);
+		}
+		Object newArray = gateway.getReflectionEngine().createArray(fqn, dimensionsInt);
+		ReturnObject returnObject = gateway.getReturnObject(newArray);
+		return Protocol.getOutputCommand(returnObject);
 	}
 
 	private String setArray(BufferedReader reader) throws IOException {

@@ -37,6 +37,7 @@ import java.lang.reflect.Modifier;
 import java.util.logging.Logger;
 
 import py4j.reflection.ReflectionEngine;
+import py4j.reflection.TypeUtil;
 
 public class ReflectionCommand extends AbstractCommand {
 
@@ -90,7 +91,7 @@ public class ReflectionCommand extends AbstractCommand {
 		reader.readLine();
 		String returnCommand = null;
 		try {
-			Class<?> clazz = Class.forName(fqn,false,this.getClass().getClassLoader());
+			Class<?> clazz = TypeUtil.forName(fqn);
 			Field f = rEngine.getField(clazz, member);
 			if (f != null && Modifier.isStatic(f.getModifiers())) {
 				Object obj = rEngine.getFieldValue(null, f);
@@ -129,7 +130,7 @@ public class ReflectionCommand extends AbstractCommand {
 		reader.readLine();
 		String returnCommand = null;
 		try {
-			Class.forName(fqn,false,this.getClass().getClassLoader());
+			TypeUtil.forName(fqn);
 			returnCommand = Protocol.getMemberOutputCommand(Protocol.CLASS_TYPE);
 		} catch (ClassNotFoundException e) {
 			returnCommand = Protocol.getMemberOutputCommand(Protocol.PACKAGE_TYPE);

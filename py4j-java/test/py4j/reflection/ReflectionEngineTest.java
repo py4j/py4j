@@ -90,6 +90,18 @@ public class ReflectionEngineTest {
 	}
 
 	@Test
+	public void testCreateArray() {
+		Object array1 = rEngine.createArray("int", new int[] {2});
+		int[] array1int = (int[])array1;
+		assertEquals(2,array1int.length);
+		
+		array1 = rEngine.createArray("java.lang.String", new int[] {3,4});
+		String[][] array1String = (String[][])array1;
+		assertEquals(3, array1String.length);
+		assertEquals(4, array1String[0].length);
+	}
+	
+	@Test
 	public void testGetFieldValue() {
 		Cat cat = new Cat();
 

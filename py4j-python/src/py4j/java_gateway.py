@@ -13,7 +13,6 @@ from py4j.finalizer import ThreadSafeFinalizer
 from collections import deque
 from pydoc import ttypager
 from socket import AF_INET, SOCK_STREAM
-from threading import RLock
 import logging
 import socket
 import weakref
@@ -81,6 +80,7 @@ ARRAY_GET_SUB_COMMAND_NAME = 'g\n'
 ARRAY_SET_SUB_COMMAND_NAME = 's\n'
 ARRAY_SLICE_SUB_COMMAND_NAME = 'l\n'
 ARRAY_LEN_SUB_COMMAND_NAME = 'e\n'
+ARRAY_CREATE_SUB_COMMAND_NAME = 'c\n'
 
 # Reflection subcommands
 REFL_GET_UNKNOWN_SUB_COMMAND_NAME = 'u\n'
@@ -627,6 +627,16 @@ class JavaGateway(object):
     def __getattr__(self, name):
         return self.entry_point.__getattr__(name)
             
+    def new_array(self, java_class, *dimensions):
+        if len(dimensions) == 0:
+            raise Py4JError('new arrays must have at least one dimension')
+        command = ARRAY_COMMAND_NAME + ARRAY_CREATE_SUB_COMMAND_NAME + get_command_part(java_class._fqn)
+        for dimension in dimensions:
+            command += get_command_part(dimension)
+        command += END_COMMAND_PART
+        answer = self._comm_channel.send_command(command)
+        return get_return_value(answer, self._comm_channel)
+        
     def shutdown(self):
         self._comm_channel.shutdown_gateway()
         

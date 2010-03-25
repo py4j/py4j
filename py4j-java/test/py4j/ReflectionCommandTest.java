@@ -70,6 +70,7 @@ public class ReflectionCommandTest {
 		String inputCommand2 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "java.lang" + "\ne\n";
 		String inputCommand3 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "java.lang.String" + "\ne\n";
 		String inputCommand4 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "p1.Cat" + "\ne\n";
+		String inputCommand5 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "byte" + "\ne\n";
 		try {
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand1)), writer);
@@ -83,6 +84,9 @@ public class ReflectionCommandTest {
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand4)), writer);
 			assertEquals("yp\nyp\nyc\nyc\n", sWriter.toString());
+			command.execute("r", new BufferedReader(new StringReader(
+					inputCommand5)), writer);
+			assertEquals("yp\nyp\nyc\nyc\nyc\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

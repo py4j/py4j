@@ -28,6 +28,7 @@
  *******************************************************************************/
 package py4j.reflection;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -66,6 +67,20 @@ public class ReflectionEngine {
 		}
 
 	};
+
+	public Object createArray(String fqn, int[] dimensions) {
+		Class<?> clazz = null;
+		Object returnObject = null;
+		try {
+			clazz = TypeUtil.forName(fqn);
+			returnObject = Array.newInstance(clazz, dimensions);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Class FQN does not exist: " + fqn,
+					e);
+			throw new Py4JException(e);
+		}
+		return returnObject;
+	}
 
 	private MethodInvoker getBestConstructor(
 			List<Constructor<?>> acceptableConstructors, Class<?>[] parameters) {
@@ -344,7 +359,7 @@ public class ReflectionEngine {
 
 		return methods;
 	}
-
+	
 	public Object invoke(Object object, MethodInvoker invoker,
 			Object[] parameters) {
 		Object returnObject = null;

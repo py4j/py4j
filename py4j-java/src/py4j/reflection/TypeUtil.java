@@ -30,8 +30,10 @@ package py4j.reflection;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -44,24 +46,35 @@ import java.util.Set;
  * 
  */
 public class TypeUtil {
-	private static Set<String> numericTypes;
+	private static Set<String> primitiveTypes;
+	private static Map<String,Class<?>> primitiveClasses;
 
 	public final static int DISTANCE_FACTOR = 100;
 
 	static {
-		numericTypes = new HashSet<String>();
-		numericTypes.add(long.class.getName());
-		numericTypes.add(int.class.getName());
-		numericTypes.add(short.class.getName());
-		numericTypes.add(byte.class.getName());
-		numericTypes.add(double.class.getName());
-		numericTypes.add(float.class.getName());
-		numericTypes.add(Long.class.getName());
-		numericTypes.add(Integer.class.getName());
-		numericTypes.add(Short.class.getName());
-		numericTypes.add(Byte.class.getName());
-		numericTypes.add(Double.class.getName());
-		numericTypes.add(Float.class.getName());
+		primitiveTypes = new HashSet<String>();
+		primitiveTypes.add(long.class.getName());
+		primitiveTypes.add(int.class.getName());
+		primitiveTypes.add(short.class.getName());
+		primitiveTypes.add(byte.class.getName());
+		primitiveTypes.add(double.class.getName());
+		primitiveTypes.add(float.class.getName());
+		primitiveTypes.add(Long.class.getName());
+		primitiveTypes.add(Integer.class.getName());
+		primitiveTypes.add(Short.class.getName());
+		primitiveTypes.add(Byte.class.getName());
+		primitiveTypes.add(Double.class.getName());
+		primitiveTypes.add(Float.class.getName());
+		
+		primitiveClasses = new HashMap<String, Class<?>>();
+		primitiveClasses.put("long",long.class);
+		primitiveClasses.put("int",int.class);
+		primitiveClasses.put("short",short.class);
+		primitiveClasses.put("byte",byte.class);
+		primitiveClasses.put("double",double.class);
+		primitiveClasses.put("float",float.class);
+		primitiveClasses.put("boolean",boolean.class);
+		primitiveClasses.put("char",char.class);
 	}
 
 	public static boolean isInteger(Class<?> clazz) {
@@ -89,7 +102,7 @@ public class TypeUtil {
 	}
 
 	public static boolean isNumeric(Class<?> clazz) {
-		return numericTypes.contains(clazz.getName());
+		return primitiveTypes.contains(clazz.getName());
 	}
 
 	public static boolean isCharacter(Class<?> clazz) {
@@ -299,4 +312,14 @@ public class TypeUtil {
 
 		return names;
 	}
+	
+	public static Class<?> forName(String fqn) throws ClassNotFoundException {
+		Class<?> clazz = primitiveClasses.get(fqn);
+		if (clazz == null) {
+			clazz = Class.forName(fqn);
+		}
+		return clazz;
+	}
+	
+	
 }
