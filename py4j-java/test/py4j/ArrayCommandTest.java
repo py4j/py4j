@@ -111,6 +111,38 @@ public class ArrayCommandTest {
 	}
 
 	@Test
+	public void testSlice() {
+		int[] array3 = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+		String[][] array4 = new String[][] { { "111", "222" },
+				{ "aaa", "bbb" }, { "88", "99" } };
+		gateway.putNewObject(array3);
+		gateway.putNewObject(array4);
+		String inputCommand = ArrayCommand.ARRAY_SLICE_SUB_COMMAND_NAME + "\n"
+				+ "o2" + "\ni1\ni5\ne\n";
+		try {
+			command.execute("a", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yto4\n", sWriter.toString());
+			int[] intarray = (int[]) gateway.getObject("o4");
+			assertEquals(2, intarray.length);
+			assertEquals(6,intarray[1]);
+			
+			inputCommand = ArrayCommand.ARRAY_SLICE_SUB_COMMAND_NAME + "\n"
+			+ "o3" + "\ni2\ne\n";
+			command.execute("a", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yto4\nyto5\n", sWriter.toString());
+			String[][] stringarray = (String[][])gateway.getObject("o5");
+			assertEquals(1, stringarray.length);
+			assertEquals("99",stringarray[0][1]);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+
+	}
+
+	@Test
 	public void testArrayType() {
 		ReturnObject rObject = ReturnObject.getArrayReturnObject(target, 2);
 		assertEquals("yt" + target + "\n", Protocol.getOutputCommand(rObject));

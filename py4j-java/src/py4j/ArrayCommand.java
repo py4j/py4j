@@ -19,7 +19,7 @@ public class ArrayCommand extends AbstractCommand {
 	public static final char ARRAY_SLICE_SUB_COMMAND_NAME = 'l';
 	public static final char ARRAY_LEN_SUB_COMMAND_NAME = 'e';
 	public static final char ARRAY_CREATE_SUB_COMMAND_NAME = 'c';
-	
+
 	public static final String RETURN_VOID = Protocol.SUCCESS + ""
 			+ Protocol.VOID + Protocol.END_OUTPUT;
 
@@ -53,10 +53,11 @@ public class ArrayCommand extends AbstractCommand {
 		List<Object> dimensions = getArguments(reader);
 		int size = dimensions.size();
 		int[] dimensionsInt = new int[size];
-		for (int i = 0; i<size; i++) {
-			dimensionsInt[i] = (Integer)dimensions.get(i);
+		for (int i = 0; i < size; i++) {
+			dimensionsInt[i] = (Integer) dimensions.get(i);
 		}
-		Object newArray = gateway.getReflectionEngine().createArray(fqn, dimensionsInt);
+		Object newArray = gateway.getReflectionEngine().createArray(fqn,
+				dimensionsInt);
 		ReturnObject returnObject = gateway.getReturnObject(newArray);
 		return Protocol.getOutputCommand(returnObject);
 	}
@@ -79,7 +80,7 @@ public class ArrayCommand extends AbstractCommand {
 		// Read end
 		reader.readLine();
 
-		Object getObject = Array.get(arrayObject,index);
+		Object getObject = Array.get(arrayObject, index);
 		ReturnObject returnObject = gateway.getReturnObject(getObject);
 		return Protocol.getOutputCommand(returnObject);
 	}
@@ -95,8 +96,18 @@ public class ArrayCommand extends AbstractCommand {
 		return Protocol.getOutputCommand(returnObject);
 	}
 
-	private String sliceArray(BufferedReader reader) {
-		// TODO Auto-generated method stub
-		return null;
+	private String sliceArray(BufferedReader reader) throws IOException {
+		Object arrayObject = gateway.getObject(reader.readLine());
+		List<Object> indices = getArguments(reader);
+		int size = indices.size();
+		Object newArray = gateway.getReflectionEngine().createArray(
+				arrayObject.getClass().getComponentType().getName(),
+				new int[] { size });
+		for (int i = 0; i < size; i++) {
+			int index = (Integer) indices.get(i);
+			Array.set(newArray, i, Array.get(arrayObject, index));
+		}
+		ReturnObject returnObject = gateway.getReturnObject(newArray);
+		return Protocol.getOutputCommand(returnObject);
 	}
 }

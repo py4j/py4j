@@ -52,6 +52,10 @@ class Test(unittest.TestCase):
         self.assertEqual(u'aaa',array1[2])
         self.assertEqual(6,array2[1])
         
+        new_array = array2[1:3]
+        self.assertEqual(2,len(new_array))
+        self.assertEqual(1,new_array[1])
+        
     def testCreateArray(self):
         int_class = self.gateway.jvm.int
         string_class = self.gateway.jvm.java.lang.String

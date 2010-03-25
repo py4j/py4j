@@ -96,8 +96,13 @@ class JavaArray(JavaObject, Sequence):
         answer = self._comm_channel.send_command(command)
         return get_return_value(answer, self._comm_channel)
     
-    def __get_slice(self, slice):
-        pass
+    def __get_slice(self, indices):
+        command = ARRAY_COMMAND_NAME + ARRAY_SLICE_SUB_COMMAND_NAME + self._get_object_id() + '\n'
+        for index in indices:
+            command += get_command_part(index)
+        command += END_COMMAND_PART
+        answer = self._comm_channel.send_command(command)
+        return get_return_value(answer, self._comm_channel)
     
     def __getitem__(self, key):
         if isinstance(key, slice):
