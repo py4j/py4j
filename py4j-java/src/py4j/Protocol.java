@@ -87,6 +87,7 @@ public class Protocol {
 	public final static char STRING_TYPE = 's';
 	public final static char REFERENCE_TYPE = 'r';
 	public final static char LIST_TYPE = 'l';
+	public final static char SET_TYPE = 'h';
 	public final static char ARRAY_TYPE = 't';
 	public final static char MAP_TYPE = 'a';
 	public final static char NULL_TYPE = 'n';

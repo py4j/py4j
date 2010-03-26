@@ -43,6 +43,7 @@ DOUBLE_TYPE = 'd'
 STRING_TYPE = 's'
 REFERENCE_TYPE = 'r'
 ARRAY_TYPE = 't'
+SET_TYPE = 'h'
 LIST_TYPE = 'l'
 MAP_TYPE = 'a'
 NULL_TYPE = 'n'
@@ -113,6 +114,7 @@ CONVERSION = {NULL_TYPE: (lambda x, y: None),
               MAP_TYPE: (lambda target_id, comm_channel: JavaMap(target_id, comm_channel)),
               LIST_TYPE: (lambda target_id, comm_channel: JavaList(target_id, comm_channel)),
               ARRAY_TYPE: (lambda target_id, comm_channel: JavaArray(target_id, comm_channel)),
+              SET_TYPE: (lambda target_id, comm_channel: JavaSet(target_id, comm_channel)),
               BOOLEAN_TYPE: (lambda value, y: value.lower() == 'true'),
               INTEGER_TYPE: (lambda value, y: int(value)),
               DOUBLE_TYPE: (lambda value, y: float(value)),
@@ -676,4 +678,4 @@ class JavaGateway(object):
         
 # For circular dependencies
 # Purists should close their eyes
-from py4j.java_collections import JavaList, JavaMap, JavaArray
+from py4j.java_collections import JavaList, JavaMap, JavaArray, JavaSet

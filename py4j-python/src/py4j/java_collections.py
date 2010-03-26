@@ -3,7 +3,7 @@ Created on Jan 22, 2010
 
 @author: barthelemy
 '''
-from collections import MutableMapping, Sequence
+from collections import MutableMapping, Sequence, MutableSet
 from py4j.java_gateway import *
     
 class JavaIterator(JavaObject):
@@ -72,8 +72,60 @@ class JavaMap(JavaObject, MutableMapping):
                 srep += repr(key) + ': ' + repr(self[key]) + ', '
                 
             return srep[:-2] + '}'
+
+class JavaSet(JavaObject, MutableSet):
+    """Maps a Python Set to a Java Set.
+    
+    All operations possible on a Python set are implemented."""
+    
+    def __init__(self, target_id, comm_channel):
+        JavaObject.__init__(self, target_id, comm_channel)
+        self._add = get_method(self,'add')
+        self._clear = get_method(self,'clear')
+        self._remove = get_method(self,'remove')
         
+    def add(self, value):
+        self._add(value)
+        
+    def discard(self, value):
+        self.remove(value)
+        
+    def remove(self, value):
+        if value not in self:
+            raise KeyError()
+        else:
+            self._remove(value)
+        
+    def clear(self):
+        self._clear()
+    
+    def __len__(self):
+        return self.size()
+    
+    def __iter__(self):
+        return JavaIterator(self.iterator(), self._comm_channel)
+    
+    def __contains__(self, value):
+        return self.contains(value)
+    
+    def __str__(self):
+        return self.__repr__()
+    
+    def __repr__(self):
+        if len(self) == 0:
+            return 'set([])'
+        else:
+            srep = 'set(['
+            for value in self:
+                srep += repr(value) + ', '
+                
+            return srep[:-2] + '])'
+
 class JavaArray(JavaObject, Sequence):
+    """Maps a Java Array to a Semi-Mutable Sequence.
+    
+    """
+    
     def __init__(self, target_id, comm_channel):
         JavaObject.__init__(self, target_id, comm_channel)
     
@@ -351,8 +403,6 @@ class JavaList(JavaObject):
         return self.__repr__()
     
     def __repr__(self):
-        # TODO Make it more efficient/pythonic
-        # TODO Debug why strings are not outputed with apostrophes.
         if len(self) == 0:
             return '[]'
         else:

@@ -33,6 +33,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -70,7 +71,6 @@ public class Gateway {
 
 	private boolean isStarted = false;
 
-
 	private static ThreadLocal<LRUCache<String, Py4JMember>> helpPages = new ThreadLocal<LRUCache<String, Py4JMember>>() {
 		@Override
 		protected LRUCache<String, Py4JMember> initialValue() {
@@ -86,7 +86,7 @@ public class Gateway {
 		this.entryPoint = entryPoint;
 		this.ccFactory = ccFactory;
 	}
-	
+
 	/**
 	 * <p>
 	 * Called when a connection is closed.
@@ -166,9 +166,14 @@ public class Gateway {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getMapReturnObject(objectId,
 						((Map) object).size());
-			} else if (isArray(object)) { 
+			} else if (isArray(object)) {
 				String objectId = putNewObject(object);
-				returnObject = ReturnObject.getArrayReturnObject(objectId,Array.getLength(object));
+				returnObject = ReturnObject.getArrayReturnObject(objectId,
+						Array.getLength(object));
+			} else if (isSet(object)) {
+				String objectId = putNewObject(object);
+				returnObject = ReturnObject.getSetReturnObject(objectId,
+						((Set)object).size());
 			} else {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getReferenceReturnObject(objectId);
@@ -247,6 +252,11 @@ public class Gateway {
 		return object instanceof Boolean || object instanceof String
 				|| object instanceof Number || object instanceof Character;
 	}
+	
+	@SuppressWarnings("unchecked")
+	protected boolean isSet(Object object) {
+		return object instanceof Set;
+	}
 
 	public boolean isStarted() {
 		return isStarted;
@@ -257,9 +267,9 @@ public class Gateway {
 		bindings.put(id, object);
 		return id;
 	}
-	
+
 	public Object putObject(String id, Object object) {
-		return bindings.put(id,object);
+		return bindings.put(id, object);
 	}
 
 	public void setStarted(boolean isStarted) {

@@ -83,6 +83,15 @@ public class ReturnObject {
 		return rObject;
 	}
 
+	public static ReturnObject getSetReturnObject(String name, int size) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.name = name;
+		rObject.size = size;
+		rObject.isSet = true;
+		rObject.commandPart = Protocol.SET_TYPE + name;
+		return rObject;
+	}
+	
 	public static ReturnObject getMapReturnObject(String name, int size) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
