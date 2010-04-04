@@ -72,6 +72,8 @@ import java.util.logging.Logger;
 public class GatewayServer implements Runnable {
 
 	public static final int DEFAULT_PORT = 25333;
+	
+	public static final int DEFAULT_PYTHON_PORT = 25334;
 
 	public static final int DEFAULT_CONNECT_TIMEOUT = 0;
 
@@ -125,7 +127,7 @@ public class GatewayServer implements Runnable {
 	 */
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout, boolean acceptOnlyOne) {
-		this(entryPoint,port,-1,connectTimeout,readTimeout,acceptOnlyOne);
+		this(entryPoint,port,DEFAULT_PYTHON_PORT,connectTimeout,readTimeout,acceptOnlyOne);
 	}
 	
 	/**
@@ -215,6 +217,7 @@ public class GatewayServer implements Runnable {
 			if (acceptOnlyOne && isConnected()) {
 				socket.close();
 			} else {
+				logger.info("Gateway Server accepted a connection");
 				connections.add(socket);
 				socket.setSoTimeout(readTimeout);
 				createConnection(this, gateway, socket);

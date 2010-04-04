@@ -20,9 +20,9 @@ public class DefaultCommunicationChannel implements CommunicationChannel {
 	private Socket socket;
 
 	private BufferedReader reader;
-	
+
 	private BufferedWriter writer;
-	
+
 	public DefaultCommunicationChannel(int port, InetAddress address) {
 		super();
 		this.port = port;
@@ -40,8 +40,16 @@ public class DefaultCommunicationChannel implements CommunicationChannel {
 
 	@Override
 	public String sendCommand(String command) {
-		// TODO Auto-generated method stub
-		return null;
+		String returnCommand = null;
+		try {
+			writer.write(command);
+			writer.flush();
+			returnCommand = reader.readLine();
+		} catch (Exception e) {
+			throw new Py4JNetworkException("Error while sending a command: "
+					+ command, e);
+		}
+		return returnCommand;
 	}
 
 	@Override

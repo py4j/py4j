@@ -311,4 +311,5 @@ public class ProtocolTest {
 		assertEquals("yto126\n", Protocol.getOutputCommand(rObject15));
 	}
 
+	
 }

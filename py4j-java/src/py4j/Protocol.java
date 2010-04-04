@@ -197,8 +197,10 @@ public class Protocol {
 				return getInteger(commandPart);
 			case NULL_TYPE:
 				return getNull(commandPart);
+			case VOID:
+				return getNull(commandPart);
 			case REFERENCE_TYPE:
-				return getReference(commandPart,gateway);
+				return getReference(commandPart, gateway);
 			case STRING_TYPE:
 				return getString(commandPart);
 			case PYTHON_PROXY_TYPE:
@@ -266,9 +268,12 @@ public class Protocol {
 
 		for (int i = 1; i < length; i++) {
 			try {
-				interfaces[i-1] = Class.forName(parts[i]);
-				if (!interfaces[i-1].isInterface()) {
-					throw new Py4JException("This class " + parts[i] + " is not an interface and cannot be used as a Python Proxy.");
+				interfaces[i - 1] = Class.forName(parts[i]);
+				if (!interfaces[i - 1].isInterface()) {
+					throw new Py4JException(
+							"This class "
+									+ parts[i]
+									+ " is not an interface and cannot be used as a Python Proxy.");
 				}
 			} catch (ClassNotFoundException e) {
 				throw new Py4JException("Invalid interface name: " + parts[i]);
@@ -276,9 +281,9 @@ public class Protocol {
 		}
 
 		Object proxy = Proxy.newProxyInstance(gateway.getClass()
-				.getClassLoader(), interfaces, new PythonProxyHandler(
-				parts[0], gateway.getCommunicationChannelFactory()));
-		
+				.getClassLoader(), interfaces, new PythonProxyHandler(parts[0],
+				gateway.getCommunicationChannelFactory(), gateway));
+
 		return proxy;
 	}
 
@@ -298,6 +303,18 @@ public class Protocol {
 		}
 
 		return gateway.getObject(reference);
+	}
+	
+	public final static Object getReturnValue(String returnMessage, Gateway gateway) {
+		Object returnValue = null;
+	
+		if (isError(returnMessage)) {
+			throw new Py4JException("An exception was raised by the Python Proxy.");
+		} else {
+			returnValue = getObject(returnMessage.substring(1), gateway);
+		}
+		
+		return returnValue;
 	}
 
 	/**
@@ -340,7 +357,7 @@ public class Protocol {
 	public final static boolean isDouble(String commandPart) {
 		return commandPart.charAt(0) == DOUBLE_TYPE;
 	}
-	
+
 	public final static boolean isEmpty(String commandPart) {
 		return commandPart == null || commandPart.trim().length() == 0;
 	}
@@ -355,6 +372,18 @@ public class Protocol {
 	 */
 	public final static boolean isEnd(String commandPart) {
 		return commandPart.length() == 1 && commandPart.charAt(0) == 'e';
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> null.
+	 * </p>
+	 * 
+	 * @param returnMessage
+	 * @return True if the return message is an error
+	 */
+	public final static boolean isError(String returnMessage) {
+		return returnMessage.length() == 0 || returnMessage.charAt(0) == ERROR;
 	}
 
 	/**
