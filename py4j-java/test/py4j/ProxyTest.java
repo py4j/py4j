@@ -47,6 +47,11 @@ public class ProxyTest {
 		pClient.sendMesage(message);
 		assertEquals("p123\nhello\ne\n", pClient.lastProxyMessage);
 		assertEquals("ysHello World", pClient.lastReturnMessage);
+		
+		// TODO
+		// 1- Convert String with \n (currently not converted!!!)
+		// 2- Test with errors
+		// 3- Test with parameters (e.g., hello(String, int, Object already in gateway)
 	}
 
 }
