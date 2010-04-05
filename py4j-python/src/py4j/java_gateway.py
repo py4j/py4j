@@ -28,6 +28,7 @@ logger = logging.getLogger("py4j.java_gateway")
 
 BUFFER_SIZE = 4096
 DEFAULT_PORT = 25333
+DEFAULT_PYTHON_PROXY_PORT = 25334
 
 ESCAPE_CHAR = "\\"
 
