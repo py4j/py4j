@@ -1,9 +1,11 @@
 package py4j;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -13,11 +15,13 @@ public class ProxyTest {
 
 	private GatewayServer gServer;
 	private PythonClient pClient;
+	private InterfaceEntry entry;
 
 	@Before
 	public void setup() {
 		GatewayServer.turnLoggingOn();
-		gServer = new GatewayServer(new InterfaceEntry());
+		entry = new InterfaceEntry();
+		gServer = new GatewayServer(entry);
 		pClient = new PythonClient();
 		gServer.start();
 		pClient.startProxy();
@@ -43,29 +47,69 @@ public class ProxyTest {
 	@Test
 	public void testSayHello() {
 		String message = "c\nt\nsayHello\npp123;py4j.IHello\ne\n";
-		pClient.nextProxyReturnMessage = "ysHello World";
+		pClient.nextProxyReturnMessage = "ysHello\\nWorld";
 		pClient.sendMesage(message);
 		assertEquals("p123\nhello\ne\n", pClient.lastProxyMessage);
-		assertEquals("ysHello World", pClient.lastReturnMessage);
+		assertEquals("ysHello\\nWorld", pClient.lastReturnMessage);
+		assertEquals("Hello\nWorld",entry.simpleHello);
+	}
+	
+	@Test
+	public void testSayHelloWithParams() {
+		String message = "c\nt\nsayHelloParams\npp123;py4j.IHello\ne\n";
+		pClient.nextProxyReturnMessage = "ysHello\\nWorld";
+		pClient.sendMesage(message);
+		assertEquals("p123\nhello2\nsTesting\\nWild\ni3\nlo0\ne\n", pClient.lastProxyMessage);
+		assertEquals("ysHello\\nWorld", pClient.lastReturnMessage);
+		assertEquals("Hello\nWorld",entry.simpleHello2);
+	}
+	
+	@Test
+	public void testSayHelloError() {
+		assertFalse(entry.exception);
+		String message = "c\nt\nsayHelloError\npp123;py4j.IHello\ne\n";
+		pClient.nextProxyReturnMessage = "x";
+		pClient.sendMesage(message);
+		assertEquals("p123\nhello\ne\n", pClient.lastProxyMessage);
+		assertTrue(entry.exception);
+		assertEquals("yv", pClient.lastReturnMessage);
 		
-		// TODO
-		// 1- Convert String with \n (currently not converted!!!)
-		// 2- Test with errors
-		// 3- Test with parameters (e.g., hello(String, int, Object already in gateway)
 	}
 
 }
+
 
 interface IHello {
 
 	public String hello();
 
+	@SuppressWarnings("unchecked")
+	public String hello2(String param1, int param2, List param3);
+	
 }
 
-class InterfaceEntry {
 
+class InterfaceEntry {
+	
+	public String simpleHello;
+	public String simpleHello2;
+	public boolean exception = false;
 	public String sayHello(IHello obj) {
-		return obj.hello();
+		simpleHello = obj.hello();
+		return simpleHello;
+	}
+	
+	public String sayHelloParams(IHello obj) {
+		simpleHello2 = obj.hello2("Testing\nWild", 3, new ArrayList<String>());
+		return simpleHello2;
+	}
+	
+	public void sayHelloError(IHello obj) {
+		try {
+			obj.hello();
+		} catch(Py4JException e) {
+			exception = true;
+		}
 	}
 
 }
