@@ -46,7 +46,7 @@ public class ProxyTest {
 	
 	@Test
 	public void testSayHello() {
-		String message = "c\nt\nsayHello\npp123;py4j.IHello\ne\n";
+		String message = "c\nt\nsayHello\nfp123;py4j.IHello\ne\n";
 		pClient.nextProxyReturnMessage = "ysHello\\nWorld";
 		pClient.sendMesage(message);
 		assertEquals("p123\nhello\ne\n", pClient.lastProxyMessage);
@@ -56,7 +56,7 @@ public class ProxyTest {
 	
 	@Test
 	public void testSayHelloWithParams() {
-		String message = "c\nt\nsayHelloParams\npp123;py4j.IHello\ne\n";
+		String message = "c\nt\nsayHelloParams\nfp123;py4j.IHello\ne\n";
 		pClient.nextProxyReturnMessage = "ysHello\\nWorld";
 		pClient.sendMesage(message);
 		assertEquals("p123\nhello2\nsTesting\\nWild\ni3\nlo0\ne\n", pClient.lastProxyMessage);
@@ -67,7 +67,7 @@ public class ProxyTest {
 	@Test
 	public void testSayHelloError() {
 		assertFalse(entry.exception);
-		String message = "c\nt\nsayHelloError\npp123;py4j.IHello\ne\n";
+		String message = "c\nt\nsayHelloError\nfp123;py4j.IHello\ne\n";
 		pClient.nextProxyReturnMessage = "x";
 		pClient.sendMesage(message);
 		assertEquals("p123\nhello\ne\n", pClient.lastProxyMessage);

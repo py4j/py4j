@@ -152,7 +152,7 @@ public class ProtocolTest {
 	@Test
 	public void testPythonProxies() {
 		Gateway gateway = new Gateway(null);
-		assertTrue(Protocol.isPythonProxy("pp123;java.lang.CharSequence"));
+		assertTrue(Protocol.isPythonProxy("fp123;java.lang.CharSequence"));
 		assertFalse(Protocol.isPythonProxy("btrue"));
 		try {
 			Protocol.isPythonProxy(null);
@@ -172,8 +172,8 @@ public class ProtocolTest {
 		} catch (Exception e) {
 			assertTrue(true);
 		}
-		assertTrue(Protocol.getPythonProxy("pp123;java.lang.CharSequence",gateway) instanceof CharSequence);
-		assertTrue(Protocol.getPythonProxy("pp1;java.lang.CharSequence;java.lang.Runnable",gateway) instanceof Runnable);
+		assertTrue(Protocol.getPythonProxy("fp123;java.lang.CharSequence",gateway) instanceof CharSequence);
+		assertTrue(Protocol.getPythonProxy("fp1;java.lang.CharSequence;java.lang.Runnable",gateway) instanceof Runnable);
 	}
 
 	@Test

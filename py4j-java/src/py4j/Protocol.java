@@ -91,7 +91,7 @@ public class Protocol {
 	public final static char ARRAY_TYPE = 't';
 	public final static char MAP_TYPE = 'a';
 	public final static char NULL_TYPE = 'n';
-	public final static char PYTHON_PROXY_TYPE = 'p';
+	public final static char PYTHON_PROXY_TYPE = 'f';
 
 	public final static char PACKAGE_TYPE = 'p';
 	public final static char CLASS_TYPE = 'c';
