@@ -74,39 +74,74 @@ class SimpleProxy(object):
     
     def hello(self, i, j):
         return 'Hello\nWorld' + str(i) + str(j)
-            
-class TestConnection(unittest.TestCase):
     
-    def testSimpleConnection(self):
-        logger = logging.getLogger("py4j")
-        logger.setLevel(logging.DEBUG)
-        logger.addHandler(logging.StreamHandler())
-        pool = PythonProxyPool()
-        obj = SimpleProxy()
-        id = pool.put(obj)
-        server = CallbackServer(pool, None)
-        server.start()
-        time.sleep(0.5)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect(('localhost', DEFAULT_PYTHON_PROXY_PORT))
-        stream = sock.makefile('r', 0)
+class IHelloImpl(object):
+    
+    def sayHello(self, i = None, s = None):
+        if i == None:
+            return 'This is Hello!'
+        else:
+            return 'This is Hello;\n%d%s' % (i,s)
         
-        command = id + '\nhello\ni5\nsA\\nB\ne\n'
-        sock.sendall(command.encode('utf-8'))
-        answer = stream.readline().decode('utf-8')[:-1]
-        self.assertEqual('ysHello\\nWorld5A\\nB',answer)
-        
-        command = id + '\nhello\ni10\nsA\\nB\ne\n'
-        sock.sendall(command.encode('utf-8'))
-        answer = stream.readline().decode('utf-8')[:-1]
-        self.assertEqual('ysHello\\nWorld10A\\nB',answer)
-        
-        try:
-            sock.close()
-            server.shutdown()
-        except:
-            pass
+    class Java:
+        interfaces = ['py4j.examples.IHello']
             
+#class TestConnection(unittest.TestCase):
+#    
+#    def testSimpleConnection(self):
+#        logger = logging.getLogger("py4j")
+#        logger.setLevel(logging.DEBUG)
+#        logger.addHandler(logging.StreamHandler())
+#        pool = PythonProxyPool()
+#        obj = SimpleProxy()
+#        id = pool.put(obj)
+#        server = CallbackServer(pool, None)
+#        server.start()
+#        time.sleep(0.5)
+#        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#        sock.connect(('localhost', DEFAULT_PYTHON_PROXY_PORT))
+#        stream = sock.makefile('r', 0)
+#        
+#        command = id + '\nhello\ni5\nsA\\nB\ne\n'
+#        sock.sendall(command.encode('utf-8'))
+#        answer = stream.readline().decode('utf-8')[:-1]
+#        self.assertEqual('ysHello\\nWorld5A\\nB',answer)
+#        
+#        command = id + '\nhello\ni10\nsA\\nB\ne\n'
+#        sock.sendall(command.encode('utf-8'))
+#        answer = stream.readline().decode('utf-8')[:-1]
+#        self.assertEqual('ysHello\\nWorld10A\\nB',answer)
+#        
+#        try:
+#            sock.close()
+#            server.shutdown()
+#            time.sleep(5)
+#        except:
+#            pass
+            
+class TestIntegration(unittest.TestCase):
+    def setUp(self):
+#        logger = logging.getLogger("py4j")
+#        logger.setLevel(logging.DEBUG)
+#        logger.addHandler(logging.StreamHandler())
+        self.p = start_example_app_process()
+        time.sleep(0.5)
+        self.gateway = JavaGateway()
+        
+    def tearDown(self):
+        self.p.terminate()
+        self.gateway.shutdown()
+        
+        time.sleep(0.5)
+    
+    def testProxy(self):
+#        self.gateway.jvm.py4j.GatewayServer.turnLoggingOn()
+        example = self.gateway.entry_point.getNewExample()
+        impl = IHelloImpl()
+        self.assertEqual('This is Hello!',example.callHello(impl))
+        self.assertEqual('This is Hello;\n10MyMy!\n;',example.callHello2(impl))
+
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

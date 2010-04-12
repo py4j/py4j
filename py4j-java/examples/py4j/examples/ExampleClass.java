@@ -107,4 +107,12 @@ public class ExampleClass {
 	public int[] getIntArray() {
 		return new int[] {2, 5, 1, 10};
 	}
+	
+	public String callHello(IHello hello) {
+		return hello.sayHello();
+	}
+	
+	public String callHello2(IHello hello) {
+		return hello.sayHello(10,"MyMy!\n;");
+	}
 }

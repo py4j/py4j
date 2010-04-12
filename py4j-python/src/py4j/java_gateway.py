@@ -197,7 +197,9 @@ def get_command_part(parameter, python_proxy_pool=None):
     elif isinstance(parameter, basestring):
         command_part = STRING_TYPE + escape_new_line(parameter)
     elif is_python_proxy(parameter):
-        command_part = PYTHON_PROXY_TYPE + ''
+        command_part = PYTHON_PROXY_TYPE + python_proxy_pool.put(parameter)
+        for interface in parameter.Java.interfaces:
+            command_part += ';' + interface
     else:
         command_part = REFERENCE_TYPE + parameter._get_object_id()
     
@@ -647,6 +649,7 @@ class JavaGateway(object):
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, comm_channel)
         self.jvm = JVM(comm_channel)
         self._callback_server = CallbackServer(self.gateway_property.pool,self._comm_channel, python_proxy_port)
+        self._callback_server.start()
             
     def __getattr__(self, name):
         return self.entry_point.__getattr__(name)

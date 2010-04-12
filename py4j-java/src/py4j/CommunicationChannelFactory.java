@@ -39,7 +39,7 @@ public class CommunicationChannelFactory {
 		super();
 		this.port = port;
 		try {
-			this.address = InetAddress.getLocalHost();
+			this.address = InetAddress.getByName("localhost");
 		} catch (Exception e) {
 			throw new Py4JNetworkException(
 					"Local Host could not be determined when creating communication channel.");

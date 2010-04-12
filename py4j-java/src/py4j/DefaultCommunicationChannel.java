@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.util.logging.Logger;
 
 public class DefaultCommunicationChannel implements CommunicationChannel {
 
@@ -22,6 +23,8 @@ public class DefaultCommunicationChannel implements CommunicationChannel {
 	private BufferedReader reader;
 
 	private BufferedWriter writer;
+	
+	private final Logger logger = Logger.getLogger(DefaultCommunicationChannel.class.getName());
 
 	public DefaultCommunicationChannel(int port, InetAddress address) {
 		super();
@@ -31,6 +34,7 @@ public class DefaultCommunicationChannel implements CommunicationChannel {
 
 	@Override
 	public void start() throws IOException {
+		logger.info("Starting Communication Channel on " + address + " at " + port);
 		socket = new Socket(address, port);
 		reader = new BufferedReader(new InputStreamReader(socket
 				.getInputStream(), Charset.forName("UTF-8")));

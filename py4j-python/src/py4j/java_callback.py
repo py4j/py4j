@@ -27,6 +27,7 @@ class CallbackServer(Thread):
             logger.info('Callback Server Starting')
             self.server_socket.bind(('localhost', self.port))
             self.server_socket.listen(5)
+            logger.info('Socket listening on' + str(self.server_socket.getsockname()))
             socket, _ = self.server_socket.accept()
             input = socket.makefile('r', 0)
             connection = CallbackConnection(self.pool, input, socket, self.comm_channel)
@@ -38,6 +39,7 @@ class CallbackServer(Thread):
     def shutdown(self):
         logger.info('Callback Server Shutting Down')
         try:
+            self.server_socket.shutdown(socket.SHUT_RDWR)
             self.server_socket.close()
         except:
             pass
