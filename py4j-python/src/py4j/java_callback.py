@@ -3,8 +3,7 @@ Created on Apr 5, 2010
 
 @author: Barthelemy Dagenais
 '''
-from py4j.java_gateway import ERROR, END, get_return_value, get_command_part,\
-    DEFAULT_PYTHON_PROXY_PORT
+from py4j.java_gateway import *
 from threading import RLock, Thread
 import logging
 import socket

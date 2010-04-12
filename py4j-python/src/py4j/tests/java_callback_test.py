@@ -4,8 +4,8 @@ Created on Apr 5, 2010
 @author: Barthelemy Dagenais
 '''
 from multiprocessing.process import Process
-from py4j.java_callback import PythonProxyPool, CallbackServer
 from py4j.java_gateway import JavaGateway, DEFAULT_PYTHON_PROXY_PORT
+from py4j.java_callback import PythonProxyPool, CallbackServer
 from threading import Thread
 import logging
 import socket
@@ -110,3 +110,4 @@ class TestConnection(unittest.TestCase):
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
+    

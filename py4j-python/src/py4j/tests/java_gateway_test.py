@@ -331,7 +331,7 @@ class HelpTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, short_name=True, display=False)
         print(help_page)
-        self.assertEqual(695, len(help_page))
+        self.assertEqual(759, len(help_page))
         
     def testHelpClass(self):
         String = self.gateway.jvm.java.lang.String

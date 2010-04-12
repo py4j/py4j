@@ -3,9 +3,10 @@ Created on Mar 7, 2010
 
 @author: barthelemy
 '''
-import unittest
 from py4j.finalizer import ThreadSafeFinalizer, Finalizer, clean_finalizers
 from weakref import ref
+import gc
+import unittest
 
 def deleted(accumulator,id):
     print(id)
@@ -74,6 +75,8 @@ class TestThreadSafeFinalizer(unittest.TestCase):
     def testCircularReference2(self):
         acc = Accumulator()
         self.work_circ(acc)
+        # Necessary because of circular references...
+        gc.collect()
         self.assertEqual(1,acc.acc)
     
     def testCleanUp(self):

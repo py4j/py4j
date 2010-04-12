@@ -9,8 +9,8 @@ Created on Dec 3, 2009
 @author: Barthelemy Dagenais
 """
 
-from py4j.finalizer import ThreadSafeFinalizer
 from collections import deque
+from py4j.finalizer import ThreadSafeFinalizer
 from pydoc import ttypager
 from socket import AF_INET, SOCK_STREAM
 import logging
@@ -53,6 +53,7 @@ CLASS_TYPE = 'c';
 METHOD_TYPE = 'm';
 NO_MEMBER = 'o';
 VOID_TYPE = 'v'
+PYTHON_PROXY_TYPE = 'f'
 
 # Protocol
 END = 'e'
@@ -163,12 +164,26 @@ def unescape_new_line(escaped):
     return original
 
     
-def get_command_part(parameter):
+def is_python_proxy(parameter):
+    """Determines whether parameter is a Python Proxy, i.e., it has a Java internal class with an
+    interfaces member.
+    :param parameter: the object to check.
+    :rtype: True if the parameter is a Python Proxy
+    """
+    try:
+        is_proxy = len(parameter.Java.interfaces) > 0
+    except:
+        is_proxy = False
+    
+    return is_proxy
+    
+def get_command_part(parameter, python_proxy_pool=None):
     """Converts a Python object into a string representation respecting the Py4J protocol.
     
     For example, the integer `1` is converted to `u'i1'`
     
     :param parameter: the object to convert
+    :rtype: the string representing the command part
     """
     command_part = ''
     if parameter == None:
@@ -181,6 +196,8 @@ def get_command_part(parameter):
         command_part = DOUBLE_TYPE + str(parameter) 
     elif isinstance(parameter, basestring):
         command_part = STRING_TYPE + escape_new_line(parameter)
+    elif is_python_proxy(parameter):
+        command_part = PYTHON_PROXY_TYPE + ''
     else:
         command_part = REFERENCE_TYPE + parameter._get_object_id()
     
@@ -465,9 +482,10 @@ class JavaMember(object):
         self.target_id = target_id
         self.comm_channel = comm_channel
         self.command_header = self.target_id + '\n' + self.name + '\n'
+        self.pool = self.comm_channel.gateway_property.pool
         
     def __call__(self, *args):
-        args_command = ''.join([get_command_part(arg) for arg in args])
+        args_command = ''.join([get_command_part(arg, self.pool) for arg in args])
         command = CALL_COMMAND_NAME + self.command_header + args_command + END_COMMAND_PART
         answer = self.comm_channel.send_command(command)
         return_value = get_return_value(answer, self.comm_channel, self.target_id, self.name)
@@ -593,8 +611,9 @@ class JVM(object):
             raise Py4JError('%s does not exist in the JVM' % name)
     
 class GatewayProperty(object):
-    def __init__(self, auto_field):
+    def __init__(self, auto_field, pool):
         self.auto_field = auto_field
+        self.pool = pool
     
 class JavaGateway(object):
     """A `JavaGateway` is the main interaction point between a Python VM and a JVM. 
@@ -609,12 +628,13 @@ class JavaGateway(object):
     This is a trade-off between convenience and potential confusion."""
     
     
-    def __init__(self, comm_channel=None, auto_field=False):
+    def __init__(self, comm_channel=None, auto_field=False, python_proxy_port=DEFAULT_PYTHON_PROXY_PORT):
         """
         :param comm_channel: communication channel used to connect to the JVM. If `None`, a communication channel based on a socket with the default parameters is created.
         :param auto_field: if `False`, each object accessed through this gateway won't try to lookup fields (they will be accessible only by calling get_field). If `True`, fields will be automatically looked up, possibly hiding methods of the same name and making method calls less efficient.
+        :param python_proxy_port: port used to receive callback from the JVM.
         """
-        self.gateway_property = GatewayProperty(auto_field)
+        self.gateway_property = GatewayProperty(auto_field, PythonProxyPool())
         
         if comm_channel == None:
             comm_channel = CommChannelFactory()
@@ -626,6 +646,7 @@ class JavaGateway(object):
         #JavaObject.__init__(self, ENTRY_POINT_OBJECT_ID, comm_channel)
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, comm_channel)
         self.jvm = JVM(comm_channel)
+        self._callback_server = CallbackServer(self.gateway_property.pool,self._comm_channel, python_proxy_port)
             
     def __getattr__(self, name):
         return self.entry_point.__getattr__(name)
@@ -642,6 +663,7 @@ class JavaGateway(object):
         
     def shutdown(self):
         self._comm_channel.shutdown_gateway()
+        self._callback_server.shutdown()
         
     def close(self):
         self._comm_channel.close()
@@ -680,3 +702,4 @@ class JavaGateway(object):
 # For circular dependencies
 # Purists should close their eyes
 from py4j.java_collections import JavaList, JavaMap, JavaArray, JavaSet
+from py4j.java_callback import CallbackServer, PythonProxyPool
