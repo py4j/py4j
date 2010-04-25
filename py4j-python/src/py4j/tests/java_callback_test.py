@@ -4,11 +4,10 @@ Created on Apr 5, 2010
 @author: Barthelemy Dagenais
 '''
 from multiprocessing.process import Process
-from py4j.java_gateway import JavaGateway, DEFAULT_PYTHON_PROXY_PORT
-from py4j.java_callback import PythonProxyPool, CallbackServer
+from py4j.java_gateway import JavaGateway 
+from py4j.java_callback import PythonProxyPool
 from threading import Thread
 import logging
-import socket
 import subprocess
 import time
 import unittest
@@ -124,6 +123,7 @@ class TestIntegration(unittest.TestCase):
 #        logger = logging.getLogger("py4j")
 #        logger.setLevel(logging.DEBUG)
 #        logger.addHandler(logging.StreamHandler())
+        time.sleep(1)
         self.p = start_example_app_process()
         time.sleep(0.5)
         self.gateway = JavaGateway()
@@ -131,8 +131,16 @@ class TestIntegration(unittest.TestCase):
     def tearDown(self):
         self.p.terminate()
         self.gateway.shutdown()
-        
-        time.sleep(0.5)
+        time.sleep(2)
+    
+#    Does not work when combined with other tests... because of TCP_WAIT
+#    def testShutdown(self):
+#        example = self.gateway.entry_point.getNewExample()
+#        impl = IHelloImpl()
+#        self.assertEqual('This is Hello!',example.callHello(impl))
+#        self.assertEqual('This is Hello;\n10MyMy!\n;',example.callHello2(impl))
+#        self.gateway.shutdown()
+#        self.assertEqual(0, len(self.gateway.gateway_property.pool))
     
     def testProxy(self):
 #        self.gateway.jvm.py4j.GatewayServer.turnLoggingOn()
@@ -141,6 +149,18 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual('This is Hello!',example.callHello(impl))
         self.assertEqual('This is Hello;\n10MyMy!\n;',example.callHello2(impl))
 
+    def testGC(self):
+        # This will only work with some JVM.
+        example = self.gateway.entry_point.getNewExample()
+        impl = IHelloImpl()
+        self.assertEqual('This is Hello!',example.callHello(impl))
+        self.assertEqual('This is Hello;\n10MyMy!\n;',example.callHello2(impl))
+        self.assertEqual(2, len(self.gateway.gateway_property.pool))
+        self.gateway.jvm.java.lang.System.gc()
+        time.sleep(2)
+        self.assertTrue(len(self.gateway.gateway_property.pool) < 2)
+        
+    
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

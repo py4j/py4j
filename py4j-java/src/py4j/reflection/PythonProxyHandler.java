@@ -18,6 +18,12 @@ public class PythonProxyHandler implements InvocationHandler {
 
 	private final Logger logger = Logger.getLogger(PythonProxyHandler.class
 			.getName());
+	
+	private final String finalizeCommand;
+	
+	public final static String CALL_PROXY_COMMAND_NAME = "c\n";
+	
+	public final static String GARBAGE_COLLECT_PROXY_COMMAND_NAME = "g\n";
 
 	public PythonProxyHandler(String id, CommunicationChannelFactory factory,
 			Gateway gateway) {
@@ -25,6 +31,7 @@ public class PythonProxyHandler implements InvocationHandler {
 		this.id = id;
 		this.factory = factory;
 		this.gateway = gateway;
+		this.finalizeCommand = GARBAGE_COLLECT_PROXY_COMMAND_NAME + id + "\ne\n";
 	}
 
 	@Override
@@ -33,6 +40,7 @@ public class PythonProxyHandler implements InvocationHandler {
 		logger.info("Method " + method.getName() + " called on Python object "
 				+ id);
 		StringBuilder sBuilder = new StringBuilder();
+		sBuilder.append(CALL_PROXY_COMMAND_NAME);
 		sBuilder.append(id);
 		sBuilder.append("\n");
 		sBuilder.append(method.getName());
@@ -50,6 +58,18 @@ public class PythonProxyHandler implements InvocationHandler {
 		String returnCommand = factory.sendCommand(sBuilder.toString());
 
 		return Protocol.getReturnValue(returnCommand, gateway);
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		try {
+			logger.info("Finalizing python proxy id " + this.id);
+			factory.sendCommand(finalizeCommand);
+		} catch (Exception e) {
+			logger.warning("Python Proxy ID could not send a finalize message: " + this.id);
+		} finally {
+			super.finalize();
+		}
 	}
 
 }

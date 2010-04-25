@@ -49,7 +49,7 @@ public class ProxyTest {
 		String message = "c\nt\nsayHello\nfp123;py4j.IHello\ne\n";
 		pClient.nextProxyReturnMessage = "ysHello\\nWorld";
 		pClient.sendMesage(message);
-		assertEquals("p123\nhello\ne\n", pClient.lastProxyMessage);
+		assertEquals("c\np123\nhello\ne\n", pClient.lastProxyMessage);
 		assertEquals("ysHello\\nWorld", pClient.lastReturnMessage);
 		assertEquals("Hello\nWorld",entry.simpleHello);
 	}
@@ -59,7 +59,7 @@ public class ProxyTest {
 		String message = "c\nt\nsayHelloParams\nfp123;py4j.IHello\ne\n";
 		pClient.nextProxyReturnMessage = "ysHello\\nWorld";
 		pClient.sendMesage(message);
-		assertEquals("p123\nhello2\nsTesting\\nWild\ni3\nlo0\ne\n", pClient.lastProxyMessage);
+		assertEquals("c\np123\nhello2\nsTesting\\nWild\ni3\nlo0\ne\n", pClient.lastProxyMessage);
 		assertEquals("ysHello\\nWorld", pClient.lastReturnMessage);
 		assertEquals("Hello\nWorld",entry.simpleHello2);
 	}
@@ -70,7 +70,7 @@ public class ProxyTest {
 		String message = "c\nt\nsayHelloError\nfp123;py4j.IHello\ne\n";
 		pClient.nextProxyReturnMessage = "x";
 		pClient.sendMesage(message);
-		assertEquals("p123\nhello\ne\n", pClient.lastProxyMessage);
+		assertEquals("c\np123\nhello\ne\n", pClient.lastProxyMessage);
 		assertTrue(entry.exception);
 		assertEquals("yv", pClient.lastReturnMessage);
 		

@@ -11,6 +11,10 @@ import socket
 PYTHON_PROXY_PREFIX = 'p'
 ERROR_RETURN_MESSAGE = ERROR + '\n'
 
+CALL_PROXY_COMMAND_NAME = 'c'
+GARBAGE_COLLECT_PROXY_COMMAND_NAME = 'g'
+
+
 logger = logging.getLogger("py4j.java_callback")
 
 class CallbackServer(Thread):
@@ -50,6 +54,8 @@ class CallbackServer(Thread):
                 connection.socket.close()
             except:
                 pass
+            
+        self.pool.clear()
                 
     
 class CallbackConnection(Thread):
@@ -64,13 +70,19 @@ class CallbackConnection(Thread):
         logger.info('Callback Connection ready to receive messages')
         try:
             while True:
+                command = self.input.readline().decode('utf-8')[:-1]
                 obj_id = self.input.readline().decode('utf-8')[:-1]
-                logger.info('Received object id %s' % obj_id)
+                logger.info('Received command %s on object id %s' % (command,obj_id))
                 if obj_id is None or len(obj_id.strip()) == 0:
                     break
-                else:
+                if command == CALL_PROXY_COMMAND_NAME:
                     return_message = self.call_proxy(obj_id, self.input)
                     self.socket.sendall(return_message.encode('utf-8'))
+                elif command == GARBAGE_COLLECT_PROXY_COMMAND_NAME:
+                    self.input.readline()
+                    del(self.pool[obj_id])
+                else:
+                    logger.error('Unknown command %s' % command)
         except:
             logger.exception('Error while callback connection waiting for a message')
             
@@ -122,11 +134,15 @@ class PythonProxyPool(object):
         with self.lock:
             del(self.dict[key])
     
-    def clear(self, key):
+    def clear(self):
         with self.lock:
             self.dict.clear()
             
     def __contains__(self, key):
         with self.lock:
             return key in self.dict
+        
+    def __len__(self):
+        with self.lock:
+            return len(self.dict)
     

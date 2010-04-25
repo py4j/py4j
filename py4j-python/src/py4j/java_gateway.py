@@ -665,8 +665,14 @@ class JavaGateway(object):
         return get_return_value(answer, self._comm_channel)
         
     def shutdown(self):
-        self._comm_channel.shutdown_gateway()
-        self._callback_server.shutdown()
+        try:
+            self._comm_channel.shutdown_gateway()
+        except:
+            pass
+        try:
+            self._callback_server.shutdown()
+        except:
+            pass
         
     def close(self):
         self._comm_channel.close()
