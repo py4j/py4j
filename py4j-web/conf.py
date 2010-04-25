@@ -19,6 +19,8 @@ import sys, os
 #sys.path.append(os.path.abspath('.'))
 sys.path.append(os.path.abspath('../py4j-python/src'))
 
+import py4j.java_gateway
+
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions

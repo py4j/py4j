@@ -9,22 +9,48 @@ Created on Mar 7, 2010
 from threading import RLock
 
 class ThreadSafeFinalizer(object):
+    """A `ThreadSafeFinalizer` is a global class used to register weak reference finalizers 
+    (i.e., a weak reference with a callback). 
+    
+    This class is useful when one wants to register a finalizer of an object with circular references. 
+    The finalizer of an object with circular references might never be called if the object's finalizer 
+    is kept by the same object.
+    
+    For example, if object A refers to B and B refers to A, A should not keep a weak reference to itself.
+    
+    `ThreadSafeFinalizer` is thread-safe and uses reentrant lock on each operation."""
+    
     finalizers = {}
     lock = RLock()
     
     
     @classmethod
     def add_finalizer(cls, id, weak_ref):
+        """Registers a finalizer with an id. 
+        
+        :param id: The id of the object referenced by the weak reference.
+        :param weak_ref: The weak reference to register.
+        """
         with cls.lock:
             cls.finalizers[id] = weak_ref
         
     @classmethod
     def remove_finalizer(cls, id):
+        """Removes a finalizer associated with this id. 
+        
+        :param id: The id of the object for which the finalizer will be deleted.
+        """
         with cls.lock:
             cls.finalizers.pop(id,None)
         
     @classmethod
     def clean_finalizers(cls, clean_all = False):
+        """Removes all registered finalizers. 
+        
+        :param clean_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from 
+                          an empty weak reference are deleted (i.e., weak references pointing to 
+                          inexistent objects).
+        """
         with cls.lock:
             if clean_all:
                 cls.finalizers.clear()
@@ -36,18 +62,44 @@ class ThreadSafeFinalizer(object):
             
 
 class Finalizer(object):
+    """A `Finalizer` is a global class used to register weak reference finalizers 
+    (i.e., a weak reference with a callback). 
+    
+    This class is useful when one wants to register a finalizer of an object with circular references. 
+    The finalizer of an object with circular references might never be called if the object's finalizer 
+    is kept by the same object.
+    
+    For example, if object A refers to B and B refers to A, A should not keep a weak reference to itself.
+    
+    `Finalizer` is not thread-safe and should only be used by single-threaded programs."""
+    
     finalizers = {}
     
     @classmethod
     def add_finalizer(cls, id, weak_ref):
+        """Registers a finalizer with an id. 
+        
+        :param id: The id of the object referenced by the weak reference.
+        :param weak_ref: The weak reference to register.
+        """
         cls.finalizers[id] = weak_ref
         
     @classmethod
     def remove_finalizer(cls, id):
+        """Removes a finalizer associated with this id. 
+        
+        :param id: The id of the object for which the finalizer will be deleted.
+        """
         cls.finalizers.pop(id,None)
         
     @classmethod
     def clean_finalizers(cls, clean_all = False):
+        """Removes all registered finalizers. 
+        
+        :param clean_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from 
+                          an empty weak reference are deleted (i.e., weak references pointing to 
+                          inexistent objects).
+        """
         if clean_all:
             cls.finalizers.clear()
         else:
@@ -57,5 +109,11 @@ class Finalizer(object):
     
 
 def clean_finalizers(clean_all = False):
+    """Removes all registered finalizers in :class:`ThreadSafeFinalizer` and `:class:Finalizer`. 
+        
+    :param clean_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from 
+                      an empty weak reference are deleted (i.e., weak references pointing to 
+                      inexistent objects).
+    """
     ThreadSafeFinalizer.clean_finalizers(clean_all)
     Finalizer.clean_finalizers(clean_all)
