@@ -7,6 +7,14 @@ import java.lang.reflect.Array;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * <p>
+ * A ArrayCommand is responsible for handling operations on arrays.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class ArrayCommand extends AbstractCommand {
 
 	private final Logger logger = Logger

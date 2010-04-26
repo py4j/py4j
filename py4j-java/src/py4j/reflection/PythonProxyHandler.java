@@ -8,6 +8,16 @@ import py4j.CommunicationChannelFactory;
 import py4j.Gateway;
 import py4j.Protocol;
 
+/**
+ * <p>
+ * A PythonProxyHandler is used in place of a Python object. Python programs can
+ * send Python objects that implements a Java interface to the JVM: these Python
+ * objects are represented by dynamic proxies with a PythonProxyHandler.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class PythonProxyHandler implements InvocationHandler {
 
 	private final String id;
@@ -18,11 +28,11 @@ public class PythonProxyHandler implements InvocationHandler {
 
 	private final Logger logger = Logger.getLogger(PythonProxyHandler.class
 			.getName());
-	
+
 	private final String finalizeCommand;
-	
+
 	public final static String CALL_PROXY_COMMAND_NAME = "c\n";
-	
+
 	public final static String GARBAGE_COLLECT_PROXY_COMMAND_NAME = "g\n";
 
 	public PythonProxyHandler(String id, CommunicationChannelFactory factory,
@@ -31,7 +41,8 @@ public class PythonProxyHandler implements InvocationHandler {
 		this.id = id;
 		this.factory = factory;
 		this.gateway = gateway;
-		this.finalizeCommand = GARBAGE_COLLECT_PROXY_COMMAND_NAME + id + "\ne\n";
+		this.finalizeCommand = GARBAGE_COLLECT_PROXY_COMMAND_NAME + id
+				+ "\ne\n";
 	}
 
 	@Override
@@ -66,7 +77,9 @@ public class PythonProxyHandler implements InvocationHandler {
 			logger.info("Finalizing python proxy id " + this.id);
 			factory.sendCommand(finalizeCommand);
 		} catch (Exception e) {
-			logger.warning("Python Proxy ID could not send a finalize message: " + this.id);
+			logger
+					.warning("Python Proxy ID could not send a finalize message: "
+							+ this.id);
 		} finally {
 			super.finalize();
 		}

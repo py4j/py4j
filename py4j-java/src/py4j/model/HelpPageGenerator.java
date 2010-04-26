@@ -30,6 +30,15 @@ package py4j.model;
 
 import py4j.reflection.TypeUtil;
 
+/**
+ * <p>
+ * The HelpPageGenerator generates a help page (a String) for a class or a
+ * method.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class HelpPageGenerator {
 
 	public final static String PREFIX = "|";

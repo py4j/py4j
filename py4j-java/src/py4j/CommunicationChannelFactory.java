@@ -12,6 +12,16 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * <p>
+ * A CommunicationChannelFactory is responsible for managing communication
+ * channels: channels are created as needed (e.g., one per concurrent thread)
+ * and are closed after a certain time.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class CommunicationChannelFactory {
 	private final int port;
 
@@ -58,6 +68,18 @@ public class CommunicationChannelFactory {
 		setupCleaner();
 	}
 
+	/**
+	 * 
+	 * @param port
+	 *            The port used by channels to connect to the Python side.
+	 * @param address
+	 *            The addressed used by channels to connect to the Python side..
+	 * @param minConnectionTime
+	 *            The minimum connection time: channels are guaranteed to stay
+	 *            connected for this time after sending a command.
+	 * @param minConnectionTimeUnit
+	 *            The minimum coonnection time unit.
+	 */
 	public CommunicationChannelFactory(int port, InetAddress address,
 			long minConnectionTime, TimeUnit minConnectionTimeUnit) {
 		super();
@@ -76,6 +98,17 @@ public class CommunicationChannelFactory {
 		}, minConnectionTime, minConnectionTime, minConnectionTimeUnit);
 	}
 
+	/**
+	 * <p>
+	 * Sends a command to the Python side. This method is typically used by
+	 * Python proxies to call Python methods or to request the garbage
+	 * collection of a proxy.
+	 * </p>
+	 * 
+	 * @param command
+	 *            The command to send.
+	 * @return The response.
+	 */
 	public String sendCommand(String command) {
 		String returnCommand = null;
 		CommunicationChannel cc = getChannelLock();
@@ -101,6 +134,16 @@ public class CommunicationChannelFactory {
 		return returnCommand;
 	}
 
+	/**
+	 * <p>
+	 * Closes all active channels, stops the periodic cleanup of channels and
+	 * mark the factory as shutting down.
+	 * 
+	 * No more commands can be send after this method has been called,
+	 * <em>except</em> commands that were initiated before the shutdown method
+	 * was called..
+	 * </p>
+	 */
 	public void shutdown() {
 		logger.info("Shutting down Communication Channel Factory");
 		try {
@@ -116,6 +159,18 @@ public class CommunicationChannelFactory {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Closes communication channels that have not been used for a time
+	 * specified at the creation of the communication channel factory.
+	 * </p>
+	 * 
+	 * <p>
+	 * Clients should not directly call this method: it is called by a periodic
+	 * cleaner thread.
+	 * </p>
+	 * 
+	 */
 	public void periodicCleanup() {
 		try {
 			lock.lock();

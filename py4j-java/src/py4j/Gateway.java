@@ -38,16 +38,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
-import py4j.model.Py4JMember;
-import py4j.reflection.LRUCache;
 import py4j.reflection.MethodInvoker;
 import py4j.reflection.ReflectionEngine;
 
 /**
  * 
  * <p>
- * A Gateway is manages various states: entryPoint, references to objects
- * returned to a Python program, etc.
+ * A Gateway manages various states: entryPoint, references to objects returned
+ * to a Python program, etc.
  * </p>
  * 
  * <p>
@@ -70,13 +68,6 @@ public class Gateway {
 	private final Logger logger = Logger.getLogger(Gateway.class.getName());
 
 	private boolean isStarted = false;
-
-	private static ThreadLocal<LRUCache<String, Py4JMember>> helpPages = new ThreadLocal<LRUCache<String, Py4JMember>>() {
-		@Override
-		protected LRUCache<String, Py4JMember> initialValue() {
-			return new LRUCache<String, Py4JMember>();
-		}
-	};
 
 	public Gateway(Object entryPoint) {
 		this(entryPoint, null);
@@ -114,10 +105,6 @@ public class Gateway {
 
 	public Object getEntryPoint() {
 		return this.entryPoint;
-	}
-
-	public LRUCache<String, Py4JMember> getHelpPages() {
-		return helpPages.get();
 	}
 
 	protected String getNextObjectId() {
@@ -173,7 +160,7 @@ public class Gateway {
 			} else if (isSet(object)) {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getSetReturnObject(objectId,
-						((Set)object).size());
+						((Set) object).size());
 			} else {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getReferenceReturnObject(objectId);
@@ -184,6 +171,16 @@ public class Gateway {
 		return returnObject;
 	}
 
+	/**
+	 * <p>
+	 * Invokes a constructor and returned the constructed object.
+	 * </p>
+	 * 
+	 * @param fqn
+	 *            The fully qualified name of the class.
+	 * @param args
+	 * @return
+	 */
 	public ReturnObject invoke(String fqn, List<Object> args) {
 		if (args == null) {
 			args = new ArrayList<Object>();
@@ -204,6 +201,16 @@ public class Gateway {
 		return returnObject;
 	}
 
+	/**
+	 * <p>
+	 * Invokes a method.
+	 * </p>
+	 * 
+	 * @param methodName
+	 * @param targetObjectId
+	 * @param args
+	 * @return
+	 */
 	public ReturnObject invoke(String methodName, String targetObjectId,
 			List<Object> args) {
 		if (args == null) {
@@ -252,7 +259,7 @@ public class Gateway {
 		return object instanceof Boolean || object instanceof String
 				|| object instanceof Number || object instanceof Character;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	protected boolean isSet(Object object) {
 		return object instanceof Set;

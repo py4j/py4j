@@ -28,11 +28,19 @@
  *******************************************************************************/
 package py4j.model;
 
+/**
+ * <p>
+ * Model of a Java member (class, method, or field) used to create a help page.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public abstract class Py4JMember {
 
 	// Currently not supported
 	private final String javadoc;
-	
+
 	private final String name;
 
 	public Py4JMember(String name, String javadoc) {
@@ -40,7 +48,7 @@ public abstract class Py4JMember {
 		this.name = name;
 		this.javadoc = javadoc;
 	}
-	
+
 	public String getJavadoc() {
 		return javadoc;
 	}
@@ -48,7 +56,7 @@ public abstract class Py4JMember {
 	public String getName() {
 		return name;
 	}
-	
+
 	public abstract String getSignature(boolean shortName);
-	
+
 }

@@ -44,12 +44,8 @@ import java.util.logging.Logger;
 /**
  * <p>
  * Manage the connection between a Python program and a Gateway. A
- * GatewayConnection lives in its own thread and is created every time a Python
- * program starts a <code>JavaGateway</code>
- * </p>
- * 
- * <p>
- * <code>gateway = JavaGateway()</code>
+ * GatewayConnection lives in its own thread and is created on demand (e.g., one
+ * per concurrent thread).
  * </p>
  * 
  * <p>
@@ -153,8 +149,8 @@ public class GatewayConnection implements Runnable {
 					"Error occurred while waiting for a command.", e);
 		} finally {
 			logger.log(Level.INFO, "Closing connection.");
-//			NetworkUtil.quietlyClose(writer);
-//			NetworkUtil.quietlyClose(reader);
+			// NetworkUtil.quietlyClose(writer);
+			// NetworkUtil.quietlyClose(reader);
 			NetworkUtil.quietlyClose(socket);
 			gateway.closeConnection();
 		}

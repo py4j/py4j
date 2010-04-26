@@ -36,6 +36,11 @@ import java.util.logging.Logger;
 
 import py4j.reflection.ReflectionEngine;
 
+/**
+ * <p>A FieldCommand is responsible for accessing and setting fields of objects. </p>
+ * @author Barthelemy Dagenais
+ *
+ */
 public class FieldCommand extends AbstractCommand {
 
 	private final Logger logger = Logger

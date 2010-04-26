@@ -36,6 +36,16 @@ import java.util.logging.Logger;
 import py4j.model.HelpPageGenerator;
 import py4j.model.Py4JClass;
 
+/**
+ * <p>
+ * A HelpPageCommand is responsible for generating a help page for a Java object
+ * or Java class. The help page typically list the signature of the members
+ * declared in the object/class.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class HelpPageCommand extends AbstractCommand {
 	private final Logger logger = Logger.getLogger(HelpPageCommand.class
 			.getName());

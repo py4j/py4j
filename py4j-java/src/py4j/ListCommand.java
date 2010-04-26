@@ -36,12 +36,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * <p>
+ * A ListCommand is responsible for handling operations on lists (e.g.,
+ * slicing).
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class ListCommand extends AbstractCommand {
 
 	private final Logger logger = Logger.getLogger(ListCommand.class.getName());
 
 	public static final String LIST_COMMAND_NAME = "l";
-	
+
 	public static final char LIST_SORT_SUB_COMMAND_NAME = 's';
 	public static final char LIST_REVERSE_SUB_COMMAND_NAME = 'r';
 	public static final char LIST_MAX_SUB_COMMAND_NAME = 'x';
@@ -84,12 +93,12 @@ public class ListCommand extends AbstractCommand {
 	private String slice_list(BufferedReader reader) throws IOException {
 		List list1 = (List) gateway.getObject(reader.readLine());
 		List<Object> arguments = getArguments(reader);
-		
+
 		List slice = new ArrayList();
 		for (Object argument : arguments) {
-			slice.add(list1.get((Integer)argument));
+			slice.add(list1.get((Integer) argument));
 		}
-		
+
 		ReturnObject returnObject = gateway.getReturnObject(slice);
 		return Protocol.getOutputCommand(returnObject);
 	}
@@ -98,10 +107,10 @@ public class ListCommand extends AbstractCommand {
 	private String count_list(BufferedReader reader) throws IOException {
 		List list1 = (List) gateway.getObject(reader.readLine());
 		Object objectToCount = Protocol.getObject(reader.readLine(), gateway);
-		
+
 		// Read end
 		reader.readLine();
-		
+
 		int count = Collections.frequency(list1, objectToCount);
 		ReturnObject returnObject = gateway.getReturnObject(count);
 		return Protocol.getOutputCommand(returnObject);

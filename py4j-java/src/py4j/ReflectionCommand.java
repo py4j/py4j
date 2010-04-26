@@ -39,6 +39,16 @@ import java.util.logging.Logger;
 import py4j.reflection.ReflectionEngine;
 import py4j.reflection.TypeUtil;
 
+/**
+ * <p>
+ * The ReflectionCommand is responsible for accessing packages, classes, and
+ * static members. This is the command invoked when using the jvm property of a
+ * JavaGateway on the Python side.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class ReflectionCommand extends AbstractCommand {
 
 	private final Logger logger = Logger.getLogger(ReflectionCommand.class
@@ -47,11 +57,11 @@ public class ReflectionCommand extends AbstractCommand {
 	public final static char GET_UNKNOWN_SUB_COMMAND_NAME = 'u';
 
 	public final static char GET_MEMBER_SUB_COMMAND_NAME = 'm';
-	
+
 	public static final String REFLECTION_COMMAND_NAME = "r";
 
 	protected ReflectionEngine rEngine;
-	
+
 	@Override
 	public void init(Gateway gateway) {
 		super.init(gateway);
@@ -76,11 +86,10 @@ public class ReflectionCommand extends AbstractCommand {
 	}
 
 	/**
-	 * 1- Try fields.
-	 * 2- If no static field, try methods.
-	 * 3- If method and static, return method.
-	 * 4- If method and not static, then class is impossible so return exception.
-	 * 5- If no method, try class.
+	 * 1- Try fields. 2- If no static field, try methods. 3- If method and
+	 * static, return method. 4- If method and not static, then class is
+	 * impossible so return exception. 5- If no method, try class.
+	 * 
 	 * @param reader
 	 * @return
 	 * @throws IOException
@@ -98,30 +107,32 @@ public class ReflectionCommand extends AbstractCommand {
 				ReturnObject rObject = gateway.getReturnObject(obj);
 				returnCommand = Protocol.getOutputCommand(rObject);
 			}
-			
+
 			if (returnCommand == null) {
 				Method m = rEngine.getMethod(clazz, member);
 				if (m != null) {
 					if (Modifier.isStatic(m.getModifiers())) {
-						returnCommand = Protocol.getMemberOutputCommand(Protocol.METHOD_TYPE);
+						returnCommand = Protocol
+								.getMemberOutputCommand(Protocol.METHOD_TYPE);
 					} else {
 						returnCommand = Protocol.getOutputErrorCommand();
 					}
 				}
 			}
-			
+
 			if (returnCommand == null) {
 				Class<?> c = rEngine.getClass(clazz, member);
 				if (c != null) {
-					returnCommand = Protocol.getMemberOutputCommand(Protocol.CLASS_TYPE);
+					returnCommand = Protocol
+							.getMemberOutputCommand(Protocol.CLASS_TYPE);
 				} else {
 					returnCommand = Protocol.getOutputErrorCommand();
 				}
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			returnCommand = Protocol.getOutputErrorCommand();
 		}
-		
+
 		return returnCommand;
 	}
 
@@ -131,13 +142,15 @@ public class ReflectionCommand extends AbstractCommand {
 		String returnCommand = null;
 		try {
 			TypeUtil.forName(fqn);
-			returnCommand = Protocol.getMemberOutputCommand(Protocol.CLASS_TYPE);
+			returnCommand = Protocol
+					.getMemberOutputCommand(Protocol.CLASS_TYPE);
 		} catch (ClassNotFoundException e) {
-			returnCommand = Protocol.getMemberOutputCommand(Protocol.PACKAGE_TYPE);
-		} catch(Exception e) {
+			returnCommand = Protocol
+					.getMemberOutputCommand(Protocol.PACKAGE_TYPE);
+		} catch (Exception e) {
 			returnCommand = Protocol.getOutputErrorCommand();
 		}
 		return returnCommand;
 	}
-	
+
 }

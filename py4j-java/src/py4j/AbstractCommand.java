@@ -37,11 +37,21 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * <p>
+ * Abstract base class for commands. Provides useful methods allowing the
+ * parsing of command arguments.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public abstract class AbstractCommand implements Command {
 
 	protected Gateway gateway;
-	
-	private final Logger logger = Logger.getLogger(AbstractCommand.class.getName());
+
+	private final Logger logger = Logger.getLogger(AbstractCommand.class
+			.getName());
 
 	@Override
 	public abstract void execute(String commandName, BufferedReader reader,
@@ -52,7 +62,15 @@ public abstract class AbstractCommand implements Command {
 		this.gateway = gateway;
 	}
 
-	protected List<String> getStringArguments(BufferedReader reader) throws IOException {
+	/**
+	 * 
+	 * @param reader
+	 * @return A list of the remaining arguments (as strings) in the reader.
+	 *         Consumes the end of command part.
+	 * @throws IOException
+	 */
+	protected List<String> getStringArguments(BufferedReader reader)
+			throws IOException {
 		List<String> arguments = new ArrayList<String>();
 		String line = reader.readLine();
 
@@ -64,19 +82,34 @@ public abstract class AbstractCommand implements Command {
 
 		return arguments;
 	}
-	
+
+	/**
+	 * 
+	 * @param reader
+	 * @return A list of the remaining arguments (converted using
+	 *         Protocol.getObject) in the reader. Consumes the end of command
+	 *         part.
+	 * @throws IOException
+	 */
 	protected List<Object> getArguments(BufferedReader reader)
 			throws IOException {
 		List<Object> arguments = new ArrayList<Object>();
 		List<String> stringArguments = getStringArguments(reader);
-		
+
 		for (String stringArgument : stringArguments) {
-			arguments.add(Protocol.getObject(stringArgument,this.gateway));
+			arguments.add(Protocol.getObject(stringArgument, this.gateway));
 		}
 
 		return arguments;
 	}
 
+	/**
+	 * <p>Convenient shortcut to invoke a method dynamically.</p>
+	 * @param methodName
+	 * @param targetObjectId
+	 * @param arguments
+	 * @return
+	 */
 	protected ReturnObject invokeMethod(String methodName,
 			String targetObjectId, List<Object> arguments) {
 		ReturnObject returnObject = null;
@@ -84,7 +117,9 @@ public abstract class AbstractCommand implements Command {
 			returnObject = gateway
 					.invoke(methodName, targetObjectId, arguments);
 		} catch (Exception e) {
-			logger.log(Level.INFO, "Received exception while executing this command: " + methodName, e);
+			logger.log(Level.INFO,
+					"Received exception while executing this command: "
+							+ methodName, e);
 			returnObject = ReturnObject.getErrorReturnObject();
 		}
 		return returnObject;

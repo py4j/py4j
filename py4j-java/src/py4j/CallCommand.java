@@ -37,8 +37,8 @@ import java.util.logging.Logger;
 
 /**
  * <p>
- * Responsible for parsing a call command and calling the method on the target
- * object.
+ * A CallCommand is responsible for parsing a call command and calling the
+ * method on the target object.
  * </p>
  * <p>
  * Currently, the call command assumes that a command is well-formed and that
@@ -55,9 +55,9 @@ import java.util.logging.Logger;
  * 
  */
 public class CallCommand extends AbstractCommand {
-	
+
 	private final Logger logger = Logger.getLogger(CallCommand.class.getName());
-	
+
 	public final static String CALL_COMMAND_NAME = "c";
 
 	@Override
@@ -67,8 +67,9 @@ public class CallCommand extends AbstractCommand {
 		String methodName = reader.readLine();
 		List<Object> arguments = getArguments(reader);
 
-		ReturnObject returnObject = invokeMethod(methodName, targetObjectId, arguments);
-		
+		ReturnObject returnObject = invokeMethod(methodName, targetObjectId,
+				arguments);
+
 		String returnCommand = Protocol.getOutputCommand(returnObject);
 		logger.info("Returning command: " + returnCommand);
 		writer.write(returnCommand);

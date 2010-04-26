@@ -49,7 +49,7 @@ import py4j.reflection.PythonProxyHandler;
  * </p>
  * <ul>
  * <li>A command name (e.g., c for call)</li>
- * <li>Optionally, a sub command name (e.g., a for concatenate in the list
+ * <li>Optionally, a sub command name (e.g., 'a' for concatenate in the list
  * command)</li>
  * <li>A list of command parts (e.g., the name of a method, the value of a
  * parameter, etc.)</li>

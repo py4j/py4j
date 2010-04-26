@@ -29,6 +29,14 @@
 
 package py4j;
 
+/**
+ * <p>
+ * Exception raised when an error is encountered while using Py4J.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class Py4JException extends RuntimeException {
 
 	private static final long serialVersionUID = -2457373060192300387L;

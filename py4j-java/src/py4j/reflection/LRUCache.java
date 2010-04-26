@@ -31,13 +31,25 @@ package py4j.reflection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * <p>
+ * Implementation of a Least Recently Used cache. Currently used by the
+ * ReflectionEngine to cache resolution of Java members.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ * @param <K>
+ * @param <V>
+ */
 public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
+	public static final int DEFAULT_CACHE_SIZE = 100;
 	private static final long serialVersionUID = -3090703237387586885L;
 	private int cacheSize;
 
 	public LRUCache() {
-		this(100);
+		this(DEFAULT_CACHE_SIZE);
 	}
 
 	public LRUCache(int cacheSize) {

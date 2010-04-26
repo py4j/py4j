@@ -34,20 +34,29 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * <p>
+ * Utility class used to perform network operations.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class NetworkUtil {
 
-	private final static Logger logger = Logger.getLogger(NetworkUtil.class.getName());
-	
+	private final static Logger logger = Logger.getLogger(NetworkUtil.class
+			.getName());
+
 	public static void quietlyClose(Closeable closeable) {
 		try {
 			if (closeable != null) {
 				closeable.close();
 			}
-		} catch(Exception e) {
-			logger.log(Level.WARNING, "Closeable cannot be closed.",e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Closeable cannot be closed.", e);
 		}
 	}
-	
+
 	public static void quietlyClose(Socket closeable) {
 		try {
 			if (closeable != null) {
@@ -55,19 +64,19 @@ public class NetworkUtil {
 				closeable.shutdownOutput();
 				closeable.close();
 			}
-		} catch(Exception e) {
-			logger.log(Level.WARNING, "Socket cannot be closed.",e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Socket cannot be closed.", e);
 		}
 	}
-	
+
 	public static void quietlyClose(ServerSocket closeable) {
 		try {
 			if (closeable != null) {
 				closeable.close();
 			}
-		} catch(Exception e) {
-			logger.log(Level.WARNING, "Socket cannot be closed.",e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Socket cannot be closed.", e);
 		}
 	}
-	
+
 }

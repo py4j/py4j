@@ -32,16 +32,26 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+/**
+ * <p>
+ * The ShutdownGatewayServerCommand is responsible for shutting down the
+ * GatewayServer. This command is useful to shut down the server remotely, i.e.,
+ * from the Python side.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class ShutdownGatewayServerCommand extends AbstractCommand {
 
 	private final GatewayServer gatewayServer;
-	
+
 	public static final String SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME = "s";
-	
+
 	public ShutdownGatewayServerCommand(GatewayServer gatewayServer) {
 		this.gatewayServer = gatewayServer;
 	}
-	
+
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {

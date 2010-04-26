@@ -72,7 +72,7 @@ import java.util.logging.Logger;
 public class GatewayServer implements Runnable {
 
 	public static final int DEFAULT_PORT = 25333;
-	
+
 	public static final int DEFAULT_PYTHON_PORT = 25334;
 
 	public static final int DEFAULT_CONNECT_TIMEOUT = 0;
@@ -80,7 +80,7 @@ public class GatewayServer implements Runnable {
 	public static final int DEFAULT_READ_TIMEOUT = 0;
 
 	private final int port;
-	
+
 	private final int pythonPort;
 
 	private final Gateway gateway;
@@ -93,11 +93,11 @@ public class GatewayServer implements Runnable {
 
 	private final Logger logger = Logger.getLogger(GatewayServer.class
 			.getName());
-	
+
 	private final List<Socket> connections = new ArrayList<Socket>();
 
 	private final CommunicationChannelFactory ccFactory;
-	
+
 	private Socket currentSocket;
 
 	private ServerSocket sSocket;
@@ -127,17 +127,19 @@ public class GatewayServer implements Runnable {
 	 */
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout, boolean acceptOnlyOne) {
-		this(entryPoint,port,DEFAULT_PYTHON_PORT,connectTimeout,readTimeout,acceptOnlyOne);
+		this(entryPoint, port, DEFAULT_PYTHON_PORT, connectTimeout,
+				readTimeout, acceptOnlyOne);
 	}
-	
+
 	/**
 	 * 
 	 * @param entryPoint
 	 *            The entry point of this Gateway. Can be null.
 	 * @param port
 	 *            The port the GatewayServer is listening to.
-	 * @param port
-	 * 			  The port used by a PythonProxyHandler to connect to a Python gateway.
+	 * @param pythonPort
+	 *            The port used by a PythonProxyHandler to connect to a Python
+	 *            gateway. Essentially the port used for Python callbacks.
 	 * @param connectTimeout
 	 *            Time in milliseconds (0 = infinite). If a GatewayServer does
 	 *            not receive a connection request after this time, it closes
@@ -151,8 +153,8 @@ public class GatewayServer implements Runnable {
 	 *            If true, only one Python program can connect to this
 	 *            GatewayServer at a time.
 	 */
-	public GatewayServer(Object entryPoint, int port, int pythonPort, int connectTimeout,
-			int readTimeout, boolean acceptOnlyOne) {
+	public GatewayServer(Object entryPoint, int port, int pythonPort,
+			int connectTimeout, int readTimeout, boolean acceptOnlyOne) {
 		super();
 		this.port = port;
 		this.pythonPort = pythonPort;
@@ -239,7 +241,10 @@ public class GatewayServer implements Runnable {
 	}
 
 	/**
-	 * <p>Starts to accept connections.</p>
+	 * <p>
+	 * Starts to accept connections.
+	 * </p>
+	 * 
 	 * @param fork
 	 *            If true, the GatewayServer accepts connection in another
 	 *            thread and this call is non-blocking. If False, the
@@ -265,13 +270,16 @@ public class GatewayServer implements Runnable {
 	}
 
 	/**
-	 * <p>Stops accepting connections, closes all current connections, and calls {@link py4j.Gateway#shutdown() Gateway.shutdown()}</p>
+	 * <p>
+	 * Stops accepting connections, closes all current connections, and calls
+	 * {@link py4j.Gateway#shutdown() Gateway.shutdown()}
+	 * </p>
 	 */
 	public void shutdown() {
 		logger.info("Shutting down Gateway");
 		// TODO Check that all connections are indeed closed!
 		NetworkUtil.quietlyClose(sSocket);
-		for (Socket socket: connections) {
+		for (Socket socket : connections) {
 			NetworkUtil.quietlyClose(socket);
 		}
 		connections.clear();
@@ -290,24 +298,28 @@ public class GatewayServer implements Runnable {
 	public int getReadTimeout() {
 		return readTimeout;
 	}
-	
+
 	public int getPythonPort() {
 		return pythonPort;
 	}
-	
+
 	public CommunicationChannelFactory getCommunicationChannelFactory() {
 		return ccFactory;
 	}
 
 	/**
-	 * <p>Utility method to turn logging off. Logging is turned off by default.</p>
+	 * <p>
+	 * Utility method to turn logging off. Logging is turned off by default.
+	 * </p>
 	 */
 	public static void turnLoggingOff() {
 		Logger.getLogger("py4j").setLevel(Level.OFF);
 	}
 
 	/**
-	 * <p>Utility method to turn logging on. Logging is turned off by default.</p>
+	 * <p>
+	 * Utility method to turn logging on. Logging is turned off by default.
+	 * </p>
 	 */
 	public static void turnLoggingOn() {
 		Logger.getLogger("py4j").setLevel(Level.ALL);

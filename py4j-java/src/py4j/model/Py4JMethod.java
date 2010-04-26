@@ -32,6 +32,14 @@ import java.lang.reflect.Method;
 
 import py4j.reflection.TypeUtil;
 
+/**
+ * <p>
+ * Model of a Java method used to create a help page.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class Py4JMethod extends Py4JMember {
 
 	private final String[] parameterTypes;
@@ -54,9 +62,11 @@ public class Py4JMethod extends Py4JMember {
 
 	public final static Py4JMethod buildMethod(Method method) {
 		return new Py4JMethod(method.getName(), null, TypeUtil.getNames(method
-				.getParameterTypes()), null, method.getReturnType().getCanonicalName(), method.getDeclaringClass().getCanonicalName());
+				.getParameterTypes()), null, method.getReturnType()
+				.getCanonicalName(), method.getDeclaringClass()
+				.getCanonicalName());
 	}
-	
+
 	public String[] getParameterTypes() {
 		return parameterTypes;
 	}

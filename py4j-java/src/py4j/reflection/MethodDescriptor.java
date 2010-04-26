@@ -28,32 +28,41 @@
  *******************************************************************************/
 package py4j.reflection;
 
-
+/**
+ * <p>
+ * A MethodDescriptor wraps the signature of a method (name, container,
+ * parameters).
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 @SuppressWarnings("unchecked")
 public class MethodDescriptor {
 
 	private String internalRepresentation;
-	
+
 	private String name;
-	
+
 	private Class container;
-	
+
 	private Class[] parameters;
-	
+
 	private final char DOT = '.';
 
-	public MethodDescriptor(String name, Class container,
-			Class[] parameters) {
+	public MethodDescriptor(String name, Class container, Class[] parameters) {
 		super();
 		this.name = name;
 		this.container = container;
 		this.parameters = parameters;
-		this.internalRepresentation = buildInternalRepresentation(container, name, parameters);
+		this.internalRepresentation = buildInternalRepresentation(container,
+				name, parameters);
 	}
-	
-	private String buildInternalRepresentation(Class container, String name, Class[] params) {
+
+	private String buildInternalRepresentation(Class container, String name,
+			Class[] params) {
 		StringBuilder builder = new StringBuilder();
-		
+
 		builder.append(container.getName());
 		builder.append(DOT);
 		builder.append(name);
@@ -63,7 +72,7 @@ public class MethodDescriptor {
 			builder.append(DOT);
 		}
 		builder.append(')');
-		
+
 		return builder.toString();
 	}
 
@@ -88,8 +97,9 @@ public class MethodDescriptor {
 		if (obj == null || !(obj instanceof MethodDescriptor)) {
 			return false;
 		}
-		
-		return internalRepresentation.equals(((MethodDescriptor)obj).internalRepresentation);
+
+		return internalRepresentation
+				.equals(((MethodDescriptor) obj).internalRepresentation);
 	}
 
 	@Override
@@ -101,7 +111,5 @@ public class MethodDescriptor {
 	public String toString() {
 		return internalRepresentation;
 	}
-	
-	
 
 }

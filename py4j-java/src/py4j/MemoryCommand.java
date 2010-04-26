@@ -33,10 +33,20 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+/**
+ * <p>
+ * The MemoryCommand is responsible for handling garbage collection requests
+ * from the Python side, i.e., when a java object is no longer used by the
+ * Python program.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class MemoryCommand extends AbstractCommand {
 
-	private final Logger logger = Logger
-			.getLogger(MemoryCommand.class.getName());
+	private final Logger logger = Logger.getLogger(MemoryCommand.class
+			.getName());
 
 	public final static String MEMORY_COMMAND_NAME = "m";
 
@@ -60,9 +70,9 @@ public class MemoryCommand extends AbstractCommand {
 		String objectId = reader.readLine();
 		// EoC
 		reader.readLine();
-		
+
 		gateway.deleteObject(objectId);
-		
+
 		return Protocol.getOutputVoidCommand();
 	}
 

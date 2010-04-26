@@ -35,6 +35,15 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * <p>
+ * A ConstructorCommand is responsible for calling the constructors of a Java
+ * class. It provides similar services to the CallCommand.
+ * </p>
+ * 
+ * @author Barthelemy Dagenais
+ * 
+ */
 public class ConstructorCommand extends AbstractCommand {
 
 	private final Logger logger = Logger.getLogger(CallCommand.class.getName());
@@ -48,19 +57,21 @@ public class ConstructorCommand extends AbstractCommand {
 		List<Object> arguments = getArguments(reader);
 
 		ReturnObject returnObject = invokeConstructor(fqn, arguments);
-		
+
 		String returnCommand = Protocol.getOutputCommand(returnObject);
 		logger.info("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}
-	
+
 	protected ReturnObject invokeConstructor(String fqn, List<Object> arguments) {
 		ReturnObject returnObject = null;
 		try {
 			returnObject = gateway.invoke(fqn, arguments);
 		} catch (Exception e) {
-			logger.log(Level.INFO, "Received exception while executing this command: " + fqn, e);
+			logger.log(Level.INFO,
+					"Received exception while executing this command: " + fqn,
+					e);
 			returnObject = ReturnObject.getErrorReturnObject();
 		}
 		return returnObject;
