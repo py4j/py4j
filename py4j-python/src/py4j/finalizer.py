@@ -109,7 +109,7 @@ class Finalizer(object):
     
 
 def clean_finalizers(clean_all = False):
-    """Removes all registered finalizers in :class:`ThreadSafeFinalizer` and `:class:Finalizer`. 
+    """Removes all registered finalizers in :class:`ThreadSafeFinalizer` and :class:`Finalizer`. 
         
     :param clean_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from 
                       an empty weak reference are deleted (i.e., weak references pointing to 

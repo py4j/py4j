@@ -36,15 +36,6 @@ Using the ``jvm`` property:
   >>> l
   [1, 5, 10]
   
-Using non-default value of ``auto_start``:
-::
-  
-  java_gateway = JavaGateway(auto_start=False)
-  java_gateway.comm_channel.start()
-  # ... do some work here
-  java_gateway.comm_channel.stop()
-
-
 Using ``auto_field``:
 
 First we declare a class that has a field AND a method called `member`:
@@ -76,6 +67,25 @@ Then we play with the class using the two possible values of auto_field:
   >>> get_method(example2,'member')()
   u'Hello World'
   
+.. _api_commchannelfactory:
+
+CommChannelFactory
+------------------
+
+.. autoclass:: py4j.java_gateway.CommChannelFactory
+   :members:
+   :undoc-members:
+
+
+
+..
+  Examples
+  ^^^^^^^^
+
+  ::
+
+    TBD
+
 .. _api_commchannel:
 
 CommChannel
@@ -84,10 +94,6 @@ CommChannel
 .. autoclass:: py4j.java_gateway.CommChannel
    :members:
    :undoc-members:
-
-   .. automethod:: __del__()
-
-
 
 ..
   Examples
@@ -114,16 +120,14 @@ Py4JError
 
     TBD
 
-.. _api_javaobject:
+.. _api_jvm:
 
-JavaObject
------------
+JVM
+---
 
-.. autoclass:: py4j.java_gateway.JavaObject
+.. autoclass:: py4j.java_gateway.JVM
    :members:
    :undoc-members:
-
-.. _api_javamember:
 
 ..
   Examples
@@ -133,10 +137,63 @@ JavaObject
 
     TBD
 
+.. _api_javaobject:
+
+JavaObject
+-----------
+
+.. autoclass:: py4j.java_gateway.JavaObject
+   :members:
+   :undoc-members:
+
+..
+  Examples
+  ^^^^^^^^
+
+  ::
+
+    TBD
+
+.. _api_javamember:
+
 JavaMember
 -----------
 
 .. autoclass:: py4j.java_gateway.JavaMember
+   :members:
+   :undoc-members:
+
+..
+  Examples
+  ^^^^^^^^
+
+  ::
+
+    TBD
+
+.. _api_javaclass:
+
+JavaClass
+---------
+
+.. autoclass:: py4j.java_gateway.JavaClass
+   :members:
+   :undoc-members:
+
+..
+  Examples
+  ^^^^^^^^
+
+  ::
+
+    TBD
+
+.. _api_javapackage:
+
+JavaPackage
+-----------
+
+.. autoclass:: py4j.java_gateway.JavaPackage
    :members:
    :undoc-members:
 
@@ -163,10 +220,11 @@ Py4J Functions
 
 .. autofunction:: py4j.java_gateway.get_method
    
-.. autofunction:: py4j.java_gateway.escape_new_line
+..
+  .. autofunction:: py4j.java_gateway.escape_new_line
 
-.. autofunction:: py4j.java_gateway.unescape_new_line 
+  .. autofunction:: py4j.java_gateway.unescape_new_line 
 
-.. autofunction:: py4j.java_gateway.get_command_part
+  .. autofunction:: py4j.java_gateway.get_command_part
 
-.. autofunction:: py4j.java_gateway.get_return_value
+  .. autofunction:: py4j.java_gateway.get_return_value

@@ -328,7 +328,7 @@ class CommChannelFactory(object):
     
     This implementation is thread-safe and connections are created on-demand. 
     This means that Py4J-Python can be accessed by multiple threads and 
-    messages are sent and processed concurrently to the Java Gateway.
+    messages are sent to and processed concurrently by the Java Gateway.
     """
     
     def __init__(self, address='localhost', port=25333, auto_close=True, thread_safe=False, gateway_property=None):
@@ -380,7 +380,8 @@ class CommChannelFactory(object):
             self.shutdown_gateway()
             
     def send_command(self, command):
-        """Sends a command to the JVM. This method is not intended to be called directly by Py4J users: it is usually called by JavaMember instances.
+        """Sends a command to the JVM. This method is not intended to be called directly by Py4J users: 
+        it is usually called by :class:`JavaMember` instances.
         
         :param command: the `string` command to send to the JVM. The command must follow the Py4J protocol.
         :rtype: the `string` answer received from the JVM. The answer follows the Py4J protocol.
@@ -475,7 +476,8 @@ class CommChannel(object):
         return answer
 
 class JavaMember(object):
-    """Represents a member (field, method) of a Java Object. For now, only methods are supported.
+    """Represents a member (i.e., method) of a :class:`JavaObject`. For now, only methods are supported. Fields
+    are retrieved directly and are not contained in a JavaMember.
     """
     
     def __init__(self, name, container, target_id, comm_channel):
@@ -496,7 +498,7 @@ class JavaMember(object):
 
 
 class JavaObject(object):
-    """Represents a Java object from which you can call methods."""
+    """Represents a Java object from which you can call methods or access fields."""
     
     def __init__(self, target_id, comm_channel):
         """
@@ -655,6 +657,11 @@ class JavaGateway(object):
         return self.entry_point.__getattr__(name)
             
     def new_array(self, java_class, *dimensions):
+        """Creates a Java array of type `java_class` of `dimensions`
+        
+        :param java_class: The :class:`JavaClass` instance representing the type of the array.
+        :param dimensions: A list of dimensions of the array. For example `[1,2]` would produce an `array[1][2]`.
+        """
         if len(dimensions) == 0:
             raise Py4JError('new arrays must have at least one dimension')
         command = ARRAY_COMMAND_NAME + ARRAY_CREATE_SUB_COMMAND_NAME + get_command_part(java_class._fqn)
@@ -665,6 +672,8 @@ class JavaGateway(object):
         return get_return_value(answer, self._comm_channel)
         
     def shutdown(self):
+        """Shuts down the :class:`CommChannelFactory` and the :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
+        """
         try:
             self._comm_channel.shutdown_gateway()
         except:
@@ -675,6 +684,9 @@ class JavaGateway(object):
             pass
         
     def close(self):
+        """Closes all communication channels. A communication channel will be reopened if necessary 
+        (e.g., if a :class:`JavaMethod` is called).
+        """
         self._comm_channel.close()
         
     def detach(self, java_object):
