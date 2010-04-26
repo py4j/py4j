@@ -6,6 +6,9 @@
   :synopsis: Enables Java programs to call Python Programs.
 .. moduleauthor:: Barthelemy Dagenais <barthe@users.sourceforge.net>
 
+The :mod:`py4j.java_callback` module defines the classes that manage callbacks, i.e., Java objects calling Python
+objects. These classes should never be accessed directly by the users.
+
 .. _api_pythonproxypool:
 
 PythonProxyPool
