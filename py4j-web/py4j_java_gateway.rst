@@ -5,6 +5,11 @@
   :synopsis: Main Py4J Python module.
 .. moduleauthor:: Barthelemy Dagenais <barthe@users.sourceforge.net>
 
+The :module:py4j.`java_gateway` module defines most of the classes that are needed to use Py4J. Py4J users are expected
+to only use explicitly :class:`JavaGateway <py4j.java_gateway.JavaGateway>` and optionally, :class:`CommChannelFactory
+<py4j.java_gateway.CommChannelFactory>`, :func:`get_field <py4j.java_gateway.get_field>`, and :func:`get_method
+<py4j.java_gateway.get_method>`. The other module members are documented to support the extension of Py4J.
+
 .. _api_javagateway:
 
 JavaGateway
@@ -213,18 +218,18 @@ JavaPackage
 Py4J Functions
 --------------
 
-.. _api_functions_get_field:
- 
-    
+The following two functions get be used to get a particular field or method when fields and methods in a Java class have the same name:
+   
 .. autofunction:: py4j.java_gateway.get_field
 
 .. autofunction:: py4j.java_gateway.get_method
    
-..
-  .. autofunction:: py4j.java_gateway.escape_new_line
+The following functions can be used to extend Py4J (e.g., to create new commands):
 
-  .. autofunction:: py4j.java_gateway.unescape_new_line 
+.. autofunction:: py4j.java_gateway.escape_new_line
 
-  .. autofunction:: py4j.java_gateway.get_command_part
+.. autofunction:: py4j.java_gateway.unescape_new_line 
 
-  .. autofunction:: py4j.java_gateway.get_return_value
+.. autofunction:: py4j.java_gateway.get_command_part
+
+.. autofunction:: py4j.java_gateway.get_return_value

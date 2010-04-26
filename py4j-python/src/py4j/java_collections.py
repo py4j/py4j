@@ -122,8 +122,11 @@ class JavaSet(JavaObject, MutableSet):
             return srep[:-2] + '])'
 
 class JavaArray(JavaObject, Sequence):
-    """Maps a Java Array to a Semi-Mutable Sequence.
+    """Maps a Java Array to a Semi-Mutable Sequence: elements inside the sequence can be modified,
+    but the length of the sequence cannot change. 
     
+    The backing collection is a Sequence and not a Python array because these arrays only accept
+    primitives whereas Java arrays work for any types.    
     """
     
     def __init__(self, target_id, comm_channel):

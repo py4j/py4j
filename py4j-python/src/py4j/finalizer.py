@@ -44,15 +44,15 @@ class ThreadSafeFinalizer(object):
             cls.finalizers.pop(id,None)
         
     @classmethod
-    def clean_finalizers(cls, clean_all = False):
+    def clear_finalizers(cls, clear_all = False):
         """Removes all registered finalizers. 
         
-        :param clean_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from 
+        :param clear_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from 
                           an empty weak reference are deleted (i.e., weak references pointing to 
                           inexistent objects).
         """
         with cls.lock:
-            if clean_all:
+            if clear_all:
                 cls.finalizers.clear()
             else:
                 for id,ref in cls.finalizers.items():
@@ -93,14 +93,14 @@ class Finalizer(object):
         cls.finalizers.pop(id,None)
         
     @classmethod
-    def clean_finalizers(cls, clean_all = False):
+    def clear_finalizers(cls, clear_all = False):
         """Removes all registered finalizers. 
         
-        :param clean_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from 
+        :param clear_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from 
                           an empty weak reference are deleted (i.e., weak references pointing to 
                           inexistent objects).
         """
-        if clean_all:
+        if clear_all:
             cls.finalizers.clear()
         else:
             for id,ref in cls.finalizers.items():
@@ -108,12 +108,12 @@ class Finalizer(object):
                     cls.finalizers.pop(id,None)
     
 
-def clean_finalizers(clean_all = False):
+def clear_finalizers(clear_all = False):
     """Removes all registered finalizers in :class:`ThreadSafeFinalizer` and :class:`Finalizer`. 
         
-    :param clean_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from 
+    :param clear_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from 
                       an empty weak reference are deleted (i.e., weak references pointing to 
                       inexistent objects).
     """
-    ThreadSafeFinalizer.clean_finalizers(clean_all)
-    Finalizer.clean_finalizers(clean_all)
+    ThreadSafeFinalizer.clear_finalizers(clear_all)
+    Finalizer.clear_finalizers(clear_all)

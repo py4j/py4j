@@ -3,7 +3,7 @@ Created on Mar 7, 2010
 
 @author: barthelemy
 '''
-from py4j.finalizer import ThreadSafeFinalizer, Finalizer, clean_finalizers
+from py4j.finalizer import ThreadSafeFinalizer, Finalizer, clear_finalizers
 from weakref import ref
 import gc
 import unittest
@@ -43,7 +43,7 @@ class JavaMemberTest(object):
 class TestThreadSafeFinalizer(unittest.TestCase):
 
     def tearDown(self):
-        clean_finalizers(True)
+        clear_finalizers(True)
 
     def work1(self, acc):
         a1 = AClass(1,acc)
@@ -84,13 +84,13 @@ class TestThreadSafeFinalizer(unittest.TestCase):
         a1 = self.work2(acc)
         self.assertEqual(1,acc.acc)
         self.assertEqual(2,len(ThreadSafeFinalizer.finalizers))
-        clean_finalizers(False)
+        clear_finalizers(False)
         self.assertEqual(1,acc.acc)
         self.assertEqual(1,len(ThreadSafeFinalizer.finalizers))
         a1.foo = "hello"
         del(a1)
         self.assertEqual(2,acc.acc)
-        clean_finalizers(False)
+        clear_finalizers(False)
         self.assertEqual(0,len(ThreadSafeFinalizer.finalizers))
         
     def testCleanUpAll(self):
@@ -98,7 +98,7 @@ class TestThreadSafeFinalizer(unittest.TestCase):
         a1 = self.work2(acc)
         self.assertEqual(1,acc.acc)
         self.assertEqual(2,len(ThreadSafeFinalizer.finalizers))
-        clean_finalizers(True)
+        clear_finalizers(True)
         self.assertEqual(1,acc.acc)
         self.assertEqual(0,len(ThreadSafeFinalizer.finalizers))
         a1.foo = "hello"
@@ -108,7 +108,7 @@ class TestThreadSafeFinalizer(unittest.TestCase):
 class TestFinalizer(unittest.TestCase):
 
     def tearDown(self):
-        clean_finalizers(True)
+        clear_finalizers(True)
 
     def work1(self, acc):
         a1 = AClass2(1,acc)
@@ -129,13 +129,13 @@ class TestFinalizer(unittest.TestCase):
         a1 = self.work2(acc)
         self.assertEqual(1,acc.acc)
         self.assertEqual(2,len(Finalizer.finalizers))
-        clean_finalizers(False)
+        clear_finalizers(False)
         self.assertEqual(1,acc.acc)
         self.assertEqual(1,len(Finalizer.finalizers))
         a1.foo = "hello"
         del(a1)
         self.assertEqual(2,acc.acc)
-        clean_finalizers(False)
+        clear_finalizers(False)
         self.assertEqual(0,len(Finalizer.finalizers))
         
     def testCleanUpAll(self):
@@ -143,7 +143,7 @@ class TestFinalizer(unittest.TestCase):
         a1 = self.work2(acc)
         self.assertEqual(1,acc.acc)
         self.assertEqual(2,len(Finalizer.finalizers))
-        clean_finalizers(True)
+        clear_finalizers(True)
         self.assertEqual(1,acc.acc)
         self.assertEqual(0,len(Finalizer.finalizers))
         a1.foo = "hello"

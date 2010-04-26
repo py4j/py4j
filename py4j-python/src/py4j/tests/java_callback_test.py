@@ -123,7 +123,7 @@ class TestIntegration(unittest.TestCase):
 #        logger = logging.getLogger("py4j")
 #        logger.setLevel(logging.DEBUG)
 #        logger.addHandler(logging.StreamHandler())
-        time.sleep(1)
+        time.sleep(2)
         self.p = start_example_app_process()
         time.sleep(0.5)
         self.gateway = JavaGateway()
@@ -131,7 +131,7 @@ class TestIntegration(unittest.TestCase):
     def tearDown(self):
         self.p.terminate()
         self.gateway.shutdown()
-        time.sleep(2)
+        time.sleep(3)
     
 #    Does not work when combined with other tests... because of TCP_WAIT
 #    def testShutdown(self):

@@ -329,6 +329,11 @@ class CommChannelFactory(object):
     This implementation is thread-safe and connections are created on-demand. 
     This means that Py4J-Python can be accessed by multiple threads and 
     messages are sent to and processed concurrently by the Java Gateway.
+    
+    When creating a custom :class:`JavaGateway`, it is recommended to pass an instance of 
+    :class:`CommChannelFactory` instead of a :class:`CommChannel`: both have the same interface, 
+    but the factory supports multiple threads and connections, which is essential when using 
+    callbacks.
     """
     
     def __init__(self, address='localhost', port=25333, auto_close=True, thread_safe=False, gateway_property=None):
@@ -560,6 +565,12 @@ class JavaObject(object):
         return 'JavaObject id=' + self._target_id
     
 class JavaClass():
+    """A `JavaClass` represents a Java Class from which static members can be retrieved. `JavaClass` 
+    instances are also needed to initialize an array.
+    
+    Usually, `JavaClass` are not initialized using their constructor, but they are created while
+    accessing the `jvm` property of a gateway, e.g., `gateway.jvm.java.lang.String`.
+    """
     def __init__(self, fqn, comm_channel):
         self._fqn = fqn
         self._comm_channel = comm_channel
@@ -585,6 +596,11 @@ class JavaClass():
         return return_value
 
 class JavaPackage():
+    """A `JavaPackage` represents part of a Java package from which Java classes can be accessed.
+    
+    Usually, `JavaPackage` are not initialized using their constructor, but they are created while
+    accessing the `jvm` property of a gateway, e.g., `gateway.jvm.java.lang`.
+    """
     def __init__(self, fqn, comm_channel):
         self._fqn = fqn
         self._comm_channel = comm_channel
@@ -634,7 +650,7 @@ class JavaGateway(object):
     
     def __init__(self, comm_channel=None, auto_field=False, python_proxy_port=DEFAULT_PYTHON_PROXY_PORT):
         """
-        :param comm_channel: communication channel used to connect to the JVM. If `None`, a communication channel based on a socket with the default parameters is created.
+        :param comm_channel: communication channel used to connect to the JVM. If `None`, a communication channel factory based on a socket with the default parameters is created.
         :param auto_field: if `False`, each object accessed through this gateway won't try to lookup fields (they will be accessible only by calling get_field). If `True`, fields will be automatically looked up, possibly hiding methods of the same name and making method calls less efficient.
         :param python_proxy_port: port used to receive callback from the JVM.
         """

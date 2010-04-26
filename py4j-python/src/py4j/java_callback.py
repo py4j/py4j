@@ -18,16 +18,36 @@ GARBAGE_COLLECT_PROXY_COMMAND_NAME = 'g'
 logger = logging.getLogger("py4j.java_callback")
 
 class CallbackServer(Thread):
+    """The CallbackServer is responsible for receiving call back connection requests from the JVM.
+    Usually connections are reused on the Java side, but there is at least one connection per 
+    concurrent thread. 
+    """
+    
     def __init__(self, pool, comm_channel, port = DEFAULT_PYTHON_PROXY_PORT):
+        """
+        :param pool: the pool responsible of tracking Python objects passed to the Java side.
+        :param comm_channel: the communication channel used to call Java objects.
+        :param port: the port the CallbackServer is listening to.
+        """
         super(CallbackServer, self).__init__()
         self.comm_channel = comm_channel
         self.port = port
         self.pool = pool
         self.connections = []
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.lock = RLock()
+        self.is_shutdown = False
     
     def run(self):
+        """Starts listening and accepting connection requests.
+        
+        This method is called when invoking `CallbackServer.start()`. A CallbackServer instance
+        is created and started automatically when a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
+        instance is created.
+        """
         try:
+            with self.lock:
+                self.is_shutdown = False
             logger.info('Callback Server Starting')
             self.server_socket.bind(('localhost', self.port))
             self.server_socket.listen(5)
@@ -35,30 +55,42 @@ class CallbackServer(Thread):
             socket, _ = self.server_socket.accept()
             input = socket.makefile('r', 0)
             connection = CallbackConnection(self.pool, input, socket, self.comm_channel)
-            self.connections.append(connection)
-            connection.start()
+            with self.lock:
+                if not self.is_shutdown:
+                    self.connections.append(connection)
+                    connection.start()
+                else:
+                    connection.socket.shutdown(socket.SHUT_RDWR)
+                    connection.socket.close()
         except:
             logger.exception('Error while waiting for a connection.')
     
     def shutdown(self):
-        logger.info('Callback Server Shutting Down')
-        try:
-            self.server_socket.shutdown(socket.SHUT_RDWR)
-            self.server_socket.close()
-        except:
-            pass
+        """Stops listening and accepting connection requests. All live connections are closed.
         
-        for connection in self.connections:
+        This method can safely be called by another thread.        
+        """
+        logger.info('Callback Server Shutting Down')
+        with self.lock:
             try:
-                connection.socket.shutdown(socket.SHUT_RDWR)
-                connection.socket.close()
+                self.server_socket.shutdown(socket.SHUT_RDWR)
+                self.server_socket.close()
             except:
                 pass
             
-        self.pool.clear()
+            for connection in self.connections:
+                try:
+                    connection.socket.shutdown(socket.SHUT_RDWR)
+                    connection.socket.close()
+                except:
+                    pass
+
+            self.pool.clear()
                 
     
 class CallbackConnection(Thread):
+    """A `CallbackConnection` receives callbacks and garbage collection requests from the Java side. 
+    """
     def __init__(self, pool, input, socket, comm_channel):
         super(CallbackConnection, self).__init__()
         self.pool = pool
@@ -76,7 +108,7 @@ class CallbackConnection(Thread):
                 if obj_id is None or len(obj_id.strip()) == 0:
                     break
                 if command == CALL_PROXY_COMMAND_NAME:
-                    return_message = self.call_proxy(obj_id, self.input)
+                    return_message = self._call_proxy(obj_id, self.input)
                     self.socket.sendall(return_message.encode('utf-8'))
                 elif command == GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                     self.input.readline()
@@ -92,19 +124,19 @@ class CallbackConnection(Thread):
         except Exception:
             pass
             
-    def call_proxy(self, obj_id, input):
+    def _call_proxy(self, obj_id, input):
         return_message = ERROR_RETURN_MESSAGE
         if obj_id in self.pool:
             try:
                 method = input.readline().decode('utf-8')[:-1]
-                params = self.get_params(input)
+                params = self._get_params(input)
                 return_value = getattr(self.pool[obj_id],method)(*params)
                 return_message = 'y' + get_command_part(return_value)
             except:
                 logger.exception('There was an exception while executing the Python Proxy.')
         return return_message
     
-    def get_params(self, input):
+    def _get_params(self, input):
         params = []
         temp = input.readline().decode('utf-8')[:-1]
         while temp != END:
@@ -114,12 +146,28 @@ class CallbackConnection(Thread):
         return params
     
 class PythonProxyPool(object):
+    """A `PythonProxyPool` manages proxies that are passed to the Java side. A proxy is a Python
+    class that implements a Java interface.
+    
+    A proxy has an internal class named `Java` with a member named `interfaces` which is a list of
+    fully qualified names (string) of the implemented interfaces.
+    
+    The `PythonProxyPool` implements a subset of the dict interface: `pool[id]`, `del(pool[id])`, 
+    `pool.put(proxy)`, `pool.clear()`, `id in pool`, `len(pool)`.
+    
+    The `PythonProxyPool` is thread-safe.
+    """
     def __init__(self):
         self.lock = RLock()
         self.dict = {}
         self.next_id = 0
     
     def put(self, object):
+        """Adds a proxy to the pool.
+        
+        :param object: The proxy to add to the pool.
+        :rtype: A unique identifier associated with the object.
+        """
         with self.lock:
             id = PYTHON_PROXY_PREFIX + str(self.next_id)
             self.next_id += 1
