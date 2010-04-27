@@ -4,9 +4,10 @@
 Welcome to Py4J
 ===============
 
-Py4J enables Python programs running in a Python interpreter to dynamically access Java objects residing in a Java Virtual Machine. Methods are called as if the Java objects
-resided in the Python interpreter and Java collections can be accessed through standard Python collection methods.
-Py4J is distributed under the `BSD license <http://sourceforge.net/apps/trac/py4j/browser/trunk/py4j-python/LICENSE.txt>`_.
+Py4J enables Python programs running in a Python interpreter to dynamically access Java objects in a Java Virtual
+Machine. Methods are called as if the Java objects resided in the Python interpreter and Java collections can be
+accessed through standard Python collection methods. Py4J also enables Java programs to call back Python objects. Py4J
+is distributed under the `BSD license <http://sourceforge.net/apps/trac/py4j/browser/trunk/py4j-python/LICENSE.txt>`_.
 
 Here is a brief example of what you can do with Py4J. The following Python program creates a `java.util.ArrayList`
 instance from a JVM and calls some of its methods using the standard Python list methods. It also accesses a custom

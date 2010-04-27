@@ -304,6 +304,8 @@ Finally, you do not need an entry point to create and access objects. You can us
 Where to go from here
 ---------------------
 
+* You can read the :doc:`Advanced Topics <advanced_topics>` to learn more about collections, callbacks and the Py4J 
+  memory and threading model.
 * You can explore the :doc:`Py4J Python API <py4j_python>` or the :doc:`Py4J Java API <py4j_java>`.
 * Look at the :doc:`FAQ <faq>`.
 

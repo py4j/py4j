@@ -16,7 +16,7 @@ java.util.Set   MutableSet             :class:`JavaSet <py4j.java_collections.Ja
 java.util.Map   MutableMapping         :class:`JavaMap <py4j.java_collections.JavaMap>`
 =============== ====================== ====================================================
 
-.. [#arraynote] Py4J allows elements to be modified, which is not the case of true immutable sequence like tuples.
+.. [#arraynote] Py4J allows elements to be modified, which is not the case of true immutable sequences like tuples.
 
 Iterators are currently not automatically converted, except when accessed through a collection (e.g., `for i in list`). 
 Java methods are still accessible when using the Python version of a Java collection. Here are some usage examples for
@@ -126,7 +126,117 @@ Map
 Enabling Java objects to call Python objects (callback)
 -------------------------------------------------------
 
-TBD
+Since version 0.3, Py4J allows Java programs to call Python objects. In other words, Python classes can implement a 
+Java interface and instances of these classes can be passed to a Java object. In the following example, we will play the
+role of a Mad Scientist :sup:`TM` and we will create a program that invokes an operator with two or three random integers.
+
+Here is the code of the main Java program:
+
+.. code-block:: java
+
+  package py4j.examples;
+
+  import java.util.ArrayList;
+  import java.util.List;
+  import java.util.Random;
+
+  import py4j.GatewayServer;
+
+  public class OperatorExample {
+
+	  public List<Integer> randomBinaryOperator(Operator op) {
+		  Random random = new Random();
+		  List<Integer> numbers = new ArrayList<Integer>();
+		  numbers.add(random.nextInt());
+		  numbers.add(random.nextInt());
+		  numbers.add(op.doOperation(numbers.get(0), numbers.get(1)));
+		  return numbers;
+	  }
+	  
+	  public List<Integer> randomTernaryOperator(Operator op) {
+		  Random random = new Random();
+		  List<Integer> numbers = new ArrayList<Integer>();
+		  numbers.add(random.nextInt());
+		  numbers.add(random.nextInt());
+		  numbers.add(random.nextInt());
+		  numbers.add(op.doOperation(numbers.get(0), numbers.get(1), numbers.get(2)));
+		  return numbers;
+	  }
+	  
+	  public static void main(String[] args) {
+		  GatewayServer server = new GatewayServer(new OperatorExample());
+		  server.start();
+	  }
+
+  }
+
+
+The programs has a main method starting a `GatewayServer`. The entry point, a `OperatorExample` instance, offers two
+methods that take as a parameter an `Operator` instance. Each method calls the operator with two or three random 
+integers and save the integers and the result in a list. Here is the declaration of `Operator`:
+
+
+.. code-block:: java
+
+  package py4j.examples;
+
+  public interface Operator {
+
+	  public int doOperation(int i, int j);
+	  
+	  public int doOperation(int i, int j, int k);
+	  
+  }
+
+
+Now, because the Mad Scientist :sup:`TM` is, well, mad, he wants to define an Operator in Python. Here is his little Python 
+program:
+
+::
+
+  from py4j.java_gateway import JavaGateway
+
+  class Addition(object):
+      def doOperation(self, i, j, k = None):
+	  if k == None:
+	      return i + j
+	  else:
+	      return i + j + k
+	  
+      class Java:
+	  interfaces = ['py4j.examples.Operator']
+
+  if __name__ == '__main__':
+      gateway = JavaGateway()
+      operator = Addition()
+      numbers = gateway.entry_point.randomBinaryOperator(operator)
+      print(numbers)
+      numbers = gateway.entry_point.randomTernaryOperator(operator)
+      print(numbers)
+      gateway.shutdown()
+
+
+The `Addition` class is a standard Python class that has one method, `doOperation`. The signature of the method contains 
+two parameters and an optional third parameter: this maps with the two overloaded methods in the `Operator` Java 
+interface. Each method implementing an overloaded method in a Java interface should accept all possible combinations of 
+parameters, otherwise, an exception will be thrown if the Java program tries to call an unsupported method.
+
+Py4J recognizes that the `Addition` class implements a Java interface because it declares an internal class called 
+`Java`, which has a member named `interfaces`. This member is a list of string representing the fully qualified name of 
+implemented Java interfaces.
+
+Finally, the Python program contains a main method that starts a gateway, initializes an Addition operator and sends it
+to the `OperatorExample` instance on the Java side. Py4J takes care of creating the necessary proxies: the `doOperation`
+method of the `Addition` class is called in the Java VM, but the method is executed in the Python interpreter.
+
+.. warning:: 
+   
+   Python classes can only implement Java interfaces. Abstract or concrete classes are not supported and there is no
+   plan to support them in the near future because this would probably require instrumenting the bytecode at runtime.
+   Java does not natively support dynamic proxies for classes. 
+
+   As a workaround, a subclass of the abstract class could be created on the Java side. The methods of the subclass 
+   would call the methods of a custom interface that a Python class could implement.
 
 .. _adv_memory:
 
@@ -135,8 +245,8 @@ Py4J memory model
 
 **Java objects sent to the Python side**
 
-Every time an object is returned through a gateway, a reference to the object is kept on the Java side (in the Gateway
-class). Once the object is garbage collected on the Python VM (reference count = 0), the reference is removed on the
+Every time a Java object is sent to the Python side, a reference to the object is kept on the Java side (in the Gateway
+class). Once the object is garbage collected on the Python VM (reference count == 0), the reference is removed on the
 Java VM: if this was the last reference, the object will likely be garbage collected too. When a gateway is shut down,
 the remaining references are also removed on the Java VM.
 
@@ -146,7 +256,7 @@ objects are not immediately garbage collected once the last reference to the obj
 to be eventually collected **if the Python garbage collector runs before the Python program exits**).
 
 In doubt, users can always call the :func:`detach <py4j.java_gateway.JavaGateway.detach>` function on the Python
-gateway.
+gateway to explicitly delete a reference on the Java side. A call to `gc.collect()` also usually works.
 
 **Python objects sent to the Java side (callback)**
 
@@ -165,9 +275,9 @@ of the specification of Java finalizers (which are surprisingly worse than Pytho
 Py4J Threading and connection model
 -----------------------------------
 
-In general, Py4J allocates one thread per connection. The design of Py4j is symmetrical on the Python and Java sides.
-A Python communication channel communicates with the Java GatewayServer and is then associated with a GatewayConnection.
-A Java communication channel (for callbacks) communicates with the Python CallbackServer and is then associated with a 
+Py4J allocates one thread per connection. The design of Py4j is symmetrical on the Python and Java sides. A Python
+communication channel communicates with the Java GatewayServer and is then associated with a GatewayConnection. A Java
+communication channel (for callbacks) communicates with the Python CallbackServer and is then associated with a
 CallbackConnection. Communication channels run in the calling thread.
 
 And now, for the details:

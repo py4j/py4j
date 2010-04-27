@@ -41,7 +41,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'Py4J'
-copyright = u'2009, Barthélémy Dagenais'
+copyright = u'2009-2010, Barthélémy Dagenais'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -63,7 +63,7 @@ release = '0.1'
 #today_fmt = '%B %d, %Y'
 
 # List of documents that shouldn't be included in the build.
-unused_docs = ['index','download', 'about']
+#unused_docs = ['index','download', 'about']
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
