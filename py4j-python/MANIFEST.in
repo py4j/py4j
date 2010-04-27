@@ -1,0 +1,6 @@
+include setup.py
+include pavement.py
+include paver-minilib.zip
+include LICENSE
+recursive-include doc *.*
+recursive-include py4j-java *.*
