@@ -8,6 +8,7 @@ Py4J Documentation
 
    install
    getting_started
+   advanced_topics
    py4j_python
    py4j_java
    faq

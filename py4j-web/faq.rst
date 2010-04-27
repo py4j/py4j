@@ -55,7 +55,7 @@ fields.
 How to access a field?
 ----------------------
 
-Use the :ref:`get_field <api_functions_get_field>` function:
+Use the :func:`get_field <py4j.java_gateway.get_field>` function:
 
 ::
 
@@ -101,37 +101,6 @@ to Python. It also uses TCP port 25332 for a test echo server (only used by unit
 These ports can be customized when creating a :class:`JavaGateway <py4j.java_gateway.JavaGateway>` on the Python side
 and a GatewayServer on the Java side.
 
-
-What is the memory model of Py4J?
----------------------------------
-
-**Java objects sent to the Python side**
-
-Every time an object is returned through a gateway, a reference to the object is kept on the Java side (in the Gateway
-class). Once the object is garbage collected on the Python VM (reference count = 0), the reference is removed on the
-Java VM: if this was the last reference, the object will likely be garbage collected too. When a gateway is shut down,
-the remaining references are also removed on the Java VM.
-
-Because Java objects on the Python side are involved in a circular reference (:class:`JavaObject
-<py4j.java_gateway.JavaObject>` and :class:`JavaMember <py4j.java_gateway.JavaMember>` reference each other), these
-objects are not immediately garbage collected once the last reference to the object is removed (but they are guaranteed
-to be eventually collected **if the Python garbage collector runs before the Python program exits**).
-
-In doubt, users can always call the :func:`detach <py4j.java_gateway.JavaGateway.detach>` function on the Python
-gateway.
-
-**Python objects sent to the Java side (callback)**
-
-Every time a Python object is sent to the Java side, a reference to this object is kept on the Python side (by a
-:class:`PythonProxyPool <py4j.java_callback.PythonProxyPool>`). Once a python object is garbage collected on the Java
-side, a message is sent to the Python side to remove the reference to the Python object. When a gateway is shut down,
-the remaining references are removed from the Python VM.
-
-Unfortunately, there is no guarantee that the garbage collection message will ever be sent to the Python side (it
-usually works on Sun/Oracle VM). It might thus be necessary to manually remove the reference to the Python objects. Some
-helper functions will be developed in the future, but it is unlikely that garbage collection will be guarenteed because
-of the specification of Java finalizers (which is surprisingly worse than Python finalizer strategies).
-
 Is Py4J thread-safe?
 --------------------
 
@@ -159,6 +128,8 @@ concurrently with other methods to ensure that all communication channels are cl
 accessing a lock every time a Java method is called on the Python side. This will only be a problem if attempting to
 shut down or close a JavaGateway while calling Java methods on the Python side.
 
+See :ref:`Py4J Threading Model <adv_threading>` for more details.
+
 I found a bug, how do I report it?
 ----------------------------------
 
@@ -167,12 +138,23 @@ Please report bugs on our `issue tracker <https://sourceforge.net/apps/trac/py4j
 How can I contribute?
 ---------------------
 
-There are tons of ways to contribute.
+There are many ways to contribute to Py4J:
 
-* Bug reports
-* How-tos
-* Documentation patch
-* Code patch
-* Art and Logos
+* **Found a bug or have a feature request?** Fill a detailed `issue report
+  <https://sourceforge.net/apps/trac/py4j/newticket>`_.
+* **Have a tip or trick to share with fellow Py4J users?** Add a `how to
+  <https://sourceforge.net/apps/trac/py4j/wiki/HowTos>`_ on the wiki.
+* **Found a typo or have a better way to clarify the documentation?** Write a comment at the bottom of documentation
+  the 
+  page, send a patch on the `mailing list <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_, or 
+  fill a `bug report <https://sourceforge.net/apps/trac/py4j/newticket>`_. The source of each documentation page is 
+  accessible in the sidebar. We use `ReStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`_
+* **Good at writing Python or Java?** Good news, we could use some help, especially in the Python department! 
+  You can either contribute a code patch through the `mailing list
+  <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_ by adding a feature or just addressing an
+  `open issue <https://sourceforge.net/apps/trac/py4j/report/1>`_.
+* **Feeling artsy?** We need a logo. Hop on the `mailing list
+  <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_.
 
-In case of doubt, do not hesitate to contact me.
+In case of doubt, do not hesitate to contact the founder of the project, `Barthelemy
+<mailto:barthe@users.sourceforge.net>`_.

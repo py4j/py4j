@@ -4,6 +4,15 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J releases. Please look at the `roadmap
 <http://sourceforge.net/apps/trac/py4j/roadmap?show=all>`_ for more detailed information. 
 
+Py4J 0.3
+--------
+
+- Added support for Java arrays and set.
+- Added support for callbacks: Java objects can now call back Python objects.
+- Completely redesigned threading and connection model of Py4J to allow multiple threads and callbacks on both side.
+- Refactored the memory management to ensure best effort garbage collection.
+- `Trac 0.3 milestone <http://sourceforge.net/apps/trac/py4j/milestone/0.3>`_
+
 Py4J 0.2
 --------
 
