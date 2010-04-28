@@ -648,13 +648,15 @@ class JavaGateway(object):
     This is a trade-off between convenience and potential confusion."""
     
     
-    def __init__(self, comm_channel=None, auto_field=False, python_proxy_port=DEFAULT_PYTHON_PROXY_PORT):
+    def __init__(self, comm_channel=None, auto_field=False, python_proxy_port=DEFAULT_PYTHON_PROXY_PORT, start_callback_server=True):
         """
         :param comm_channel: communication channel used to connect to the JVM. If `None`, a communication channel factory based on a socket with the default parameters is created.
         :param auto_field: if `False`, each object accessed through this gateway won't try to lookup fields (they will be accessible only by calling get_field). If `True`, fields will be automatically looked up, possibly hiding methods of the same name and making method calls less efficient.
         :param python_proxy_port: port used to receive callback from the JVM.
+        :param start_callback_server: if `True`, the callback server is started.
         """
         self.gateway_property = GatewayProperty(auto_field, PythonProxyPool())
+        self._python_proxy_port = python_proxy_port
         
         if comm_channel == None:
             comm_channel = CommChannelFactory()
@@ -666,8 +668,9 @@ class JavaGateway(object):
         #JavaObject.__init__(self, ENTRY_POINT_OBJECT_ID, comm_channel)
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, comm_channel)
         self.jvm = JVM(comm_channel)
-        self._callback_server = CallbackServer(self.gateway_property.pool,self._comm_channel, python_proxy_port)
-        self._callback_server.start()
+        if start_callback_server:
+            self._callback_server = CallbackServer(self.gateway_property.pool,self._comm_channel, python_proxy_port)
+            self._callback_server.start()
             
     def __getattr__(self, name):
         return self.entry_point.__getattr__(name)
@@ -694,16 +697,30 @@ class JavaGateway(object):
             self._comm_channel.shutdown_gateway()
         except:
             pass
+        self._shutdown_callback_server()
+        
+    def _shutdown_callback_server(self):
         try:
             self._callback_server.shutdown()
         except:
             pass
         
-    def close(self):
+    def restart_callback_server(self):
+        """Shuts down the callback server (if started) and restarts a new one.
+        """
+        self._shutdown_callback_server()
+        self._callback_server = CallbackServer(self.gateway_property.pool,self._comm_channel, self._python_proxy_port)
+        self._callback_server.start()
+        
+    def close(self, keep_callback_server=False):
         """Closes all communication channels. A communication channel will be reopened if necessary 
         (e.g., if a :class:`JavaMethod` is called).
+        
+        :param keep_callback_server: if `True`, the callback server is not shut down.
         """
         self._comm_channel.close()
+        if not keep_callback_server:
+            self._shutdown_callback_server()
         
     def detach(self, java_object):
         """Makes the Java Gateway dereference this object. 

@@ -72,6 +72,7 @@ class CallbackServer(Thread):
         """
         logger.info('Callback Server Shutting Down')
         with self.lock:
+            self.is_shutdown = True
             try:
                 self.server_socket.shutdown(socket.SHUT_RDWR)
                 self.server_socket.close()
