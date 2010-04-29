@@ -68,7 +68,11 @@ public class MethodDescriptor {
 		builder.append(name);
 		builder.append('(');
 		for (Class param : params) {
-			builder.append(param.getName());
+			String paramName = "null";
+			if (param != null) {
+				paramName = param.getName();
+			}
+			builder.append(paramName);
 			builder.append(DOT);
 		}
 		builder.append(')');

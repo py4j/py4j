@@ -75,8 +75,7 @@ public class ReflectionEngine {
 			clazz = TypeUtil.forName(fqn);
 			returnObject = Array.newInstance(clazz, dimensions);
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + fqn,
-					e);
+			logger.log(Level.WARNING, "Class FQN does not exist: " + fqn, e);
 			throw new Py4JException(e);
 		}
 		return returnObject;
@@ -145,7 +144,11 @@ public class ReflectionEngine {
 		Class<?>[] classes = new Class<?>[size];
 
 		for (int i = 0; i < size; i++) {
-			classes[i] = parameters[i].getClass();
+			if (parameters[i] == null) {
+				classes[i] = null;
+			} else {
+				classes[i] = parameters[i].getClass();
+			}
 		}
 
 		return classes;
@@ -359,7 +362,7 @@ public class ReflectionEngine {
 
 		return methods;
 	}
-	
+
 	public Object invoke(Object object, MethodInvoker invoker,
 			Object[] parameters) {
 		Object returnObject = null;

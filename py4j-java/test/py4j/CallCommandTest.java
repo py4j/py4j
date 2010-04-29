@@ -190,6 +190,20 @@ public class CallCommandTest {
 	}
 	
 	@Test
+	public void testStringMethodWithNull() {
+		String inputCommand = target + "\nmethod4\nn\ne\n";
+		try {
+			command.execute("c", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yro1\n", sWriter.toString());
+			assertEquals(3, ((ExampleClass)gateway.getObject("o1")).getField1());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
 	public void testUsingMethodReturn() {
 		String inputCommand = target + "\nmethod4\nsc\ne\n";
 		String inputCommand2 = target + "\nmethod5\nro1\ne\n";

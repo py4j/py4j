@@ -31,6 +31,7 @@ package py4j;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 
 import py4j.reflection.PythonProxyHandler;
@@ -230,30 +231,37 @@ public class Protocol {
 	public final static String getOutputErrorCommand() {
 		return ERROR_COMMAND;
 	}
-	
+
 	public final static String getOutputErrorCommand(String errorMessage) {
 		return ERROR + errorMessage + END_OUTPUT;
 	}
-	
+
 	public final static String getOutputErrorCommand(Throwable throwable) {
 		return ERROR + getThrowableAsString(throwable) + END_OUTPUT;
 	}
-	
-	public final static Throwable getRootThrowable(Throwable throwable) {
+
+	public final static Throwable getRootThrowable(Throwable throwable,
+			boolean skipInvocation) {
 		Throwable child = throwable;
-		if (child instanceof Py4JException || child instanceof Py4JNetworkException) {
+		if (!skipInvocation && child instanceof InvocationTargetException) {
 			child = throwable.getCause();
+			skipInvocation = true;
+		} else if (child instanceof Py4JException
+				|| child instanceof Py4JNetworkException) {
+			child = throwable.getCause();
+		} else {
+			return child;
 		}
-		
+
 		if (child == null) {
 			return throwable;
 		} else {
-			return getRootThrowable(child);
+			return getRootThrowable(child, skipInvocation);
 		}
 	}
-	
+
 	public final static String getThrowableAsString(Throwable throwable) {
-		Throwable root = getRootThrowable(throwable);
+		Throwable root = getRootThrowable(throwable, false);
 		StringWriter stringWriter = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(stringWriter);
 		root.printStackTrace(printWriter);
@@ -335,16 +343,18 @@ public class Protocol {
 
 		return gateway.getObject(reference);
 	}
-	
-	public final static Object getReturnValue(String returnMessage, Gateway gateway) {
+
+	public final static Object getReturnValue(String returnMessage,
+			Gateway gateway) {
 		Object returnValue = null;
-	
+
 		if (isError(returnMessage)) {
-			throw new Py4JException("An exception was raised by the Python Proxy.");
+			throw new Py4JException(
+					"An exception was raised by the Python Proxy.");
 		} else {
 			returnValue = getObject(returnMessage.substring(1), gateway);
 		}
-		
+
 		return returnValue;
 	}
 

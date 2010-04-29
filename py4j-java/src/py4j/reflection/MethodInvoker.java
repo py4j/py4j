@@ -200,7 +200,15 @@ public class MethodInvoker {
 		int tempCost = -1;
 		int size = arguments.length;
 		for (int i = 0; i < size; i++) {
-			if (parameters[i].isAssignableFrom(arguments[i])) {
+			if (arguments[i] == null) {
+				if (parameters[i].isPrimitive()) {
+					tempCost = -1;
+				} else {
+					tempCost = 0;
+					converters.add(TypeConverter.NO_CONVERTER);
+				}
+			}
+			else if (parameters[i].isAssignableFrom(arguments[i])) {
 				tempCost = TypeUtil
 						.computeDistance(parameters[i], arguments[i]);
 				converters.add(TypeConverter.NO_CONVERTER);

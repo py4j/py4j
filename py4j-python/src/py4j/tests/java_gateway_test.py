@@ -144,7 +144,6 @@ class IntegrationTest(unittest.TestCase):
             ex2 = gateway.entry_point.getNewExample();
             response = ex2.method3(1, True)
             self.assertEqual('Hello World2', response)
-            
             gateway.shutdown()
         except Exception as e:
             print('Error has occurred', e)
@@ -314,6 +313,10 @@ class JVMTest(unittest.TestCase):
         self.assertEqual(-32768, Short.MIN_VALUE)
         System = self.gateway.jvm.java.lang.System
         self.assertFalse(System.out.checkError())
+        
+    def testNone(self):
+        ex = self.gateway.entry_point.getNewExample()
+        ex.method4(None)
 
 class HelpTest(unittest.TestCase):
     
