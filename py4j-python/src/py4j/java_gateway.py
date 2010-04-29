@@ -217,7 +217,10 @@ def get_return_value(answer, comm_channel, target_id=None, name=None):
     :param name: the name of the member from which the answer comes from (e.g., *hello* in `object1.hello()`). Optional.
     """
     if is_error(answer)[0]:
-        raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))
+        if len(answer) > 1:
+            raise Py4JError('An error occurred while calling %s%s%s. Trace:\n%s\n' % (target_id, '.', name, unescape_new_line(answer[1:])))
+        else:
+            raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))
     else:
         type = answer[1]
         if type == VOID_TYPE:
