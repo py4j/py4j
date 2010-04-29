@@ -2,7 +2,7 @@
 <feature
       id="net.sf.py4j.feature"
       label="Py4J Feature"
-      version="0.3.0.qualifier">
+      version="0.4.0.qualifier">
 
    <description url="http://py4j.sourceforge.net/">
       Py4J enables Python programs running in a Python interpreter to dynamically access Java objects residing in a Java Virtual Machine. Methods are called as if the Java objects resided in the Python interpreter and Java collections can be accessed through standard Python collection methods.
