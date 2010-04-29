@@ -310,8 +310,11 @@ class Py4JError(Exception):
         """
         self.value = value
     
+    def __repr__(self):
+        return self.value
+    
     def __str__(self):
-        return repr(self.value)
+        return self.value
 
 
 class Py4JNetworkError(Exception):
@@ -323,8 +326,11 @@ class Py4JNetworkError(Exception):
         """
         self.value = value
     
+    def __repr__(self):
+        return self.value
+    
     def __str__(self):
-        return repr(self.value)
+        return self.value
 
 class CommChannelFactory(object):
     """Responsible for managing connections to the JavaGateway.

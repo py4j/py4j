@@ -239,10 +239,24 @@ public class Protocol {
 		return ERROR + getThrowableAsString(throwable) + END_OUTPUT;
 	}
 	
+	public final static Throwable getRootThrowable(Throwable throwable) {
+		Throwable child = throwable;
+		if (child instanceof Py4JException || child instanceof Py4JNetworkException) {
+			child = throwable.getCause();
+		}
+		
+		if (child == null) {
+			return throwable;
+		} else {
+			return getRootThrowable(child);
+		}
+	}
+	
 	public final static String getThrowableAsString(Throwable throwable) {
+		Throwable root = getRootThrowable(throwable);
 		StringWriter stringWriter = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(stringWriter);
-		throwable.printStackTrace(printWriter);
+		root.printStackTrace(printWriter);
 		return StringUtil.escape(stringWriter.toString());
 	}
 

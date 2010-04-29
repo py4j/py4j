@@ -96,6 +96,19 @@ public class CallCommandTest {
 			fail();
 		}
 	}
+	
+	@Test
+	public void testException2() {
+		String inputCommand = target + "\nmethod1aa\ne\n";
+		try {
+			command.execute("c", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertTrue(sWriter.toString().startsWith("xpy4j.Py4JException: "));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
 
 	@Test
 	public void testNoParam() {
