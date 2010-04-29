@@ -115,7 +115,7 @@ public class ReflectionCommand extends AbstractCommand {
 						returnCommand = Protocol
 								.getMemberOutputCommand(Protocol.METHOD_TYPE);
 					} else {
-						returnCommand = Protocol.getOutputErrorCommand();
+						returnCommand = Protocol.getOutputErrorCommand("Trying to access a non-static member from a static context.");
 					}
 				}
 			}
@@ -148,7 +148,7 @@ public class ReflectionCommand extends AbstractCommand {
 			returnCommand = Protocol
 					.getMemberOutputCommand(Protocol.PACKAGE_TYPE);
 		} catch (Exception e) {
-			returnCommand = Protocol.getOutputErrorCommand();
+			returnCommand = Protocol.getOutputErrorCommand(e);
 		}
 		return returnCommand;
 	}

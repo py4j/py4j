@@ -29,6 +29,8 @@
  *******************************************************************************/
 package py4j;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Proxy;
 
 import py4j.reflection.PythonProxyHandler;
@@ -215,7 +217,7 @@ public class Protocol {
 		StringBuilder builder = new StringBuilder();
 
 		if (rObject.isError()) {
-			builder.append(ERROR);
+			builder.append(rObject.getCommandPart());
 		} else {
 			builder.append(SUCCESS);
 			builder.append(rObject.getCommandPart());
@@ -227,6 +229,21 @@ public class Protocol {
 
 	public final static String getOutputErrorCommand() {
 		return ERROR_COMMAND;
+	}
+	
+	public final static String getOutputErrorCommand(String errorMessage) {
+		return ERROR + errorMessage + END_OUTPUT;
+	}
+	
+	public final static String getOutputErrorCommand(Throwable throwable) {
+		return ERROR + getThrowableAsString(throwable) + END_OUTPUT;
+	}
+	
+	public final static String getThrowableAsString(Throwable throwable) {
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(stringWriter);
+		throwable.printStackTrace(printWriter);
+		return StringUtil.escape(stringWriter.toString());
 	}
 
 	public final static String getOutputVoidCommand() {

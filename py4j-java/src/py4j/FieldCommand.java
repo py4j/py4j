@@ -96,7 +96,7 @@ public class FieldCommand extends AbstractCommand {
 
 	private String setField(BufferedReader reader) throws IOException {
 		// TODO Implement this method!
-		return Protocol.getOutputErrorCommand();
+		return Protocol.getOutputErrorCommand("Set Field subcommand is not implemented.");
 	}
 
 }

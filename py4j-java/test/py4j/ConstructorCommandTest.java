@@ -113,7 +113,7 @@ public class ConstructorCommandTest {
 		try {
 			command.execute("i", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("x\n", sWriter.toString());
+			assertTrue(sWriter.toString().startsWith("x"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

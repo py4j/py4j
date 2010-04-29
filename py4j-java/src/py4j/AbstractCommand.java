@@ -120,7 +120,7 @@ public abstract class AbstractCommand implements Command {
 			logger.log(Level.INFO,
 					"Received exception while executing this command: "
 							+ methodName, e);
-			returnObject = ReturnObject.getErrorReturnObject();
+			returnObject = ReturnObject.getErrorReturnObject(e);
 		}
 		return returnObject;
 	}

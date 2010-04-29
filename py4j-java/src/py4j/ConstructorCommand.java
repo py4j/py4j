@@ -72,7 +72,7 @@ public class ConstructorCommand extends AbstractCommand {
 			logger.log(Level.INFO,
 					"Received exception while executing this command: " + fqn,
 					e);
-			returnObject = ReturnObject.getErrorReturnObject();
+			returnObject = ReturnObject.getErrorReturnObject(e);
 		}
 		return returnObject;
 	}

@@ -73,6 +73,20 @@ public class ReturnObject {
 		rObject.commandPart = String.valueOf(Protocol.ERROR);
 		return rObject;
 	}
+	
+	public static ReturnObject getErrorReturnObject(Throwable throwable) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.isError = true;
+		rObject.commandPart = Protocol.ERROR + Protocol.getThrowableAsString(throwable);
+		return rObject;
+	}
+	
+	public static ReturnObject getErrorReturnObject(String errorMessage) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.isError = true;
+		rObject.commandPart = Protocol.ERROR + errorMessage;
+		return rObject;
+	}
 
 	public static ReturnObject getListReturnObject(String name, int size) {
 		ReturnObject rObject = new ReturnObject();

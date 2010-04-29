@@ -47,7 +47,7 @@ public class ArrayCommand extends AbstractCommand {
 		} else if (subCommand == ARRAY_CREATE_SUB_COMMAND_NAME) {
 			returnCommand = createArray(reader);
 		} else {
-			returnCommand = Protocol.getOutputErrorCommand();
+			returnCommand = Protocol.getOutputErrorCommand("Unknown Array SubCommand Name: " + subCommand);
 		}
 
 		logger.info("Returning command: " + returnCommand);

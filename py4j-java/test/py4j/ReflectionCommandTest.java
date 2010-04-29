@@ -107,19 +107,19 @@ public class ReflectionCommandTest {
 			assertEquals("ym\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand2)), writer);
-			assertEquals("ym\nx\n", sWriter.toString());
+			assertEquals("ym\nxTrying to access a non-static member from a static context.\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand3)), writer);
-			assertEquals("ym\nx\nx\n", sWriter.toString());
+			assertEquals("ym\nxTrying to access a non-static member from a static context.\nxTrying to access a non-static member from a static context.\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand4)), writer);
-			assertEquals("ym\nx\nx\nx\n", sWriter.toString());
+			assertEquals("ym\nxTrying to access a non-static member from a static context.\nxTrying to access a non-static member from a static context.\nx\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand5)), writer);
-			assertEquals("ym\nx\nx\nx\nym\n", sWriter.toString());
+			assertEquals("ym\nxTrying to access a non-static member from a static context.\nxTrying to access a non-static member from a static context.\nx\nym\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand6)), writer);
-			assertEquals("ym\nx\nx\nx\nym\nysSalut!\n", sWriter.toString());
+			assertEquals("ym\nxTrying to access a non-static member from a static context.\nxTrying to access a non-static member from a static context.\nx\nym\nysSalut!\n", sWriter.toString());
 		} catch(Exception e) {
 			e.printStackTrace();
 			fail();

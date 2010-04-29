@@ -30,6 +30,7 @@
 package py4j;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -77,6 +78,19 @@ public class CallCommandTest {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("ys123\n", sWriter.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
+	public void testException() {
+		String inputCommand = "z:java.lang.String\nvalueOf2\ni123\ne\n";
+		try {
+			command.execute("c", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertTrue(sWriter.toString().startsWith("xpy4j.Py4JException: "));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
