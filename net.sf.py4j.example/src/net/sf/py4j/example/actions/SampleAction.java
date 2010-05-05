@@ -31,12 +31,12 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 	 * @see IWorkbenchWindowActionDelegate#run
 	 */
 	public void run(IAction action) {
-		MessageDialog.openInformation(
-			window.getShell(),
-			"Example",
-			"Hello, Eclipse world");
 		GatewayServer server = new GatewayServer(null);
 		server.start();
+		MessageDialog.openInformation(
+				window.getShell(),
+				"Example",
+				"Hello, Eclipse world");
 	}
 
 	/**
