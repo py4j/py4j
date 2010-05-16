@@ -207,7 +207,7 @@ program:
 	  interfaces = ['py4j.examples.Operator']
 
   if __name__ == '__main__':
-      gateway = JavaGateway()
+      gateway = JavaGateway(start_callback_server=True)
       operator = Addition()
       numbers = gateway.entry_point.randomBinaryOperator(operator)
       print(numbers)
@@ -228,6 +228,10 @@ implemented Java interfaces.
 Finally, the Python program contains a main method that starts a gateway, initializes an Addition operator and sends it
 to the `OperatorExample` instance on the Java side. Py4J takes care of creating the necessary proxies: the `doOperation`
 method of the `Addition` class is called in the Java VM, but the method is executed in the Python interpreter.
+
+Note that to enable the Python program to receive callbacks, the JavaGateway instance must be created with
+`start_callback_server=True`. Otherwise, the callback server must be started manually by calling 
+:func:`restart_callback_server <py4j.java_gateway.JavaGateway.restart_callback_server>`
 
 .. warning:: 
    

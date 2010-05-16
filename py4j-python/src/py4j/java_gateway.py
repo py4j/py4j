@@ -657,7 +657,7 @@ class JavaGateway(object):
     This is a trade-off between convenience and potential confusion."""
     
     
-    def __init__(self, comm_channel=None, auto_field=False, python_proxy_port=DEFAULT_PYTHON_PROXY_PORT, start_callback_server=True):
+    def __init__(self, comm_channel=None, auto_field=False, python_proxy_port=DEFAULT_PYTHON_PROXY_PORT, start_callback_server=False):
         """
         :param comm_channel: communication channel used to connect to the JVM. If `None`, a communication channel factory based on a socket with the default parameters is created.
         :param auto_field: if `False`, each object accessed through this gateway won't try to lookup fields (they will be accessible only by calling get_field). If `True`, fields will be automatically looked up, possibly hiding methods of the same name and making method calls less efficient.

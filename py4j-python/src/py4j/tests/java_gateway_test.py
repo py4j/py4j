@@ -174,6 +174,19 @@ class IntegrationTest(unittest.TestCase):
             print('Error has occurred', e)   
             self.fail('Problem occurred')
 
+class CloseTest(unittest.TestCase):
+    def testNoCallbackServer(self):
+        # Test that the program can continue to move on and that no close is required.
+        gateway = JavaGateway()
+        self.assertTrue(True)
+
+    def testCallbackServer(self):
+        # A close is required to stop the thread.
+        gateway = JavaGateway(start_callback_server=True)
+        gateway.close()
+        self.assertTrue(True)
+        time.sleep(1)
+
 class FieldTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()

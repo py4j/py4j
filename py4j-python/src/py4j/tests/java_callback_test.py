@@ -126,7 +126,7 @@ class TestIntegration(unittest.TestCase):
         time.sleep(2)
         self.p = start_example_app_process()
         time.sleep(0.5)
-        self.gateway = JavaGateway()
+        self.gateway = JavaGateway(start_callback_server=True)
         
     def tearDown(self):
         self.p.terminate()
