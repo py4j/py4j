@@ -266,6 +266,12 @@ public class ReflectionEngine {
 
 	}
 
+	/**
+	 * <p>Wrapper around Field.get</p>
+	 * @param obj
+	 * @param field
+	 * @return
+	 */
 	public Object getFieldValue(Object obj, Field field) {
 		Object fieldValue = null;
 
@@ -279,6 +285,12 @@ public class ReflectionEngine {
 		return fieldValue;
 	}
 	
+	/**
+	 * <p>Wrapper around Field.set</p>
+	 * @param obj
+	 * @param field
+	 * @param value
+	 */
 	public void setFieldValue(Object obj, Field field, Object value) {
 		try {
 			field.set(obj, value);
