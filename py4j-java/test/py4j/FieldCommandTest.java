@@ -40,6 +40,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import py4j.examples.ExampleClass;
 import py4j.examples.ExampleEntryPoint;
 
 public class FieldCommandTest {
@@ -65,6 +66,19 @@ public class FieldCommandTest {
 	@After
 	public void tearDown() {
 		gateway.shutdown();
+	}
+	
+	@Test
+	public void testPrivateMember() {
+		String inputCommand = "g\n" + target + "\nfield1\ne\n";
+		try {
+			command.execute("f", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yo\n", sWriter.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
 	}
 	
 	@Test
@@ -113,6 +127,48 @@ public class FieldCommandTest {
 			command.execute("f", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("yn\n", sWriter.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
+	public void testSetField() {
+		String inputCommand = "s\n" + target + "\nfield10\ni123\ne\n";
+		try {
+			command.execute("f", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yv\n", sWriter.toString());
+			assertEquals(((ExampleClass)gateway.getObject(target)).field10,123);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
+	public void testSetNoField() {
+		String inputCommand = "s\n" + target + "\nfield1\ni123\ne\n";
+		try {
+			command.execute("f", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yo\n", sWriter.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
+	public void testSetFieldObject() {
+		String objectId = gateway.putNewObject(new StringBuffer("Hello"));
+		String inputCommand = "s\n" + target + "\nfield20\nr"+objectId+"\ne\n";
+		try {
+			command.execute("f", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yv\n", sWriter.toString());
+			assertEquals(((ExampleClass)gateway.getObject(target)).field20,gateway.getObject(objectId));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

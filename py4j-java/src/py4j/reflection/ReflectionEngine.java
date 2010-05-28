@@ -278,6 +278,16 @@ public class ReflectionEngine {
 		}
 		return fieldValue;
 	}
+	
+	public void setFieldValue(Object obj, Field field, Object value) {
+		try {
+			field.set(obj, value);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Error while setting field value of "
+					+ field, e);
+			throw new Py4JException(e);
+		}
+	}
 
 	public Method getMethod(Class<?> clazz, String name) {
 		Method m = null;

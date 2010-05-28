@@ -95,8 +95,24 @@ public class FieldCommand extends AbstractCommand {
 	}
 
 	private String setField(BufferedReader reader) throws IOException {
-		// TODO Implement this method!
-		return Protocol.getOutputErrorCommand("Set Field subcommand is not implemented.");
+		String targetObjectId = reader.readLine();
+		String fieldName = reader.readLine();
+		String value = reader.readLine();
+		
+		reader.readLine(); // read EndOfCommand;
+		
+		Object valueObject = Protocol.getObject(value, this.gateway);
+		Object object = gateway.getObject(targetObjectId);
+		Field field = reflectionEngine.getField(object, fieldName);
+		
+		String returnCommand = null;
+		if (field == null) {
+			returnCommand = Protocol.getNoSuchFieldOutputCommand();
+		} else {
+			reflectionEngine.setFieldValue(object, field, valueObject);
+			returnCommand = Protocol.getOutputVoidCommand();
+		}
+		return returnCommand;
 	}
 
 }
