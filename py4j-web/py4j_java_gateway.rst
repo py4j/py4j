@@ -218,11 +218,16 @@ JavaPackage
 Py4J Functions
 --------------
 
-The following two functions get be used to get a particular field or method when fields and methods in a Java class have the same name:
+The following functions get be used to get a particular field or method when fields and methods in a Java class have the same name:
    
 .. autofunction:: py4j.java_gateway.get_field
 
+.. autofunction:: py4j.java_gateway.set_field
+
 .. autofunction:: py4j.java_gateway.get_method
+
+Py4J Misc. Functions
+--------------------
    
 The following functions can be used to extend Py4J (e.g., to create new commands):
 
