@@ -83,6 +83,7 @@ public class FieldCommand extends AbstractCommand {
 
 		Object object = gateway.getObject(targetObjectId);
 		Field field = reflectionEngine.getField(object, fieldName);
+		logger.info("Getting field " + fieldName);
 		String returnCommand = null;
 		if (field == null) {
 			returnCommand = Protocol.getNoSuchFieldOutputCommand();
@@ -104,7 +105,7 @@ public class FieldCommand extends AbstractCommand {
 		Object valueObject = Protocol.getObject(value, this.gateway);
 		Object object = gateway.getObject(targetObjectId);
 		Field field = reflectionEngine.getField(object, fieldName);
-		
+		logger.info("Setting field " + fieldName);
 		String returnCommand = null;
 		if (field == null) {
 			returnCommand = Protocol.getNoSuchFieldOutputCommand();
