@@ -115,4 +115,16 @@ public class ExampleClass {
 	public String callHello2(IHello hello) {
 		return hello.sayHello(10,"MyMy!\n;");
 	}
+	
+	public int method7(int i) {
+		return 1;
+	}
+	
+	public int method7(String s) {
+		return 2;
+	}
+	
+	public int method7(Object o) {
+		return 3;
+	}
 }

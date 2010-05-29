@@ -37,7 +37,7 @@ public class ProxyTest {
 		gServer.shutdown();
 		pClient.stopProxy();
 		try {
-			Thread.sleep(250);
+			Thread.sleep(300);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

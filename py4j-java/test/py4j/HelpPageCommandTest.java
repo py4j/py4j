@@ -77,7 +77,7 @@ public class HelpPageCommandTest {
 					inputCommand)), writer);
 			String page = sWriter.toString();
 			System.out.println(page);
-			assertEquals(1065,page.length());
+			assertEquals(1175,page.length());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

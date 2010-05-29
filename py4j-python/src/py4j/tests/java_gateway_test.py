@@ -9,6 +9,7 @@ from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, get
     unescape_new_line, escape_new_line, CommChannel, CommChannelFactory, set_field
 from socket import AF_INET, SOCK_STREAM, socket
 from threading import Thread
+from traceback import print_exc
 import gc
 import subprocess
 import time
@@ -186,6 +187,29 @@ class CloseTest(unittest.TestCase):
         gateway.close()
         self.assertTrue(True)
         time.sleep(1)
+
+class MethodTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+
+    def tearDown(self):
+        self.gateway.shutdown()
+        self.p.join()
+        
+    def testNoneArg(self):
+        self.gateway = JavaGateway()
+        gateway = self.gateway
+        ex = gateway.getNewExample()
+        try:
+            ex.method2(None)
+            ex2 = ex.method4(None)
+            self.assertEquals(ex2.getField1(),3)
+            self.assertEquals(2,ex.method7(None))
+        except:
+            print_exc()
+            self.fail()
 
 class FieldTest(unittest.TestCase):
     def setUp(self):
@@ -365,7 +389,7 @@ class HelpTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, short_name=True, display=False)
         print(help_page)
-        self.assertEqual(828, len(help_page))
+        self.assertEqual(912, len(help_page))
         
     def testHelpClass(self):
         String = self.gateway.jvm.java.lang.String

@@ -137,6 +137,30 @@ public class CallCommandTest {
 	}
 	
 	@Test
+	public void testMethodWithNull() {
+		String inputCommand = target + "\nmethod2\nn\ne\n";
+		try {
+			command.execute("c", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yv\n", sWriter.toString());
+			
+			inputCommand = target + "\nmethod4\nn\ne\n";
+			command.execute("c", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yv\nyro1\n", sWriter.toString());
+			assertEquals(((ExampleClass)gateway.getObject("o1")).getField1(), 3);
+			
+			inputCommand = target + "\nmethod7\nn\ne\n";
+			command.execute("c", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yv\nyro1\nyi2\n", sWriter.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
 	public void testMethodWithParams() {
 		String inputCommand = target + "\nmethod3\ni1\nbtrue\ne\n";
 		try {
