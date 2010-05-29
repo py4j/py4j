@@ -249,6 +249,24 @@ def get_field(java_object, field_name):
     else:
         return get_return_value(answer, java_object._comm_channel, java_object._target_id, field_name)
         
+def set_field(java_object, field_name, value):
+    """Sets the field named `field_name` of `java_object` to `value`.
+    
+    This function is the only way to set a field because the assignment operator in Python cannot
+    be overloaded.
+    
+    :param java_object: the instance containing the field 
+    :param field_name: the name of the field to set
+    :param value: the value to assign to the field
+    """
+    command = FIELD_COMMAND_NAME + FIELD_SET_SUBCOMMAND_NAME + java_object._target_id + '\n' + field_name + '\n' \
+        + get_command_part(value, java_object._comm_channel.gateway_property.pool) + '\n' + END_COMMAND_PART
+        
+    answer = java_object._comm_channel.send_command(command)
+    if answer == NO_MEMBER_COMMAND or is_error(answer)[0]:
+        raise Py4JError('no field %s in object %s' % (field_name, java_object._target_id))
+        return get_return_value(answer, java_object._comm_channel, java_object._target_id, field_name)
+        
 def get_method(java_object, method_name):
     """Retrieves a reference to the method of an object.
     

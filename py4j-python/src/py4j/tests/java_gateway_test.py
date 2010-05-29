@@ -5,8 +5,8 @@ Created on Dec 10, 2009
 '''
 from multiprocessing.process import Process
 from py4j.finalizer import ThreadSafeFinalizer
-from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, \
-    get_method, unescape_new_line, escape_new_line, CommChannel, CommChannelFactory
+from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, get_method, \
+    unescape_new_line, escape_new_line, CommChannel, CommChannelFactory, set_field
 from socket import AF_INET, SOCK_STREAM, socket
 from threading import Thread
 import gc
@@ -235,6 +235,24 @@ class FieldTest(unittest.TestCase):
         
         try:
             get_field(ex, 'field20')
+            self.fail()
+        except:
+            self.assertTrue(True)
+            
+    def testSetField(self):
+        self.gateway = JavaGateway(auto_field=False)
+        gateway = self.gateway
+        ex = gateway.getNewExample()
+        
+        set_field(ex, 'field10',2334)
+        self.assertEquals(get_field(ex,'field10'),2334)
+        
+        sb = self.gateway.jvm.java.lang.StringBuffer('Hello World!')
+        set_field(ex, 'field21', sb)
+        self.assertEquals(get_field(ex,'field21').toString(),u'Hello World!')
+        
+        try:
+            set_field(ex,'field1',123)
             self.fail()
         except:
             self.assertTrue(True)
