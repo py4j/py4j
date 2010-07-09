@@ -37,7 +37,7 @@ package py4j.reflection;
  * @author Barthelemy Dagenais
  * 
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class MethodDescriptor {
 
 	private String internalRepresentation;

@@ -89,7 +89,7 @@ public class ListCommand extends AbstractCommand {
 		writer.flush();
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes","unchecked"})
 	private String slice_list(BufferedReader reader) throws IOException {
 		List list1 = (List) gateway.getObject(reader.readLine());
 		List<Object> arguments = getArguments(reader);
@@ -103,7 +103,7 @@ public class ListCommand extends AbstractCommand {
 		return Protocol.getOutputCommand(returnObject);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private String count_list(BufferedReader reader) throws IOException {
 		List list1 = (List) gateway.getObject(reader.readLine());
 		Object objectToCount = Protocol.getObject(reader.readLine(), gateway);
@@ -116,7 +116,7 @@ public class ListCommand extends AbstractCommand {
 		return Protocol.getOutputCommand(returnObject);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes","unchecked"})
 	private String imult_list(BufferedReader reader) throws IOException {
 		List list1 = (List) gateway.getObject(reader.readLine());
 		List tempList = new ArrayList(list1.subList(0, list1.size()));
@@ -135,7 +135,7 @@ public class ListCommand extends AbstractCommand {
 		return RETURN_VOID;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes","unchecked"})
 	private String mult_list(BufferedReader reader) throws IOException {
 		List list1 = (List) gateway.getObject(reader.readLine());
 		int n = Protocol.getInteger(reader.readLine());
@@ -150,7 +150,7 @@ public class ListCommand extends AbstractCommand {
 		return Protocol.getOutputCommand(returnObject);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes","unchecked"})
 	private String concat_list(BufferedReader reader) throws IOException {
 		List list1 = (List) gateway.getObject(reader.readLine());
 		List list2 = (List) gateway.getObject(reader.readLine());
@@ -163,7 +163,7 @@ public class ListCommand extends AbstractCommand {
 		return Protocol.getOutputCommand(returnObject);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes"})
 	private String call_collections_method(BufferedReader reader,
 			char listCommand) throws IOException {
 		String returnCommand;
@@ -191,27 +191,27 @@ public class ListCommand extends AbstractCommand {
 		return returnCommand;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes","unchecked"})
 	private String min_list(List list) {
 		Object object = Collections.min(list);
 		ReturnObject returnObject = gateway.getReturnObject(object);
 		return Protocol.getOutputCommand(returnObject);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes","unchecked"})
 	private String max_list(List list) {
 		Object object = Collections.max(list);
 		ReturnObject returnObject = gateway.getReturnObject(object);
 		return Protocol.getOutputCommand(returnObject);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes"})
 	private String reverse_list(List list) {
 		Collections.reverse(list);
 		return RETURN_VOID;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes","unchecked"})
 	private String sort_list(List list) {
 		Collections.sort(list);
 		return RETURN_VOID;

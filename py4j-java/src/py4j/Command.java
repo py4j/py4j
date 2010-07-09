@@ -87,5 +87,7 @@ public interface Command {
 	 */
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException;
+	
+	public String getCommandName();
 
 }

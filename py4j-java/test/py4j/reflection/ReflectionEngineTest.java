@@ -234,7 +234,7 @@ public class ReflectionEngineTest {
 			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
 					"2", true });
 			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
-					new Class[] { String.class, Object.class });
+					new Class[] { Object.class, Boolean.class });
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

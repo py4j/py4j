@@ -54,6 +54,13 @@ public class FieldCommand extends AbstractCommand {
 
 	private ReflectionEngine reflectionEngine;
 
+	
+	
+	public FieldCommand() {
+		super();
+		this.commandName = FIELD_COMMAND_NAME;
+	}
+
 	@Override
 	public void init(Gateway gateway) {
 		super.init(gateway);

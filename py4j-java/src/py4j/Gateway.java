@@ -137,7 +137,7 @@ public class Gateway {
 		return rEngine;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public ReturnObject getReturnObject(Object object) {
 		ReturnObject returnObject;
 		if (object != null) {
@@ -245,12 +245,10 @@ public class Gateway {
 		return object.getClass().isArray();
 	}
 
-	@SuppressWarnings("unchecked")
 	protected boolean isList(Object object) {
 		return object instanceof List;
 	}
 
-	@SuppressWarnings("unchecked")
 	protected boolean isMap(Object object) {
 		return object instanceof Map;
 	}
@@ -260,7 +258,6 @@ public class Gateway {
 				|| object instanceof Number || object instanceof Character;
 	}
 
-	@SuppressWarnings("unchecked")
 	protected boolean isSet(Object object) {
 		return object instanceof Set;
 	}

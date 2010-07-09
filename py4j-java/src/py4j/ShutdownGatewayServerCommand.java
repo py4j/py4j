@@ -44,12 +44,19 @@ import java.io.IOException;
  */
 public class ShutdownGatewayServerCommand extends AbstractCommand {
 
-	private final GatewayServer gatewayServer;
+	private GatewayServer gatewayServer;
 
 	public static final String SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME = "s";
 
-	public ShutdownGatewayServerCommand(GatewayServer gatewayServer) {
-		this.gatewayServer = gatewayServer;
+	public ShutdownGatewayServerCommand() {
+		super();
+		this.commandName = SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME;
+	}
+
+	@Override
+	public void init(Gateway gateway) {
+		super.init(gateway);
+		this.gatewayServer = (GatewayServer) gateway.getObject(GatewayServer.GATEWAY_SERVER_ID);
 	}
 
 	@Override

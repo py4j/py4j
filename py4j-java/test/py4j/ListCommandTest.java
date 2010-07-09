@@ -206,7 +206,7 @@ public class ListCommandTest {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void testConcat() {
 		String inputCommand = ListCommand.LIST_CONCAT_SUB_COMMAND_NAME + "\n" + target + "\n" + target2 + "\ne\n";
@@ -234,7 +234,7 @@ public class ListCommandTest {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void testMult() {
 		String inputCommand = ListCommand.LIST_MULT_SUB_COMMAND_NAME + "\n" + target + "\ni3\ne\n";
@@ -283,7 +283,7 @@ public class ListCommandTest {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	@Test
 	public void testSlice() {
 		String inputCommand = ListCommand.LIST_SLICE_SUB_COMMAND_NAME + "\n" + target + "\ni1\ni2\ne\n";

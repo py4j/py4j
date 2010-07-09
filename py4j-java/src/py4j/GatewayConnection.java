@@ -36,7 +36,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,8 +65,8 @@ import java.util.logging.Logger;
  */
 public class GatewayConnection implements Runnable {
 
+	private final static List<Class<? extends Command>> baseCommands;
 	private final Gateway gateway;
-	private final GatewayServer gatewayServer;
 	private final Socket socket;
 	private final BufferedWriter writer;
 	private final BufferedReader reader;
@@ -72,20 +74,49 @@ public class GatewayConnection implements Runnable {
 	private final Logger logger = Logger.getLogger(GatewayConnection.class
 			.getName());
 
-	public GatewayConnection(GatewayServer gatewayServer, Gateway gateway,
-			Socket socket) throws IOException {
+	static {
+		baseCommands = new ArrayList<Class<? extends Command>>();
+		baseCommands.add(ArrayCommand.class);
+		baseCommands.add(CallCommand.class);
+		baseCommands.add(ConstructorCommand.class);
+		baseCommands.add(FieldCommand.class);
+		baseCommands.add(HelpPageCommand.class);
+		baseCommands.add(MemoryCommand.class);
+		baseCommands.add(ReflectionCommand.class);
+		baseCommands.add(ShutdownGatewayServerCommand.class);
+	}
+
+	public GatewayConnection(Gateway gateway, Socket socket,
+			List<Class<? extends Command>> customCommands) throws IOException {
 		super();
 		this.gateway = gateway;
-		this.gatewayServer = gatewayServer;
 		this.socket = socket;
-		this.reader = new BufferedReader(new InputStreamReader(socket
-				.getInputStream(), Charset.forName("UTF-8")));
-		this.writer = new BufferedWriter(new OutputStreamWriter(socket
-				.getOutputStream(), Charset.forName("UTF-8")));
+		this.reader = new BufferedReader(new InputStreamReader(
+				socket.getInputStream(), Charset.forName("UTF-8")));
+		this.writer = new BufferedWriter(new OutputStreamWriter(
+				socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String, Command>();
-		initCommands(gateway);
+		initCommands(gateway, baseCommands);
+		if (customCommands != null) {
+			initCommands(gateway, customCommands);
+		}
 		Thread t = new Thread(this);
 		t.start();
+	}
+
+	public GatewayConnection(Gateway gateway, Socket socket) throws IOException {
+		this(gateway, socket, null);
+	}
+
+	/**
+	 * 
+	 * @return The list of base commands that are provided by default. Can be
+	 *         hidden by custom commands with the same command id by passing a
+	 *         list of custom commands to the {@link py4j.GatewayServer
+	 *         GatewayServer}.
+	 */
+	public static List<Class<? extends Command>> getBaseCommands() {
+		return baseCommands;
 	}
 
 	/**
@@ -95,40 +126,22 @@ public class GatewayConnection implements Runnable {
 	 * 
 	 * @param gateway
 	 */
-	protected void initCommands(Gateway gateway) {
-		Command callCommand = new CallCommand();
-		Command fieldCommand = new FieldCommand();
-		Command constructorCommand = new ConstructorCommand();
-		Command memoryCommand = new MemoryCommand();
-		Command listCommand = new ListCommand();
-		Command reflectionCommand = new ReflectionCommand();
-		Command shutdownCommand = new ShutdownGatewayServerCommand(
-				gatewayServer);
-		Command helpCommand = new HelpPageCommand();
-		Command arrayCommand = new ArrayCommand();
-		callCommand.init(gateway);
-		fieldCommand.init(gateway);
-		constructorCommand.init(gateway);
-		memoryCommand.init(gateway);
-		listCommand.init(gateway);
-		reflectionCommand.init(gateway);
-		shutdownCommand.init(gateway);
-		helpCommand.init(gateway);
-		arrayCommand.init(gateway);
-		commands.put(CallCommand.CALL_COMMAND_NAME, callCommand);
-		commands.put(FieldCommand.FIELD_COMMAND_NAME, fieldCommand);
-		commands.put(ConstructorCommand.CONSTRUCTOR_COMMAND_NAME,
-				constructorCommand);
-		commands.put(MemoryCommand.MEMORY_COMMAND_NAME, memoryCommand);
-		commands.put(ListCommand.LIST_COMMAND_NAME, listCommand);
-		commands.put(ReflectionCommand.REFLECTION_COMMAND_NAME,
-				reflectionCommand);
-		commands
-				.put(
-						ShutdownGatewayServerCommand.SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME,
-						shutdownCommand);
-		commands.put(HelpPageCommand.HELP_COMMAND_NAME, helpCommand);
-		commands.put(ArrayCommand.ARRAY_COMMAND_NAME, arrayCommand);
+	protected void initCommands(Gateway gateway,
+			List<Class<? extends Command>> commandsClazz) {
+		for (Class<? extends Command> clazz : commandsClazz) {
+			try {
+				Command cmd = clazz.newInstance();
+				cmd.init(gateway);
+				commands.put(cmd.getCommandName(), cmd);
+			} catch (Exception e) {
+				String name = "null";
+				if (clazz != null) {
+					name = clazz.getName();
+				}
+				logger.log(Level.SEVERE,
+						"Could not initialize command " + name, e);
+			}
+		}
 	}
 
 	@Override

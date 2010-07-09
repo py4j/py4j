@@ -49,6 +49,8 @@ import java.util.logging.Logger;
 public abstract class AbstractCommand implements Command {
 
 	protected Gateway gateway;
+	
+	protected String commandName;
 
 	private final Logger logger = Logger.getLogger(AbstractCommand.class
 			.getName());
@@ -125,4 +127,11 @@ public abstract class AbstractCommand implements Command {
 		return returnObject;
 	}
 
+	@Override
+	public String getCommandName() {
+		return commandName;
+	}
+
+	
+	
 }

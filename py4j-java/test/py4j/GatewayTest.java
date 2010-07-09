@@ -29,8 +29,14 @@
 
 package py4j;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -38,9 +44,6 @@ import org.junit.Test;
 
 import py4j.examples.ExampleClass;
 import py4j.examples.ExampleEntryPoint;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class GatewayTest {
 
@@ -57,7 +60,7 @@ public class GatewayTest {
 	public void tearDown() {
 		gateway.shutdown();
 	}
-	
+
 	@Test
 	public void testNoParam() {
 		String name = gateway.putNewObject(entryPoint.getNewExample());
@@ -90,11 +93,11 @@ public class GatewayTest {
 		List<Object> args = new ArrayList<Object>();
 		args.add(new Character('c'));
 		ReturnObject obj2 = gateway.invoke("method4", name, args);
-		
+
 		// In practice, the argument is a string when it comes from python
 		// So String parameters ALWAYS hide chars.
-		assertEquals(1, ((ExampleClass) gateway.getObject(obj2.getName()))
-				.getField1());
+		assertEquals(1,
+				((ExampleClass) gateway.getObject(obj2.getName())).getField1());
 	}
 
 	@Test
@@ -103,8 +106,8 @@ public class GatewayTest {
 		List<Object> args = new ArrayList<Object>();
 		args.add(new Character('c'));
 		ReturnObject obj2 = gateway.invoke("method6", name, args);
-		assertEquals(4, ((ExampleClass) gateway.getObject(obj2.getName()))
-				.getField1());
+		assertEquals(4,
+				((ExampleClass) gateway.getObject(obj2.getName())).getField1());
 	}
 
 	@Test
@@ -113,8 +116,8 @@ public class GatewayTest {
 		List<Object> args = new ArrayList<Object>();
 		args.add(new String("c"));
 		ReturnObject obj2 = gateway.invoke("method4", name, args);
-		assertEquals(3, ((ExampleClass) gateway.getObject(obj2.getName()))
-				.getField1());
+		assertEquals(3,
+				((ExampleClass) gateway.getObject(obj2.getName())).getField1());
 	}
 
 	@Test
@@ -143,6 +146,25 @@ public class GatewayTest {
 		args.add(new String("\"3\""));
 		gateway.invoke("add", obj2.getName(), args);
 		assertEquals(myList.size(), 4);
+	}
+
+	@Test
+	public void testUniqueCommands() {
+		Set<String> commandNames = new HashSet<String>();
+		try {
+			for (Class<? extends Command> clazz : GatewayConnection
+					.getBaseCommands()) {
+				Command command = clazz.newInstance();
+				String commandName = command.getCommandName();
+				if (commandNames.contains(commandName)) {
+					fail("Duplicate command name " + commandName);
+				} else {
+					commandNames.add(commandName);
+				}
+			}
+		} catch (Exception e) {
+			fail();
+		}
 	}
 
 }

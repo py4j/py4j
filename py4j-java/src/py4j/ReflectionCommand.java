@@ -62,6 +62,13 @@ public class ReflectionCommand extends AbstractCommand {
 
 	protected ReflectionEngine rEngine;
 
+	
+	
+	public ReflectionCommand() {
+		super();
+		this.commandName = REFLECTION_COMMAND_NAME;
+	}
+
 	@Override
 	public void init(Gateway gateway) {
 		super.init(gateway);

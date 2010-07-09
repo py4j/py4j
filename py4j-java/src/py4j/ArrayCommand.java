@@ -31,6 +31,13 @@ public class ArrayCommand extends AbstractCommand {
 	public static final String RETURN_VOID = Protocol.SUCCESS + ""
 			+ Protocol.VOID + Protocol.END_OUTPUT;
 
+	
+	
+	public ArrayCommand() {
+		super();
+		this.commandName = ARRAY_COMMAND_NAME;
+	}
+
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {

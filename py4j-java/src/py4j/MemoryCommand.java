@@ -52,6 +52,13 @@ public class MemoryCommand extends AbstractCommand {
 
 	public final static String MEMORY_DEL_SUB_COMMAND_NAME = "d";
 
+	
+	
+	public MemoryCommand() {
+		super();
+		this.commandName = MEMORY_COMMAND_NAME;
+	}
+
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {

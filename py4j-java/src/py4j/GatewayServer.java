@@ -79,6 +79,8 @@ public class GatewayServer implements Runnable {
 
 	public static final int DEFAULT_READ_TIMEOUT = 0;
 
+	public static final String GATEWAY_SERVER_ID = "GATEWAY_SERVER";
+
 	private final int port;
 
 	private final int pythonPort;
@@ -97,6 +99,8 @@ public class GatewayServer implements Runnable {
 	private final List<Socket> connections = new ArrayList<Socket>();
 
 	private final CommunicationChannelFactory ccFactory;
+
+	private final List<Class<? extends Command>> customCommands;
 
 	private Socket currentSocket;
 
@@ -128,7 +132,7 @@ public class GatewayServer implements Runnable {
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout, boolean acceptOnlyOne) {
 		this(entryPoint, port, DEFAULT_PYTHON_PORT, connectTimeout,
-				readTimeout, acceptOnlyOne);
+				readTimeout, acceptOnlyOne, null);
 	}
 
 	/**
@@ -152,9 +156,14 @@ public class GatewayServer implements Runnable {
 	 * @param acceptOnlyOne
 	 *            If true, only one Python program can connect to this
 	 *            GatewayServer at a time.
+	 * @param customCommands
+	 *            A list of custom Command classes to augment the Server
+	 *            features. These commands will be accessible from Python
+	 *            programs. Can be null.
 	 */
 	public GatewayServer(Object entryPoint, int port, int pythonPort,
-			int connectTimeout, int readTimeout, boolean acceptOnlyOne) {
+			int connectTimeout, int readTimeout, boolean acceptOnlyOne,
+			List<Class<? extends Command>> customCommands) {
 		super();
 		this.port = port;
 		this.pythonPort = pythonPort;
@@ -163,6 +172,8 @@ public class GatewayServer implements Runnable {
 		this.acceptOnlyOne = acceptOnlyOne;
 		this.ccFactory = new CommunicationChannelFactory(pythonPort);
 		this.gateway = new Gateway(entryPoint, ccFactory);
+		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
+		this.customCommands = customCommands;
 	}
 
 	/**
@@ -209,9 +220,9 @@ public class GatewayServer implements Runnable {
 		logger.info("Gateway Server Stopping");
 	}
 
-	protected Object createConnection(GatewayServer server, Gateway gateway,
-			Socket socket) throws IOException {
-		return new GatewayConnection(server, gateway, socket);
+	protected Object createConnection(Gateway gateway, Socket socket)
+			throws IOException {
+		return new GatewayConnection(gateway, socket, customCommands);
 	}
 
 	private void processSocket(Socket socket) {
@@ -222,7 +233,7 @@ public class GatewayServer implements Runnable {
 				logger.info("Gateway Server accepted a connection");
 				connections.add(socket);
 				socket.setSoTimeout(readTimeout);
-				createConnection(this, gateway, socket);
+				createConnection(gateway, socket);
 				if (acceptOnlyOne) {
 					currentSocket = socket;
 				}
@@ -230,9 +241,7 @@ public class GatewayServer implements Runnable {
 		} catch (Exception e) {
 			// Error while processing a connection should not be prevent the
 			// gateway server from accepting new connections.
-			logger
-					.log(Level.WARNING, "Error while processing a connection.",
-							e);
+			logger.log(Level.WARNING, "Error while processing a connection.", e);
 		}
 	}
 

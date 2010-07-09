@@ -56,6 +56,12 @@ public class HelpPageCommand extends AbstractCommand {
 
 	public final static String HELP_CLASS_SUB_COMMAND_NAME = "c";
 
+	
+	public HelpPageCommand() {
+		super();
+		this.commandName = HELP_COMMAND_NAME;
+	}
+
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {

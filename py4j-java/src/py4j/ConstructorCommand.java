@@ -50,6 +50,13 @@ public class ConstructorCommand extends AbstractCommand {
 
 	public final static String CONSTRUCTOR_COMMAND_NAME = "i";
 
+	
+	
+	public ConstructorCommand() {
+		super();
+		this.commandName = CONSTRUCTOR_COMMAND_NAME;
+	}
+
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {

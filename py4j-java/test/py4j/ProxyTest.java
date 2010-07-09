@@ -83,7 +83,7 @@ interface IHello {
 
 	public String hello();
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public String hello2(String param1, int param2, List param3);
 	
 }
