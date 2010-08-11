@@ -209,7 +209,7 @@ public class Protocol {
 			case PYTHON_PROXY_TYPE:
 				return getPythonProxy(commandPart, gateway);
 			default:
-				throw new Py4JException("Command Part is unknown.");
+				throw new Py4JException("Command Part is unknown: " + commandPart);
 			}
 		}
 	}
