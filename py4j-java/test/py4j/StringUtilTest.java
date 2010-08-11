@@ -58,12 +58,14 @@ public class StringUtilTest {
 		assertEquals("Hello\\nWorld!",StringUtil.unescape("Hello\\\\nWorld!"));
 		assertEquals("Hello\nWorld!",StringUtil.unescape("Hello\\nWorld!"));
 		assertEquals("Hello\\\nWorld!",StringUtil.unescape("Hello\\\\\\nWorld!"));
+		assertEquals("\rHello\\\nWorld!",StringUtil.unescape("\\rHello\\\\\\nWorld!"));
 	}
 	
 	@Test
 	public void testEscape() {
 		assertEquals("Hello\\\\nWorld!",StringUtil.escape("Hello\\nWorld!"));
 		assertEquals("Hello\\nWorld!",StringUtil.escape("Hello\nWorld!"));
+		assertEquals("\\r\tHello\\nWorld!",StringUtil.escape("\r\tHello\nWorld!"));
 		assertEquals("Hello\\\\\\nWorld!",StringUtil.escape("Hello\\\nWorld!"));
 		assertEquals("Hello\tWorld",StringUtil.escape("Hello\tWorld"));
 		assertEquals("Hello\\\\World!",StringUtil.escape("Hello\\World!"));

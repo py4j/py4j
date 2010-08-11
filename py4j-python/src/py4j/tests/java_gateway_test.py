@@ -69,8 +69,9 @@ class TestCommChannel(object):
 class ProtocolTest(unittest.TestCase):
     
     def testEscape(self):
-        self.assertEqual("Hello\tWorld\n\\", unescape_new_line(escape_new_line("Hello\tWorld\n\\")))
-    
+        self.assertEqual("Hello\t\rWorld\n\\", unescape_new_line(escape_new_line("Hello\t\rWorld\n\\")))
+        self.assertEqual(u"Hello\t\rWorld\n\\", unescape_new_line(escape_new_line(u"Hello\t\rWorld\n\\")))
+        
     def testProtocolSend(self):
         testChannel = TestCommChannel()
         gateway = JavaGateway(testChannel, False)
@@ -210,6 +211,20 @@ class MethodTest(unittest.TestCase):
         except:
             print_exc()
             self.fail()
+            
+    def testUnicode(self):
+        self.gateway = JavaGateway()
+        gateway = self.gateway
+        sb = gateway.jvm.java.lang.StringBuffer()
+        sb.append(u'\r\n\tHello\r\n\t')
+        self.assertEqual(u'\r\n\tHello\r\n\t', sb.toString())
+    
+    def testEscape(self):
+        self.gateway = JavaGateway()
+        gateway = self.gateway
+        sb = gateway.jvm.java.lang.StringBuffer()
+        sb.append('\r\n\tHello\r\n\t')
+        self.assertEqual(u'\r\n\tHello\r\n\t', sb.toString())
 
 class FieldTest(unittest.TestCase):
     def setUp(self):

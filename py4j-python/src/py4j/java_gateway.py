@@ -133,9 +133,7 @@ def escape_new_line(original):
     
     :rtype: an escaped string
     """
-    temp = original.replace('\\', '\\\\')
-    final = temp.replace('\n', '\\n')
-    return final
+    return original.replace('\\', '\\\\').replace('\r','\\r').replace('\n','\\n')
 
 def unescape_new_line(escaped):
     """Replaces escaped characters by unescaped characters.
@@ -157,6 +155,8 @@ def unescape_new_line(escaped):
         else:
             if c == 'n':
                 original += '\n'
+            elif c == 'r':
+                original += '\r'
             else:
                 original += c
             escaping = False
