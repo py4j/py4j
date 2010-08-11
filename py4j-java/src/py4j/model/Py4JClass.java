@@ -32,6 +32,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import py4j.reflection.TypeUtil;
@@ -68,13 +69,17 @@ public class Py4JClass extends Py4JMember {
 	}
 
 	public final static Py4JClass buildClass(Class<?> clazz) {
+		return buildClass(clazz, true);
+	}
+	
+	public final static Py4JClass buildClass(Class<?> clazz, boolean sort) {
 		List<Py4JClass> classes = new ArrayList<Py4JClass>();
 		List<Py4JMethod> methods = new ArrayList<Py4JMethod>();
 		List<Py4JField> fields = new ArrayList<Py4JField>();
 
 		for (Class<?> memberClass : clazz.getDeclaredClasses()) {
 			if (Modifier.isPublic(memberClass.getModifiers())) {
-				classes.add(Py4JClass.buildClass(memberClass));
+				classes.add(Py4JClass.buildClass(memberClass, sort));
 			}
 		}
 
@@ -98,13 +103,18 @@ public class Py4JClass extends Py4JMember {
 
 		Class<?>[] interfaces = clazz.getInterfaces();
 		String[] implementTypes = interfaces != null && interfaces.length > 0 ? TypeUtil
-				.getNames(interfaces)
-				: null;
+				.getNames(interfaces) : null;
+
+		if (sort) {
+			Collections.sort(classes);
+			Collections.sort(methods);
+			Collections.sort(fields);
+		}
 
 		return new Py4JClass(clazz.getCanonicalName(), null, extend,
-				implementTypes, methods.toArray(new Py4JMethod[0]), fields
-						.toArray(new Py4JField[0]), classes
-						.toArray(new Py4JClass[0]));
+				implementTypes, methods.toArray(new Py4JMethod[0]),
+				fields.toArray(new Py4JField[0]),
+				classes.toArray(new Py4JClass[0]));
 	}
 
 	public Py4JMethod[] getMethods() {

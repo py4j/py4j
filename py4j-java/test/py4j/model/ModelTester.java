@@ -41,7 +41,7 @@ public class ModelTester {
 
 	@Test
 	public void testModel() {
-		Py4JClass clazz = Py4JClass.buildClass(AnObject.class);
+		Py4JClass clazz = Py4JClass.buildClass(AnObject.class, true);
 		assertEquals(clazz.getSignature(false), "p1.AnObject");
 		assertEquals(clazz.getSignature(true), "AnObject");
 		assertEquals(1,clazz.getClasses().length);
@@ -63,9 +63,9 @@ public class ModelTester {
 	
 	@Test
 	public void testClassWithSuper() {
-		Py4JClass clazz2 = Py4JClass.buildClass(AnObject2.class);
-		Py4JClass clazz3 = Py4JClass.buildClass(AnObject3.class);
-		Py4JClass clazz4 = Py4JClass.buildClass(AnObject4.class);
+		Py4JClass clazz2 = Py4JClass.buildClass(AnObject2.class, true);
+		Py4JClass clazz3 = Py4JClass.buildClass(AnObject3.class, true);
+		Py4JClass clazz4 = Py4JClass.buildClass(AnObject4.class, true);
 		
 		assertEquals(clazz2.getSignature(false),"p1.AnObject2 extends p1.AnObject");
 		assertEquals(clazz3.getSignature(false),"p1.AnObject3 implements java.lang.Runnable, java.io.Serializable");
@@ -75,7 +75,7 @@ public class ModelTester {
 	@Test
 	public void testClassHelpPage() {
 		// This is manual testing, to see how it will look like.
-		Py4JClass clazz = Py4JClass.buildClass(AnObject.class);
+		Py4JClass clazz = Py4JClass.buildClass(AnObject.class, true);
 		String helpPage = HelpPageGenerator.getHelpPage(clazz, false);
 		System.out.println("BEGIN");
 		System.out.println(helpPage);
@@ -90,7 +90,7 @@ public class ModelTester {
 	@Test
 	public void testMethodHelpPage() {
 		// This is manual testing, to see how it will look like.
-		Py4JClass clazz = Py4JClass.buildClass(AnObject.class);
+		Py4JClass clazz = Py4JClass.buildClass(AnObject.class, true);
 		String helpPage = HelpPageGenerator.getHelpPage(clazz.getMethods()[0], false);
 		System.out.println("BEGIN");
 		System.out.println(helpPage);

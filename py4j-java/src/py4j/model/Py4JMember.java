@@ -36,7 +36,7 @@ package py4j.model;
  * @author Barthelemy Dagenais
  * 
  */
-public abstract class Py4JMember {
+public abstract class Py4JMember implements Comparable<Py4JMember> {
 
 	// Currently not supported
 	private final String javadoc;
@@ -59,4 +59,11 @@ public abstract class Py4JMember {
 
 	public abstract String getSignature(boolean shortName);
 
+	@Override
+	public int compareTo(Py4JMember o) {
+		return this.getName().compareTo(o.getName());
+	}
+
+	
+	
 }

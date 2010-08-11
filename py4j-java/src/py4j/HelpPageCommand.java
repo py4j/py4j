@@ -86,7 +86,7 @@ public class HelpPageCommand extends AbstractCommand {
 		String returnCommand = Protocol.getOutputErrorCommand();
 
 		try {
-			Py4JClass clazz = Py4JClass.buildClass(Class.forName(className));
+			Py4JClass clazz = Py4JClass.buildClass(Class.forName(className), true);
 			boolean isShortName = Protocol.getBoolean(shortName);
 			String helpPage = HelpPageGenerator.getHelpPage(clazz, isShortName);
 			ReturnObject rObject = gateway.getReturnObject(helpPage);
@@ -107,7 +107,7 @@ public class HelpPageCommand extends AbstractCommand {
 
 		try {
 			Object obj = gateway.getObject(objectId);
-			Py4JClass clazz = Py4JClass.buildClass(obj.getClass());
+			Py4JClass clazz = Py4JClass.buildClass(obj.getClass(), true);
 			boolean isShortName = Protocol.getBoolean(shortName);
 			String helpPage = HelpPageGenerator.getHelpPage(clazz, isShortName);
 			ReturnObject rObject = gateway.getReturnObject(helpPage);
