@@ -10,7 +10,6 @@ Created on Dec 3, 2009
 """
 
 from collections import deque
-from py4j.finalizer import ThreadSafeFinalizer
 from pydoc import ttypager
 from socket import AF_INET, SOCK_STREAM
 import logging
@@ -53,6 +52,7 @@ CLASS_TYPE = 'c';
 METHOD_TYPE = 'm';
 NO_MEMBER = 'o';
 VOID_TYPE = 'v'
+ITERATOR_TYPE = 'g'
 PYTHON_PROXY_TYPE = 'f'
 
 # Protocol
@@ -117,6 +117,7 @@ CONVERSION = {NULL_TYPE: (lambda x, y: None),
               LIST_TYPE: (lambda target_id, comm_channel: JavaList(target_id, comm_channel)),
               ARRAY_TYPE: (lambda target_id, comm_channel: JavaArray(target_id, comm_channel)),
               SET_TYPE: (lambda target_id, comm_channel: JavaSet(target_id, comm_channel)),
+              ITERATOR_TYPE: (lambda target_id, comm_channel: JavaIterator(target_id, comm_channel)),
               BOOLEAN_TYPE: (lambda value, y: value.lower() == 'true'),
               INTEGER_TYPE: (lambda value, y: int(value)),
               DOUBLE_TYPE: (lambda value, y: float(value)),
@@ -782,5 +783,6 @@ class JavaGateway(object):
         
 # For circular dependencies
 # Purists should close their eyes
-from py4j.java_collections import JavaList, JavaMap, JavaArray, JavaSet
+from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_callback import CallbackServer, PythonProxyPool
+from py4j.java_collections import JavaList, JavaMap, JavaArray, JavaSet, JavaIterator

@@ -65,6 +65,11 @@ public class ListCommand extends AbstractCommand {
 	public static final String RETURN_VOID = Protocol.SUCCESS + ""
 			+ Protocol.VOID + Protocol.END_OUTPUT;
 
+	public ListCommand() {
+		super();
+		this.commandName = LIST_COMMAND_NAME;
+	}
+	
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
@@ -93,12 +98,10 @@ public class ListCommand extends AbstractCommand {
 	private String slice_list(BufferedReader reader) throws IOException {
 		List list1 = (List) gateway.getObject(reader.readLine());
 		List<Object> arguments = getArguments(reader);
-
 		List slice = new ArrayList();
 		for (Object argument : arguments) {
 			slice.add(list1.get((Integer) argument));
 		}
-
 		ReturnObject returnObject = gateway.getReturnObject(slice);
 		return Protocol.getOutputCommand(returnObject);
 	}

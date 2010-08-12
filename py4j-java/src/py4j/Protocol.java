@@ -93,6 +93,7 @@ public class Protocol {
 	public final static char SET_TYPE = 'h';
 	public final static char ARRAY_TYPE = 't';
 	public final static char MAP_TYPE = 'a';
+	public final static char ITERATOR_TYPE = 'g';
 	public final static char NULL_TYPE = 'n';
 	public final static char PYTHON_PROXY_TYPE = 'f';
 

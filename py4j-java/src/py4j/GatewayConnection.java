@@ -81,6 +81,7 @@ public class GatewayConnection implements Runnable {
 		baseCommands.add(ConstructorCommand.class);
 		baseCommands.add(FieldCommand.class);
 		baseCommands.add(HelpPageCommand.class);
+		baseCommands.add(ListCommand.class);
 		baseCommands.add(MemoryCommand.class);
 		baseCommands.add(ReflectionCommand.class);
 		baseCommands.add(ShutdownGatewayServerCommand.class);

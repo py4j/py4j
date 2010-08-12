@@ -31,6 +31,7 @@ package py4j;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -161,7 +162,10 @@ public class Gateway {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getSetReturnObject(objectId,
 						((Set) object).size());
-			} else {
+			} else if (isIterator(object)) {
+				String objectId = putNewObject(object);
+				returnObject = ReturnObject.getIteratorReturnObject(objectId);
+			}else {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getReferenceReturnObject(objectId);
 			}
@@ -260,6 +264,10 @@ public class Gateway {
 
 	protected boolean isSet(Object object) {
 		return object instanceof Set;
+	}
+	
+	private boolean isIterator(Object object) {
+		return object instanceof Iterator;
 	}
 
 	public boolean isStarted() {

@@ -10,11 +10,11 @@ class JavaIterator(JavaObject):
     """Maps a Python list iterator to a Java list iterator.
     
     The `JavaIterator` follows the Python iterator protocol and raises a `StopIteration` error when the iterator can no longer iterate."""
-    def __init__(self, java_object, comm_channel):
-        JavaObject.__init__(self, java_object._get_object_id(), comm_channel)
+    def __init__(self, target_id, comm_channel):
+        JavaObject.__init__(self, target_id, comm_channel)
         self._next_name = 'next'
         # To bind lifecycle of this iterator to the java iterator. To prevent gc of the iterator. 
-        self._java_object = java_object
+#        self._java_object = java_object
         
     def __iter__(self):
         return self
@@ -53,7 +53,8 @@ class JavaMap(JavaObject, MutableMapping):
         self.remove(key)
     
     def __iter__(self):
-        return JavaIterator(self.keySet().iterator(), self._comm_channel)
+        return self.keySet().iterator()
+#        return JavaIterator(self.keySet().iterator(), self._comm_channel)
     
     def __contains__(self, key):
         return self.containsKey(key)
@@ -103,7 +104,8 @@ class JavaSet(JavaObject, MutableSet):
         return self.size()
     
     def __iter__(self):
-        return JavaIterator(self.iterator(), self._comm_channel)
+        return self.iterator()
+#        return JavaIterator(self.iterator(), self._comm_channel)
     
     def __contains__(self, value):
         return self.contains(value)
@@ -221,7 +223,7 @@ class JavaList(JavaObject):
         return self.size()
 
     def __iter__(self):
-        return JavaIterator(self.iterator(), self._comm_channel)
+        return self.iterator()
     
     def __compute_index(self, key, adjustLast = False):
         size = self.size()

@@ -114,6 +114,14 @@ public class ReturnObject {
 		rObject.commandPart = Protocol.MAP_TYPE + name;
 		return rObject;
 	}
+	
+	public static ReturnObject getIteratorReturnObject(String name) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.name = name;
+		rObject.isIterator = true;
+		rObject.commandPart = Protocol.ITERATOR_TYPE + name;
+		return rObject;
+	}
 
 	public static ReturnObject getNullReturnObject() {
 		ReturnObject rObject = new ReturnObject();
@@ -166,6 +174,8 @@ public class ReturnObject {
 	private boolean isVoid;
 
 	private boolean isArray;
+	
+	private boolean isIterator;
 
 	private boolean isSet;
 
@@ -272,4 +282,12 @@ public class ReturnObject {
 		this.isVoid = isVoid;
 	}
 
+	public boolean isIterator() {
+		return isIterator;
+	}
+
+	public void setIterator(boolean isIterator) {
+		this.isIterator = isIterator;
+	}
+	
 }

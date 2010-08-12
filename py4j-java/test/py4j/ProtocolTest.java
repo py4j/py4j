@@ -29,13 +29,13 @@
  *******************************************************************************/
 package py4j;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.junit.Test;
 
 public class ProtocolTest {
 
@@ -293,6 +293,7 @@ public class ProtocolTest {
 		ReturnObject rObject13 = ReturnObject.getMapReturnObject("o124", 3);
 		ReturnObject rObject14 = ReturnObject.getSetReturnObject("o125", 3);
 		ReturnObject rObject15 = ReturnObject.getArrayReturnObject("o126", 3);
+		ReturnObject rObject16 = ReturnObject.getIteratorReturnObject("o127");
 		
 		assertEquals("x\n", Protocol.getOutputCommand(rObject1));
 		assertEquals("yi2\n", Protocol.getOutputCommand(rObject2));
@@ -309,6 +310,7 @@ public class ProtocolTest {
 		assertEquals("yao124\n", Protocol.getOutputCommand(rObject13));
 		assertEquals("yho125\n", Protocol.getOutputCommand(rObject14));
 		assertEquals("yto126\n", Protocol.getOutputCommand(rObject15));
+		assertEquals("ygo127\n", Protocol.getOutputCommand(rObject16));
 	}
 
 	
