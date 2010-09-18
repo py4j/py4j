@@ -87,8 +87,6 @@ public class GatewayServer implements Runnable {
 
 	private final Gateway gateway;
 
-	private final boolean acceptOnlyOne;
-
 	private final int connectTimeout;
 
 	private final int readTimeout;
@@ -101,8 +99,6 @@ public class GatewayServer implements Runnable {
 	private final CallbackClient cbClient;
 
 	private final List<Class<? extends Command>> customCommands;
-
-	private Socket currentSocket;
 
 	private ServerSocket sSocket;
 
@@ -130,9 +126,9 @@ public class GatewayServer implements Runnable {
 	 *            GatewayServer at a time.
 	 */
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
-			int readTimeout, boolean acceptOnlyOne) {
+			int readTimeout) {
 		this(entryPoint, port, DEFAULT_PYTHON_PORT, connectTimeout,
-				readTimeout, acceptOnlyOne, null);
+				readTimeout, null);
 	}
 
 	/**
@@ -162,14 +158,13 @@ public class GatewayServer implements Runnable {
 	 *            programs. Can be null.
 	 */
 	public GatewayServer(Object entryPoint, int port, int pythonPort,
-			int connectTimeout, int readTimeout, boolean acceptOnlyOne,
+			int connectTimeout, int readTimeout,
 			List<Class<? extends Command>> customCommands) {
 		super();
 		this.port = port;
 		this.pythonPort = pythonPort;
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;
-		this.acceptOnlyOne = acceptOnlyOne;
 		this.cbClient = new CallbackClient(pythonPort);
 		this.gateway = new Gateway(entryPoint, cbClient);
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
@@ -187,7 +182,7 @@ public class GatewayServer implements Runnable {
 	 */
 	public GatewayServer(Object entryPoint) {
 		this(entryPoint, DEFAULT_PORT, DEFAULT_CONNECT_TIMEOUT,
-				DEFAULT_READ_TIMEOUT, false);
+				DEFAULT_READ_TIMEOUT);
 	}
 
 	/**
@@ -198,8 +193,7 @@ public class GatewayServer implements Runnable {
 	 *            The port the GatewayServer is listening to.
 	 */
 	public GatewayServer(Object entryPoint, int port) {
-		this(entryPoint, port, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT,
-				false);
+		this(entryPoint, port, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
 	}
 
 	@Override
@@ -227,26 +221,15 @@ public class GatewayServer implements Runnable {
 
 	private void processSocket(Socket socket) {
 		try {
-			if (acceptOnlyOne && isConnected()) {
-				socket.close();
-			} else {
-				logger.info("Gateway Server accepted a connection");
-				connections.add(socket);
-				socket.setSoTimeout(readTimeout);
-				createConnection(gateway, socket);
-				if (acceptOnlyOne) {
-					currentSocket = socket;
-				}
-			}
+			logger.info("Gateway Server accepted a connection");
+			connections.add(socket);
+			socket.setSoTimeout(readTimeout);
+			createConnection(gateway, socket);
 		} catch (Exception e) {
 			// Error while processing a connection should not be prevent the
 			// gateway server from accepting new connections.
 			logger.log(Level.WARNING, "Error while processing a connection.", e);
 		}
-	}
-
-	private boolean isConnected() {
-		return currentSocket != null && currentSocket.isConnected();
 	}
 
 	/**
@@ -294,10 +277,6 @@ public class GatewayServer implements Runnable {
 		connections.clear();
 		gateway.shutdown();
 		cbClient.shutdown();
-	}
-
-	public boolean isAcceptOnlyOne() {
-		return acceptOnlyOne;
 	}
 
 	public int getConnectTimeout() {

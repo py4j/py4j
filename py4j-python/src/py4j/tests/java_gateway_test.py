@@ -30,8 +30,7 @@ def start_echo_server_process():
 
 def start_example_server():
     subprocess.call(["java", "-Xmx512m", "-cp", "../../../../py4j-java/bin/", "py4j.examples.ExampleApplication"])
-    
-    
+
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_example_server)

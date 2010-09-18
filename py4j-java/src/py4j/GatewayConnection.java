@@ -156,8 +156,10 @@ public class GatewayConnection implements Runnable {
 				Command command = commands.get(commandLine);
 				if (command != null) {
 					command.execute(commandLine, reader, writer);
+				} else {
+					logger.log(Level.WARNING, "Unknown command " + commandLine);
 				}
-			} while (commandLine != null && !commandLine.equals('q'));
+			} while (commandLine != null && !commandLine.equals("q"));
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
 					"Error occurred while waiting for a command.", e);

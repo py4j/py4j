@@ -412,11 +412,12 @@ class GatewayClient(object):
         except Py4JNetworkError:
             self.shutdown_gateway()
             
-    def send_command(self, command):
+    def send_command(self, command, retry=True):
         """Sends a command to the JVM. This method is not intended to be called directly by Py4J users: 
         it is usually called by :class:`JavaMember` instances.
         
         :param command: the `string` command to send to the JVM. The command must follow the Py4J protocol.
+        :retry: if `True`, the GatewayClient tries to resend a message if it fails.
         :rtype: the `string` answer received from the JVM. The answer follows the Py4J protocol.
         """
         connection = self._get_connection()
@@ -424,8 +425,11 @@ class GatewayClient(object):
             response = connection.send_command(command)
             self._give_back_connection(connection)
         except Py4JNetworkError:
-            response = self.send_command(command)
-            
+            if retry:
+                response = self.send_command(command)
+            else:
+                response = ERROR
+                
         return response
     
     def close(self):
@@ -503,10 +507,18 @@ class GatewayConnection(object):
         :rtype: the `string` answer received from the JVM. The answer follows the Py4J protocol.
         """
         logger.debug("Command to send: %s" % (command))
-        self.socket.sendall(command.encode('utf-8'))
-        answer = self.stream.readline().decode('utf-8')[:-1]
-        logger.debug("Answer received: %s" % (answer))
-        return answer
+        try:
+            self.socket.sendall(command.encode('utf-8'))
+            answer = self.stream.readline().decode('utf-8')[:-1]
+            logger.debug("Answer received: %s" % (answer))
+            # Happens when a the other end is dead. There might be an empty answer before the socket raises an error.
+            if answer.strip() == '':
+                self.close()
+                raise Py4JError()
+            return answer
+        except:
+            logger.exception('Error while sending or receiving.')
+            raise Py4JNetworkError('Error while sending or receiving')
 
 class JavaMember(object):
     """Represents a member (i.e., method) of a :class:`JavaObject`. For now, only methods are supported. Fields
