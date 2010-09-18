@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 /**
  * <p>
- * A CommunicationChannelFactory is responsible for managing communication
+ * A CallbackClient is responsible for managing communication
  * channels: channels are created as needed (e.g., one per concurrent thread)
  * and are closed after a certain time.
  * </p>
@@ -22,17 +22,17 @@ import java.util.logging.Logger;
  * @author Barthelemy Dagenais
  * 
  */
-public class CommunicationChannelFactory {
+public class CallbackClient {
 	private final int port;
 
 	private final InetAddress address;
 
-	private final Deque<CommunicationChannel> channels = new ArrayDeque<CommunicationChannel>();
+	private final Deque<CallbackConnection> connections = new ArrayDeque<CallbackConnection>();
 
 	private final Lock lock = new ReentrantLock(true);
 
 	private final Logger logger = Logger
-			.getLogger(CommunicationChannelFactory.class.getName());
+			.getLogger(CallbackClient.class.getName());
 
 	private boolean isShutdown = false;
 
@@ -45,7 +45,7 @@ public class CommunicationChannelFactory {
 
 	private final TimeUnit minConnectionTimeUnit;
 
-	public CommunicationChannelFactory(int port) {
+	public CallbackClient(int port) {
 		super();
 		this.port = port;
 		try {
@@ -59,7 +59,7 @@ public class CommunicationChannelFactory {
 		setupCleaner();
 	}
 
-	public CommunicationChannelFactory(int port, InetAddress address) {
+	public CallbackClient(int port, InetAddress address) {
 		super();
 		this.port = port;
 		this.address = address;
@@ -80,7 +80,7 @@ public class CommunicationChannelFactory {
 	 * @param minConnectionTimeUnit
 	 *            The minimum coonnection time unit.
 	 */
-	public CommunicationChannelFactory(int port, InetAddress address,
+	public CallbackClient(int port, InetAddress address,
 			long minConnectionTime, TimeUnit minConnectionTimeUnit) {
 		super();
 		this.port = port;
@@ -111,7 +111,7 @@ public class CommunicationChannelFactory {
 	 */
 	public String sendCommand(String command) {
 		String returnCommand = null;
-		CommunicationChannel cc = getChannelLock();
+		CallbackConnection cc = getConnectionLock();
 
 		if (cc == null) {
 			throw new Py4JException("Cannot obtain a new communication channel");
@@ -129,7 +129,7 @@ public class CommunicationChannelFactory {
 			throw new Py4JException("Error while sending a command.");
 		}
 
-		giveBackChannel(cc);
+		giveBackConnection(cc);
 
 		return returnCommand;
 	}
@@ -137,7 +137,7 @@ public class CommunicationChannelFactory {
 	/**
 	 * <p>
 	 * Closes all active channels, stops the periodic cleanup of channels and
-	 * mark the factory as shutting down.
+	 * mark the client as shutting down.
 	 * 
 	 * No more commands can be send after this method has been called,
 	 * <em>except</em> commands that were initiated before the shutdown method
@@ -145,15 +145,15 @@ public class CommunicationChannelFactory {
 	 * </p>
 	 */
 	public void shutdown() {
-		logger.info("Shutting down Communication Channel Factory");
+		logger.info("Shutting down Callback Client");
 		try {
 			lock.lock();
 			isShutdown = true;
-			for (CommunicationChannel cc : channels) {
+			for (CallbackConnection cc : connections) {
 				cc.shutdown();
 			}
 			executor.shutdownNow();
-			channels.clear();
+			connections.clear();
 		} finally {
 			lock.unlock();
 		}
@@ -162,7 +162,7 @@ public class CommunicationChannelFactory {
 	/**
 	 * <p>
 	 * Closes communication channels that have not been used for a time
-	 * specified at the creation of the communication channel factory.
+	 * specified at the creation of the callback client.
 	 * </p>
 	 * 
 	 * <p>
@@ -175,12 +175,12 @@ public class CommunicationChannelFactory {
 		try {
 			lock.lock();
 			if (!isShutdown) {
-				int size = channels.size();
+				int size = connections.size();
 				for (int i = 0; i < size; i++) {
-					CommunicationChannel cc = channels.getLast();
+					CallbackConnection cc = connections.getLast();
 					if (cc.wasUsed()) {
 						cc.setUsed(false);
-						channels.addFirst(cc);
+						connections.addFirst(cc);
 					} else {
 						cc.shutdown();
 					}
@@ -192,12 +192,12 @@ public class CommunicationChannelFactory {
 		}
 	}
 
-	private CommunicationChannel getChannelLock() {
-		CommunicationChannel cc = null;
+	private CallbackConnection getConnectionLock() {
+		CallbackConnection cc = null;
 		try {
 			lock.lock();
 			if (!isShutdown) {
-				cc = getChannel();
+				cc = getConnection();
 			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Critical error while sending a command",
@@ -211,12 +211,12 @@ public class CommunicationChannelFactory {
 		return cc;
 	}
 
-	private void giveBackChannel(CommunicationChannel cc) {
+	private void giveBackConnection(CallbackConnection cc) {
 		try {
 			lock.lock();
 			if (cc != null) {
 				if (!isShutdown) {
-					channels.addLast(cc);
+					connections.addLast(cc);
 				} else {
 					cc.shutdown();
 				}
@@ -226,15 +226,15 @@ public class CommunicationChannelFactory {
 		}
 	}
 
-	private CommunicationChannel getChannel() throws IOException {
-		CommunicationChannel channel = null;
+	private CallbackConnection getConnection() throws IOException {
+		CallbackConnection connection = null;
 
-		channel = channels.pollLast();
-		if (channel == null) {
-			channel = new DefaultCommunicationChannel(port, address);
-			channel.start();
+		connection = connections.pollLast();
+		if (connection == null) {
+			connection = new CallbackConnection(port, address);
+			connection.start();
 		}
 
-		return channel;
+		return connection;
 	}
 }

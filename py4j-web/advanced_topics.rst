@@ -280,9 +280,9 @@ Py4J Threading and connection model
 -----------------------------------
 
 Py4J allocates one thread per connection. The design of Py4j is symmetrical on the Python and Java sides. A Python
-communication channel communicates with the Java GatewayServer and is then associated with a GatewayConnection. A Java
-communication channel (for callbacks) communicates with the Python CallbackServer and is then associated with a
-CallbackConnection. Communication channels run in the calling thread.
+GatewayClient communicates with the Java GatewayServer and is then associated with a GatewayConnection. A Java
+CallbackClient (for callbacks) communicates with the Python CallbackServer and is then associated with a
+CallbackConnection. A connection runs in the calling thread.
 
 And now, for the details:
 
@@ -293,15 +293,15 @@ callback connection requests,  and a thread for each callback connection request
 callback on the Java side, the same callback connection/thread will be used.
 
 Py4J on the Python side does not explicitly create a thread to call Java methods. When a method is called, a
-communication channel (connection to the Java GatewayServer) is established in the calling thread. If multiple threads
-are calling Java methods concurrently, Py4J will ensure that each thread has its own communication channel.
+connection to the Java GatewayServer is established in the calling thread. If multiple threads
+are calling Java methods concurrently, Py4J will ensure that each thread has its own connection.
 
 **On the Java side**
 
-Py4J explicitly creates a thread to run the GatewayServer, which accepts connection requests (from a communication
-channel), and a thread for each connection request. As long as there is no concurrent calls on the Python side, the same
+Py4J explicitly creates a thread to run the GatewayServer, which accepts connection requests (from a GatewayClient), 
+and a thread for each connection request. As long as there is no concurrent calls on the Python side, the same
 connection/thread will be used.
 
 Py4J on the Java side does not explicitly create a thread to make a callback to a Python object. When a callback is
-called, a communication channel (connection to the CallbackServer) is established in the calling thread. If multiple
-threads are calling Python callbacks concurrently, Py4J will ensure that each thread has its own communication channel.
+called, a connection to the CallbackServer is established in the calling thread. If multiple
+threads are calling Python callbacks concurrently, Py4J will ensure that each thread has its own CallbackConnection.

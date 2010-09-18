@@ -64,7 +64,7 @@ public class Gateway {
 	private final static String OBJECT_NAME_PREFIX = "o";
 	private final Object entryPoint;
 	private final ReflectionEngine rEngine = new ReflectionEngine();
-	private final CommunicationChannelFactory ccFactory;
+	private final CallbackClient cbClient;
 
 	private final Logger logger = Logger.getLogger(Gateway.class.getName());
 
@@ -74,9 +74,9 @@ public class Gateway {
 		this(entryPoint, null);
 	}
 
-	public Gateway(Object entryPoint, CommunicationChannelFactory ccFactory) {
+	public Gateway(Object entryPoint, CallbackClient cbClient) {
 		this.entryPoint = entryPoint;
-		this.ccFactory = ccFactory;
+		this.cbClient = cbClient;
 	}
 
 	/**
@@ -100,8 +100,8 @@ public class Gateway {
 		return bindings;
 	}
 
-	public CommunicationChannelFactory getCommunicationChannelFactory() {
-		return ccFactory;
+	public CallbackClient getCallbackClient() {
+		return cbClient;
 	}
 
 	public Object getEntryPoint() {
@@ -288,6 +288,9 @@ public class Gateway {
 		this.isStarted = isStarted;
 	}
 
+	/**
+	 * <p>Releases all objects that were referenced by this Gateway.<p>
+	 */
 	public void shutdown() {
 		isStarted = false;
 		bindings.clear();

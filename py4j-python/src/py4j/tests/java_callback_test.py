@@ -125,7 +125,7 @@ class TestIntegration(unittest.TestCase):
 #        logger.addHandler(logging.StreamHandler())
         time.sleep(2)
         self.p = start_example_app_process()
-        time.sleep(0.5)
+        time.sleep(2)
         self.gateway = JavaGateway(start_callback_server=True)
         
     def tearDown(self):
@@ -144,6 +144,7 @@ class TestIntegration(unittest.TestCase):
     
     def testProxy(self):
 #        self.gateway.jvm.py4j.GatewayServer.turnLoggingOn()
+        time.sleep(1)
         example = self.gateway.entry_point.getNewExample()
         impl = IHelloImpl()
         self.assertEqual('This is Hello!',example.callHello(impl))
@@ -151,6 +152,7 @@ class TestIntegration(unittest.TestCase):
 
     def testGC(self):
         # This will only work with some JVM.
+        time.sleep(1)
         example = self.gateway.entry_point.getNewExample()
         impl = IHelloImpl()
         self.assertEqual('This is Hello!',example.callHello(impl))

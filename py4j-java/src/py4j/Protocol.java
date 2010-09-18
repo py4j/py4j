@@ -322,7 +322,7 @@ public class Protocol {
 
 		Object proxy = Proxy.newProxyInstance(gateway.getClass()
 				.getClassLoader(), interfaces, new PythonProxyHandler(parts[0],
-				gateway.getCommunicationChannelFactory(), gateway));
+				gateway.getCallbackClient(), gateway));
 
 		return proxy;
 	}

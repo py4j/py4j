@@ -190,7 +190,7 @@ Now the stack is supposed to be empty. Here is what happens if you try to pop it
   Traceback (most recent call last):                     
     File "<stdin>", line 1, in <module>                  
     File "py4j/java_gateway.py", line 161, in __call__   
-      return_value = get_return_value(answer, self.comm_channel, self.target_id, self.name)
+      return_value = get_return_value(answer, self.gateway_client, self.target_id, self.name)
     File "py4j/java_gateway.py", line 74, in get_return_value                              
       raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))   
   py4j.java_gateway.Py4JError: u'An error occurred while calling o0.pop'                   

@@ -6,7 +6,7 @@ Created on Dec 10, 2009
 from multiprocessing.process import Process
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, get_method, \
-    unescape_new_line, escape_new_line, CommChannel, CommChannelFactory, set_field
+    unescape_new_line, escape_new_line, GatewayConnection, GatewayClient, set_field
 from socket import AF_INET, SOCK_STREAM, socket
 from threading import Thread
 from traceback import print_exc
@@ -43,8 +43,8 @@ def get_test_socket():
     testSocket.connect(('localhost', TEST_PORT))
     return testSocket
 
-class TestCommChannel(object):
-    """Communication Channel that does nothing. Useful for testing."""
+class TestConnection(object):
+    """Connection that does nothing. Useful for testing."""
     
     counter = -1
     
@@ -61,10 +61,10 @@ class TestCommChannel(object):
         pass
     
     def send_command(self, command):
-        TestCommChannel.counter += 1
+        TestConnection.counter += 1
         if not command.startswith('m\nd\n'):
             self.last_message = command
-        return self.return_message + str(TestCommChannel.counter)
+        return self.return_message + str(TestConnection.counter)
     
 class ProtocolTest(unittest.TestCase):
     
@@ -73,12 +73,12 @@ class ProtocolTest(unittest.TestCase):
         self.assertEqual(u"Hello\t\rWorld\n\\", unescape_new_line(escape_new_line(u"Hello\t\rWorld\n\\")))
         
     def testProtocolSend(self):
-        testChannel = TestCommChannel()
-        gateway = JavaGateway(testChannel, False)
+        testConnection = TestConnection()
+        gateway = JavaGateway(testConnection, False)
         e = gateway.getExample()
-        self.assertEqual('c\nt\ngetExample\ne\n', testChannel.last_message)
+        self.assertEqual('c\nt\ngetExample\ne\n', testConnection.last_message)
         e.method1(1, True, 'Hello\nWorld', e, None, 1.5)
-        self.assertEqual('c\no0\nmethod1\ni1\nbTrue\nsHello\\nWorld\nro0\nn\nd1.5\ne\n', testChannel.last_message)
+        self.assertEqual('c\no0\nmethod1\ni1\nbTrue\nsHello\\nWorld\nro0\nn\nd1.5\ne\n', testConnection.last_message)
         del(e)
     
     def testProtocolReceive(self):
@@ -438,8 +438,8 @@ class ThreadTest(unittest.TestCase):
         self.p = start_example_app_process()
         # This is to ensure that the server is started before connecting to it!
         time.sleep(1)
-        comm_channel = CommChannelFactory()
-        self.gateway = JavaGateway(comm_channel=comm_channel)
+        gateway_client = GatewayClient()
+        self.gateway = JavaGateway(gateway_client=gateway_client)
 
     def tearDown(self):
         self.gateway.shutdown()

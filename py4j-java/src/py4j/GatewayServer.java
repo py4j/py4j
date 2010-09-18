@@ -98,7 +98,7 @@ public class GatewayServer implements Runnable {
 
 	private final List<Socket> connections = new ArrayList<Socket>();
 
-	private final CommunicationChannelFactory ccFactory;
+	private final CallbackClient cbClient;
 
 	private final List<Class<? extends Command>> customCommands;
 
@@ -170,8 +170,8 @@ public class GatewayServer implements Runnable {
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;
 		this.acceptOnlyOne = acceptOnlyOne;
-		this.ccFactory = new CommunicationChannelFactory(pythonPort);
-		this.gateway = new Gateway(entryPoint, ccFactory);
+		this.cbClient = new CallbackClient(pythonPort);
+		this.gateway = new Gateway(entryPoint, cbClient);
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 		this.customCommands = customCommands;
 	}
@@ -293,7 +293,7 @@ public class GatewayServer implements Runnable {
 		}
 		connections.clear();
 		gateway.shutdown();
-		ccFactory.shutdown();
+		cbClient.shutdown();
 	}
 
 	public boolean isAcceptOnlyOne() {
@@ -312,8 +312,8 @@ public class GatewayServer implements Runnable {
 		return pythonPort;
 	}
 
-	public CommunicationChannelFactory getCommunicationChannelFactory() {
-		return ccFactory;
+	public CallbackClient getCallbackClient() {
+		return cbClient;
 	}
 
 	/**

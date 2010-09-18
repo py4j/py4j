@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
-import py4j.CommunicationChannelFactory;
+import py4j.CallbackClient;
 import py4j.Gateway;
 import py4j.Protocol;
 
@@ -22,7 +22,7 @@ public class PythonProxyHandler implements InvocationHandler {
 
 	private final String id;
 
-	private final CommunicationChannelFactory factory;
+	private final CallbackClient cbClient;
 
 	private final Gateway gateway;
 
@@ -35,11 +35,11 @@ public class PythonProxyHandler implements InvocationHandler {
 
 	public final static String GARBAGE_COLLECT_PROXY_COMMAND_NAME = "g\n";
 
-	public PythonProxyHandler(String id, CommunicationChannelFactory factory,
+	public PythonProxyHandler(String id, CallbackClient cbClient,
 			Gateway gateway) {
 		super();
 		this.id = id;
-		this.factory = factory;
+		this.cbClient = cbClient;
 		this.gateway = gateway;
 		this.finalizeCommand = GARBAGE_COLLECT_PROXY_COMMAND_NAME + id
 				+ "\ne\n";
@@ -66,7 +66,7 @@ public class PythonProxyHandler implements InvocationHandler {
 
 		sBuilder.append("e\n");
 
-		String returnCommand = factory.sendCommand(sBuilder.toString());
+		String returnCommand = cbClient.sendCommand(sBuilder.toString());
 
 		return Protocol.getReturnValue(returnCommand, gateway);
 	}
@@ -75,7 +75,7 @@ public class PythonProxyHandler implements InvocationHandler {
 	protected void finalize() throws Throwable {
 		try {
 			logger.info("Finalizing python proxy id " + this.id);
-			factory.sendCommand(finalizeCommand);
+			cbClient.sendCommand(finalizeCommand);
 		} catch (Exception e) {
 			logger
 					.warning("Python Proxy ID could not send a finalize message: "

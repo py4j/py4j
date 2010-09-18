@@ -10,8 +10,8 @@ class JavaIterator(JavaObject):
     """Maps a Python list iterator to a Java list iterator.
     
     The `JavaIterator` follows the Python iterator protocol and raises a `StopIteration` error when the iterator can no longer iterate."""
-    def __init__(self, target_id, comm_channel):
-        JavaObject.__init__(self, target_id, comm_channel)
+    def __init__(self, target_id, gateway_client):
+        JavaObject.__init__(self, target_id, gateway_client)
         self._next_name = 'next'
         # To bind lifecycle of this iterator to the java iterator. To prevent gc of the iterator. 
 #        self._java_object = java_object
@@ -25,7 +25,7 @@ class JavaIterator(JavaObject):
         The `Iterator.next()` method is called and if an exception occur (e.g., 
         NoSuchElementException), a StopIteration exception is raised."""
         if self._next_name not in self._methods:
-            self._methods[self._next_name] = JavaMember(self._next_name, self, self._target_id, self._comm_channel)
+            self._methods[self._next_name] = JavaMember(self._next_name, self, self._target_id, self._gateway_client)
         try:
             return self._methods[self._next_name]()
         except Py4JError:
@@ -36,8 +36,8 @@ class JavaMap(JavaObject, MutableMapping):
     
     All operations possible on a Python dict are implemented."""
     
-    def __init__(self, target_id, comm_channel):
-        JavaObject.__init__(self, target_id, comm_channel)
+    def __init__(self, target_id, gateway_client):
+        JavaObject.__init__(self, target_id, gateway_client)
         self._get = get_method(self,'get')
     
     def __getitem__(self, key):
@@ -54,7 +54,6 @@ class JavaMap(JavaObject, MutableMapping):
     
     def __iter__(self):
         return self.keySet().iterator()
-#        return JavaIterator(self.keySet().iterator(), self._comm_channel)
     
     def __contains__(self, key):
         return self.containsKey(key)
@@ -79,8 +78,8 @@ class JavaSet(JavaObject, MutableSet):
     
     All operations possible on a Python set are implemented."""
     
-    def __init__(self, target_id, comm_channel):
-        JavaObject.__init__(self, target_id, comm_channel)
+    def __init__(self, target_id, gateway_client):
+        JavaObject.__init__(self, target_id, gateway_client)
         self._add = get_method(self,'add')
         self._clear = get_method(self,'clear')
         self._remove = get_method(self,'remove')
@@ -105,7 +104,6 @@ class JavaSet(JavaObject, MutableSet):
     
     def __iter__(self):
         return self.iterator()
-#        return JavaIterator(self.iterator(), self._comm_channel)
     
     def __contains__(self, value):
         return self.contains(value)
@@ -131,8 +129,8 @@ class JavaArray(JavaObject, Sequence):
     primitives whereas Java arrays work for any types.    
     """
     
-    def __init__(self, target_id, comm_channel):
-        JavaObject.__init__(self, target_id, comm_channel)
+    def __init__(self, target_id, gateway_client):
+        JavaObject.__init__(self, target_id, gateway_client)
     
     def __compute_index(self, key, adjustLast = False):
         size = len(self)
@@ -150,16 +148,16 @@ class JavaArray(JavaObject, Sequence):
         command = ARRAY_COMMAND_NAME + ARRAY_GET_SUB_COMMAND_NAME + self._get_object_id() + '\n'
         command += get_command_part(new_key)
         command += END_COMMAND_PART
-        answer = self._comm_channel.send_command(command)
-        return get_return_value(answer, self._comm_channel)
+        answer = self._gateway_client.send_command(command)
+        return get_return_value(answer, self._gateway_client)
     
     def __get_slice(self, indices):
         command = ARRAY_COMMAND_NAME + ARRAY_SLICE_SUB_COMMAND_NAME + self._get_object_id() + '\n'
         for index in indices:
             command += get_command_part(index)
         command += END_COMMAND_PART
-        answer = self._comm_channel.send_command(command)
-        return get_return_value(answer, self._comm_channel)
+        answer = self._gateway_client.send_command(command)
+        return get_return_value(answer, self._gateway_client)
     
     def __getitem__(self, key):
         if isinstance(key, slice):
@@ -182,8 +180,8 @@ class JavaArray(JavaObject, Sequence):
         command += get_command_part(new_key)
         command += get_command_part(value)
         command += END_COMMAND_PART
-        answer = self._comm_channel.send_command(command)
-        return get_return_value(answer, self._comm_channel)
+        answer = self._gateway_client.send_command(command)
+        return get_return_value(answer, self._gateway_client)
         
     def __setitem__(self, key, value):
         if isinstance(key, slice):
@@ -205,8 +203,8 @@ class JavaArray(JavaObject, Sequence):
     def __len__(self):
         command = ARRAY_COMMAND_NAME + ARRAY_LEN_SUB_COMMAND_NAME + self._get_object_id() + '\n'
         command += END_COMMAND_PART
-        answer = self._comm_channel.send_command(command)
-        return get_return_value(answer, self._comm_channel)
+        answer = self._gateway_client.send_command(command)
+        return get_return_value(answer, self._gateway_client)
         
 class JavaList(JavaObject):
     """Maps a Python list to a Java list.
@@ -216,8 +214,8 @@ class JavaList(JavaObject):
     a modification to a slice such as the addition of a new element will not affect the original 
     list."""
     
-    def __init__(self, target_id, comm_channel):
-        JavaObject.__init__(self, target_id, comm_channel)
+    def __init__(self, target_id, gateway_client):
+        JavaObject.__init__(self, target_id, gateway_client)
 
     def __len__(self):
         return self.size()
@@ -313,8 +311,8 @@ class JavaList(JavaObject):
         for index in indices:
             command += get_command_part(index)
         command += END_COMMAND_PART
-        answer = self._comm_channel.send_command(command)
-        return get_return_value(answer, self._comm_channel)
+        answer = self._gateway_client.send_command(command)
+        return get_return_value(answer, self._gateway_client)
         
         
     def __getitem__(self, key):
@@ -343,8 +341,8 @@ class JavaList(JavaObject):
         
     def __add__(self, other):
         command = LIST_COMMAND_NAME + LIST_CONCAT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + other._get_object_id() + '\n' + END_COMMAND_PART
-        answer = self._comm_channel.send_command(command)
-        return get_return_value(answer, self._comm_channel)
+        answer = self._gateway_client.send_command(command)
+        return get_return_value(answer, self._gateway_client)
     
     def __radd__(self, other):
         return self.__add__(other)
@@ -355,15 +353,15 @@ class JavaList(JavaObject):
     
     def __mul__(self, other):
         command = LIST_COMMAND_NAME + LIST_MULT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + get_command_part(other) + END_COMMAND_PART
-        answer = self._comm_channel.send_command(command)
-        return get_return_value(answer, self._comm_channel)
+        answer = self._gateway_client.send_command(command)
+        return get_return_value(answer, self._gateway_client)
     
     def __rmul__(self, other):
         return self.__mul__(other)
     
     def __imul__(self, other):
         command = LIST_COMMAND_NAME + LIST_IMULT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + get_command_part(other) + END_COMMAND_PART
-        self._comm_channel.send_command(command)
+        self._gateway_client.send_command(command)
         return self
         
     def append(self, value):
@@ -391,16 +389,16 @@ class JavaList(JavaObject):
     
     def count(self, value):
         command = LIST_COMMAND_NAME + LIST_COUNT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + get_command_part(value) + END_COMMAND_PART
-        answer = self._comm_channel.send_command(command)
-        return get_return_value(answer, self.comm_channel)
+        answer = self._gateway_client.send_command(command)
+        return get_return_value(answer, self._gateway_client)
     
     def sort(self):
         command = LIST_COMMAND_NAME + LIST_SORT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + END_COMMAND_PART
-        self._comm_channel.send_command(command)
+        self._gateway_client.send_command(command)
     
     def reverse(self):
         command = LIST_COMMAND_NAME + LIST_REVERSE_SUBCOMMAND_NAME + self._get_object_id() + '\n' + END_COMMAND_PART
-        self._comm_channel.send_command(command)
+        self._gateway_client.send_command(command)
     
     # remove is automatically supported by Java...
     

@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  * @author Barthelemy Dagenais
  * 
  */
-public class DefaultCommunicationChannel implements CommunicationChannel {
+public class CallbackConnection {
 
 	private boolean used;
 
@@ -34,15 +34,14 @@ public class DefaultCommunicationChannel implements CommunicationChannel {
 	private BufferedWriter writer;
 
 	private final Logger logger = Logger
-			.getLogger(DefaultCommunicationChannel.class.getName());
+			.getLogger(CallbackConnection.class.getName());
 
-	public DefaultCommunicationChannel(int port, InetAddress address) {
+	public CallbackConnection(int port, InetAddress address) {
 		super();
 		this.port = port;
 		this.address = address;
 	}
 
-	@Override
 	public void start() throws IOException {
 		logger.info("Starting Communication Channel on " + address + " at "
 				+ port);
@@ -53,10 +52,10 @@ public class DefaultCommunicationChannel implements CommunicationChannel {
 				.getOutputStream(), Charset.forName("UTF-8")));
 	}
 
-	@Override
 	public String sendCommand(String command) {
 		String returnCommand = null;
 		try {
+			this.used = true;
 			writer.write(command);
 			writer.flush();
 			returnCommand = reader.readLine();
@@ -67,19 +66,16 @@ public class DefaultCommunicationChannel implements CommunicationChannel {
 		return returnCommand;
 	}
 
-	@Override
 	public void setUsed(boolean used) {
 		this.used = used;
 	}
 
-	@Override
 	public void shutdown() {
 		NetworkUtil.quietlyClose(reader);
 		NetworkUtil.quietlyClose(writer);
 		NetworkUtil.quietlyClose(socket);
 	}
 
-	@Override
 	public boolean wasUsed() {
 		return used;
 	}

@@ -6,8 +6,8 @@
 .. moduleauthor:: Barthelemy Dagenais <barthe@users.sourceforge.net>
 
 The :mod:`py4j.java_gateway` module defines most of the classes that are needed to use Py4J. Py4J users are expected
-to only use explicitly :class:`JavaGateway <py4j.java_gateway.JavaGateway>` and optionally, :class:`CommChannelFactory
-<py4j.java_gateway.CommChannelFactory>`, :func:`get_field <py4j.java_gateway.get_field>`, and :func:`get_method
+to only use explicitly :class:`JavaGateway <py4j.java_gateway.JavaGateway>` and optionally, :class:`GatewayClient
+<py4j.java_gateway.GatewayClient>`, :func:`get_field <py4j.java_gateway.get_field>`, and :func:`get_method
 <py4j.java_gateway.get_method>`. The other module members are documented to support the extension of Py4J.
 
 .. _api_javagateway:
@@ -72,12 +72,12 @@ Then we play with the class using the two possible values of auto_field:
   >>> get_method(example2,'member')()
   u'Hello World'
   
-.. _api_commchannelfactory:
+.. _api_gatewayclient:
 
-CommChannelFactory
-------------------
+GatewayClient
+-------------
 
-.. autoclass:: py4j.java_gateway.CommChannelFactory
+.. autoclass:: py4j.java_gateway.GatewayClient
    :members:
    :undoc-members:
 
@@ -91,12 +91,12 @@ CommChannelFactory
 
     TBD
 
-.. _api_commchannel:
+.. _api_gatewayconnection:
 
 CommChannel
 -----------
 
-.. autoclass:: py4j.java_gateway.CommChannel
+.. autoclass:: py4j.java_gateway.GatewayConnection
    :members:
    :undoc-members:
 

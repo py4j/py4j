@@ -23,14 +23,14 @@ class CallbackServer(Thread):
     concurrent thread. 
     """
     
-    def __init__(self, pool, comm_channel, port = DEFAULT_PYTHON_PROXY_PORT):
+    def __init__(self, pool, gateway_client, port = DEFAULT_PYTHON_PROXY_PORT):
         """
         :param pool: the pool responsible of tracking Python objects passed to the Java side.
-        :param comm_channel: the communication channel used to call Java objects.
+        :param gateway_client: the gateway client used to call Java objects.
         :param port: the port the CallbackServer is listening to.
         """
         super(CallbackServer, self).__init__()
-        self.comm_channel = comm_channel
+        self.gateway_client = gateway_client
         self.port = port
         self.pool = pool
         self.connections = []
@@ -54,7 +54,7 @@ class CallbackServer(Thread):
             logger.info('Socket listening on' + str(self.server_socket.getsockname()))
             socket, _ = self.server_socket.accept()
             input = socket.makefile('r', 0)
-            connection = CallbackConnection(self.pool, input, socket, self.comm_channel)
+            connection = CallbackConnection(self.pool, input, socket, self.gateway_client)
             with self.lock:
                 if not self.is_shutdown:
                     self.connections.append(connection)
@@ -92,12 +92,12 @@ class CallbackServer(Thread):
 class CallbackConnection(Thread):
     """A `CallbackConnection` receives callbacks and garbage collection requests from the Java side. 
     """
-    def __init__(self, pool, input, socket, comm_channel):
+    def __init__(self, pool, input, socket, gateway_client):
         super(CallbackConnection, self).__init__()
         self.pool = pool
         self.input = input
         self.socket = socket
-        self.comm_channel = comm_channel
+        self.gateway_client = gateway_client
     
     def run(self):
         logger.info('Callback Connection ready to receive messages')
@@ -141,7 +141,7 @@ class CallbackConnection(Thread):
         params = []
         temp = input.readline().decode('utf-8')[:-1]
         while temp != END:
-            param = get_return_value('y'+temp, self.comm_channel)
+            param = get_return_value('y'+temp, self.gateway_client)
             params.append(param)
             temp = input.readline().decode('utf-8')[:-1]
         return params
