@@ -4,7 +4,7 @@ Created on Apr 5, 2010
 @author: Barthelemy Dagenais
 '''
 from multiprocessing.process import Process
-from py4j.java_gateway import JavaGateway 
+from py4j.java_gateway import JavaGateway
 from py4j.java_callback import PythonProxyPool
 from threading import Thread
 import logging
@@ -15,13 +15,33 @@ import unittest
 
 def start_example_server():
     subprocess.call(["java", "-cp", "../../../../py4j-java/bin/", "py4j.examples.ExampleApplication"])
-    
+
+def start_example_server2():
+    subprocess.call(["java", "-cp", "../../../../py4j-java/bin/", "py4j.examples.OperatorExampleTest"])
+        
     
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_example_server)
     p.start()
     return p
+
+def start_example_app_process2():
+    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    p = Process(target=start_example_server2)
+    p.start()
+    return p
+
+class FalseAddition(object):
+    def doOperation(self, i, j, k = None):
+        if k == None:
+            # Integer overflow!
+            return 3722507311
+        else:
+            return 3722507311
+        
+    class Java:
+        implements = ['py4j.examples.Operator']
 
 class Runner(Thread):
     def __init__(self, runner_range, pool):
@@ -83,7 +103,7 @@ class IHelloImpl(object):
             return 'This is Hello;\n%d%s' % (i,s)
         
     class Java:
-        interfaces = ['py4j.examples.IHello']
+        implements = ['py4j.examples.IHello']
             
 #class TestConnection(unittest.TestCase):
 #    
@@ -162,8 +182,34 @@ class TestIntegration(unittest.TestCase):
         time.sleep(2)
         self.assertTrue(len(self.gateway.gateway_property.pool) < 2)
         
-    
-
+class TestPeriodicCleanup(unittest.TestCase):
+    def setUp(self):
+        time.sleep(2)
+        self.p = start_example_app_process2()
+        time.sleep(2)
+        self.gateway = JavaGateway(start_callback_server=True)
+        
+    def tearDown(self):
+        self.p.terminate()
+        self.gateway.shutdown()
+        time.sleep(3)
+        
+    def testPeriodicCleanup(self):
+        operator = FalseAddition()
+        try:
+            self.gateway.entry_point.randomTernaryOperator(operator)
+            self.assertTrue(False)
+        except:
+            self.assertTrue(True)
+        # Time for periodic cleanup
+        time.sleep(5)
+        try:
+            self.gateway.entry_point.randomTernaryOperator(operator)
+            self.assertTrue(False)
+        except:
+            self.assertTrue(True)
+        
+        
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

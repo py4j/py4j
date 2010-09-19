@@ -19,7 +19,7 @@ public class ProxyTest {
 
 	@Before
 	public void setup() {
-		GatewayServer.turnLoggingOn();
+//		GatewayServer.turnLoggingOn();
 		entry = new InterfaceEntry();
 		gServer = new GatewayServer(entry);
 		pClient = new PythonClient();
@@ -41,7 +41,7 @@ public class ProxyTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		GatewayServer.turnLoggingOff();
+//		GatewayServer.turnLoggingOff();
 	}
 	
 	@Test

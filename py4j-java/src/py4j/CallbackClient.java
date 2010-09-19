@@ -195,10 +195,12 @@ public class CallbackClient {
 	private CallbackConnection getConnectionLock() {
 		CallbackConnection cc = null;
 		try {
+			logger.log(Level.INFO, "Getting CB Connection");
 			lock.lock();
 			if (!isShutdown) {
 				cc = getConnection();
 			}
+			logger.log(Level.INFO, "Acquired CB Connection");
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Critical error while sending a command",
 					e);
@@ -236,5 +238,9 @@ public class CallbackClient {
 		}
 
 		return connection;
+	}
+	
+	public int getPort() {
+		return port;
 	}
 }

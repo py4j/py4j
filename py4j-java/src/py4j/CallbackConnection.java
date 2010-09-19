@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -53,6 +54,7 @@ public class CallbackConnection {
 	}
 
 	public String sendCommand(String command) {
+		logger.log(Level.INFO, "Sending CB command: " + command);
 		String returnCommand = null;
 		try {
 			this.used = true;
@@ -63,6 +65,7 @@ public class CallbackConnection {
 			throw new Py4JNetworkException("Error while sending a command: "
 					+ command, e);
 		}
+		logger.log(Level.INFO, "Returning CB command: " + returnCommand);
 		return returnCommand;
 	}
 

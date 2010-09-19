@@ -167,12 +167,12 @@ def unescape_new_line(escaped):
     
 def is_python_proxy(parameter):
     """Determines whether parameter is a Python Proxy, i.e., it has a Java internal class with an
-    interfaces member.
+    implements member.
     :param parameter: the object to check.
     :rtype: True if the parameter is a Python Proxy
     """
     try:
-        is_proxy = len(parameter.Java.interfaces) > 0
+        is_proxy = len(parameter.Java.implements) > 0
     except:
         is_proxy = False
     
@@ -199,7 +199,7 @@ def get_command_part(parameter, python_proxy_pool=None):
         command_part = STRING_TYPE + escape_new_line(parameter)
     elif is_python_proxy(parameter):
         command_part = PYTHON_PROXY_TYPE + python_proxy_pool.put(parameter)
-        for interface in parameter.Java.interfaces:
+        for interface in parameter.Java.implements:
             command_part += ';' + interface
     else:
         command_part = REFERENCE_TYPE + parameter._get_object_id()

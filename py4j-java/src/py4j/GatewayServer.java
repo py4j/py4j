@@ -170,6 +170,18 @@ public class GatewayServer implements Runnable {
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 		this.customCommands = customCommands;
 	}
+	
+	public GatewayServer(Object entryPoint, int port, int connectTimeout, int readTimeout, List<Class<? extends Command>> customCommands, CallbackClient cbClient) {
+		super();
+		this.port = port;
+		this.connectTimeout = connectTimeout;
+		this.readTimeout = readTimeout;
+		this.cbClient = cbClient;
+		this.pythonPort = cbClient.getPort();
+		this.gateway = new Gateway(entryPoint, cbClient);
+		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
+		this.customCommands = customCommands;
+	}
 
 	/**
 	 * <p>

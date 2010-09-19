@@ -52,16 +52,17 @@ class CallbackServer(Thread):
             self.server_socket.bind(('localhost', self.port))
             self.server_socket.listen(5)
             logger.info('Socket listening on' + str(self.server_socket.getsockname()))
-            socket, _ = self.server_socket.accept()
-            input = socket.makefile('r', 0)
-            connection = CallbackConnection(self.pool, input, socket, self.gateway_client)
-            with self.lock:
-                if not self.is_shutdown:
-                    self.connections.append(connection)
-                    connection.start()
-                else:
-                    connection.socket.shutdown(socket.SHUT_RDWR)
-                    connection.socket.close()
+            while not self.is_shutdown:
+                socket, _ = self.server_socket.accept()
+                input = socket.makefile('r', 0)
+                connection = CallbackConnection(self.pool, input, socket, self.gateway_client)
+                with self.lock:
+                    if not self.is_shutdown:
+                        self.connections.append(connection)
+                        connection.start()
+                    else:
+                        connection.socket.shutdown(socket.SHUT_RDWR)
+                        connection.socket.close()
         except:
             logger.exception('Error while waiting for a connection.')
     
@@ -120,6 +121,7 @@ class CallbackConnection(Thread):
             logger.exception('Error while callback connection waiting for a message')
             
         try:
+            logger.info('Closing down connection')
             self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
         except Exception:
@@ -150,7 +152,7 @@ class PythonProxyPool(object):
     """A `PythonProxyPool` manages proxies that are passed to the Java side. A proxy is a Python
     class that implements a Java interface.
     
-    A proxy has an internal class named `Java` with a member named `interfaces` which is a list of
+    A proxy has an internal class named `Java` with a member named `implements` which is a list of
     fully qualified names (string) of the implemented interfaces.
     
     The `PythonProxyPool` implements a subset of the dict interface: `pool[id]`, `del(pool[id])`, 

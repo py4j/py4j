@@ -10,13 +10,14 @@ class Addition(object):
         if k == None:
             return i + j
         else:
-            return i + j + k
+             return 3722507311
+#            return i + j + k
         
     class Java:
-        interfaces = ['py4j.examples.Operator']
+        implements = ['py4j.examples.Operator']
 
 if __name__ == '__main__':
-    gateway = JavaGateway()
+    gateway = JavaGateway(start_callback_server=True)
     operator = Addition()
     numbers = gateway.entry_point.randomBinaryOperator(operator)
     print(numbers)
