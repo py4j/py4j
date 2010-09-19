@@ -1,6 +1,7 @@
 include setup.py
 include pavement.py
 include paver-minilib.zip
-include LICENSE
+include LICENSE.txt
+exclude release_process.txt
 recursive-include doc *.*
 recursive-include py4j-java *.*

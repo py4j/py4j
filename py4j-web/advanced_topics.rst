@@ -7,18 +7,19 @@ Accessing Java collections and arrays from Python
 Java collections are automatically mapped to Python collections so that standard Python operations such as slicing work
 on Java collections. Here is the mapping of the collection:
 
-=============== ====================== ====================================================
-Java Collection Python Collection      Py4J Implementation
-=============== ====================== ====================================================
-Array           Sequence [#arraynote]_ :class:`JavaArray <py4j.java_collections.JavaArray>`
-java.util.List  MutableSequence        :class:`JavaList <py4j.java_collections.JavaList>`
-java.util.Set   MutableSet             :class:`JavaSet <py4j.java_collections.JavaSet>`
-java.util.Map   MutableMapping         :class:`JavaMap <py4j.java_collections.JavaMap>`
-=============== ====================== ====================================================
+=================== ====================== ==========================================================
+Java Collection     Python Collection      Py4J Implementation
+=================== ====================== ==========================================================
+Array               Sequence [#arraynote]_ :class:`JavaArray <py4j.java_collections.JavaArray>`
+java.util.List      MutableSequence        :class:`JavaList <py4j.java_collections.JavaList>`
+java.util.Set       MutableSet             :class:`JavaSet <py4j.java_collections.JavaSet>`
+java.util.Map       MutableMapping         :class:`JavaMap <py4j.java_collections.JavaMap>`
+java.util.Iterator  *Iterator Protocol*    :class:`JavaIterator <py4j.java_collections.JavaIterator>`
+=================== ====================== ==========================================================
 
-.. [#arraynote] Py4J allows elements to be modified, which is not the case of true immutable sequences like tuples.
+.. [#arraynote] Py4J allows elements to be modified (like a real Java array), which is not the case of true 
+   immutable sequences like tuples.
 
-Iterators are currently not automatically converted, except when accessed through a collection (e.g., `for i in list`). 
 Java methods are still accessible when using the Python version of a Java collection. Here are some usage examples for
 each collection class. These examples do not cover the entire API.
 
@@ -123,12 +124,12 @@ Map
   c:2
 
 
-Enabling Java objects to call Python objects (callback)
--------------------------------------------------------
+Implementing Java interfaces from Python (callback)
+---------------------------------------------------
 
-Since version 0.3, Py4J allows Java programs to call Python objects. In other words, Python classes can implement a 
-Java interface and instances of these classes can be passed to a Java object. In the following example, we will play the
-role of a Mad Scientist :sup:`TM` and we will create a program that invokes an operator with two or three random integers.
+Since version 0.3, Py4J allows Python classes to implement Java interfaces so that the JVM can call back Python objects. 
+In the following example, you will play the role of a Mad Scientist :sup:`TM` and you will create a Java program that 
+invokes an operator with two or three random integers. The operators will be implemented by a Python class.
 
 Here is the code of the main Java program:
 
@@ -144,11 +145,14 @@ Here is the code of the main Java program:
 
   public class OperatorExample {
 
+	  // To prevent integer overflow
+	  private final static int MAX = 1000;
+
 	  public List<Integer> randomBinaryOperator(Operator op) {
 		  Random random = new Random();
 		  List<Integer> numbers = new ArrayList<Integer>();
-		  numbers.add(random.nextInt());
-		  numbers.add(random.nextInt());
+		  numbers.add(random.nextInt(MAX));
+		  numbers.add(random.nextInt(MAX));
 		  numbers.add(op.doOperation(numbers.get(0), numbers.get(1)));
 		  return numbers;
 	  }
@@ -156,9 +160,9 @@ Here is the code of the main Java program:
 	  public List<Integer> randomTernaryOperator(Operator op) {
 		  Random random = new Random();
 		  List<Integer> numbers = new ArrayList<Integer>();
-		  numbers.add(random.nextInt());
-		  numbers.add(random.nextInt());
-		  numbers.add(random.nextInt());
+		  numbers.add(random.nextInt(MAX));
+		  numbers.add(random.nextInt(MAX));
+		  numbers.add(random.nextInt(MAX));
 		  numbers.add(op.doOperation(numbers.get(0), numbers.get(1), numbers.get(2)));
 		  return numbers;
 	  }
@@ -171,7 +175,7 @@ Here is the code of the main Java program:
   }
 
 
-The programs has a main method starting a `GatewayServer`. The entry point, a `OperatorExample` instance, offers two
+The program has a main method starting a `GatewayServer`. The entry point, a `OperatorExample` instance, offers two
 methods that take as a parameter an `Operator` instance. Each method calls the operator with two or three random 
 integers and save the integers and the result in a list. Here is the declaration of `Operator`:
 
@@ -204,7 +208,7 @@ program:
 	      return i + j + k
 	  
       class Java:
-	  interfaces = ['py4j.examples.Operator']
+	  implements = ['py4j.examples.Operator']
 
   if __name__ == '__main__':
       gateway = JavaGateway(start_callback_server=True)
@@ -222,7 +226,7 @@ interface. Each method implementing an overloaded method in a Java interface sho
 parameters, otherwise, an exception will be thrown if the Java program tries to call an unsupported method.
 
 Py4J recognizes that the `Addition` class implements a Java interface because it declares an internal class called 
-`Java`, which has a member named `interfaces`. This member is a list of string representing the fully qualified name of 
+`Java`, which has a member named `implements`. This member is a list of string representing the fully qualified name of 
 implemented Java interfaces.
 
 Finally, the Python program contains a main method that starts a gateway, initializes an Addition operator and sends it
@@ -235,9 +239,8 @@ Note that to enable the Python program to receive callbacks, the JavaGateway ins
 
 .. warning:: 
    
-   Python classes can only implement Java interfaces. Abstract or concrete classes are not supported and there is no
-   plan to support them in the near future because this would probably require instrumenting the bytecode at runtime.
-   Java does not natively support dynamic proxies for classes. 
+   Python classes can only implement Java interfaces. Abstract or concrete classes are not supported because Java does
+   not natively support dynamic proxies for classes. Extending classes may be supported in future releases of Py4J.
 
    As a workaround, a subclass of the abstract class could be created on the Java side. The methods of the subclass 
    would call the methods of a custom interface that a Python class could implement.
@@ -272,7 +275,7 @@ the remaining references are removed from the Python VM.
 Unfortunately, there is no guarantee that the garbage collection message will ever be sent to the Python side (it
 usually works on Sun/Oracle VM). It might thus be necessary to manually remove the reference to the Python objects. Some
 helper functions will be developed in the future, but it is unlikely that garbage collection will be guarenteed because
-of the specification of Java finalizers (which are surprisingly worse than Python finalizer strategies).
+of the specifications of Java finalizers (which are surprisingly worse than Python finalizer strategies).
 
 .. _adv_threading:
 
@@ -294,12 +297,13 @@ callback on the Java side, the same callback connection/thread will be used.
 
 Py4J on the Python side does not explicitly create a thread to call Java methods. When a method is called, a
 connection to the Java GatewayServer is established in the calling thread. If multiple threads
-are calling Java methods concurrently, Py4J will ensure that each thread has its own connection.
+are calling Java methods concurrently, Py4J will ensure that each thread has its own connection by requesting more 
+connections.
 
 **On the Java side**
 
 Py4J explicitly creates a thread to run the GatewayServer, which accepts connection requests (from a GatewayClient), 
-and a thread for each connection request. As long as there is no concurrent calls on the Python side, the same
+and a thread for each connection request. As long as there is no concurrent call on the Python side, the same
 connection/thread will be used.
 
 Py4J on the Java side does not explicitly create a thread to make a callback to a Python object. When a callback is

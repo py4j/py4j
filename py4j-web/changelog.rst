@@ -4,6 +4,16 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J releases. Please look at the `roadmap
 <http://sourceforge.net/apps/trac/py4j/roadmap?show=all>`_ for more detailed information. 
 
+Py4J 0.4
+--------
+
+- Polishing of existing features: fields can be set (not just read), None is accepted as a method parameter, methods are sorted alhabetically in gateway.help(), etc.
+- Java Exception Stack Trace are now propagated to Python side.
+- Changed **interfaces** member in Callback classes to **implements**.
+- Internal refactoring to adopt clearer terminology and make Py4J protocol extensible.
+- Many bug fixes: most are related to the callback feature.
+- `Trac 0.4 milestone <http://sourceforge.net/apps/trac/py4j/milestone/0.4%20-%20Ease%20of%20Use>`_
+
 Py4J 0.3
 --------
 

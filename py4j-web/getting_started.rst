@@ -193,9 +193,26 @@ Now the stack is supposed to be empty. Here is what happens if you try to pop it
       return_value = get_return_value(answer, self.gateway_client, self.target_id, self.name)
     File "py4j/java_gateway.py", line 74, in get_return_value                              
       raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))   
-  py4j.java_gateway.Py4JError: u'An error occurred while calling o0.pop'                   
+  py4j.java_gateway.Py4JError: An error occurred while calling o0.pop. Trace:
+  java.lang.IndexOutOfBoundsException: Index: 0, Size: 0
+      at java.util.LinkedList.entry(LinkedList.java:365)
+      at java.util.LinkedList.remove(LinkedList.java:357)
+      at py4j.examples.Stack.pop(Stack.java:42)
+      at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+      at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+      at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+      at java.lang.reflect.Method.invoke(Method.java:597)
+      at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:117)
+      at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:392)
+      at py4j.Gateway.invoke(Gateway.java:239)
+      at py4j.AbstractCommand.invokeMethod(AbstractCommand.java:120)
+      at py4j.CallCommand.execute(CallCommand.java:77)
+      at py4j.GatewayConnection.run(GatewayConnection.java:158)
+      at java.lang.Thread.run(Thread.java:619)
+                   
 
-You get a :ref:`Py4JError <api_py4jerror>` because there was an exception on the JVM side.
+You get a :ref:`Py4JError <api_py4jerror>` because there was an exception on the JVM side. In addition, you can see the
+type of exception that was thrown on the Java side and its stack trace.
 
 Now, you will experiment with lists. Add another element and get the internal list of the stack:
 
@@ -258,8 +275,8 @@ to pass a pure Python list that was not returned by the JVM:
   >>> stack.getInternalList()
   [u'Third item', u'First item', u'First item', u'Second item']
 
-As of version 0.2, Py4J does not support the conversion from pure Python lists to Java list. This is a feature that will 
-likely be implemented in version 0.3 or 0.4. 
+As of version 0.4, Py4J does not support the conversion from pure Python lists to Java list. This is a feature that will 
+likely be implemented future versions. 
 
 Python has powerful introspection abilities that are slowly being replicated by Py4J. For example, a JavaGateway
 allow you to list all the members available in an object:
@@ -273,11 +290,11 @@ allow you to list all the members available in an object:
   |  
   |  Methods defined here:
   |  
+  |  getInternalList() : List
+  |  
   |  pop() : String
   |  
   |  push(String) : void
-  |  
-  |  getInternalList() : List
   |  
   |  pushAll(List) : void
   |  
@@ -288,8 +305,10 @@ allow you to list all the members available in an object:
   |  Internal classes defined here:
   |  
   }
+
   
-Finally, you do not need an entry point to create and access objects. You can use the ``jvm`` member to call constructors and static members:
+Finally, you do not need an entry point to create and access objects. You can use the ``jvm`` member to call 
+constructors and static members:
 
 ::
 

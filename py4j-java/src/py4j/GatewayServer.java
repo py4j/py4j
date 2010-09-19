@@ -121,9 +121,6 @@ public class GatewayServer implements Runnable {
 	 *            connected, if a GatewayServer does not receive a request
 	 *            (e.g., a method call) after this time, the connection with the
 	 *            Python program is closed.
-	 * @param acceptOnlyOne
-	 *            If true, only one Python program can connect to this
-	 *            GatewayServer at a time.
 	 */
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout) {
@@ -149,9 +146,6 @@ public class GatewayServer implements Runnable {
 	 *            connected, if a GatewayServer does not receive a request
 	 *            (e.g., a method call) after this time, the connection with the
 	 *            Python program is closed.
-	 * @param acceptOnlyOne
-	 *            If true, only one Python program can connect to this
-	 *            GatewayServer at a time.
 	 * @param customCommands
 	 *            A list of custom Command classes to augment the Server
 	 *            features. These commands will be accessible from Python
