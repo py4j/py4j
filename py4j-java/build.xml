@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) 2010, Barthelemy Dagenais All rights reserved.
+   
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+   
+    - Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+   
+    - Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+   
+    - The name of the author may not be used to endorse or promote products
+    derived from this software without specific prior written permission.
+   
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
+ -->
+
+<project basedir="." default="build" name="py4j">
+    <property environment="env"/>
+	<property file="ant.properties"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+	<property name="jar.name" value="py4j${version}.jar"/>
+    <property name="release.name" value="py4j-${version}"/>
+	<path id="junit4.classpath">
+        <pathelement location="${junit.path}"/>
+        <pathelement location="${hamcrest.path}"/>
+    </path>
+    <path id="py4j.classpath">
+        <pathelement location="${build.dir}"/>
+        <path refid="junit4.classpath"/>
+    </path>
+	<target name="init_dist">
+		<mkdir dir="${dist.dir}"/>
+		<mkdir dir="${dist.dir}/${release.name}"/>
+	</target>
+    <target name="init">
+        <mkdir dir="${build.dir}"/>
+		<mkdir dir="${junit.output.dir}"/>
+        <copy includeemptydirs="false" todir="${build.dir}">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+		<copy includeemptydirs="false" todir="${build.dir}">
+            <fileset dir="examples">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="${build.dir}">
+            <fileset dir="test">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+	<target name="clean-doc">
+        <delete dir="${javadoc.dir}"/>
+    </target>
+	<target name="clean-junit">
+        <delete dir="junit.output.dir}"/>
+    </target>
+	<target depends="clean" name="clean-dist">
+		<delete dir="${dist.dir}"/>
+	</target>
+    <target depends="clean,clean-doc,clean-junit,clean-dist" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="py4j.classpath"/>
+        </javac>
+		<javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">
+            <src path="examples"/>
+            <classpath refid="py4j.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">
+            <src path="test"/>
+            <classpath refid="py4j.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target name="py4j-tests">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="py4j.BufferGatewayTest" todir="${junit.output.dir}"/>
+            <test name="py4j.CallCommandTest" todir="${junit.output.dir}"/>
+            <test name="py4j.DefaultJavaGatewayTest" todir="${junit.output.dir}"/>
+            <test name="py4j.EchoClientTest" todir="${junit.output.dir}"/>
+            <test name="py4j.EchoServerTest" todir="${junit.output.dir}"/>
+            <test name="py4j.ListCommandTest" todir="${junit.output.dir}"/>
+            <test name="py4j.ProtocolTest" todir="${junit.output.dir}"/>
+            <test name="py4j.StringUtilTest" todir="${junit.output.dir}"/>
+            <classpath refid="py4j.classpath"/>
+        </junit>
+    </target>
+    <target name="BufferGateway">
+        <java classname="py4j.examples.BufferGateway" failonerror="true" fork="yes">
+            <classpath refid="py4j.classpath"/>
+        </java>
+    </target>
+    <target name="ExampleApplication">
+        <java classname="py4j.examples.ExampleApplication" failonerror="true" fork="yes">
+            <classpath refid="py4j.classpath"/>
+        </java>
+    </target>
+    <target name="junitreport">
+        <junitreport todir="${junit.output.dir}">
+            <fileset dir="${junit.output.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${junit.output.dir}"/>
+        </junitreport>
+    </target>
+	<target name="javadoc">
+        <javadoc access="protected" author="true" classpath="" destdir="${javadoc.dir}" doctitle="Py4J" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="py4j,py4j.examples" source="1.6" sourcepath="src:examples" splitindex="true" use="true" version="true">
+            <link href="http://java.sun.com/javase/6/docs/api/"/>
+        </javadoc>
+    </target>
+	<target depends="build" name="jar">
+		<jar destfile="${jar.name}" basedir="${build.dir}" excludes="p1/**,**/*Test*.class"/>
+	</target>
+	<target depends="init_dist,build,jar" name="dist">
+		<copy todir="${dist.dir}/${release.name}/src">
+    		<fileset dir="src"/>
+  		</copy>
+		<copy todir="${dist.dir}/${release.name}/examples">
+    		<fileset dir="examples"/>
+  		</copy>
+		<copy todir="${dist.dir}/${release.name}/test">
+    		<fileset dir="test"/>
+  		</copy>
+		<copy file="LICENSE.txt" tofile="${dist.dir}/py4j-${version}/LICENSE.txt"/>
+		<copy file="README.txt" tofile="${dist.dir}/py4j-${version}/README.txt"/>
+		<copy file="build.xml" tofile="${dist.dir}/py4j-${version}/build.xml"/>
+		<copy file="ant.properties" tofile="${dist.dir}/py4j-${version}/ant.properties"/>
+		<copy file="${jar.name}" tofile="${dist.dir}/py4j-${version}/${jar.name}"/>
+		
+		<tar destfile="${dist.dir}/${release.name}.tar" basedir="${dist.dir}/${release.name}/"/>
+		<gzip src="${dist.dir}/${release.name}.tar" destfile="${dist.dir}/${release.name}.tar.gz"/>
+		
+		<delete file="${dist.dir}/${release.name}.tar"/>
+	</target>
+
+</project>

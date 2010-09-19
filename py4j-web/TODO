@@ -1,0 +1,3 @@
+- change template so that the main content and the side bars are in a div container (easier so the sidebar can go to the side of the container instead of the side of the page, which is just plain ugly/impossible).
+- find colors
+- plan web site architecture!
