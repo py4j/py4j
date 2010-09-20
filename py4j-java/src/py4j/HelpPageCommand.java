@@ -80,6 +80,7 @@ public class HelpPageCommand extends AbstractCommand {
 
 	private String getHelpClass(BufferedReader reader) throws IOException {
 		String className = reader.readLine();
+		String pattern = (String) Protocol.getObject(reader.readLine(), this.gateway);
 		String shortName = reader.readLine();
 		// EoC
 		reader.readLine();
@@ -88,11 +89,11 @@ public class HelpPageCommand extends AbstractCommand {
 		try {
 			Py4JClass clazz = Py4JClass.buildClass(Class.forName(className), true);
 			boolean isShortName = Protocol.getBoolean(shortName);
-			String helpPage = HelpPageGenerator.getHelpPage(clazz, isShortName);
+			String helpPage = HelpPageGenerator.getHelpPage(clazz, pattern, isShortName);
 			ReturnObject rObject = gateway.getReturnObject(helpPage);
 			returnCommand = Protocol.getOutputCommand(rObject);
 		} catch (Exception e) {
-
+			returnCommand = Protocol.getOutputErrorCommand(e);
 		}
 
 		return returnCommand;
@@ -100,6 +101,7 @@ public class HelpPageCommand extends AbstractCommand {
 
 	private String getHelpObject(BufferedReader reader) throws IOException {
 		String objectId = reader.readLine();
+		String pattern = (String) Protocol.getObject(reader.readLine(), this.gateway);
 		String shortName = reader.readLine();
 		// EoC
 		reader.readLine();
@@ -109,11 +111,11 @@ public class HelpPageCommand extends AbstractCommand {
 			Object obj = gateway.getObject(objectId);
 			Py4JClass clazz = Py4JClass.buildClass(obj.getClass(), true);
 			boolean isShortName = Protocol.getBoolean(shortName);
-			String helpPage = HelpPageGenerator.getHelpPage(clazz, isShortName);
+			String helpPage = HelpPageGenerator.getHelpPage(clazz, pattern, isShortName);
 			ReturnObject rObject = gateway.getReturnObject(helpPage);
 			returnCommand = Protocol.getOutputCommand(rObject);
 		} catch (Exception e) {
-
+			returnCommand = Protocol.getOutputErrorCommand(e);
 		}
 
 		return returnCommand;

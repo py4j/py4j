@@ -774,17 +774,18 @@ class JavaGateway(object):
         """
         java_object._detach()
     
-    def help(self, var, short_name=True, display=True):
+    def help(self, var, pattern=None, short_name=True, display=True):
         """Displays a help page about a class or an object.
         
         :param var: JavaObject or JavaClass for which a help page will be generated.
+        :param pattern: Star-pattern used to filter the members. For example 'get*Foo' may return getMyFoo, getFoo, getFooBar, but not bargetFoo.
         :param short_name: If True, only the simple name of the parameter types and return types will be displayed. If False, the fully qualified name of the types will be displayed.
         :param display: If True, the help page is displayed in an interactive page similar to the `help` command in Python. If False, the page is returned as a string.
         """
         if hasattr(var, '_get_object_id'):
-            answer = self._gateway_client.send_command(HELP_COMMAND_NAME + HELP_OBJECT_SUBCOMMAND_NAME + var._get_object_id() + '\n' + get_command_part(short_name) + 'e\n')
+            answer = self._gateway_client.send_command(HELP_COMMAND_NAME + HELP_OBJECT_SUBCOMMAND_NAME + var._get_object_id() + '\n' + get_command_part(pattern) + get_command_part(short_name) + 'e\n')
         elif hasattr(var, '_fqn'):
-            answer = self._gateway_client.send_command(HELP_COMMAND_NAME + HELP_CLASS_SUBCOMMAND_NAME + var._fqn + '\n' + get_command_part(short_name) + 'e\n')
+            answer = self._gateway_client.send_command(HELP_COMMAND_NAME + HELP_CLASS_SUBCOMMAND_NAME + var._fqn + '\n' + get_command_part(pattern) + get_command_part(short_name) + 'e\n')
         else:
             raise Py4JError('var is neither a Java Object nor a Java Class')
         help_page = get_return_value(answer, self._gateway_client, None, None)

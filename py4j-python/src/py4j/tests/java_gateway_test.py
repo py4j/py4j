@@ -405,6 +405,12 @@ class HelpTest(unittest.TestCase):
         print(help_page)
         self.assertEqual(912, len(help_page))
         
+    def testHelpObjectWithPattern(self):
+        ex = self.gateway.getNewExample()
+        help_page = self.gateway.help(ex, pattern='m*', short_name=True, display=False)
+        print(help_page)
+        self.assertEqual(617, len(help_page))
+        
     def testHelpClass(self):
         String = self.gateway.jvm.java.lang.String
         help_page = self.gateway.help(String, short_name=False, display=False)

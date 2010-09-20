@@ -28,6 +28,8 @@
  *******************************************************************************/
 package py4j.model;
 
+import java.util.regex.Pattern;
+
 import py4j.reflection.TypeUtil;
 
 /**
@@ -62,7 +64,18 @@ public class HelpPageGenerator {
 		return builder.toString();
 	}
 
-	public final static String getHelpPage(Py4JClass clazz, boolean shortName) {
+	/**
+	 * 
+	 * @param clazz
+	 * @param pattern
+	 *            Star pattern.
+	 * @param shortName
+	 * @return
+	 */
+	public final static String getHelpPage(Py4JClass clazz, String pattern,
+			boolean shortName) {
+		Pattern regex = getRegex(pattern);
+
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("Help on ");
@@ -79,9 +92,12 @@ public class HelpPageGenerator {
 		builder.append("Methods defined here:");
 		builder.append(DOUBLE_LINES);
 		for (Py4JMethod method : clazz.getMethods()) {
-			builder.append(PREFIX_INDENT);
-			builder.append(method.getSignature(shortName));
-			builder.append(DOUBLE_LINES);
+			String signature = method.getSignature(shortName);
+			if (regex.matcher(signature).matches()) {
+				builder.append(PREFIX_INDENT);
+				builder.append(signature);
+				builder.append(DOUBLE_LINES);
+			}
 		}
 
 		builder.append(PREFIX_SEPARATOR);
@@ -89,9 +105,12 @@ public class HelpPageGenerator {
 		builder.append("Fields defined here:");
 		builder.append(DOUBLE_LINES);
 		for (Py4JField field : clazz.getFields()) {
-			builder.append(PREFIX_INDENT);
-			builder.append(field.getSignature(shortName));
-			builder.append(DOUBLE_LINES);
+			String signature = field.getSignature(shortName);
+			if (regex.matcher(signature).matches()) {
+				builder.append(PREFIX_INDENT);
+				builder.append(signature);
+				builder.append(DOUBLE_LINES);
+			}
 		}
 
 		builder.append(PREFIX_SEPARATOR);
@@ -107,4 +126,15 @@ public class HelpPageGenerator {
 		return builder.toString();
 	}
 
+	public final static Pattern getRegex(String pattern) {
+		if (pattern == null) {
+			return Pattern.compile(".*");
+		} else {
+			String newPattern = "^"
+					+ pattern.trim().replace(".", "\\.").replace("*", ".*")
+							.replace("?", ".?").replace("(", "\\(")
+							.replace(")", "\\)");
+			return Pattern.compile(newPattern);
+		}
+	}
 }

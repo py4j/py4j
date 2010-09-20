@@ -76,12 +76,12 @@ public class ModelTester {
 	public void testClassHelpPage() {
 		// This is manual testing, to see how it will look like.
 		Py4JClass clazz = Py4JClass.buildClass(AnObject.class, true);
-		String helpPage = HelpPageGenerator.getHelpPage(clazz, false);
+		String helpPage = HelpPageGenerator.getHelpPage(clazz, null, false);
 		System.out.println("BEGIN");
 		System.out.println(helpPage);
 		System.out.println("END");
 		
-		helpPage = HelpPageGenerator.getHelpPage(clazz, true);
+		helpPage = HelpPageGenerator.getHelpPage(clazz, null, true);
 		System.out.println("BEGIN");
 		System.out.println(helpPage);
 		System.out.println("END");

@@ -70,7 +70,7 @@ public class HelpPageCommandTest {
 	
 	@Test
 	public void testHelpObject() {
-		String inputCommand = "o\n" + target + "\ntrue\ne\n";
+		String inputCommand = "o\n" + target + "\nn\ntrue\ne\n";
 		try {
 			assertTrue(gateway.getBindings().containsKey(target));
 			command.execute("h", new BufferedReader(new StringReader(
@@ -85,8 +85,24 @@ public class HelpPageCommandTest {
 	}
 	
 	@Test
+	public void testHelpObjectWithPattern() {
+		String inputCommand = "o\n" + target + "\nsm*\ntrue\ne\n";
+		try {
+			assertTrue(gateway.getBindings().containsKey(target));
+			command.execute("h", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			String page = sWriter.toString();
+			System.out.println(page);
+			assertEquals(772,page.length());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
 	public void testHelpClass() {
-		String inputCommand = "c\njava.lang.String\ntrue\ne\n";
+		String inputCommand = "c\njava.lang.String\nn\ntrue\ne\n";
 		try {
 			assertTrue(gateway.getBindings().containsKey(target));
 			command.execute("h", new BufferedReader(new StringReader(
