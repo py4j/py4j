@@ -3,7 +3,7 @@ Created on Jan 22, 2010
 
 @author: barthelemy
 '''
-from collections import MutableMapping, Sequence, MutableSet
+from collections import MutableMapping, Sequence, MutableSet, Set
 from py4j.java_gateway import *
     
 class JavaIterator(JavaObject):
@@ -418,7 +418,7 @@ class JavaList(JavaObject):
         
 class SetConverter(object):
     def can_convert(self, object):
-        return isinstance(object, set)
+        return isinstance(object, Set)
     
     def convert(self, object, gateway_client):
         JavaSet = JavaClass('java.util.HashSet',gateway_client)
