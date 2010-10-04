@@ -532,12 +532,40 @@ class JavaMember(object):
         self.gateway_client = gateway_client
         self.command_header = self.target_id + '\n' + self.name + '\n'
         self.pool = self.gateway_client.gateway_property.pool
+        self.converters = self.gateway_client.converters
         
+    def _get_args(self, args):
+        temp_args = []
+        new_args = []
+        for arg in args:
+            if not isinstance(arg, JavaObject) and not isinstance(arg, basestring):
+                for converter in self.gateway_client.converters:
+                    if converter.can_convert(arg):
+                        temp_arg = converter.convert(arg, self.gateway_client)
+                        temp_args.append(temp_arg)
+                        new_args.append(temp_arg)
+                        break
+                else:
+                    new_args.append(arg)
+            else:
+                new_args.append(arg) 
+        
+        return (new_args, temp_args)
+    
     def __call__(self, *args):
-        args_command = ''.join([get_command_part(arg, self.pool) for arg in args])
+        if self.converters is not None and len(self.converters) > 0:
+            (new_args, temp_args) = self._get_args(args)
+        else:
+            new_args = args
+            temp_args = []
+            
+        args_command = ''.join([get_command_part(arg, self.pool) for arg in new_args])
         command = CALL_COMMAND_NAME + self.command_header + args_command + END_COMMAND_PART
         answer = self.gateway_client.send_command(command)
         return_value = get_return_value(answer, self.gateway_client, self.target_id, self.name)
+        
+        for temp_arg in temp_args:
+            temp_arg._detach()
         return return_value
 
 
@@ -688,18 +716,25 @@ class JavaGateway(object):
     This is a trade-off between convenience and potential confusion."""
     
     
-    def __init__(self, gateway_client=None, auto_field=False, python_proxy_port=DEFAULT_PYTHON_PROXY_PORT, start_callback_server=False):
+    def __init__(self, gateway_client=None, auto_field=False, python_proxy_port=DEFAULT_PYTHON_PROXY_PORT, start_callback_server=False, auto_convert=False):
         """
         :param gateway_client: gateway client used to connect to the JVM. If `None`, a gateway client based on a socket with the default parameters is created.
         :param auto_field: if `False`, each object accessed through this gateway won't try to lookup fields (they will be accessible only by calling get_field). If `True`, fields will be automatically looked up, possibly hiding methods of the same name and making method calls less efficient.
         :param python_proxy_port: port used to receive callback from the JVM.
         :param start_callback_server: if `True`, the callback server is started.
+        :param auto_convert: if `True`, try to automatically convert Python objects like sequences and maps to Java Objects. 
+                             Default value is `False` to improve performance and because it is still possible to explicitly perform this conversion.
         """
         self.gateway_property = GatewayProperty(auto_field, PythonProxyPool())
         self._python_proxy_port = python_proxy_port
         
         if gateway_client == None:
             gateway_client = GatewayClient()
+            
+        if auto_convert:
+            gateway_client.converters = [SetConverter(), MapConverter(), ListConverter()]
+        else:
+            gateway_client.converters = None
         
         gateway_client.gateway_property = self.gateway_property
         
@@ -799,4 +834,4 @@ class JavaGateway(object):
 # Purists should close their eyes
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_callback import CallbackServer, PythonProxyPool
-from py4j.java_collections import JavaList, JavaMap, JavaArray, JavaSet, JavaIterator
+from py4j.java_collections import JavaList, JavaMap, JavaArray, JavaSet, JavaIterator, SetConverter, ListConverter, MapConverter

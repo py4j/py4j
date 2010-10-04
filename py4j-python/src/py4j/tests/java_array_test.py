@@ -5,13 +5,14 @@ Created on Mar 24, 2010
 '''
 from multiprocessing.process import Process
 from py4j.java_gateway import JavaGateway
+from py4j.tests.java_gateway_test import PY4J_JAVA_PATH
 import subprocess
 import time
 import unittest
 
 
 def start_example_server():
-    subprocess.call(["java", "-cp", "../../../../py4j-java/bin/", "py4j.examples.ExampleApplication"])
+    subprocess.call(["java", "-cp", PY4J_JAVA_PATH, "py4j.examples.ExampleApplication"])
     
     
 def start_example_app_process():

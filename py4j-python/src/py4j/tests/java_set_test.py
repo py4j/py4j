@@ -5,13 +5,14 @@ Created on Mar 26, 2010
 '''
 from multiprocessing.process import Process
 from py4j.java_gateway import JavaGateway
+from py4j.tests.java_gateway_test import PY4J_JAVA_PATH
 import subprocess
 import time
 import unittest
 
 
 def start_example_server():
-    subprocess.call(["java", "-cp", "../../../../py4j-java/bin/", "py4j.examples.ExampleApplication"])
+    subprocess.call(["java", "-cp", PY4J_JAVA_PATH, "py4j.examples.ExampleApplication"])
     
     
 def start_example_app_process():
@@ -19,6 +20,28 @@ def start_example_app_process():
     p = Process(target=start_example_server)
     p.start()
     return p
+
+class AutoConvertTest(unittest.TestCase):
+    
+    def setUp(self):
+#        logger = logging.getLogger("py4j")
+#        logger.setLevel(logging.DEBUG)
+#        logger.addHandler(logging.StreamHandler())
+        self.p = start_example_app_process()
+        time.sleep(0.5)
+        self.gateway = JavaGateway(auto_convert=True)
+        
+    def tearDown(self):
+        self.p.terminate()
+        self.gateway.shutdown()
+        time.sleep(0.5)
+        
+    def testAutoConvert(self):
+        sj = self.gateway.jvm.java.util.HashSet()
+        sj.add('b')
+        sj.add(1)
+        sp = set([1,'b'])
+        self.assertTrue(sj.equals(sp))
 
 class Test(unittest.TestCase):
 

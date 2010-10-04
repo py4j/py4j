@@ -414,3 +414,39 @@ class JavaList(JavaObject):
                 srep += repr(elem) + ', '
                 
             return srep[:-2] + ']'
+        
+        
+class SetConverter(object):
+    def can_convert(self, object):
+        return isinstance(object, set)
+    
+    def convert(self, object, gateway_client):
+        JavaSet = JavaClass('java.util.HashSet',gateway_client)
+        java_set = JavaSet()
+        for element in object:
+            java_set.add(element)
+        return java_set
+        
+
+class ListConverter(object):
+    def can_convert(self, object):
+        return hasattr(object, '__iter__')
+    
+    def convert(self, object, gateway_client):
+        ArrayList = JavaClass('java.util.ArrayList',gateway_client)
+        java_list = ArrayList()
+        for element in object:
+            java_list.add(element)
+        return java_list
+
+class MapConverter(object):
+    def can_convert(self, object):
+        return hasattr(object, 'keys') and hasattr(object, '__getitem__')
+    
+    def convert(self, object, gateway_client):
+        HashMap = JavaClass('java.util.HashMap',gateway_client)
+        java_map = HashMap()
+        for key in object.keys():
+            java_map[key] = object[key]
+        return java_map
+

@@ -17,9 +17,10 @@ import unittest
 
 SERVER_PORT = 25333
 TEST_PORT = 25332
+PY4J_JAVA_PATH = '/home/barthelemy/workspaces/pydev/py4j-java/bin/'
 
 def start_echo_server():
-    subprocess.call(["java", "-cp", "../../../../py4j-java/bin/", "py4j.EchoServer"])
+    subprocess.call(["java", "-cp", PY4J_JAVA_PATH, "py4j.EchoServer"])
     
     
 def start_echo_server_process():
@@ -29,7 +30,7 @@ def start_echo_server_process():
     return p
 
 def start_example_server():
-    subprocess.call(["java", "-Xmx512m", "-cp", "../../../../py4j-java/bin/", "py4j.examples.ExampleApplication"])
+    subprocess.call(["java", "-Xmx512m", "-cp", PY4J_JAVA_PATH, "py4j.examples.ExampleApplication"])
 
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED

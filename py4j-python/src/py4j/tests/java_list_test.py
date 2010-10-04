@@ -5,6 +5,7 @@ Created on Dec 17, 2009
 '''
 from multiprocessing.process import Process
 from py4j.java_gateway import JavaGateway
+from py4j.tests.java_gateway_test import PY4J_JAVA_PATH
 import logging
 import subprocess
 import time
@@ -12,7 +13,7 @@ import unittest
 
 
 def start_example_server():
-    subprocess.call(["java", "-cp", "../../../../py4j-java/bin/", "py4j.examples.ExampleApplication"])
+    subprocess.call(["java", "-cp", PY4J_JAVA_PATH, "py4j.examples.ExampleApplication"])
     
     
 def start_example_app_process():
@@ -23,6 +24,27 @@ def start_example_app_process():
 
 def get_list(count):
     return [unicode(i) for i in range(count)]
+
+class AutoConvertTest(unittest.TestCase):
+    
+    def setUp(self):
+#        logger = logging.getLogger("py4j")
+#        logger.setLevel(logging.DEBUG)
+#        logger.addHandler(logging.StreamHandler())
+        self.p = start_example_app_process()
+        time.sleep(0.5)
+        self.gateway = JavaGateway(auto_convert=True)
+        
+    def tearDown(self):
+        self.p.terminate()
+        self.gateway.shutdown()
+        time.sleep(0.5)
+        
+    def testAutoConvert(self):
+        ex = self.gateway.getNewExample()
+        pList = get_list(3)
+        jList = ex.getList(3)
+        self.assertTrue(jList.equals(pList))
 
 class Test(unittest.TestCase):
 
@@ -193,6 +215,12 @@ class Test(unittest.TestCase):
         jList[1000:10000] = tList
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
+        
+        try:
+            self.assertTrue(jList.equals(pList))
+            self.fail('Should have failed')
+        except Exception:
+            self.assertTrue(True)
         
     def testJavaList(self):
         ex = self.gateway.getNewExample()
