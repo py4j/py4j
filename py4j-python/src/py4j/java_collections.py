@@ -3,7 +3,7 @@ Created on Jan 22, 2010
 
 @author: barthelemy
 '''
-from collections import MutableMapping, Sequence, MutableSet, Set
+from collections import MutableMapping, Sequence, MutableSequence, MutableSet, Set
 from py4j.java_gateway import *
     
 class JavaIterator(JavaObject):
@@ -206,7 +206,7 @@ class JavaArray(JavaObject, Sequence):
         answer = self._gateway_client.send_command(command)
         return get_return_value(answer, self._gateway_client)
         
-class JavaList(JavaObject):
+class JavaList(JavaObject, MutableSequence):
     """Maps a Python list to a Java list.
     
     All operations possible on a Python list are implemented. For example, slicing (e.g., list[1:3]) 
@@ -216,6 +216,7 @@ class JavaList(JavaObject):
     
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
+        self.java_remove = get_method(self, 'remove')
 
     def __len__(self):
         return self.size()
@@ -280,7 +281,7 @@ class JavaList(JavaObject):
     
     def __del_item(self, key):
         new_key = self.__compute_index(key)
-        self.remove(new_key)
+        self.java_remove(new_key)
 
     def __setitem__(self, key, value):
         if isinstance(key, slice):
@@ -382,7 +383,7 @@ class JavaList(JavaObject):
             new_key = self.size() - 1
         else:
             new_key = self.__compute_index(key) 
-        return self.remove(new_key);
+        return self.java_remove(new_key);
     
     def index(self, value):
         return self.indexOf(value)
@@ -399,9 +400,17 @@ class JavaList(JavaObject):
     def reverse(self):
         command = LIST_COMMAND_NAME + LIST_REVERSE_SUBCOMMAND_NAME + self._get_object_id() + '\n' + END_COMMAND_PART
         self._gateway_client.send_command(command)
-    
-    # remove is automatically supported by Java...
-    
+        
+    def remove(self, value):
+        # Ensures that we are deleting the int value and not the index (Java API)
+        if isinstance(value,int):
+            new_value = self.indexOf(value)
+        else:
+            new_value = value
+        success = self.java_remove(new_value)
+        if not success:
+            raise ValueError('java_list.remove(x): x not in java_list')
+        
     def __str__(self):
         return self.__repr__()
     

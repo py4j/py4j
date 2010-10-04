@@ -306,18 +306,25 @@ class Test(unittest.TestCase):
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
         
-        # Catch here: Java has a remote(int) method that is not directly supported in Python.
-        # This could get tricky with list of integers... Needs to think about that.
-        jList.remove(0)
-        del pList[0]
-        self.assertEqual(len(pList), len(jList))
-        self.assertEqual(str(pList), str(jList))
-        
         try:
             jList[15]
             self.fail('Should Fail!')
         except IndexError:
             self.assertTrue(True)
+    
+    def testRemove(self):
+        ex = self.gateway.getNewExample()
+        pList = get_list(3)
+        jList = ex.getList(3)
+        
+        pList.append(10)
+        jList.append(10)
+        # If remove(10) was invoked on the Java side, this would not work!
+        # Instead, 10 has to be converted to an index...
+        pList.remove(10)
+        jList.remove(10)
+        self.assertEqual(len(pList), len(jList))
+        self.assertEqual(str(pList), str(jList))
         
     def testBinaryOp(self):
         ex = self.gateway.getNewExample()
