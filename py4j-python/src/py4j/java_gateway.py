@@ -36,6 +36,10 @@ ENTRY_POINT_OBJECT_ID = 't'
 CONNECTION_PROPERTY_OBJECT_ID = 'c'
 STATIC_PREFIX = 'z:'
 
+# JVM
+DEFAULT_JVM_ID = 'rj'
+DEFAULT_JVM_NAME = 'default'
+
 # Types
 INTEGER_TYPE = 'i'
 BOOLEAN_TYPE = 'b'
@@ -61,9 +65,11 @@ ERROR = 'x'
 SUCCESS = 'y'
 
 
+
 # Shortcuts
 SUCCESS_PACKAGE = SUCCESS + PACKAGE_TYPE
 SUCCESS_CLASS = SUCCESS + CLASS_TYPE
+CLASS_FQN_START = 2
 END_COMMAND_PART = END + '\n'
 NO_MEMBER_COMMAND = SUCCESS + NO_MEMBER
 
@@ -77,6 +83,8 @@ REFLECTION_COMMAND_NAME = "r\n"
 MEMORY_COMMAND_NAME = "m\n"
 HELP_COMMAND_NAME = 'h\n'
 ARRAY_COMMAND_NAME = "a\n"
+JVMVIEW_COMMAND_NAME = "j\n";
+
 
 # Array subcommands
 ARRAY_GET_SUB_COMMAND_NAME = 'g\n'
@@ -111,6 +119,11 @@ MEMORY_ATTACH_SUBCOMMAND_NAME = 'a\n'
 HELP_OBJECT_SUBCOMMAND_NAME = 'o\n'
 HELP_CLASS_SUBCOMMAND_NAME = 'c\n'
 
+# JVM subcommands
+JVM_CREATE_VIEW_SUB_COMMAND_NAME = 'c\n'
+JVM_IMPORT_SUB_COMMAND_NAME = 'i\n'
+JVM_SEARCH_SUB_COMMAND_NAME = 's\n'
+
 CONVERSION = {NULL_TYPE: (lambda x, y: None),
               REFERENCE_TYPE: (lambda target_id, gateway_client: JavaObject(target_id, gateway_client)),
               MAP_TYPE: (lambda target_id, gateway_client: JavaMap(target_id, gateway_client)),
@@ -122,7 +135,6 @@ CONVERSION = {NULL_TYPE: (lambda x, y: None),
               INTEGER_TYPE: (lambda value, y: int(value)),
               DOUBLE_TYPE: (lambda value, y: float(value)),
               STRING_TYPE: (lambda value, y: unescape_new_line(value)),
-              
               }
 
 def escape_new_line(original):
@@ -649,8 +661,8 @@ class JavaClass():
         if len(answer) > 1 and answer[0] == SUCCESS:
             if answer[1] == METHOD_TYPE:
                 return JavaMember(name, None, STATIC_PREFIX + self._fqn, self._gateway_client)
-            elif answer[1] == CLASS_TYPE:
-                return JavaClass(self._fqn + name, self._gateway_client)
+            elif answer[1].startswith(CLASS_TYPE):
+                return JavaClass(answer[CLASS_FQN_START:], self._gateway_client)
             else:
                 return get_return_value(answer, self._gateway_client, self._fqn, name)
         else:
@@ -669,32 +681,37 @@ class JavaPackage():
     Usually, `JavaPackage` are not initialized using their constructor, but they are created while
     accessing the `jvm` property of a gateway, e.g., `gateway.jvm.java.lang`.
     """
-    def __init__(self, fqn, gateway_client):
+    def __init__(self, fqn, gateway_client, jvm_id=DEFAULT_JVM_ID):
         self._fqn = fqn
         self._gateway_client = gateway_client
+        self._jvm_id = jvm_id
         
     def __getattr__(self, name):
         new_fqn = self._fqn + '.' + name
-        answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + new_fqn + '\n' + END_COMMAND_PART)
+        print('Package request sent: %s' % (REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + new_fqn + '\n' + self._jvm_id + '\n' + END_COMMAND_PART))
+        answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + new_fqn + '\n' + self._jvm_id + '\n' + END_COMMAND_PART)
         if answer == SUCCESS_PACKAGE:
-            return JavaPackage(new_fqn, self._gateway_client)
-        elif answer == SUCCESS_CLASS:
-            return JavaClass(new_fqn, self._gateway_client)
+            return JavaPackage(new_fqn, self._gateway_client, self._jvm_id)
+        elif answer.startswith(SUCCESS_CLASS):
+            return JavaClass(answer[CLASS_FQN_START:], self._gateway_client)
         else:
             raise Py4JError('%s does not exist in the JVM' % new_fqn)
 
-class JVM(object):
-    """A `JVM` allows access to the Java Virtual Machine of a `JavaGateway`. This can be used to reference static members (fields and methods) and to call constructors."""
+class JVMView(object):
+    """A `JVMView` allows access to the Java Virtual Machine of a `JavaGateway`. This can be used to reference static members (fields and methods) and to call constructors."""
     
-    def __init__(self, gateway_client):
+    def __init__(self, gateway_client, jvm_name, id):
         self._gateway_client = gateway_client
+        self._jvm_name = jvm_name
+        self._id = id
         
     def __getattr__(self, name):
-        answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + END_COMMAND_PART)
+        print(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + self._id + '\n' + END_COMMAND_PART)
+        answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + self._id + '\n' + END_COMMAND_PART)
         if answer == SUCCESS_PACKAGE:
-            return JavaPackage(name, self._gateway_client)
-        elif answer == SUCCESS_CLASS:
-            return JavaClass(name, self._gateway_client)
+            return JavaPackage(name, self._gateway_client, jvm_id = self._id)
+        elif answer.startswith(SUCCESS_CLASS):
+            return JavaClass(answer[CLASS_FQN_START:], self._gateway_client)
         else:
             raise Py4JError('%s does not exist in the JVM' % name)
     
@@ -741,7 +758,7 @@ class JavaGateway(object):
         self._gateway_client = gateway_client
             
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, gateway_client)
-        self.jvm = JVM(gateway_client)
+        self.jvm = JVMView(gateway_client, jvm_name=DEFAULT_JVM_NAME, id=DEFAULT_JVM_ID)
         if start_callback_server:
             self._callback_server = CallbackServer(self.gateway_property.pool,self._gateway_client, python_proxy_port)
             self._callback_server.start()

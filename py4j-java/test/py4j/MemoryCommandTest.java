@@ -42,6 +42,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import py4j.commands.MemoryCommand;
 import py4j.examples.ExampleEntryPoint;
 
 public class MemoryCommandTest {

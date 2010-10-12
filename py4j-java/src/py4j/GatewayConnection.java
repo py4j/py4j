@@ -43,6 +43,18 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import py4j.commands.ArrayCommand;
+import py4j.commands.CallCommand;
+import py4j.commands.Command;
+import py4j.commands.ConstructorCommand;
+import py4j.commands.FieldCommand;
+import py4j.commands.HelpPageCommand;
+import py4j.commands.JVMViewCommand;
+import py4j.commands.ListCommand;
+import py4j.commands.MemoryCommand;
+import py4j.commands.ReflectionCommand;
+import py4j.commands.ShutdownGatewayServerCommand;
+
 /**
  * <p>
  * Manage the connection between a Python program and a Gateway. A
@@ -85,6 +97,7 @@ public class GatewayConnection implements Runnable {
 		baseCommands.add(MemoryCommand.class);
 		baseCommands.add(ReflectionCommand.class);
 		baseCommands.add(ShutdownGatewayServerCommand.class);
+		baseCommands.add(JVMViewCommand.class);
 	}
 
 	public GatewayConnection(Gateway gateway, Socket socket,

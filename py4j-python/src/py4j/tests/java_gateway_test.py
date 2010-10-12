@@ -384,6 +384,10 @@ class JVMTest(unittest.TestCase):
         System = self.gateway.jvm.java.lang.System
         self.assertFalse(System.out.checkError())
         
+    def testDefaultImports(self):
+        self.assertTrue(self.gateway.jvm.System.currentTimeMillis() > 0)
+        self.assertEqual(u'123', self.gateway.jvm.String.valueOf(123))
+        
     def testNone(self):
         ex = self.gateway.entry_point.getNewExample()
         ex.method4(None)

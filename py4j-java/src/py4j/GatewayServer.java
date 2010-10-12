@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import py4j.commands.Command;
+
 /**
  * <p>
  * This class enables Python programs to access a Java program. When a

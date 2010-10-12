@@ -27,11 +27,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package py4j;
+package py4j.commands;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+
+import py4j.Gateway;
+import py4j.GatewayConnection;
+import py4j.Protocol;
+import py4j.Py4JException;
 
 /**
  * <p>

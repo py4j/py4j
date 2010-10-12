@@ -40,6 +40,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import py4j.commands.ReflectionCommand;
 import py4j.examples.ExampleEntryPoint;
 
 public class ReflectionCommandTest {
@@ -66,12 +67,16 @@ public class ReflectionCommandTest {
 	
 	@Test
 	public void testUnknown() {
-		String inputCommand1 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "java" + "\ne\n";
-		String inputCommand2 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "java.lang" + "\ne\n";
-		String inputCommand3 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "java.lang.String" + "\ne\n";
-		String inputCommand4 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "p1.Cat" + "\ne\n";
-		String inputCommand5 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "byte" + "\ne\n";
+		String inputCommand1 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "java" + "\nrj\ne\n";
+		String inputCommand2 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "java.lang" + "\nrj\ne\n";
+		String inputCommand3 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "java.lang.String" + "\nrj\ne\n";
+		String inputCommand4 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "p1.Cat" + "\nrj\ne\n";
+		String inputCommand5 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "byte" + "\nrj\ne\n";
+		String inputCommand6 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "System" + "\nrj\ne\n";
+		String inputCommand7 = ReflectionCommand.GET_UNKNOWN_SUB_COMMAND_NAME + "\n" + "File" + "\nrj\ne\n";
 		try {
+			this.gateway.getDefaultJVMView().addSingleImport("java.util.List");
+			this.gateway.getDefaultJVMView().addStarImport("java.io.*");
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand1)), writer);
 			assertEquals("yp\n", sWriter.toString());
@@ -80,13 +85,20 @@ public class ReflectionCommandTest {
 			assertEquals("yp\nyp\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand3)), writer);
-			assertEquals("yp\nyp\nyc\n", sWriter.toString());
+			assertEquals("yp\nyp\nycjava.lang.String\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand4)), writer);
-			assertEquals("yp\nyp\nyc\nyc\n", sWriter.toString());
+			assertEquals("yp\nyp\nycjava.lang.String\nycp1.Cat\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand5)), writer);
-			assertEquals("yp\nyp\nyc\nyc\nyc\n", sWriter.toString());
+			assertEquals("yp\nyp\nycjava.lang.String\nycp1.Cat\nycbyte\n", sWriter.toString());
+			command.execute("r", new BufferedReader(new StringReader(
+					inputCommand6)), writer);
+			assertEquals("yp\nyp\nycjava.lang.String\nycp1.Cat\nycbyte\nycjava.lang.System\n", sWriter.toString());
+			command.execute("r", new BufferedReader(new StringReader(
+					inputCommand7)), writer);
+			assertEquals("yp\nyp\nycjava.lang.String\nycp1.Cat\nycbyte\nycjava.lang.System\nycjava.io.File\n", sWriter.toString());
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

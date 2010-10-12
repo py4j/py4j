@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import py4j.JVMView;
+
 /**
  * <p>
  * This class is responsible for the type conversion between Python types and
@@ -47,7 +49,7 @@ import java.util.Set;
  */
 public class TypeUtil {
 	private static Set<String> primitiveTypes;
-	private static Map<String,Class<?>> primitiveClasses;
+	private static Map<String, Class<?>> primitiveClasses;
 
 	public final static int DISTANCE_FACTOR = 100;
 
@@ -65,16 +67,16 @@ public class TypeUtil {
 		primitiveTypes.add(Byte.class.getName());
 		primitiveTypes.add(Double.class.getName());
 		primitiveTypes.add(Float.class.getName());
-		
+
 		primitiveClasses = new HashMap<String, Class<?>>();
-		primitiveClasses.put("long",long.class);
-		primitiveClasses.put("int",int.class);
-		primitiveClasses.put("short",short.class);
-		primitiveClasses.put("byte",byte.class);
-		primitiveClasses.put("double",double.class);
-		primitiveClasses.put("float",float.class);
-		primitiveClasses.put("boolean",boolean.class);
-		primitiveClasses.put("char",char.class);
+		primitiveClasses.put("long", long.class);
+		primitiveClasses.put("int", int.class);
+		primitiveClasses.put("short", short.class);
+		primitiveClasses.put("byte", byte.class);
+		primitiveClasses.put("double", double.class);
+		primitiveClasses.put("float", float.class);
+		primitiveClasses.put("boolean", boolean.class);
+		primitiveClasses.put("char", char.class);
 	}
 
 	public static boolean isInteger(Class<?> clazz) {
@@ -190,8 +192,9 @@ public class TypeUtil {
 			if (child != null) {
 				getNextInterfaces(child.getSuperclass(), nextInterfaces,
 						visitedInterfaces);
-				int newDistance = computeInterfaceDistance(parent, child
-						.getSuperclass(), visitedInterfaces, nextInterfaces);
+				int newDistance = computeInterfaceDistance(parent,
+						child.getSuperclass(), visitedInterfaces,
+						nextInterfaces);
 				if (newDistance != -1) {
 					distance = newDistance + 1;
 				}
@@ -312,7 +315,7 @@ public class TypeUtil {
 
 		return names;
 	}
-	
+
 	public static Class<?> forName(String fqn) throws ClassNotFoundException {
 		Class<?> clazz = primitiveClasses.get(fqn);
 		if (clazz == null) {
@@ -320,6 +323,50 @@ public class TypeUtil {
 		}
 		return clazz;
 	}
-	
-	
+
+	public static Class<?> forName(String fqn, JVMView view)
+			throws ClassNotFoundException {
+		Class<?> clazz = primitiveClasses.get(fqn);
+		if (clazz == null) {
+			if (fqn.indexOf('.') < 0) {
+				clazz = getClass(fqn, view);
+			} else {
+				clazz = Class.forName(fqn);
+			}
+		}
+		return clazz;
+	}
+
+	public static Class<?> getClass(String simpleName, JVMView view) throws ClassNotFoundException {
+		Class<?> clazz = null;
+
+		try {
+			// First, try the fqn
+			clazz = Class.forName(simpleName);
+		} catch (Exception e) {
+			// Then try the single import
+			Map<String,String> singleImportsMap = view.getSingleImportsMap();
+			String newFQN = singleImportsMap.get(simpleName);
+			if (newFQN != null) {
+				clazz = Class.forName(newFQN);
+			} else {
+				// Or try star imports
+				for (String starImport : view.getStarImports()) {
+					try {
+						clazz = Class.forName(starImport + "." + simpleName);
+						break;
+					} catch(Exception e2) {
+						// Ignore
+					}
+				}
+			}
+		}
+		
+		if (clazz == null) {
+			throw new ClassNotFoundException(simpleName + " not found.");
+		}
+
+		return clazz;
+	}
+
 }

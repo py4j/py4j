@@ -120,6 +120,9 @@ public class Protocol {
 	// ENTRY POINT
 	public final static String ENTRY_POINT_OBJECT_ID = "t";
 
+	// DEFAULT JVM VIEW
+	public final static String DEFAULT_JVM_OBJECT_ID = "j";
+	
 	// STATIC REFERENCES
 	public final static String STATIC_PREFIX = "z:";
 
@@ -166,6 +169,17 @@ public class Protocol {
 
 		builder.append(SUCCESS);
 		builder.append(memberType);
+		builder.append(END_OUTPUT);
+
+		return builder.toString();
+	}
+	
+	public final static String getMemberOutputCommand(char memberType, String fqn) {
+		StringBuilder builder = new StringBuilder();
+
+		builder.append(SUCCESS);
+		builder.append(memberType);
+		builder.append(fqn);
 		builder.append(END_OUTPUT);
 
 		return builder.toString();

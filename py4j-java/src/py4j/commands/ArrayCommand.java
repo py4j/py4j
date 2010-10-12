@@ -1,4 +1,4 @@
-package py4j;
+package py4j.commands;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -6,6 +6,10 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.List;
 import java.util.logging.Logger;
+
+import py4j.Protocol;
+import py4j.Py4JException;
+import py4j.ReturnObject;
 
 /**
  * <p>

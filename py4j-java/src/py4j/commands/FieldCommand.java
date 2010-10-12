@@ -26,40 +26,49 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-package py4j;
+package py4j.commands;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
-import py4j.model.HelpPageGenerator;
-import py4j.model.Py4JClass;
+import py4j.Gateway;
+import py4j.Protocol;
+import py4j.Py4JException;
+import py4j.ReturnObject;
+import py4j.reflection.ReflectionEngine;
 
 /**
- * <p>
- * A HelpPageCommand is responsible for generating a help page for a Java object
- * or Java class. The help page typically list the signature of the members
- * declared in the object/class.
- * </p>
- * 
+ * <p>A FieldCommand is responsible for accessing and setting fields of objects. </p>
  * @author Barthelemy Dagenais
- * 
+ *
  */
-public class HelpPageCommand extends AbstractCommand {
-	private final Logger logger = Logger.getLogger(HelpPageCommand.class
-			.getName());
+public class FieldCommand extends AbstractCommand {
 
-	public final static String HELP_COMMAND_NAME = "h";
+	private final Logger logger = Logger
+			.getLogger(FieldCommand.class.getName());
 
-	public final static String HELP_OBJECT_SUB_COMMAND_NAME = "o";
+	public final static String FIELD_COMMAND_NAME = "f";
 
-	public final static String HELP_CLASS_SUB_COMMAND_NAME = "c";
+	public final static String FIELD_GET_SUB_COMMAND_NAME = "g";
+
+	public final static String FIELD_SET_SUB_COMMAND_NAME = "s";
+
+	private ReflectionEngine reflectionEngine;
 
 	
-	public HelpPageCommand() {
+	
+	public FieldCommand() {
 		super();
-		this.commandName = HELP_COMMAND_NAME;
+		this.commandName = FIELD_COMMAND_NAME;
+	}
+
+	@Override
+	public void init(Gateway gateway) {
+		super.init(gateway);
+		reflectionEngine = gateway.getReflectionEngine();
 	}
 
 	@Override
@@ -68,56 +77,53 @@ public class HelpPageCommand extends AbstractCommand {
 		String returnCommand = null;
 		String subCommand = reader.readLine();
 
-		if (subCommand.equals(HELP_OBJECT_SUB_COMMAND_NAME)) {
-			returnCommand = getHelpObject(reader);
+		if (subCommand.equals(FIELD_GET_SUB_COMMAND_NAME)) {
+			returnCommand = getField(reader);
 		} else {
-			returnCommand = getHelpClass(reader);
+			returnCommand = setField(reader);
 		}
 		logger.info("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}
 
-	private String getHelpClass(BufferedReader reader) throws IOException {
-		String className = reader.readLine();
-		String pattern = (String) Protocol.getObject(reader.readLine(), this.gateway);
-		String shortName = reader.readLine();
-		// EoC
-		reader.readLine();
-		String returnCommand = Protocol.getOutputErrorCommand();
+	private String getField(BufferedReader reader) throws IOException {
+		String targetObjectId = reader.readLine();
+		String fieldName = reader.readLine();
+		reader.readLine(); // read EndOfCommand.
 
-		try {
-			Py4JClass clazz = Py4JClass.buildClass(Class.forName(className), true);
-			boolean isShortName = Protocol.getBoolean(shortName);
-			String helpPage = HelpPageGenerator.getHelpPage(clazz, pattern, isShortName);
-			ReturnObject rObject = gateway.getReturnObject(helpPage);
+		Object object = gateway.getObject(targetObjectId);
+		Field field = reflectionEngine.getField(object, fieldName);
+		logger.info("Getting field " + fieldName);
+		String returnCommand = null;
+		if (field == null) {
+			returnCommand = Protocol.getNoSuchFieldOutputCommand();
+		} else {
+			Object fieldObject = reflectionEngine.getFieldValue(object, field);
+			ReturnObject rObject = gateway.getReturnObject(fieldObject);
 			returnCommand = Protocol.getOutputCommand(rObject);
-		} catch (Exception e) {
-			returnCommand = Protocol.getOutputErrorCommand(e);
 		}
-
 		return returnCommand;
 	}
 
-	private String getHelpObject(BufferedReader reader) throws IOException {
-		String objectId = reader.readLine();
-		String pattern = (String) Protocol.getObject(reader.readLine(), this.gateway);
-		String shortName = reader.readLine();
-		// EoC
-		reader.readLine();
-		String returnCommand = Protocol.getOutputErrorCommand();
-
-		try {
-			Object obj = gateway.getObject(objectId);
-			Py4JClass clazz = Py4JClass.buildClass(obj.getClass(), true);
-			boolean isShortName = Protocol.getBoolean(shortName);
-			String helpPage = HelpPageGenerator.getHelpPage(clazz, pattern, isShortName);
-			ReturnObject rObject = gateway.getReturnObject(helpPage);
-			returnCommand = Protocol.getOutputCommand(rObject);
-		} catch (Exception e) {
-			returnCommand = Protocol.getOutputErrorCommand(e);
+	private String setField(BufferedReader reader) throws IOException {
+		String targetObjectId = reader.readLine();
+		String fieldName = reader.readLine();
+		String value = reader.readLine();
+		
+		reader.readLine(); // read EndOfCommand;
+		
+		Object valueObject = Protocol.getObject(value, this.gateway);
+		Object object = gateway.getObject(targetObjectId);
+		Field field = reflectionEngine.getField(object, fieldName);
+		logger.info("Setting field " + fieldName);
+		String returnCommand = null;
+		if (field == null) {
+			returnCommand = Protocol.getNoSuchFieldOutputCommand();
+		} else {
+			reflectionEngine.setFieldValue(object, field, valueObject);
+			returnCommand = Protocol.getOutputVoidCommand();
 		}
-
 		return returnCommand;
 	}
 

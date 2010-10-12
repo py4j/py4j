@@ -26,7 +26,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-package py4j;
+package py4j.commands;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -36,6 +36,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.logging.Logger;
 
+import py4j.Gateway;
+import py4j.JVMView;
+import py4j.Protocol;
+import py4j.Py4JException;
+import py4j.ReturnObject;
 import py4j.reflection.ReflectionEngine;
 import py4j.reflection.TypeUtil;
 
@@ -145,12 +150,17 @@ public class ReflectionCommand extends AbstractCommand {
 
 	private String getUnknownMember(BufferedReader reader) throws IOException {
 		String fqn = reader.readLine();
+		String jvmId = reader.readLine();
+		System.out.println(fqn);
+		System.out.println(jvmId);
+		JVMView view = (JVMView)Protocol.getObject(jvmId, this.gateway);
 		reader.readLine();
 		String returnCommand = null;
 		try {
-			TypeUtil.forName(fqn);
+			// TODO APPEND CLASS NAME, because it might not be the fqn, but a new one because of imports!
+			String fullyQualifiedName = TypeUtil.forName(fqn, view).getName();
 			returnCommand = Protocol
-					.getMemberOutputCommand(Protocol.CLASS_TYPE);
+					.getMemberOutputCommand(Protocol.CLASS_TYPE, fullyQualifiedName);
 		} catch (ClassNotFoundException e) {
 			returnCommand = Protocol
 					.getMemberOutputCommand(Protocol.PACKAGE_TYPE);

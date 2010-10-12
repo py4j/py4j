@@ -65,6 +65,7 @@ public class Gateway {
 	private final Object entryPoint;
 	private final ReflectionEngine rEngine = new ReflectionEngine();
 	private final CallbackClient cbClient;
+	private final JVMView defaultJVMView;
 
 	private final Logger logger = Logger.getLogger(Gateway.class.getName());
 
@@ -77,6 +78,7 @@ public class Gateway {
 	public Gateway(Object entryPoint, CallbackClient cbClient) {
 		this.entryPoint = entryPoint;
 		this.cbClient = cbClient;
+		this.defaultJVMView = new JVMView("default", Protocol.DEFAULT_JVM_OBJECT_ID);
 	}
 
 	/**
@@ -107,7 +109,11 @@ public class Gateway {
 	public Object getEntryPoint() {
 		return this.entryPoint;
 	}
-
+	
+	public JVMView getDefaultJVMView() {
+		return this.defaultJVMView;
+	}
+	
 	protected String getNextObjectId() {
 		return OBJECT_NAME_PREFIX + objCounter.getAndIncrement();
 	}
@@ -301,6 +307,7 @@ public class Gateway {
 		if (entryPoint != null) {
 			bindings.put(Protocol.ENTRY_POINT_OBJECT_ID, entryPoint);
 		}
+		bindings.put(Protocol.DEFAULT_JVM_OBJECT_ID, defaultJVMView);
 	}
 
 }

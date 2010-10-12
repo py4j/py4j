@@ -42,6 +42,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import py4j.commands.Command;
 import py4j.examples.ExampleClass;
 import py4j.examples.ExampleEntryPoint;
 

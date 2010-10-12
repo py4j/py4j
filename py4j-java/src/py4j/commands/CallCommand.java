@@ -1,19 +1,19 @@
-/*******************************************************************************
+/**
  * Copyright (c) 2009, 2010, Barthelemy Dagenais All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * - Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *
+ * 
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *
+ * 
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,44 +25,66 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
-package py4j;
+ */
+
+package py4j.commands;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.List;
+import java.util.logging.Logger;
+
+import py4j.Protocol;
+import py4j.Py4JException;
+import py4j.ReturnObject;
 
 /**
  * <p>
- * The ShutdownGatewayServerCommand is responsible for shutting down the
- * GatewayServer. This command is useful to shut down the server remotely, i.e.,
- * from the Python side.
+ * A CallCommand is responsible for parsing a call command and calling the
+ * method on the target object.
+ * </p>
+ * <p>
+ * Currently, the call command assumes that a command is well-formed and that
+ * there is no communication problem (e.g., the source virtual machine
+ * disconnected in the middle of a command). This is a reasonable assumption
+ * because the two virtual machines are assumed to be on the same host.
+ * </p>
+ * <p>
+ * <b>TODO:</b> Make the call command more robust to communication errors and
+ * ill-formed protocol.
  * </p>
  * 
  * @author Barthelemy Dagenais
  * 
  */
-public class ShutdownGatewayServerCommand extends AbstractCommand {
+public class CallCommand extends AbstractCommand {
 
-	private GatewayServer gatewayServer;
+	private final Logger logger = Logger.getLogger(CallCommand.class.getName());
 
-	public static final String SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME = "s";
+	public final static String CALL_COMMAND_NAME = "c";
 
-	public ShutdownGatewayServerCommand() {
+	public CallCommand() {
 		super();
-		this.commandName = SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME;
+		this.commandName = CALL_COMMAND_NAME;
 	}
 
-	@Override
-	public void init(Gateway gateway) {
-		super.init(gateway);
-		this.gatewayServer = (GatewayServer) gateway.getObject(GatewayServer.GATEWAY_SERVER_ID);
-	}
+
 
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
-		this.gatewayServer.shutdown();
+		String targetObjectId = reader.readLine();
+		String methodName = reader.readLine();
+		List<Object> arguments = getArguments(reader);
+
+		ReturnObject returnObject = invokeMethod(methodName, targetObjectId,
+				arguments);
+
+		String returnCommand = Protocol.getOutputCommand(returnObject);
+		logger.info("Returning command: " + returnCommand);
+		writer.write(returnCommand);
+		writer.flush();
 	}
 
 }
