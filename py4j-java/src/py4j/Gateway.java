@@ -78,7 +78,8 @@ public class Gateway {
 	public Gateway(Object entryPoint, CallbackClient cbClient) {
 		this.entryPoint = entryPoint;
 		this.cbClient = cbClient;
-		this.defaultJVMView = new JVMView("default", Protocol.DEFAULT_JVM_OBJECT_ID);
+		this.defaultJVMView = new JVMView("default",
+				Protocol.DEFAULT_JVM_OBJECT_ID);
 	}
 
 	/**
@@ -98,7 +99,12 @@ public class Gateway {
 		return argCounter;
 	}
 
-	protected Map<String, Object> getBindings() {
+	/**
+	 * 
+	 * @return The bindings of the Gateway. Should never be called by other
+	 *         classes except subclasses and testing classes.
+	 */
+	public Map<String, Object> getBindings() {
 		return bindings;
 	}
 
@@ -109,11 +115,11 @@ public class Gateway {
 	public Object getEntryPoint() {
 		return this.entryPoint;
 	}
-	
+
 	public JVMView getDefaultJVMView() {
 		return this.defaultJVMView;
 	}
-	
+
 	protected String getNextObjectId() {
 		return OBJECT_NAME_PREFIX + objCounter.getAndIncrement();
 	}
@@ -171,7 +177,7 @@ public class Gateway {
 			} else if (isIterator(object)) {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getIteratorReturnObject(objectId);
-			}else {
+			} else {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getReferenceReturnObject(objectId);
 			}
@@ -271,7 +277,7 @@ public class Gateway {
 	protected boolean isSet(Object object) {
 		return object instanceof Set;
 	}
-	
+
 	private boolean isIterator(Object object) {
 		return object instanceof Iterator;
 	}
@@ -280,7 +286,17 @@ public class Gateway {
 		return isStarted;
 	}
 
-	protected String putNewObject(Object object) {
+	/**
+	 * <p>
+	 * Adds a new object to the gateway bindings and return the generated ID.
+	 * Should NEVER be called by other classes except subclasses and testing
+	 * classes.
+	 * </p>
+	 * 
+	 * @param object
+	 * @return
+	 */
+	public String putNewObject(Object object) {
 		String id = getNextObjectId();
 		bindings.put(id, object);
 		return id;
@@ -295,7 +311,9 @@ public class Gateway {
 	}
 
 	/**
-	 * <p>Releases all objects that were referenced by this Gateway.<p>
+	 * <p>
+	 * Releases all objects that were referenced by this Gateway.
+	 * <p>
 	 */
 	public void shutdown() {
 		isStarted = false;

@@ -26,10 +26,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-package py4j;
+package py4j.commands;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -42,13 +41,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import py4j.commands.MemoryCommand;
+import py4j.Gateway;
+import py4j.commands.HelpPageCommand;
 import py4j.examples.ExampleEntryPoint;
 
-public class MemoryCommandTest {
+public class HelpPageCommandTest {
 	private ExampleEntryPoint entryPoint;
 	private Gateway gateway;
-	private MemoryCommand command;
+	private HelpPageCommand command;
 	private BufferedWriter writer;
 	private StringWriter sWriter;
 	private String target;
@@ -58,7 +58,7 @@ public class MemoryCommandTest {
 		entryPoint = new ExampleEntryPoint();
 		gateway = new Gateway(entryPoint);
 		gateway.startup();
-		command = new MemoryCommand();
+		command = new HelpPageCommand();
 		command.init(gateway);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
@@ -71,21 +71,50 @@ public class MemoryCommandTest {
 	}
 	
 	@Test
-	public void testDelete() {
-		String inputCommand = "d\n" + target + "\ne\n";
+	public void testHelpObject() {
+		String inputCommand = "o\n" + target + "\nn\ntrue\ne\n";
 		try {
 			assertTrue(gateway.getBindings().containsKey(target));
-			command.execute("m", new BufferedReader(new StringReader(
+			command.execute("h", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\n", sWriter.toString());
-			assertFalse(gateway.getBindings().containsKey(target));
-			command.execute("m", new BufferedReader(new StringReader(
-					inputCommand)), writer);
-			assertEquals("yv\nyv\n", sWriter.toString());
+			String page = sWriter.toString();
+			System.out.println(page);
+			assertEquals(1175,page.length());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		}
 	}
 	
+	@Test
+	public void testHelpObjectWithPattern() {
+		String inputCommand = "o\n" + target + "\nsm*\ntrue\ne\n";
+		try {
+			assertTrue(gateway.getBindings().containsKey(target));
+			command.execute("h", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			String page = sWriter.toString();
+			System.out.println(page);
+			assertEquals(772,page.length());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
+	public void testHelpClass() {
+		String inputCommand = "c\njava.lang.String\nn\ntrue\ne\n";
+		try {
+			assertTrue(gateway.getBindings().containsKey(target));
+			command.execute("h", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			String page = sWriter.toString();
+			System.out.println(page);
+			assertEquals(3588,page.length());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
 }

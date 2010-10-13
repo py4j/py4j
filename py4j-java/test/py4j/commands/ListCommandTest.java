@@ -26,7 +26,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-package py4j;
+package py4j.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -42,6 +42,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import py4j.Gateway;
 import py4j.commands.ListCommand;
 import py4j.examples.ExampleEntryPoint;
 

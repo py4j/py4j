@@ -26,9 +26,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-package py4j;
+package py4j.commands;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -41,26 +42,28 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import py4j.commands.ConstructorCommand;
+import py4j.Gateway;
+import py4j.commands.MemoryCommand;
 import py4j.examples.ExampleEntryPoint;
-import py4j.examples.Stack;
 
-public class ConstructorCommandTest {
+public class MemoryCommandTest {
 	private ExampleEntryPoint entryPoint;
 	private Gateway gateway;
-	private ConstructorCommand command;
+	private MemoryCommand command;
 	private BufferedWriter writer;
 	private StringWriter sWriter;
+	private String target;
 
 	@Before
 	public void setUp() {
 		entryPoint = new ExampleEntryPoint();
 		gateway = new Gateway(entryPoint);
 		gateway.startup();
-		command = new ConstructorCommand();
+		command = new MemoryCommand();
 		command.init(gateway);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
+		target = gateway.getReturnObject(entryPoint.getNewExample()).getName();
 	}
 
 	@After
@@ -69,55 +72,21 @@ public class ConstructorCommandTest {
 	}
 	
 	@Test
-	public void testConstructor0Arg() {
-		String inputCommand = "py4j.examples.ExampleClass\ne\n";
+	public void testDelete() {
+		String inputCommand = "d\n" + target + "\ne\n";
 		try {
-			command.execute("i", new BufferedReader(new StringReader(
+			assertTrue(gateway.getBindings().containsKey(target));
+			command.execute("m", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yro0\n", sWriter.toString());
+			assertEquals("yv\n", sWriter.toString());
+			assertFalse(gateway.getBindings().containsKey(target));
+			command.execute("m", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("yv\nyv\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		}
 	}
 	
-	@Test
-	public void testConstructor1Arg() {
-		String inputCommand = "py4j.examples.ExampleClass\ni5\ne\n";
-		try {
-			command.execute("i", new BufferedReader(new StringReader(
-					inputCommand)), writer);
-			assertEquals("yro0\n", sWriter.toString());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
-		}
-	}
-	
-	@Test
-	public void testDefaultConstructor() {
-		String inputCommand = "py4j.examples.Stack\ne\n";
-		try {
-			command.execute("i", new BufferedReader(new StringReader(
-					inputCommand)), writer);
-			assertEquals("yro0\n", sWriter.toString());
-			assertTrue(gateway.getObject("o0") instanceof Stack);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
-		}
-	}
-	
-	@Test
-	public void testWrongConstructor() {
-		String inputCommand = "py4j.examples.Stack\ni5\ne\n";
-		try {
-			command.execute("i", new BufferedReader(new StringReader(
-					inputCommand)), writer);
-			assertTrue(sWriter.toString().startsWith("x"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
-		}
-	}
 }

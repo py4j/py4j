@@ -38,14 +38,14 @@ import py4j.reflection.TypeUtil;
 
 /**
  * <p>
- * A JVM view keeps track of imports and import searches. A Python client can have multiple
- * JVM views (e.g., one for each module) so that imports in one view do not conflict with imports
- * from other views.
+ * A JVM view keeps track of imports and import searches. A Python client can
+ * have multiple JVM views (e.g., one for each module) so that imports in one
+ * view do not conflict with imports from other views.
  * </p>
  * 
  * <p>
- * JVM views are not hierarchical: they do not inherit from each other so an import in the default
- * view does not affect the other views.
+ * JVM views are not hierarchical: they do not inherit from each other so an
+ * import in the default view does not affect the other views.
  * </p>
  * 
  * @author Barthelemy Dagenais
@@ -53,17 +53,17 @@ import py4j.reflection.TypeUtil;
 public class JVMView {
 
 	private List<String> singleImports;
-	
-	private Map<String,String> singleImportsMap;
-	
+
+	private Map<String, String> singleImportsMap;
+
 	private List<String> starImports;
-	
+
 	private List<String> lastImportSearches;
-	
+
 	private String name;
-	
+
 	private String id;
-	
+
 	public final static String JAVA_LANG_STAR_IMPORT = "java.lang";
 
 	public JVMView(String name, String id) {
@@ -88,8 +88,8 @@ public class JVMView {
 	public List<String> getSingleImports() {
 		return singleImports;
 	}
-	
-	public Map<String,String> getSingleImportsMap() {
+
+	public Map<String, String> getSingleImportsMap() {
 		return singleImportsMap;
 	}
 
@@ -104,31 +104,58 @@ public class JVMView {
 	public String getId() {
 		return id;
 	}
-	
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	public void clearImports() {
 		this.singleImports.clear();
 		this.singleImportsMap.clear();
 		this.starImports.clear();
 		this.starImports.add(JAVA_LANG_STAR_IMPORT);
 	}
-	
+
 	/**
 	 * 
-	 * @param singleImport Single import statement of the form package1.package2.SimpleName
+	 * @param singleImport
+	 *            Single import statement of the form
+	 *            package1.package2.SimpleName
 	 */
 	public void addSingleImport(String singleImport) {
 		String simpleName = TypeUtil.getName(singleImport, true);
-		singleImports.add(singleImport);
-		singleImportsMap.put(simpleName,singleImport);
+		if (!singleImports.contains(singleImport)) {
+			singleImports.add(singleImport);
+			singleImportsMap.put(simpleName, singleImport);
+		}
 	}
 
 	/**
 	 * 
-	 * @param starImport Star Import of the form "package1.package2.*"
+	 * @param starImport
+	 *            Star Import of the form "package1.package2.*"
 	 */
 	public void addStarImport(String starImport) {
 		String packageName = TypeUtil.getPackage(starImport);
-		starImports.add(packageName);
+		if (!starImports.contains(packageName)) {
+			starImports.add(packageName);
+		}
 	}
-	
+
+	public boolean removeStarImport(String starImport) {
+		String packageName = TypeUtil.getPackage(starImport);
+		return starImports.remove(packageName);
+	}
+
+	public boolean removeSingleImport(String importString) {
+		boolean removed = false;
+		String simpleName = TypeUtil.getName(importString, true);
+		removed = singleImports.remove(importString);
+		if (removed) {
+			singleImportsMap.remove(simpleName);
+		}
+		
+		return removed;
+	}
+
 }

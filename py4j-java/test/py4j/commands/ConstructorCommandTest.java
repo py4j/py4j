@@ -26,7 +26,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************/
-package py4j;
+package py4j.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -41,27 +41,27 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import py4j.commands.HelpPageCommand;
+import py4j.Gateway;
+import py4j.commands.ConstructorCommand;
 import py4j.examples.ExampleEntryPoint;
+import py4j.examples.Stack;
 
-public class HelpPageCommandTest {
+public class ConstructorCommandTest {
 	private ExampleEntryPoint entryPoint;
 	private Gateway gateway;
-	private HelpPageCommand command;
+	private ConstructorCommand command;
 	private BufferedWriter writer;
 	private StringWriter sWriter;
-	private String target;
 
 	@Before
 	public void setUp() {
 		entryPoint = new ExampleEntryPoint();
 		gateway = new Gateway(entryPoint);
 		gateway.startup();
-		command = new HelpPageCommand();
+		command = new ConstructorCommand();
 		command.init(gateway);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
-		target = gateway.getReturnObject(entryPoint.getNewExample()).getName();
 	}
 
 	@After
@@ -70,15 +70,12 @@ public class HelpPageCommandTest {
 	}
 	
 	@Test
-	public void testHelpObject() {
-		String inputCommand = "o\n" + target + "\nn\ntrue\ne\n";
+	public void testConstructor0Arg() {
+		String inputCommand = "py4j.examples.ExampleClass\ne\n";
 		try {
-			assertTrue(gateway.getBindings().containsKey(target));
-			command.execute("h", new BufferedReader(new StringReader(
+			command.execute("i", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			String page = sWriter.toString();
-			System.out.println(page);
-			assertEquals(1175,page.length());
+			assertEquals("yro0\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -86,15 +83,12 @@ public class HelpPageCommandTest {
 	}
 	
 	@Test
-	public void testHelpObjectWithPattern() {
-		String inputCommand = "o\n" + target + "\nsm*\ntrue\ne\n";
+	public void testConstructor1Arg() {
+		String inputCommand = "py4j.examples.ExampleClass\ni5\ne\n";
 		try {
-			assertTrue(gateway.getBindings().containsKey(target));
-			command.execute("h", new BufferedReader(new StringReader(
+			command.execute("i", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			String page = sWriter.toString();
-			System.out.println(page);
-			assertEquals(772,page.length());
+			assertEquals("yro0\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -102,15 +96,26 @@ public class HelpPageCommandTest {
 	}
 	
 	@Test
-	public void testHelpClass() {
-		String inputCommand = "c\njava.lang.String\nn\ntrue\ne\n";
+	public void testDefaultConstructor() {
+		String inputCommand = "py4j.examples.Stack\ne\n";
 		try {
-			assertTrue(gateway.getBindings().containsKey(target));
-			command.execute("h", new BufferedReader(new StringReader(
+			command.execute("i", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			String page = sWriter.toString();
-			System.out.println(page);
-			assertEquals(3588,page.length());
+			assertEquals("yro0\n", sWriter.toString());
+			assertTrue(gateway.getObject("o0") instanceof Stack);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
+	public void testWrongConstructor() {
+		String inputCommand = "py4j.examples.Stack\ni5\ne\n";
+		try {
+			command.execute("i", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertTrue(sWriter.toString().startsWith("x"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
