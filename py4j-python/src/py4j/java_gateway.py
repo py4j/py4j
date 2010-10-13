@@ -688,7 +688,6 @@ class JavaPackage():
         
     def __getattr__(self, name):
         new_fqn = self._fqn + '.' + name
-        print('Package request sent: %s' % (REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + new_fqn + '\n' + self._jvm_id + '\n' + END_COMMAND_PART))
         answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + new_fqn + '\n' + self._jvm_id + '\n' + END_COMMAND_PART)
         if answer == SUCCESS_PACKAGE:
             return JavaPackage(new_fqn, self._gateway_client, self._jvm_id)
@@ -706,7 +705,6 @@ class JVMView(object):
         self._id = id
         
     def __getattr__(self, name):
-        print(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + self._id + '\n' + END_COMMAND_PART)
         answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + self._id + '\n' + END_COMMAND_PART)
         if answer == SUCCESS_PACKAGE:
             return JavaPackage(name, self._gateway_client, jvm_id = self._id)
