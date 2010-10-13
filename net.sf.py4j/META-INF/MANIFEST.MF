@@ -1,12 +1,13 @@
 Manifest-Version: 1.0
 Eclipse-BuddyPolicy: global
 Bundle-ManifestVersion: 2
-Bundle-Name: Py4j
+Bundle-Name: Py4J Java Library
 Bundle-SymbolicName: net.sf.py4j
-Bundle-Version: 0.4.0.qualifier
+Bundle-Version: 0.5.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: py4j,
  py4j.examples,
  py4j.model,
  py4j.reflection
 Bundle-ClassPath: lib/py4j0.4.jar
+Bundle-Vendor: Py4J

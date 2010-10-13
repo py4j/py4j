@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="net.sf.py4j.feature"
-      label="Py4J Feature"
-      version="0.4.0.qualifier">
+      label="Py4J Library (required)"
+      version="0.5.0.qualifier"
+      provider-name="Py4J">
 
    <description url="http://py4j.sourceforge.net/">
       Py4J enables Python programs running in a Python interpreter to dynamically access Java objects residing in a Java Virtual Machine. Methods are called as if the Java objects resided in the Python interpreter and Java collections can be accessed through standard Python collection methods.
    </description>
 
    <copyright>
-      © Copyright 2009, Barthélémy Dagenais
+      © Copyright 2009-2010, Barthélémy Dagenais
    </copyright>
 
    <license url="http://sourceforge.net/apps/trac/py4j/browser/trunk/py4j-python/LICENSE.txt">
