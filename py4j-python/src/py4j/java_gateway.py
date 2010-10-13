@@ -123,6 +123,7 @@ HELP_CLASS_SUBCOMMAND_NAME = 'c\n'
 JVM_CREATE_VIEW_SUB_COMMAND_NAME = 'c\n'
 JVM_IMPORT_SUB_COMMAND_NAME = 'i\n'
 JVM_SEARCH_SUB_COMMAND_NAME = 's\n'
+REMOVE_IMPORT_SUB_COMMAND_NAME = 'r\n'
 
 CONVERSION = {NULL_TYPE: (lambda x, y: None),
               REFERENCE_TYPE: (lambda target_id, gateway_client: JavaObject(target_id, gateway_client)),
@@ -699,10 +700,16 @@ class JavaPackage():
 class JVMView(object):
     """A `JVMView` allows access to the Java Virtual Machine of a `JavaGateway`. This can be used to reference static members (fields and methods) and to call constructors."""
     
-    def __init__(self, gateway_client, jvm_name, id):
+    def __init__(self, gateway_client, jvm_name, id=None, jvm_object=None):
         self._gateway_client = gateway_client
         self._jvm_name = jvm_name
-        self._id = id
+        if id is not None:
+            self._id = id
+        elif jvm_object is not None:
+            self._id = REFERENCE_TYPE + jvm_object._get_object_id()
+            # So that both JVMView instances (on Python and Java) have the same lifecycle.
+            # Theoretically, JVMView could inherit from JavaObject, but I would like to avoid the use of reflection for regular Py4J classes.
+            self._jvm_object = jvm_object
         
     def __getattr__(self, name):
         answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + self._id + '\n' + END_COMMAND_PART)
@@ -763,12 +770,26 @@ class JavaGateway(object):
             
     def __getattr__(self, name):
         return self.entry_point.__getattr__(name)
+    
+    def new_jvm_view(self, name='custom jvm'):
+        """Creates a new JVM view with its own imports. A JVM view ensures that the import made in one view does not conflict with the import of another view.
+        
+        Generally, each Python module should have its own view (to replicate Java behavior).
+        
+        :param name: Optional name of the jvm view. Does not need to be unique, i.e., two distinct views can have the same name (internally, they will have a distinct id).
+        :rtype: A JVMView instance (same class as the gateway.jvm instance).
+        """
+        command = JVMVIEW_COMMAND_NAME + JVM_CREATE_VIEW_SUB_COMMAND_NAME + get_command_part(name) + END_COMMAND_PART
+        answer = self._gateway_client.send_command(command)
+        java_object = get_return_value(answer, self._gateway_client)
+        return JVMView(gateway_client = self._gateway_client, jvm_name=name, jvm_object=java_object)
             
     def new_array(self, java_class, *dimensions):
         """Creates a Java array of type `java_class` of `dimensions`
         
         :param java_class: The :class:`JavaClass` instance representing the type of the array.
         :param dimensions: A list of dimensions of the array. For example `[1,2]` would produce an `array[1][2]`.
+        :rtype: A :class:`JavaArray <py4j.java_collections.JavaArray>` instance.
         """
         if len(dimensions) == 0:
             raise Py4JError('new arrays must have at least one dimension')

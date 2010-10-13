@@ -391,6 +391,9 @@ class JVMTest(unittest.TestCase):
     def testNone(self):
         ex = self.gateway.entry_point.getNewExample()
         ex.method4(None)
+        
+    def testJVMView(self):
+        newView = self.gateway.new_jvm_view('myjvm')
 
 class HelpTest(unittest.TestCase):
     

@@ -44,7 +44,6 @@ import org.junit.Test;
 
 import py4j.Gateway;
 import py4j.JVMView;
-import py4j.commands.ReflectionCommand;
 import py4j.examples.ExampleEntryPoint;
 
 public class JVMViewCommandTest {
@@ -76,6 +75,7 @@ public class JVMViewCommandTest {
 		String inputCommand3 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.io.File" + "\ne\n";
 		String inputCommand4 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.io.File" + "\ne\n";
 		String inputCommand5 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.lang.*" + "\ne\n";
+		String inputCommand6 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME + "\nj\n" + "java.util.*" + "\ne\n";
 		try {
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand1)), writer);
@@ -129,6 +129,12 @@ public class JVMViewCommandTest {
 			assertEquals("yro0\nyv\nyv\nyv\nyv\nybtrue\nybfalse\nybtrue\nybfalse\n", sWriter.toString());
 			assertFalse(view.getStarImports().contains("java.lang.*"));
 			assertEquals(1,view.getStarImports().size()); // 1 for java.io.File
+			
+			command.execute("r", new BufferedReader(new StringReader(
+					inputCommand6)), writer);
+			assertEquals("yro0\nyv\nyv\nyv\nyv\nybtrue\nybfalse\nybtrue\nybfalse\nyv\n", sWriter.toString());
+			assertFalse(gateway.getDefaultJVMView().getStarImports().contains("java.util.*"));
+			assertEquals(2,gateway.getDefaultJVMView().getStarImports().size()); // 1 for java.io.File
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

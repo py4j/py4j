@@ -96,6 +96,18 @@ public class JVMViewCommand extends AbstractCommand {
 		writer.write(returnCommand);
 		writer.flush();
 	}
+	
+	private JVMView getJVMView(String jvmId) {
+		JVMView view = null;
+		
+		if (jvmId.equals(Protocol.DEFAULT_JVM_OBJECT_ID)) {
+			view = gateway.getDefaultJVMView();
+		} else {
+			view = (JVMView) Protocol.getObject(jvmId, gateway);
+		}
+		
+		return view;
+	}
 
 	private String removeImport(BufferedReader reader) throws IOException {
 		String jvm = reader.readLine();
@@ -103,7 +115,7 @@ public class JVMViewCommand extends AbstractCommand {
 
 		reader.readLine();
 
-		JVMView view = (JVMView) Protocol.getObject(jvm, gateway);
+		JVMView view = getJVMView(jvm);
 		boolean removed = false;
 		if (importString.endsWith("*")) {
 			removed = view.removeStarImport(importString);
@@ -123,7 +135,7 @@ public class JVMViewCommand extends AbstractCommand {
 		String importString = reader.readLine();
 		reader.readLine();
 
-		JVMView view = (JVMView) Protocol.getObject(jvm, gateway);
+		JVMView view = getJVMView(jvm);
 		if (importString.endsWith("*")) {
 			view.addStarImport(importString);
 		} else {
