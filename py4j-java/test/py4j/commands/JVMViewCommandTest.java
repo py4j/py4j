@@ -75,7 +75,7 @@ public class JVMViewCommandTest {
 		String inputCommand3 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.io.File" + "\ne\n";
 		String inputCommand4 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.io.File" + "\ne\n";
 		String inputCommand5 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.lang.*" + "\ne\n";
-		String inputCommand6 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME + "\nj\n" + "java.util.*" + "\ne\n";
+		String inputCommand6 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME + "\nrj\n" + "java.util.*" + "\ne\n";
 		try {
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand1)), writer);
@@ -91,8 +91,8 @@ public class JVMViewCommandTest {
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand3)), writer);
 			assertEquals("yro0\nyv\nyv\n", sWriter.toString());
-			assertTrue(view.getSingleImports().contains("java.io.File"));
-			assertEquals(1,view.getSingleImports().size()); // 1 for java.io.File
+			assertTrue(view.getSingleImportsMap().containsKey("File"));
+			assertEquals(1,view.getSingleImportsMap().size()); // 1 for java.io.File
 			
 			// Duplicate
 			command.execute("r", new BufferedReader(new StringReader(
@@ -103,20 +103,20 @@ public class JVMViewCommandTest {
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand3)), writer);
 			assertEquals("yro0\nyv\nyv\nyv\nyv\n", sWriter.toString());
-			assertTrue(view.getSingleImports().contains("java.io.File"));
-			assertEquals(1,view.getSingleImports().size()); // 1 for java.io.File
+			assertTrue(view.getSingleImportsMap().containsKey("File"));
+			assertEquals(1,view.getSingleImportsMap().size()); // 1 for java.io.File
 			
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand4)), writer);
 			assertEquals("yro0\nyv\nyv\nyv\nyv\nybtrue\n", sWriter.toString());
-			assertFalse(view.getSingleImports().contains("java.io.File"));
-			assertEquals(0,view.getSingleImports().size()); // 1 for java.io.File
+			assertFalse(view.getSingleImportsMap().containsKey("File"));
+			assertEquals(0,view.getSingleImportsMap().size()); // 1 for java.io.File
 			
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand4)), writer);
 			assertEquals("yro0\nyv\nyv\nyv\nyv\nybtrue\nybfalse\n", sWriter.toString());
-			assertFalse(view.getSingleImports().contains("java.io.File"));
-			assertEquals(0,view.getSingleImports().size()); // 1 for java.io.File
+			assertFalse(view.getSingleImportsMap().containsKey("File"));
+			assertEquals(0,view.getSingleImportsMap().size()); // 1 for java.io.File
 			
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand5)), writer);

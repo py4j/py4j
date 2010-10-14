@@ -4,8 +4,7 @@ Created on Apr 5, 2010
 @author: Barthelemy Dagenais
 '''
 from multiprocessing.process import Process
-from py4j.java_callback import PythonProxyPool
-from py4j.java_gateway import JavaGateway
+from py4j.java_gateway import JavaGateway, PythonProxyPool
 from py4j.tests.java_gateway_test import PY4J_JAVA_PATH
 from threading import Thread
 import logging

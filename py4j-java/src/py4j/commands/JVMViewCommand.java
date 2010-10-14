@@ -38,6 +38,7 @@ import py4j.JVMView;
 import py4j.Protocol;
 import py4j.Py4JException;
 import py4j.ReturnObject;
+import py4j.StringUtil;
 import py4j.reflection.ReflectionEngine;
 
 /**
@@ -97,25 +98,13 @@ public class JVMViewCommand extends AbstractCommand {
 		writer.flush();
 	}
 	
-	private JVMView getJVMView(String jvmId) {
-		JVMView view = null;
-		
-		if (jvmId.equals(Protocol.DEFAULT_JVM_OBJECT_ID)) {
-			view = gateway.getDefaultJVMView();
-		} else {
-			view = (JVMView) Protocol.getObject(jvmId, gateway);
-		}
-		
-		return view;
-	}
-
 	private String removeImport(BufferedReader reader) throws IOException {
-		String jvm = reader.readLine();
-		String importString = reader.readLine();
+		String jvmId = reader.readLine();
+		String importString = StringUtil.unescape(reader.readLine());
 
 		reader.readLine();
 
-		JVMView view = getJVMView(jvm);
+		JVMView view = (JVMView) Protocol.getObject(jvmId, gateway);
 		boolean removed = false;
 		if (importString.endsWith("*")) {
 			removed = view.removeStarImport(importString);
@@ -131,11 +120,11 @@ public class JVMViewCommand extends AbstractCommand {
 	}
 
 	private String doImport(BufferedReader reader) throws IOException {
-		String jvm = reader.readLine();
-		String importString = reader.readLine();
+		String jvmId = reader.readLine();
+		String importString = StringUtil.unescape(reader.readLine());
 		reader.readLine();
 
-		JVMView view = getJVMView(jvm);
+		JVMView view = (JVMView) Protocol.getObject(jvmId, gateway);
 		if (importString.endsWith("*")) {
 			view.addStarImport(importString);
 		} else {
@@ -146,7 +135,7 @@ public class JVMViewCommand extends AbstractCommand {
 	}
 
 	private String createJVMView(BufferedReader reader) throws IOException {
-		String name = reader.readLine();
+		String name = StringUtil.unescape(reader.readLine());
 		reader.readLine();
 
 		JVMView newView = new JVMView(name, null);

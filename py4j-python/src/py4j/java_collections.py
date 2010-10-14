@@ -4,7 +4,9 @@ Created on Jan 22, 2010
 @author: barthelemy
 '''
 from collections import MutableMapping, Sequence, MutableSequence, MutableSet, Set
-from py4j.java_gateway import *
+from py4j.java_gateway import JavaObject, JavaMember, get_method, JavaClass
+from py4j.protocol import *
+
     
 class JavaIterator(JavaObject):
     """Maps a Python list iterator to a Java list iterator.
@@ -458,4 +460,13 @@ class MapConverter(object):
         for key in object.keys():
             java_map[key] = object[key]
         return java_map
-
+    
+register_input_converter(SetConverter())
+register_input_converter(MapConverter())
+register_input_converter(ListConverter())
+    
+register_output_converter(MAP_TYPE, lambda target_id, gateway_client: JavaMap(target_id, gateway_client))
+register_output_converter(LIST_TYPE, lambda target_id, gateway_client: JavaList(target_id, gateway_client))
+register_output_converter(ARRAY_TYPE, lambda target_id, gateway_client: JavaArray(target_id, gateway_client))
+register_output_converter(SET_TYPE, lambda target_id, gateway_client: JavaSet(target_id, gateway_client))
+register_output_converter(ITERATOR_TYPE, lambda target_id, gateway_client: JavaIterator(target_id, gateway_client))

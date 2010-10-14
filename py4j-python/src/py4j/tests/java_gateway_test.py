@@ -5,8 +5,10 @@ Created on Dec 10, 2009
 '''
 from multiprocessing.process import Process
 from py4j.finalizer import ThreadSafeFinalizer
+from py4j.protocol import *
 from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, get_method, \
-    unescape_new_line, escape_new_line, GatewayConnection, GatewayClient, set_field
+     GatewayConnection, GatewayClient, set_field, java_import
+
 from socket import AF_INET, SOCK_STREAM, socket
 from threading import Thread
 from traceback import print_exc
@@ -394,7 +396,26 @@ class JVMTest(unittest.TestCase):
         
     def testJVMView(self):
         newView = self.gateway.new_jvm_view('myjvm')
-
+        time = newView.System.currentTimeMillis()
+        self.assertTrue(time > 0)
+        time = newView.java.lang.System.currentTimeMillis()
+        self.assertTrue(time > 0)
+        
+    def testImport(self):
+        newView = self.gateway.new_jvm_view('myjvm')
+        java_import(self.gateway.jvm,'java.util.*')
+        java_import(self.gateway.jvm,'java.io.File')
+        self.assertTrue(self.gateway.jvm.ArrayList() is not None)
+        self.assertTrue(self.gateway.jvm.File('hello.txt') is not None)
+        try:
+            newView.File('test.txt')
+            self.fail('')
+        except Exception:
+            self.assertTrue(True)
+        java_import(newView, 'java.util.HashSet')
+        self.assertTrue(newView.HashSet() is not None)
+        
+        
 class HelpTest(unittest.TestCase):
     
     def setUp(self):

@@ -29,10 +29,11 @@
 
 package py4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import py4j.reflection.TypeUtil;
 
@@ -52,13 +53,11 @@ import py4j.reflection.TypeUtil;
  */
 public class JVMView {
 
-	private List<String> singleImports;
+	private ConcurrentMap<String, String> singleImportsMap;
 
-	private Map<String, String> singleImportsMap;
+	private Set<String> starImports;
 
-	private List<String> starImports;
-
-	private List<String> lastImportSearches;
+	private Set<String> lastImportSearches;
 
 	private String name;
 
@@ -70,10 +69,9 @@ public class JVMView {
 		super();
 		this.name = name;
 		this.id = id;
-		this.singleImports = new ArrayList<String>();
-		this.starImports = new ArrayList<String>();
-		this.lastImportSearches = new ArrayList<String>();
-		this.singleImportsMap = new HashMap<String, String>();
+		this.starImports = new ConcurrentSkipListSet<String>();
+		this.lastImportSearches = new ConcurrentSkipListSet<String>();
+		this.singleImportsMap = new ConcurrentHashMap<String, String>();
 		this.starImports.add(JAVA_LANG_STAR_IMPORT);
 	}
 
@@ -85,19 +83,15 @@ public class JVMView {
 		this.name = name;
 	}
 
-	public List<String> getSingleImports() {
-		return singleImports;
-	}
-
 	public Map<String, String> getSingleImportsMap() {
 		return singleImportsMap;
 	}
 
-	public List<String> getStarImports() {
+	public Set<String> getStarImports() {
 		return starImports;
 	}
 
-	public List<String> getLastImportSearches() {
+	public Set<String> getLastImportSearches() {
 		return lastImportSearches;
 	}
 
@@ -110,7 +104,6 @@ public class JVMView {
 	}
 
 	public void clearImports() {
-		this.singleImports.clear();
 		this.singleImportsMap.clear();
 		this.starImports.clear();
 		this.starImports.add(JAVA_LANG_STAR_IMPORT);
@@ -124,10 +117,7 @@ public class JVMView {
 	 */
 	public void addSingleImport(String singleImport) {
 		String simpleName = TypeUtil.getName(singleImport, true);
-		if (!singleImports.contains(singleImport)) {
-			singleImports.add(singleImport);
-			singleImportsMap.put(simpleName, singleImport);
-		}
+		singleImportsMap.putIfAbsent(simpleName, singleImport);
 	}
 
 	/**
@@ -150,12 +140,8 @@ public class JVMView {
 	public boolean removeSingleImport(String importString) {
 		boolean removed = false;
 		String simpleName = TypeUtil.getName(importString, true);
-		removed = singleImports.remove(importString);
-		if (removed) {
-			singleImportsMap.remove(simpleName);
-		}
-		
+		removed = singleImportsMap.remove(simpleName, importString);
 		return removed;
 	}
-
+	
 }
