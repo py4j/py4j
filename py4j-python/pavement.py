@@ -147,4 +147,8 @@ def soft_clean():
     egg_info = path('src/Py4J.egg-info')
     egg_info.rmtree()
     
+@task
+def nose():
+    nose_options = '-w src -c nose.cfg'
+    sh('nosetests %s' % nose_options)
     
