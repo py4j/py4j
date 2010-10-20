@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="net.sf.py4j.defaultserver.feature"
-      label="Default Server"
+      label="Py4J Default Server"
       version="0.5.0.qualifier"
       provider-name="Py4J">
 
@@ -18,7 +18,7 @@ standard Python collection methods.
    </copyright>
 
    <license url="http://sourceforge.net/apps/trac/py4j/browser/trunk/py4j-python/LICENSE.txt">
-      Copyright (c) 2009, Barthelemy Dagenais All rights reserved.
+      Copyright (c) 2009-2010, Barthelemy Dagenais All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
 are met:
@@ -60,6 +60,10 @@ POSSIBILITY OF SUCH DAMAGE.
       <discovery label="Py4J Trac - To report bugs" url="http://sourceforge.net/apps/trac/py4j/wiki"/>
       <discovery label="Py4J Development Blog" url="http://py4j.wordpress.com/"/>
    </url>
+
+   <requires>
+      <import feature="net.sf.py4j.feature" version="0.5.0.qualifier"/>
+   </requires>
 
    <plugin
          id="net.sf.py4j.defaultserver"
