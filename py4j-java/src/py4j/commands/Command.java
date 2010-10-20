@@ -35,7 +35,6 @@ import java.io.IOException;
 
 import py4j.Gateway;
 import py4j.GatewayConnection;
-import py4j.Protocol;
 import py4j.Py4JException;
 
 /**

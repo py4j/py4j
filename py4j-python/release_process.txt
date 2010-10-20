@@ -5,9 +5,13 @@
 4. upload to sourceforge using scp command:
 scp Py4J-0.4.zip barthe,py4j@frs.sourceforge.net:/home/frs/project/p/py/py4j/0.4 (note: sourceforge sometimes refuse the connection/user/password for whatever reason).
 
-5. paver register
-6. upload to PyPI
-7. paver deploy
-8. close milestone on Trac
-9. tag the release on SVN
-10. send an email to the mailing list.
+5. copy source of py4j-java
+6. upload update site
+7. don't forget to remove artifact.jar and the like: they break the update site (e.g., no category)
+
+8. paver register
+9. upload to PyPI
+10. paver deploy
+11. close milestone on Trac
+12. tag the release on SVN
+13. send an email to the mailing list.
