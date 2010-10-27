@@ -7,5 +7,19 @@
             class="net.sf.py4j.defaultserver.DefaultServerStartup">
       </startup>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="net.sf.py4j.defaultserver.preferences.DefaultServerPreferencePage"
+            id="net.sf.py4j.defaultserver.preferences.DefaultServerPreferencePage"
+            name="Py4J Default Server">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="net.sf.py4j.defaultserver.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
 
 </plugin>

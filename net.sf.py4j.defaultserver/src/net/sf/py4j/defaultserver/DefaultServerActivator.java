@@ -1,11 +1,13 @@
 package net.sf.py4j.defaultserver;
 
-import org.osgi.framework.BundleActivator;
+import net.sf.py4j.defaultserver.preferences.PreferenceConstants;
+
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import py4j.GatewayServer;
 
-public class DefaultServerActivator implements BundleActivator {
+public class DefaultServerActivator extends AbstractUIPlugin {
 
 	private static BundleContext context;
 
@@ -25,9 +27,16 @@ public class DefaultServerActivator implements BundleActivator {
 	 * )
 	 */
 	public void start(BundleContext bundleContext) throws Exception {
+		super.start(bundleContext);
 		DefaultServerActivator.context = bundleContext;
 		activator = this;
-		server = new GatewayServer(this);
+		int defaultPort = getPreferenceStore().getInt(
+				PreferenceConstants.PREF_DEFAULT_PORT);
+		int defaultCallBackPort = getPreferenceStore().getInt(
+				PreferenceConstants.PREF_DEFAULT_CALLBACK_PORT);
+		server = new GatewayServer(this, defaultPort, defaultCallBackPort,
+				GatewayServer.DEFAULT_CONNECT_TIMEOUT,
+				GatewayServer.DEFAULT_READ_TIMEOUT, null);
 		server.start();
 	}
 
@@ -43,6 +52,7 @@ public class DefaultServerActivator implements BundleActivator {
 		}
 		context = null;
 		activator = null;
+		super.stop(bundleContext);
 	}
 
 	public GatewayServer getServer() {
