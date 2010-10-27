@@ -245,6 +245,41 @@ Note that to enable the Python program to receive callbacks, the JavaGateway ins
    As a workaround, a subclass of the abstract class could be created on the Java side. The methods of the subclass 
    would call the methods of a custom interface that a Python class could implement.
 
+.. _jvm_views:
+
+Importing packages with JVM Views
+---------------------------------
+
+Py4J allows you to import packages so that you don't have to type the fully
+qualified name of the classes you want to instantiate. 
+
+..
+
+  >>> from py4j.java_gateway import JavaGateway
+  >>> gateway = JavaGateway()
+  >>> from py4j.java_gateway import java_import
+  >>> java_import(gateway.jvm,'java.util.*')
+  >>> jList = gateway.jvm.ArrayList()
+  >>> jMap = gateway.jvm.HashMap()
+
+As opposed to Java where import statements do not cross compilation units (java
+source files), the jvm instance can be shared across multiple Python modules: in
+other words, import statements are global.
+
+The recommended way to use import statements is to use one `JVMView
+<py4j.java_gateway.JVMView>` instance per Python module. Here is an example on
+how to create and use a `JVMView`:
+
+..  
+  
+  >>> module1_view = gateway.new_jvm_view()
+  >>> jList2 = module1_view.ArrayList()
+  Py4JError: Trying to call a package.
+  >>> java_import(module1_view,'java.util.ArrayList')
+  >>> jList2 = module1_view.ArrayList()
+  >>> jMap2 = module1_view.HashMap()
+  Py4JError: Trying to call a package.
+
 .. _adv_memory:
 
 Py4J memory model

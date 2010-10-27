@@ -5,10 +5,14 @@
   :synopsis: Main Py4J Python module.
 .. moduleauthor:: Barthelemy Dagenais <barthe@users.sourceforge.net>
 
-The :mod:`py4j.java_gateway` module defines most of the classes that are needed to use Py4J. Py4J users are expected
-to only use explicitly :class:`JavaGateway <py4j.java_gateway.JavaGateway>` and optionally, :class:`GatewayClient
-<py4j.java_gateway.GatewayClient>`, :func:`get_field <py4j.java_gateway.get_field>`, and :func:`get_method
-<py4j.java_gateway.get_method>`. The other module members are documented to support the extension of Py4J.
+The :mod:`py4j.java_gateway` module defines most of the classes that are needed
+to use Py4J. Py4J users are expected to only use explicitly :class:`JavaGateway
+<py4j.java_gateway.JavaGateway>` and optionally, :class:`GatewayClient
+<py4j.java_gateway.GatewayClient>`, :func:`java_import
+<py4j.java_gateway.java_import>`, :func:`get_field
+<py4j.java_gateway.get_field>`, and :func:`get_method
+<py4j.java_gateway.get_method>`. The other module members are documented to
+support the extension of Py4J.
 
 .. _api_javagateway:
 
@@ -93,8 +97,8 @@ GatewayClient
 
 .. _api_gatewayconnection:
 
-CommChannel
------------
+GatewayConnection
+-----------------
 
 .. autoclass:: py4j.java_gateway.GatewayConnection
    :members:
@@ -108,29 +112,12 @@ CommChannel
 
     TBD
 
-.. _api_py4jerror:
-
-Py4JError
------------
-
-.. autoclass:: py4j.java_gateway.Py4JError
-   :members:
-   :undoc-members:
-
-..
-  Examples
-  ^^^^^^^^
-
-  ::
-
-    TBD
-
 .. _api_jvm:
 
-JVM
----
+JVMView
+-------
 
-.. autoclass:: py4j.java_gateway.JVM
+.. autoclass:: py4j.java_gateway.JVMView
    :members:
    :undoc-members:
 
@@ -210,31 +197,70 @@ JavaPackage
 
     TBD
 
+.. _api_pythonproxypool:
 
+PythonProxyPool
+---------------
 
- .. _api_functions:
- 
+.. autoclass:: py4j.java_gateway.PythonProxyPool
+   :members:
+   :undoc-members:
+
+..
+  Examples
+  ^^^^^^^^
+
+  ::
+
+    TBD
+
+.. _api_callbackserver:
+
+CallbackServer
+--------------
+
+.. autoclass:: py4j.java_gateway.CallbackServer
+   :members:
+   :undoc-members:
+
+..
+  Examples
+  ^^^^^^^^
+
+  ::
+
+    TBD
+
+.. _api_callbackconnection:
+
+CallbackConnection
+------------------
+
+.. autoclass:: py4j.java_gateway.CallbackConnection
+   :members:
+   :undoc-members:
+
+..
+  Examples
+  ^^^^^^^^
+
+  ::
+
+    TBD
+
+.. _api_functions:
 
 Py4J Functions
 --------------
 
-The following functions get be used to get a particular field or method when fields and methods in a Java class have the same name:
-   
+The following functions get be used to import packages or to get a particular field or method when fields and methods in a Java class have the same name:
+
+.. autofunction:: py4j.java_gateway.java_import
+
 .. autofunction:: py4j.java_gateway.get_field
 
 .. autofunction:: py4j.java_gateway.set_field
 
 .. autofunction:: py4j.java_gateway.get_method
 
-Py4J Misc. Functions
---------------------
-   
-The following functions can be used to extend Py4J (e.g., to create new commands):
 
-.. autofunction:: py4j.java_gateway.escape_new_line
-
-.. autofunction:: py4j.java_gateway.unescape_new_line 
-
-.. autofunction:: py4j.java_gateway.get_command_part
-
-.. autofunction:: py4j.java_gateway.get_return_value

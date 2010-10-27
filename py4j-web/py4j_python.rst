@@ -17,8 +17,8 @@ following modules are documented. Note that users are expected to only use :mod:
 .. toctree::
 
    py4j_java_gateway.rst
+   py4j_java_protocol.rst
    py4j_java_collections.rst
-   py4j_java_callback.rst
    py4j_finalizer.rst
 
 

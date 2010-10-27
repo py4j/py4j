@@ -278,8 +278,9 @@ to pass a pure Python list that was not returned by the JVM:
 As of version 0.4, Py4J does not support the conversion from pure Python lists to Java list. This is a feature that will 
 likely be implemented future versions. 
 
-Python has powerful introspection abilities that are slowly being replicated by Py4J. For example, a JavaGateway
-allow you to list all the members available in an object:
+Python has powerful introspection abilities that are slowly being replicated by
+Py4J. For example, a JavaGateway allows you to list all the members available in
+an object:
 
 :: 
 
@@ -307,8 +308,8 @@ allow you to list all the members available in an object:
   }
 
   
-Finally, you do not need an entry point to create and access objects. You can use the ``jvm`` member to call 
-constructors and static members:
+Finally, you do not need an entry point to create and access objects. You can
+use the ``jvm`` member to call constructors and static members:
 
 ::
 
