@@ -617,6 +617,7 @@ class JavaGateway(object):
         is garbage collected on the Python side. This method, or gc.collect()
         should still be invoked when memory is limited or when too many objects
         are created on the Java side.
+        
         :param java_object: The JavaObject instance to dereference (free) on the Java side.
         """
         java_object._detach()
