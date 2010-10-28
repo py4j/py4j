@@ -6,9 +6,10 @@
   :synopsis: Converts Java Collection Types to Python Collection Types.
 .. moduleauthor:: Barthelemy Dagenais <barthe@users.sourceforge.net>
 
-The :mod:`py4j.java_collections` module maps Python collection classes with Java collection classes. These classes
-should practically never be directly instantiated by users: they are automatically used when receiving, for example, a
-Java list.
+The :mod:`py4j.java_collections` module maps Python collection classes with Java
+collection classes. These classes should practically never be directly
+instantiated by users: they are automatically used when receiving, for example,
+a Java list.
 
 .. _api_javaiterator:
 
