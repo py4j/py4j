@@ -275,8 +275,9 @@ to pass a pure Python list that was not returned by the JVM:
   >>> stack.getInternalList()
   [u'Third item', u'First item', u'First item', u'Second item']
 
-As of version 0.4, Py4J does not support the conversion from pure Python lists to Java list. This is a feature that will 
-likely be implemented future versions. 
+By default, Py4J does not support the conversion from pure Python lists to Java
+list. It is possible to ask Py4J to automatically perform this conversion or to
+use one of the explicit converter. See :ref:`Collections Conversion <collections_conversion>` for more information.
 
 Python has powerful introspection abilities that are slowly being replicated by
 Py4J. For example, a JavaGateway allows you to list all the members available in

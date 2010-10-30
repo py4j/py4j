@@ -34,4 +34,6 @@ The following functions can be used to extend Py4J (e.g., to create new commands
 
 .. autofunction:: py4j.protocol.get_return_value
 
+.. autofunction:: py4j.protocol.register_output_converter
 
+.. autofunction:: py4j.protocol.register_input_converter

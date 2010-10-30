@@ -124,7 +124,7 @@ def escape_new_line(original):
     
     :rtype: an escaped string
     """
-    return original.replace('\\', '\\\\').replace('\r','\\r').replace('\n','\\n')
+    return original.replace('\\', '\\\\').replace('\r', '\\r').replace('\n', '\\n')
 
 def unescape_new_line(escaped):
     """Replaces escaped characters by unescaped characters.
@@ -226,10 +226,26 @@ def is_error(answer):
         return (False, None)
 
 def register_output_converter(output_type, converter):
+    """Registers an output converter to the list of global output converters.
+    
+    :param output_type: A Py4J type of a return object (e.g., MAP_TYPE, BOOLEAN_TYPE).
+    :param converter: A function that takes an object_id and a gateway_client as parameter and that 
+                      returns a Python object (like a `bool` or a `JavaObject` instance). 
+                      
+    """
     global OUTPUT_CONVERTER
     OUTPUT_CONVERTER[output_type] = converter
     
 def register_input_converter(converter):
+    """Registers an input converter to the list of global input converters.
+    
+    When initialized with `auto_convert=True`, a :class:`JavaGateway <py4j.java_gateway.JavaGateway>` 
+    will use the input converters on any parameter that is not a 
+    :class:`JavaObject <py4j.java_gateway.JavaObject>` or `basestring` instance.
+    
+    :param converter: A converter that declares the methods `can_convert(object)` and `convert(object,gateway_client)`.
+    
+    """
     global INPUT_CONVERTER
     INPUT_CONVERTER.append(converter)
 

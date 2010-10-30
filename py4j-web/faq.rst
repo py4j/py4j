@@ -8,11 +8,13 @@ Frequently Asked Questions
 How to turn logging on/off?
 ---------------------------
 
-Logging is turned off by default. In Java, simply call ``GatewayServer.turnLoggingOn()`` or
-``GatewayServer.turnLoggingOff()``. Py4J-java uses the ``java.util.logging`` framework. To get fined-grained control
-over the logging behavior, just obtain a Logger instance by calling ``Logger.getLogger("py4j")``. You can also look at
-the `Java Logging Overview <http://java.sun.com/javase/6/docs/technotes/guides/logging/overview.html>`_ for more
-information on this framework.
+Logging is turned off by default. In Java, simply call
+``GatewayServer.turnLoggingOn()`` or ``GatewayServer.turnLoggingOff()``.
+Py4J-java uses the ``java.util.logging`` framework. To get fined-grained
+control over the logging behavior, just obtain a Logger instance by calling
+``Logger.getLogger("py4j")``. You can also look at the `Java Logging Overview
+<http://java.sun.com/javase/6/docs/technotes/guides/logging/overview.html>`_
+for more information on this framework.
 
 In Python, logging can be enabled this way:
 
@@ -32,7 +34,9 @@ In Python, logging can be enabled this way:
 How to call a constructor?
 --------------------------
 
-Use the ``jvm`` member of a gateway followed by the class's fully qualified name:
+Use the ``jvm`` member of a gateway followed by the class's fully qualified
+name. See :ref:`JVM Views <jvm_views>` to learn how to import packages and avoid
+typing the fully qualified name of classes:
 
 ::
 
@@ -43,13 +47,13 @@ Use the ``jvm`` member of a gateway followed by the class's fully qualified name
 How to call a static method?
 ----------------------------
 
-Use the ``jvm`` member of a gateway followed by the fully qualified name of the method's class. Do the same for static
-fields.
+Use the ``jvm`` member of a gateway followed by the fully qualified name of the
+method's class. Do the same for static fields.
 
 ::
 
   >>> gateway = JavaGateway()
-  >>> timestamp = gateway.jvm.java.lang.System.currentTimeMillis()
+  >>> timestamp = gateway.jvm.System.currentTimeMillis() # equivalent to jvm.java.lang.System...
 
 
 How to access a field?
@@ -62,7 +66,8 @@ Use the :func:`get_field <py4j.java_gateway.get_field>` function:
   >>> field_value = py4j.java_gateway.get_field(object,'public_field')
   
   
-Or you can also set the :ref:`auto_field <api_javagateway>` parameter to `True` when you create the gateway:
+Or you can also set the :ref:`auto_field <api_javagateway>` parameter to `True`
+when you create the gateway:
 
 ::
 
@@ -79,7 +84,7 @@ Use the :func:`new_array <py4j.java_gateway.JavaGateway.new_array>` function:
 ::
 
    >>> gateway = JavaGateway()
-   >>> string_class = gateway.jvm.java.lang.String
+   >>> string_class = gateway.jvm.String
    >>> string_array = gateway.new_array(string_class, 3, 5)
    >>> string_array[2][4] = 'Hello World'
    >>> string_array[2][4]
@@ -95,22 +100,27 @@ Use the :func:`new_array <py4j.java_gateway.JavaGateway.new_array>` function:
 What ports are used by Py4J?
 ----------------------------
 
-Py4J by default uses the TCP port 25333 to communicate from Python to Java and TCP port 25334 to communicate from Java
-to Python. It also uses TCP port 25332 for a test echo server (only used by unit tests).
+Py4J by default uses the TCP port 25333 to communicate from Python to Java and
+TCP port 25334 to communicate from Java to Python. It also uses TCP port 25332
+for a test echo server (only used by unit tests).
 
-These ports can be customized when creating a :class:`JavaGateway <py4j.java_gateway.JavaGateway>` on the Python side
-and a GatewayServer on the Java side.
+These ports can be customized when creating a :class:`JavaGateway
+<py4j.java_gateway.JavaGateway>` on the Python side and a GatewayServer on the
+Java side.
 
 Is Py4J thread-safe?
 --------------------
 
-The Java component of Py4J is thread-safe, but multiple threads could access the same entry point. Each gateway
-connection is executed in is own thread (e.g., each time a Python thread calls a Java method) so if multiple Python
-threads/processes/programs are connected to the same gateway, i.e., the same address and the same port, multiple threads
-may call the entry point's methods concurrently.
+The Java component of Py4J is thread-safe, but multiple threads could access
+the same entry point. Each gateway connection is executed in is own thread
+(e.g., each time a Python thread calls a Java method) so if multiple Python
+threads/processes/programs are connected to the same gateway, i.e., the same
+address and the same port, multiple threads may call the entry point's methods
+concurrently.
 
-In the following example, two threads are accessing the same entry point. If `gateway1` and `gateway2` were created in 
-separate processes, `method1` would be accessed concurrently.
+In the following example, two threads are accessing the same entry point. If
+`gateway1` and `gateway2` were created in separate processes, `method1` would
+be accessed concurrently.
 
 ::
   
@@ -122,18 +132,38 @@ separate processes, `method1` would be accessed concurrently.
   gateway2.entry_point.method1() # Thread Two is calling method1
 
 
-The Python component of Py4J is also thread-safe, except the :func:`close <py4j.java_gateway.CommChannelFactory.close>`
-function of a :class:`CommChannelFactory <py4j.java_gateway.CommChannelFactory>`, which must not be accessed
-concurrently with other methods to ensure that all communication channels are closed. This is a trade-off to avoid
-accessing a lock every time a Java method is called on the Python side. This will only be a problem if attempting to
-shut down or close a JavaGateway while calling Java methods on the Python side.
+The Python component of Py4J is also thread-safe, except the :func:`close
+<py4j.java_gateway.CommChannelFactory.close>` function of a
+:class:`CommChannelFactory <py4j.java_gateway.CommChannelFactory>`, which must
+not be accessed concurrently with other methods to ensure that all
+communication channels are closed. This is a trade-off to avoid accessing a
+lock every time a Java method is called on the Python side. This will only be a
+problem if attempting to shut down or close a JavaGateway while calling Java
+methods on the Python side.
 
 See :ref:`Py4J Threading Model <adv_threading>` for more details.
+
+How can I use Py4J with Eclipse?
+--------------------------------
+
+Because each Eclipse plug-in has its own class loader, a `GatewayServer`
+instance started in one plug-in won't have access to the other plug-ins **by
+default**. You can work around this limitation by adding this line to the
+manifest of the plug-in where the GatewayServer resides: 
+
+``Eclipse-BuddyPolicy:global`` 
+
+You can also use the Py4J Eclipse features that starts a default
+`GatewayServer` and that allows Python clients to refer to any classes declared
+in any plug-in. 
+
+See :ref:`Py4J and Eclipse <eclipse_features>` for more details.
 
 I found a bug, how do I report it?
 ----------------------------------
 
-Please report bugs on our `issue tracker <https://sourceforge.net/apps/trac/py4j/newticket>`_.
+Please report bugs on our `issue tracker
+<https://sourceforge.net/apps/trac/py4j/newticket>`_.
 
 How can I contribute?
 ---------------------

@@ -4,8 +4,9 @@ Advanced Topics
 Accessing Java collections and arrays from Python
 -------------------------------------------------
 
-Java collections are automatically mapped to Python collections so that standard Python operations such as slicing work
-on Java collections. Here is the mapping of the collection:
+Java collections are automatically mapped to Python collections so that
+standard Python operations such as slicing work on Java collections. Here is
+the mapping of the collection:
 
 =================== ====================== ==========================================================
 Java Collection     Python Collection      Py4J Implementation
@@ -20,8 +21,9 @@ java.util.Iterator  *Iterator Protocol*    :class:`JavaIterator <py4j.java_colle
 .. [#arraynote] Py4J allows elements to be modified (like a real Java array), which is not the case of true 
    immutable sequences like tuples.
 
-Java methods are still accessible when using the Python version of a Java collection. Here are some usage examples for
-each collection class. These examples do not cover the entire API.
+Java methods are still accessible when using the Python version of a Java
+collection. Here are some usage examples for each collection class. These
+examples do not cover the entire API.
 
 Array
 ^^^^^
@@ -127,9 +129,11 @@ Map
 Implementing Java interfaces from Python (callback)
 ---------------------------------------------------
 
-Since version 0.3, Py4J allows Python classes to implement Java interfaces so that the JVM can call back Python objects. 
-In the following example, you will play the role of a Mad Scientist :sup:`TM` and you will create a Java program that 
-invokes an operator with two or three random integers. The operators will be implemented by a Python class.
+Since version 0.3, Py4J allows Python classes to implement Java interfaces so
+that the JVM can call back Python objects.  In the following example, you will
+play the role of a Mad Scientist :sup:`TM` and you will create a Java program
+that invokes an operator with two or three random integers. The operators will
+be implemented by a Python class.
 
 Here is the code of the main Java program:
 
@@ -175,9 +179,11 @@ Here is the code of the main Java program:
   }
 
 
-The program has a main method starting a `GatewayServer`. The entry point, a `OperatorExample` instance, offers two
-methods that take as a parameter an `Operator` instance. Each method calls the operator with two or three random 
-integers and save the integers and the result in a list. Here is the declaration of `Operator`:
+The program has a main method starting a `GatewayServer`. The entry point, a
+`OperatorExample` instance, offers two methods that take as a parameter an
+`Operator` instance. Each method calls the operator with two or three random
+integers and save the integers and the result in a list. Here is the
+declaration of `Operator`:
 
 
 .. code-block:: java
@@ -193,8 +199,8 @@ integers and save the integers and the result in a list. Here is the declaration
   }
 
 
-Now, because the Mad Scientist :sup:`TM` is, well, mad, he wants to define an Operator in Python. Here is his little Python 
-program:
+Now, because the Mad Scientist :sup:`TM` is, well, mad, he wants to define an
+Operator in Python. Here is his little Python program:
 
 ::
 
@@ -220,22 +226,30 @@ program:
       gateway.shutdown()
 
 
-The `Addition` class is a standard Python class that has one method, `doOperation`. The signature of the method contains 
-two parameters and an optional third parameter: this maps with the two overloaded methods in the `Operator` Java 
-interface. Each method implementing an overloaded method in a Java interface should accept all possible combinations of 
-parameters, otherwise, an exception will be thrown if the Java program tries to call an unsupported method.
+The `Addition` class is a standard Python class that has one method,
+`doOperation`. The signature of the method contains two parameters and an
+optional third parameter: this maps with the two overloaded methods in the
+`Operator` Java interface. Each method implementing an overloaded method in a
+Java interface should accept all possible combinations of parameters,
+otherwise, an exception will be thrown if the Java program tries to call an
+unsupported method.
 
-Py4J recognizes that the `Addition` class implements a Java interface because it declares an internal class called 
-`Java`, which has a member named `implements`. This member is a list of string representing the fully qualified name of 
-implemented Java interfaces.
+Py4J recognizes that the `Addition` class implements a Java interface because
+it declares an internal class called `Java`, which has a member named
+`implements`. This member is a list of string representing the fully qualified
+name of implemented Java interfaces.
 
-Finally, the Python program contains a main method that starts a gateway, initializes an Addition operator and sends it
-to the `OperatorExample` instance on the Java side. Py4J takes care of creating the necessary proxies: the `doOperation`
-method of the `Addition` class is called in the Java VM, but the method is executed in the Python interpreter.
+Finally, the Python program contains a main method that starts a gateway,
+initializes an Addition operator and sends it to the `OperatorExample` instance
+on the Java side. Py4J takes care of creating the necessary proxies: the
+`doOperation` method of the `Addition` class is called in the Java VM, but the
+method is executed in the Python interpreter.
 
-Note that to enable the Python program to receive callbacks, the JavaGateway instance must be created with
-`start_callback_server=True`. Otherwise, the callback server must be started manually by calling 
-:func:`restart_callback_server <py4j.java_gateway.JavaGateway.restart_callback_server>`
+Note that to enable the Python program to receive callbacks, the JavaGateway
+instance must be created with `start_callback_server=True`. Otherwise, the
+callback server must be started manually by calling
+:func:`restart_callback_server
+<py4j.java_gateway.JavaGateway.restart_callback_server>`
 
 .. warning:: 
    
@@ -245,15 +259,92 @@ Note that to enable the Python program to receive callbacks, the JavaGateway ins
    As a workaround, a subclass of the abstract class could be created on the Java side. The methods of the subclass 
    would call the methods of a custom interface that a Python class could implement.
 
+.. _collections_conversion:
+
+Converting Python collections to Java Collections
+-------------------------------------------------
+
+If you try to pass a Python collection to a method that expects a Java
+collection, an error will be thrown:
+
+::
+
+  >>> my_list = [3,2,1]
+  >>> gateway.jvm.java.util.Collections.sort(my_list)
+  Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "py4j/java_gateway.py", line 347, in __call__
+      args_command = ''.join([get_command_part(arg, self.pool) for arg in new_args])
+    File "py4j/protocol.py", line 195, in get_command_part
+      command_part = REFERENCE_TYPE + parameter._get_object_id()
+  AttributeError: 'list' object has no attribute '_get_object_id'
+
+
+You can explicitly convert Python collections using one of the following
+converter located in the `py4j.java_collections` module: `SetConverter`,
+`MapConverter`, `ListConverter`.
+
+::
+
+  >>> from py4j.java_collections import SetConverter, MapConverter, ListConverter
+  >>> java_list = ListConverter().convert(my_list, gateway._gateway_client)
+  >>> gateway.jvm.java.util.Collections.sort(java_list)
+  >>> java_list
+  [1, 2, 3]
+  >>> my_list
+  [3, 2, 1]
+
+Note that the Python list is totally disconnected from the Java list. The Java
+List is actually a copy. You can also ask Py4J to automatically convert Python
+collections to Java Collections when calling a Java method: just set
+``auto_convert=True`` when creating a `JavaGateway`:
+
+::
+
+  >>> gateway = JavaGateway(auto_convert=True)
+  >>> gateway.jvm.java.util.Collections.sort(my_list)
+  >>> my_list
+  [3, 2, 1]
+  >>> gateway.jvm.java.util.Collections.frequency(my_list,2)
+  1
+
+Again, note that my_list is not sorted because when calling
+`Collections.sort()`, Py4J only makes a copy of the Python list. Still, a copy
+can be useful if you do not expect the list to be modified by the Java method
+like in the call to ``frequency()``. 
+
+**Order of Automatic Conversion**
+
+When ``auto_convert=True``, Py4J will attempt to automatically convert Python
+objects that are not an instance of ``basestring`` or ``JavaObject``. By
+default, Py4J performs the following checks and conversions:
+
+1. If the Python object is an instance of `collections.Set`, it is converted to
+   a `HashSet`.
+2. If the object has the methods `keys()` and `__getitem__`, it is converted to
+   a `HashMap`
+3. If the object is iterable, it is converted to an `ArrayList`.
+4. Otherwise, standard Py4J primitive type conversion is attempted (e.g., bool to boolean).
+
+It is possible to add custom converters by calling
+:func:`register_input_converter()
+<py4j.protocol.register_input_converter>`. Look at the source code of the
+default converters for an example. Note that automatic conversion makes calling
+Java methods slightly less efficient because in the worst case, Py4J needs to
+go through all registered converters for all parameters. This is why automatic
+conversion is disabled by default.
+
+
 .. _jvm_views:
 
 Importing packages with JVM Views
 ---------------------------------
 
 Py4J allows you to import packages so that you don't have to type the fully
-qualified name of the classes you want to instantiate. 
+qualified name of the classes you want to instantiate. The `java.lang` package
+is always automatically imported.
 
-..
+::
 
   >>> from py4j.java_gateway import JavaGateway
   >>> gateway = JavaGateway()
@@ -261,86 +352,187 @@ qualified name of the classes you want to instantiate.
   >>> java_import(gateway.jvm,'java.util.*')
   >>> jList = gateway.jvm.ArrayList()
   >>> jMap = gateway.jvm.HashMap()
+  >>> gateway.jvm.java.lang.String("a")
+  u'a'
+  >>> gateway.jvm.String("a")
+  u'a'
 
 As opposed to Java where import statements do not cross compilation units (java
 source files), the jvm instance can be shared across multiple Python modules: in
 other words, import statements are global.
 
-The recommended way to use import statements is to use one `JVMView
+The recommended way to use import statements is to use one :class:`JVMView
 <py4j.java_gateway.JVMView>` instance per Python module. Here is an example on
 how to create and use a `JVMView`:
 
-..  
+::  
   
   >>> module1_view = gateway.new_jvm_view()
   >>> jList2 = module1_view.ArrayList()
   Py4JError: Trying to call a package.
+  ...
   >>> java_import(module1_view,'java.util.ArrayList')
   >>> jList2 = module1_view.ArrayList()
   >>> jMap2 = module1_view.HashMap()
   Py4JError: Trying to call a package.
+  ...
+
+
+.. note::
+  In fact, the `gateway.jvm` member is also an instance of :class:`JVMView
+  <py4j.java_gateway.JVMView>`. It is automatically created when a gateway is
+  initialized.
+
+.. _eclipse_features:
+
+Using Py4J with Eclipse
+-----------------------
+
+Py4J can be used with Eclipse like any normal Java program. A plug-in needs to
+instantiate and start a GatewayServer. By default, the GatewayServer will only
+be able to access the classes declared in the plug-in or one of its
+dependencies. 
+
+Unless they have specific needs, users are encouraged to use the Eclipse
+plug-ins provided by Py4J available on the following update site:
+
+``http://py4j.sourceforge.net/py4j_eclipse`` 
+
+The first plug-in, `net.sf.py4j`, provides all the Py4J Java classes such as
+`GatewayServer`. The plug-in comes with the source and the javadoc. The plug-in
+also declares a `global` buddy policy which allows the `GatewayServer` to
+access any class declared in any plug-in loaded with Eclipse.
+
+The second plug-in, `net.sf.py4j.defaultserver`, instantiates a GatewayServer
+and starts it as soon as Eclipse is started (no lazy loading). The ports used
+by the default server can be changed in the Py4J Preferences page. The server
+is also accessible at runtime:
+
+
+.. code-block:: java
+
+  import net.sf.py4j.defaultserver.DefaultServerActivator;
+
+  ...
+
+  GatewayServer server = DefaultServerActivator.getDefault().getServer();
+
+
+Here is a short example of what you could do with Py4J and Eclipse:
+
+::
+
+  >>> from py4j.java_gateway import JavaGateway, java_import
+  >>> gateway = JavaGateway()
+  >>> jvm = gateway.jvm
+  >>> java_import(jvm, 'org.eclipse.core.resources.*')
+  >>> workspace_root = jvm.ResourcesPlugin.getWorkspace().getRoot()
+  >>> gateway.help(workspace_root,'*Projects*')
+  Help on class WorkspaceRoot in package org.eclipse.core.internal.resources:
+
+  WorkspaceRoot extends org.eclipse.core.internal.resources.Container implements org.eclipse.core.resources.IWorkspaceRoot {
+  |  
+  |  Methods defined here:
+  |  
+  |  getProjects() : IProject[]
+  |  
+  |  getProjects(int) : IProject[]
+  |  
+  |  ------------------------------------------------------------
+  |  Fields defined here:
+  |  
+  |  ------------------------------------------------------------
+  |  Internal classes defined here:
+  |  
+  }
+  >>> project_names = [project.getName() for project in workspace_root.getProjects()]
+  >>> print(project_names)
+  [u'test2', u'testplugin', u'testplugin2']
+
+Support for Eclipse was introduced in Py4J 0.5 and more features will be added
+in the future.
+
 
 .. _adv_memory:
 
-Py4J memory model
+Py4J Memory model
 -----------------
 
 **Java objects sent to the Python side**
 
-Every time a Java object is sent to the Python side, a reference to the object is kept on the Java side (in the Gateway
-class). Once the object is garbage collected on the Python VM (reference count == 0), the reference is removed on the
-Java VM: if this was the last reference, the object will likely be garbage collected too. When a gateway is shut down,
-the remaining references are also removed on the Java VM.
+Every time a Java object is sent to the Python side, a reference to the object
+is kept on the Java side (in the Gateway class). Once the object is garbage
+collected on the Python VM (reference count == 0), the reference is removed on
+the Java VM: if this was the last reference, the object will likely be garbage
+collected too. When a gateway is shut down, the remaining references are also
+removed on the Java VM.
 
-Because Java objects on the Python side are involved in a circular reference (:class:`JavaObject
-<py4j.java_gateway.JavaObject>` and :class:`JavaMember <py4j.java_gateway.JavaMember>` reference each other), these
-objects are not immediately garbage collected once the last reference to the object is removed (but they are guaranteed
-to be eventually collected **if the Python garbage collector runs before the Python program exits**).
+Because Java objects on the Python side are involved in a circular reference
+(:class:`JavaObject <py4j.java_gateway.JavaObject>` and :class:`JavaMember
+<py4j.java_gateway.JavaMember>` reference each other), these objects are not
+immediately garbage collected once the last reference to the object is removed
+(but they are guaranteed to be eventually collected **if the Python garbage
+collector runs before the Python program exits**).
 
-In doubt, users can always call the :func:`detach <py4j.java_gateway.JavaGateway.detach>` function on the Python
-gateway to explicitly delete a reference on the Java side. A call to `gc.collect()` also usually works.
+In doubt, users can always call the :func:`detach
+<py4j.java_gateway.JavaGateway.detach>` function on the Python gateway to
+explicitly delete a reference on the Java side. A call to `gc.collect()` also
+usually works.
 
 **Python objects sent to the Java side (callback)**
 
-Every time a Python object is sent to the Java side, a reference to this object is kept on the Python side (by a
-:class:`PythonProxyPool <py4j.java_callback.PythonProxyPool>`). Once a python object is garbage collected on the Java
-side, a message is sent to the Python side to remove the reference to the Python object. When a gateway is shut down,
-the remaining references are removed from the Python VM.
+Every time a Python object is sent to the Java side, a reference to this object
+is kept on the Python side (by a :class:`PythonProxyPool
+<py4j.java_callback.PythonProxyPool>`). Once a python object is garbage
+collected on the Java side, a message is sent to the Python side to remove the
+reference to the Python object. When a gateway is shut down, the remaining
+references are removed from the Python VM.
 
-Unfortunately, there is no guarantee that the garbage collection message will ever be sent to the Python side (it
-usually works on Sun/Oracle VM). It might thus be necessary to manually remove the reference to the Python objects. Some
-helper functions will be developed in the future, but it is unlikely that garbage collection will be guarenteed because
-of the specifications of Java finalizers (which are surprisingly worse than Python finalizer strategies).
+Unfortunately, there is no guarantee that the garbage collection message will
+ever be sent to the Python side (it usually works on Sun/Oracle VM). It might
+thus be necessary to manually remove the reference to the Python objects. Some
+helper functions will be developed in the future, but it is unlikely that
+garbage collection will be guarenteed because of the specifications of Java
+finalizers (which are surprisingly worse than Python finalizer strategies).
 
 .. _adv_threading:
 
 Py4J Threading and connection model
 -----------------------------------
 
-Py4J allocates one thread per connection. The design of Py4j is symmetrical on the Python and Java sides. A Python
-GatewayClient communicates with the Java GatewayServer and is then associated with a GatewayConnection. A Java
-CallbackClient (for callbacks) communicates with the Python CallbackServer and is then associated with a
-CallbackConnection. A connection runs in the calling thread.
+Py4J allocates one thread per connection. The design of Py4j is symmetrical on
+the Python and Java sides. A Python GatewayClient communicates with the Java
+GatewayServer and is then associated with a GatewayConnection. A Java
+CallbackClient (for callbacks) communicates with the Python CallbackServer and
+is then associated with a CallbackConnection. A connection runs in the calling
+thread.
 
 And now, for the details:
 
 **On the Python side**
 
-Py4J explicitly creates a thread to run the :class:`CallbackServer<py4j.java_callback.CallbackServer`, which accepts
-callback connection requests,  and a thread for each callback connection request. As long as there is no concurrent
-callback on the Java side, the same callback connection/thread will be used.
+Py4J explicitly creates a thread to run the
+:class:`CallbackServer<py4j.java_callback.CallbackServer`, which accepts
+callback connection requests,  and a thread for each callback connection
+request. As long as there is no concurrent callback on the Java side, the same
+callback connection/thread will be used.
 
-Py4J on the Python side does not explicitly create a thread to call Java methods. When a method is called, a
-connection to the Java GatewayServer is established in the calling thread. If multiple threads
-are calling Java methods concurrently, Py4J will ensure that each thread has its own connection by requesting more 
-connections.
+Py4J on the Python side does not explicitly create a thread to call Java
+methods. When a method is called, a connection to the Java GatewayServer is
+established in the calling thread. If multiple threads are calling Java methods
+concurrently, Py4J will ensure that each thread has its own connection by
+requesting more connections.
 
 **On the Java side**
 
-Py4J explicitly creates a thread to run the GatewayServer, which accepts connection requests (from a GatewayClient), 
-and a thread for each connection request. As long as there is no concurrent call on the Python side, the same
+Py4J explicitly creates a thread to run the GatewayServer, which accepts
+connection requests (from a GatewayClient), and a thread for each connection
+request. As long as there is no concurrent call on the Python side, the same
 connection/thread will be used.
 
-Py4J on the Java side does not explicitly create a thread to make a callback to a Python object. When a callback is
-called, a connection to the CallbackServer is established in the calling thread. If multiple
-threads are calling Python callbacks concurrently, Py4J will ensure that each thread has its own CallbackConnection.
+Py4J on the Java side does not explicitly create a thread to make a callback to
+a Python object. When a callback is called, a connection to the CallbackServer
+is established in the calling thread. If multiple threads are calling Python
+callbacks concurrently, Py4J will ensure that each thread has its own
+CallbackConnection.
+
