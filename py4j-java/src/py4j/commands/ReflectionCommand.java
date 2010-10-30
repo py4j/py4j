@@ -151,8 +151,6 @@ public class ReflectionCommand extends AbstractCommand {
 	private String getUnknownMember(BufferedReader reader) throws IOException {
 		String fqn = reader.readLine();
 		String jvmId = reader.readLine();
-		System.out.println(fqn);
-		System.out.println(jvmId);
 		JVMView view = (JVMView)Protocol.getObject(jvmId, this.gateway);
 		reader.readLine();
 		String returnCommand = null;
