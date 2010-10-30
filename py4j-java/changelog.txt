@@ -1,0 +1,3 @@
+Temporary changelog used to keep track of major user-visible changes.
+
+0.2
