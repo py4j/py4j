@@ -9,7 +9,7 @@ from paver.setuputils import setup, find_package_data
 
 DOC_DIR = 'doc'
 DIST_DIR = 'dist'
-VERSION = '0.4'
+VERSION = '0.5'
 RELEASE = 'py4j-' + VERSION
 JAR_FILE = 'py4j' + VERSION + '.jar'
 
@@ -20,7 +20,13 @@ setup(
     include_package_data = True,
     package_data = {'':['*.jar']},
     exclude_package_data = {'':['release_process.txt']},
-    version="0.4",
+    version="0.5",
+    description='Enables Python programs to dynamically access arbitrary Java objects',
+    long_description='Py4J enables Python programs running in a Python interpreter to dynamically \
+                    access Java objects in a Java Virtual Machine. Methods are called as if the Java \
+                    objects resided in the Python interpreter and Java collections can be accessed \
+                    through standard Python collection methods. Py4J also enables Java programs to \
+                    call back Python objects.',
     url="http://py4j.sourceforge.net/",
     author="Barthelemy Dagenais",
     author_email="barthe@users.sourceforge.net",
