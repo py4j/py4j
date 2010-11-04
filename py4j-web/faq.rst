@@ -163,7 +163,7 @@ I found a bug, how do I report it?
 ----------------------------------
 
 Please report bugs on our `issue tracker
-<https://sourceforge.net/apps/trac/py4j/newticket>`_.
+<https://github.com/bartdag/py4j/issues>`_.
 
 How can I contribute?
 ---------------------
@@ -171,18 +171,16 @@ How can I contribute?
 There are many ways to contribute to Py4J:
 
 * **Found a bug or have a feature request?** Fill a detailed `issue report
-  <https://sourceforge.net/apps/trac/py4j/newticket>`_.
-* **Have a tip or trick to share with fellow Py4J users?** Add a `how to
-  <https://sourceforge.net/apps/trac/py4j/wiki/HowTos>`_ on the wiki.
+  <https://github.com/bartdag/py4j/issues>`_.
 * **Found a typo or have a better way to clarify the documentation?** Write a comment at the bottom of documentation
   the 
   page, send a patch on the `mailing list <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_, or 
-  fill a `bug report <https://sourceforge.net/apps/trac/py4j/newticket>`_. The source of each documentation page is 
+  fill a `bug report <https://github.com/bartdag/py4j/issues>`_. The source of each documentation page is 
   accessible in the sidebar. We use `ReStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`_
 * **Good at writing Python or Java?** Good news, we could use some help, especially in the Python department! 
   You can either contribute a code patch through the `mailing list
   <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_ by adding a feature or just addressing an
-  `open issue <https://sourceforge.net/apps/trac/py4j/report/1>`_.
+  `open issue <https://github.com/bartdag/py4j/issues>`_.
 * **Feeling artsy?** We need a logo. Hop on the `mailing list
   <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_.
 

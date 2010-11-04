@@ -18,8 +18,8 @@ Py4J 0.5
   features are available on the new Py4J Eclipse update site:
   ``http://py4j.sourceforge.net/py4j_eclipse`` 
 - Redesigned the module decomposition of Py4J: there are no more mandatory circular dependencies among modules.
-- `Trac 0.5 milestone
-  <https://sourceforge.net/apps/trac/py4j/milestone/0.5%20-%20Polishing>`_
+- `github 0.5 milestone
+  <https://github.com/bartdag/py4j/issues/labels/v0.5>`_
 
 Py4J 0.4
 --------
@@ -29,7 +29,7 @@ Py4J 0.4
 - Changed **interfaces** member in Callback classes to **implements**.
 - Internal refactoring to adopt clearer terminology and make Py4J protocol extensible.
 - Many bug fixes: most are related to the callback feature.
-- `Trac 0.4 milestone <http://sourceforge.net/apps/trac/py4j/milestone/0.4%20-%20Ease%20of%20Use>`_
+- `github 0.4 milestone <https://github.com/bartdag/py4j/issues/labels/v0.4>`_
 
 Py4J 0.3
 --------
@@ -38,7 +38,7 @@ Py4J 0.3
 - Added support for callbacks: Java objects can now call back Python objects.
 - Completely redesigned threading and connection model of Py4J to allow multiple threads and callbacks on both side.
 - Refactored the memory management to ensure best effort garbage collection.
-- `Trac 0.3 milestone <http://sourceforge.net/apps/trac/py4j/milestone/0.3>`_
+- `github 0.3 milestone <https://github.com/bartdag/py4j/issues/labels/v0.3>`_
 
 Py4J 0.2
 --------
@@ -52,7 +52,7 @@ Py4J 0.2
 - Complete rewrite of the reflection engine on the Java side for more flexibility.
 - Improved memory model: no more memory leak caused by Py4J.
 - New concurrency model: Py4J is now thread-safe.
-- `Trac 0.2 milestone <http://sourceforge.net/apps/trac/py4j/milestone/0.2>`_
+- `github 0.2 milestone <https://github.com/bartdag/py4j/issues/labels/v0.2>`_
 
 Py4J 0.1
 --------
@@ -63,4 +63,4 @@ Py4J 0.1
 - Field access, constructors, and static classes are **NOT** accessible yet.
 - Dictionary and Set are only accessible through the Java Map and Set interface for now.
 - Arrays can be referenced, but individual items cannot be accessed yet.
-- `Trac 0.1 milestone <http://sourceforge.net/apps/trac/py4j/milestone/0.1>`_
+- `github 0.1 milestone <https://github.com/bartdag/py4j/issues/labels/v0.1>`_
