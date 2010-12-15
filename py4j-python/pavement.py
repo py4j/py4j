@@ -6,21 +6,22 @@ Created on Dec 19, 2009
 from paver.easy import *
 import paver.doctools
 from paver.setuputils import setup, find_package_data
+import os.path
 
 DOC_DIR = 'doc'
 DIST_DIR = 'dist'
 VERSION = '0.5'
 RELEASE = 'py4j-' + VERSION
 JAR_FILE = 'py4j' + VERSION + '.jar'
+JAR_FILE_PATH = os.path.join('py4j-java',JAR_FILE)
 
 setup(
     name="Py4J",
-    packages=['','py4j', 'py4j.tests'],
+    packages=['py4j', 'py4j.tests'],
     package_dir={'':'src'},
     include_package_data = True,
-    package_data = {'':['*.jar']},
-    exclude_package_data = {'':['release_process.txt']},
-    version="0.5",
+    data_files=[('share/py4j',[JAR_FILE_PATH])],
+    version=VERSION,
     description='Enables Python programs to dynamically access arbitrary Java objects',
     long_description='Py4J enables Python programs running in a Python interpreter to dynamically \
                     access Java objects in a Java Virtual Machine. Methods are called as if the Java \

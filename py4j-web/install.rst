@@ -34,11 +34,15 @@ Using easy_install
 1. Run ``easy_install Py4J`` (don't forget to prefix with sudo if you install
    Py4J system-wide on a \*NIX operating system).  
 2. Py4J should now be in your PYTHONPATH.
-3. The Py4J Java library is located in the egg file under the name
-   ``py4j0.x.jar``. Egg files are usually located in the dist-packages or
-   site-packages of your python distribution. For example, on a standard Ubuntu
-   installation, it would be located under
-   ``/usr/local/lib/python2.x/dist-packages/Py4J-0.x-py2.x.egg``.
+3. The Py4J Java library is located in ``share/py4j/py4j0.x.jar``. The exact
+   location depends on the platform and the installation type. Some likely
+   locations are:
+   
+   1. ``/usr/share/py4j/py4j0.x.jar`` for system-wide install on Linux.
+   2. ``{virtual_env_dir}/share/py4j/py4j0.x.jar`` for installation in a
+      virtual environment.
+   3. ``C:\python27\share\py4j\py4j0.x.jar`` for system-wide install on
+      Windows.
 
 Using an official release
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -70,7 +74,7 @@ Briefly, you need:
 3. `Sphinx <http://sphinx.pocoo.org/>`_ to build the documentation. Just
    execute the command line ``make html``  in the
    py4j-web project.
-4. `Paver <http://www.blueskyonmars.com/projects/paver/>`_ to build the Py4J
+4. `Paver <http://paver.github.com/paver/>`_ to build the Py4J
    Python library. Execute the command line ``paver big_release`` in the
    py4j-python directory to create a tar.gz source distribution and an egg
    file. The ``big_release`` target will also create the jar file and the
