@@ -253,11 +253,25 @@ callback server must be started manually by calling
 
 .. warning:: 
    
-   Python classes can only implement Java interfaces. Abstract or concrete classes are not supported because Java does
-   not natively support dynamic proxies for classes. Extending classes may be supported in future releases of Py4J.
+   Python classes can only implement Java interfaces. Abstract or concrete
+   classes are not supported because Java does not natively support dynamic
+   proxies for classes. Extending classes may be supported in future releases
+   of Py4J.
 
-   As a workaround, a subclass of the abstract class could be created on the Java side. The methods of the subclass 
-   would call the methods of a custom interface that a Python class could implement.
+   As a workaround, a subclass of the abstract class could be created on the
+   Java side. The methods of the subclass would call the methods of a custom
+   interface that a Python class could implement.
+
+
+.. warning::
+
+   If you want to implement an interface declared in a class (i.e., an 
+   internal class), you need to prefix the name of the interface with 
+   a dollar sign. For example, if the interface `Operator` is declared
+   in the class `package1.MyClass`, you will have to write:
+
+   `implements = ['package1.MyClass$Operator']`
+
 
 .. _collections_conversion:
 

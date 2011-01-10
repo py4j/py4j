@@ -176,7 +176,7 @@ latex_font_size = '10pt'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'Py4J.tex', u'Py4J Documentation',
-   u'Barthélémy Dagenais', 'manual'),
+   u'Barthélémy Dagenais', 'howto'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

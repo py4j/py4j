@@ -52,6 +52,16 @@ div.body {
     padding: 0.5em 1em 0.5em 1em;
 }
 
+div.banner {
+    margin: 0;
+    padding: 0.75em 0.5em 0.75em 0.5em;
+    text-align: left;
+    background-color: #6A92D4;
+    color: #052C6E;
+    font-size: 2em;
+    font-weight: bold;
+}
+
 div.related {
     font-size: 1.2em;
 	background-color: #FFBB40;
@@ -140,6 +150,11 @@ div.helpbar {
 	text-align: left;
 	padding: 0.2em 1em 0.5em 1em;
 	margin:0;
+}
+
+#disqus_thread {
+    margin: 0;
+    padding: 20px 20px 20px 20px;
 }
 
 div.footer {
