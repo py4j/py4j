@@ -160,15 +160,18 @@ public class GatewayConnection implements Runnable {
 
 	@Override
 	public void run() {
+		boolean executing = false;
 		try {
 			logger.info("Gateway Connection ready to receive messages");
 			String commandLine = null;
 			do {
 				commandLine = reader.readLine();
+				executing = true;
 				logger.info("Received command: " + commandLine);
 				Command command = commands.get(commandLine);
 				if (command != null) {
 					command.execute(commandLine, reader, writer);
+					executing = false;
 				} else {
 					logger.log(Level.WARNING, "Unknown command " + commandLine);
 				}
@@ -176,12 +179,26 @@ public class GatewayConnection implements Runnable {
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
 					"Error occurred while waiting for a command.", e);
+			if (executing && writer != null) {
+				quietSendError(writer, e);
+			}
 		} finally {
 			logger.log(Level.INFO, "Closing connection.");
 			// NetworkUtil.quietlyClose(writer);
 			// NetworkUtil.quietlyClose(reader);
 			NetworkUtil.quietlyClose(socket);
 			gateway.closeConnection();
+		}
+	}
+
+	private void quietSendError(BufferedWriter writer, Throwable exception) {
+		try {
+			String returnCommand = Protocol.getOutputErrorCommand(exception);
+			logger.warning("Trying to return error: " + returnCommand);
+			writer.write(returnCommand);
+			writer.flush();
+		} catch (Exception e) {
+
 		}
 	}
 
