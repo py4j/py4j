@@ -34,6 +34,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -102,6 +103,8 @@ public class GatewayServer implements Runnable {
 
 	private final List<Class<? extends Command>> customCommands;
 
+	private final List<GatewayServerListener> listeners;
+
 	private ServerSocket sSocket;
 
 	static {
@@ -165,9 +168,12 @@ public class GatewayServer implements Runnable {
 		this.gateway = new Gateway(entryPoint, cbClient);
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 		this.customCommands = customCommands;
+		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 	}
-	
-	public GatewayServer(Object entryPoint, int port, int connectTimeout, int readTimeout, List<Class<? extends Command>> customCommands, CallbackClient cbClient) {
+
+	public GatewayServer(Object entryPoint, int port, int connectTimeout,
+			int readTimeout, List<Class<? extends Command>> customCommands,
+			CallbackClient cbClient) {
 		super();
 		this.port = port;
 		this.connectTimeout = connectTimeout;
@@ -177,6 +183,7 @@ public class GatewayServer implements Runnable {
 		this.gateway = new Gateway(entryPoint, cbClient);
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 		this.customCommands = customCommands;
+		this.listeners = new ArrayList<GatewayServerListener>();
 	}
 
 	/**
@@ -204,39 +211,49 @@ public class GatewayServer implements Runnable {
 		this(entryPoint, port, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
 	}
 
+	/**
+	 * <p>Starts the ServerSocket.</p>
+	 * @throws Py4JNetworkException If the port is busy.
+	 */
+	protected void startSocket() throws Py4JNetworkException {
+		try {
+			sSocket = new ServerSocket(port);
+			sSocket.setSoTimeout(connectTimeout);
+		} catch (IOException e) {
+			throw new Py4JNetworkException(e);
+		}
+	}
+
 	@Override
 	public void run() {
 		try {
-			logger.info("Gateway Server Starting");
 			gateway.startup();
-			sSocket = new ServerSocket(port);
-			sSocket.setSoTimeout(connectTimeout);
-
+			fireServerStarted();
 			while (true) {
 				Socket socket = sSocket.accept();
 				processSocket(socket);
 			}
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error while waiting for connection.", e);
+			fireServerError(e);
 		}
-		logger.info("Gateway Server Stopping");
+		fireServerStopped();
 	}
 
 	protected Object createConnection(Gateway gateway, Socket socket)
 			throws IOException {
-		return new GatewayConnection(gateway, socket, customCommands);
+		return new GatewayConnection(gateway, socket, customCommands, listeners);
 	}
 
 	private void processSocket(Socket socket) {
 		try {
-			logger.info("Gateway Server accepted a connection");
+			fireConnectionStarted();
 			connections.add(socket);
 			socket.setSoTimeout(readTimeout);
 			createConnection(gateway, socket);
 		} catch (Exception e) {
 			// Error while processing a connection should not be prevent the
 			// gateway server from accepting new connections.
-			logger.log(Level.WARNING, "Error while processing a connection.", e);
+			fireConnectionError(e);
 		}
 	}
 
@@ -250,8 +267,12 @@ public class GatewayServer implements Runnable {
 	 *            thread and this call is non-blocking. If False, the
 	 *            GatewayServer accepts connection in this thread and the call
 	 *            is blocking (until the Gateway is shutdown by another thread).
+	 * @throws Py4JNetworkException
+	 *             If the server socket cannot start.
 	 */
 	public void start(boolean fork) {
+		startSocket();
+
 		if (fork) {
 			Thread t = new Thread(this);
 			t.start();
@@ -276,7 +297,7 @@ public class GatewayServer implements Runnable {
 	 * </p>
 	 */
 	public void shutdown() {
-		logger.info("Shutting down Gateway");
+		fireServerPreShutdown();
 		// TODO Check that all connections are indeed closed!
 		NetworkUtil.quietlyClose(sSocket);
 		for (Socket socket : connections) {
@@ -285,6 +306,7 @@ public class GatewayServer implements Runnable {
 		connections.clear();
 		gateway.shutdown();
 		cbClient.shutdown();
+		fireServerPostShutdown();
 	}
 
 	public int getConnectTimeout() {
@@ -301,6 +323,93 @@ public class GatewayServer implements Runnable {
 
 	public CallbackClient getCallbackClient() {
 		return cbClient;
+	}
+
+	public void addListener(GatewayServerListener listener) {
+		if (!listeners.contains(listener)) {
+			listeners.add(listener);
+		}
+	}
+
+	public void removeListener(GatewayServerListener listener) {
+		listeners.remove(listener);
+	}
+
+	protected void fireServerStarted() {
+		logger.info("Gateway Server Started");
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.serverStarted();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
+	}
+
+	protected void fireServerStopped() {
+		logger.info("Gateway Server Stopped");
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.serverStopped();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
+	}
+
+	protected void fireServerError(Exception e) {
+		logger.log(Level.SEVERE, "Gateway Server Error", e);
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.serverError(e);
+			} catch (Exception ex) {
+				logger.log(Level.SEVERE, "A listener crashed.", ex);
+			}
+		}
+	}
+
+	protected void fireServerPreShutdown() {
+		logger.info("Gateway Server Pre Shutdown");
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.serverPreShutdown();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
+	}
+
+	protected void fireServerPostShutdown() {
+		logger.info("Gateway Server Post Shutdown");
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.serverPostShutdown();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
+	}
+
+	protected void fireConnectionStarted() {
+		logger.info("Connection Started");
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.connectionStarted();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
+	}
+
+	protected void fireConnectionError(Exception e) {
+		logger.log(Level.SEVERE, "Connection Server Error", e);
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.connectionError(e);
+			} catch (Exception ex) {
+				logger.log(Level.SEVERE, "A listener crashed.", ex);
+			}
+		}
 	}
 
 	/**

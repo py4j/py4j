@@ -78,13 +78,13 @@ import py4j.commands.ShutdownGatewayServerCommand;
 public class GatewayConnection implements Runnable {
 
 	private final static List<Class<? extends Command>> baseCommands;
-	private final Gateway gateway;
 	private final Socket socket;
 	private final BufferedWriter writer;
 	private final BufferedReader reader;
 	private final Map<String, Command> commands;
 	private final Logger logger = Logger.getLogger(GatewayConnection.class
 			.getName());
+	private final List<GatewayServerListener> listeners;
 
 	static {
 		baseCommands = new ArrayList<Class<? extends Command>>();
@@ -101,9 +101,8 @@ public class GatewayConnection implements Runnable {
 	}
 
 	public GatewayConnection(Gateway gateway, Socket socket,
-			List<Class<? extends Command>> customCommands) throws IOException {
+			List<Class<? extends Command>> customCommands, List<GatewayServerListener> listeners) throws IOException {
 		super();
-		this.gateway = gateway;
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(
 				socket.getInputStream(), Charset.forName("UTF-8")));
@@ -114,12 +113,13 @@ public class GatewayConnection implements Runnable {
 		if (customCommands != null) {
 			initCommands(gateway, customCommands);
 		}
+		this.listeners = listeners;
 		Thread t = new Thread(this);
 		t.start();
 	}
 
 	public GatewayConnection(Gateway gateway, Socket socket) throws IOException {
-		this(gateway, socket, null);
+		this(gateway, socket, null, new ArrayList<GatewayServerListener>());
 	}
 
 	/**
@@ -183,11 +183,20 @@ public class GatewayConnection implements Runnable {
 				quietSendError(writer, e);
 			}
 		} finally {
-			logger.log(Level.INFO, "Closing connection.");
-			// NetworkUtil.quietlyClose(writer);
-			// NetworkUtil.quietlyClose(reader);
 			NetworkUtil.quietlyClose(socket);
-			gateway.closeConnection();
+			fireConnectionStopped();
+		}
+	}
+	
+	protected void fireConnectionStopped() {
+		logger.info("Connection Stopped");
+		
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.connectionStopped();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
 		}
 	}
 
