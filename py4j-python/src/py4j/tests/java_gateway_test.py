@@ -16,10 +16,11 @@ import gc
 import subprocess
 import time
 import unittest
+import os
 
 SERVER_PORT = 25333
 TEST_PORT = 25332
-PY4J_JAVA_PATH = '/home/barthelemy/workspaces/pydev/py4j/py4j-java/bin/'
+PY4J_JAVA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),'../../../../py4j-java/bin')
 
 def start_echo_server():
     subprocess.call(["java", "-cp", PY4J_JAVA_PATH, "py4j.EchoServer"])
