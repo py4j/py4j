@@ -646,7 +646,7 @@ class JavaGateway(object):
 # CALLBACK SPECIFIC
 
 
-class CallbackServer(Thread):
+class CallbackServer(object):
     """The CallbackServer is responsible for receiving call back connection requests from the JVM.
     Usually connections are reused on the Java side, but there is at least one connection per 
     concurrent thread. 
@@ -663,10 +663,23 @@ class CallbackServer(Thread):
         self.port = port
         self.pool = pool
         self.connections = []
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Lock is used to isolate critical region like connection creation.
+        # Some code can produce exceptions when ran in parallel, but
+        # They will be caught and dealt with.
         self.lock = RLock()
         self.is_shutdown = False
     
+    def start(self):
+        """Starts the CallbackServer. This method should be called by the
+        client instead of run()."""
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_socket.bind(('localhost', self.port))
+        
+        # Maybe thread needs to be cleanup up?
+        self.thread = Thread(target=self.run)
+        self.thread.start()
+
     def run(self):
         """Starts listening and accepting connection requests.
         
@@ -678,9 +691,9 @@ class CallbackServer(Thread):
             with self.lock:
                 self.is_shutdown = False
             logger.info('Callback Server Starting')
-            self.server_socket.bind(('localhost', self.port))
             self.server_socket.listen(5)
             logger.info('Socket listening on' + str(self.server_socket.getsockname()))
+            
             while not self.is_shutdown:
                 socket, _ = self.server_socket.accept()
                 input = socket.makefile('r', 0)
@@ -706,6 +719,7 @@ class CallbackServer(Thread):
             try:
                 self.server_socket.shutdown(socket.SHUT_RDWR)
                 self.server_socket.close()
+                self.server_socket = None
             except:
                 pass
             
@@ -717,6 +731,8 @@ class CallbackServer(Thread):
                     pass
 
             self.pool.clear()
+        self.thread.join()
+        self.thread = None        
                 
     
 class CallbackConnection(Thread):

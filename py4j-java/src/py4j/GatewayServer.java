@@ -219,6 +219,7 @@ public class GatewayServer implements Runnable {
 		try {
 			sSocket = new ServerSocket(port);
 			sSocket.setSoTimeout(connectTimeout);
+			sSocket.setReuseAddress(true);
 		} catch (IOException e) {
 			throw new Py4JNetworkException(e);
 		}

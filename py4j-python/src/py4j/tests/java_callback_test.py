@@ -143,24 +143,24 @@ class TestIntegration(unittest.TestCase):
 #        logger = logging.getLogger("py4j")
 #        logger.setLevel(logging.DEBUG)
 #        logger.addHandler(logging.StreamHandler())
-        time.sleep(2)
+        time.sleep(1)
         self.p = start_example_app_process()
-        time.sleep(2)
+        time.sleep(1)
         self.gateway = JavaGateway(start_callback_server=True)
         
     def tearDown(self):
         self.p.terminate()
         self.gateway.shutdown()
-        time.sleep(3)
+        time.sleep(1)
     
 #    Does not work when combined with other tests... because of TCP_WAIT
-#    def testShutdown(self):
-#        example = self.gateway.entry_point.getNewExample()
-#        impl = IHelloImpl()
-#        self.assertEqual('This is Hello!',example.callHello(impl))
-#        self.assertEqual('This is Hello;\n10MyMy!\n;',example.callHello2(impl))
-#        self.gateway.shutdown()
-#        self.assertEqual(0, len(self.gateway.gateway_property.pool))
+    def testShutdown(self):
+        example = self.gateway.entry_point.getNewExample()
+        impl = IHelloImpl()
+        self.assertEqual('This is Hello!',example.callHello(impl))
+        self.assertEqual('This is Hello;\n10MyMy!\n;',example.callHello2(impl))
+        self.gateway.shutdown()
+        self.assertEqual(0, len(self.gateway.gateway_property.pool))
     
     def testProxy(self):
 #        self.gateway.jvm.py4j.GatewayServer.turnLoggingOn()
@@ -182,17 +182,27 @@ class TestIntegration(unittest.TestCase):
         time.sleep(2)
         self.assertTrue(len(self.gateway.gateway_property.pool) < 2)
         
+    def testDoubleCallbackServer(self):
+        try:
+            self.gateway2 = JavaGateway(start_callback_server=True)
+            self.fail()
+        except Exception:
+            self.assertTrue(True)
+        
 class TestPeriodicCleanup(unittest.TestCase):
     def setUp(self):
-        time.sleep(2)
+#        logger = logging.getLogger("py4j")
+#        logger.setLevel(logging.DEBUG)
+#        logger.addHandler(logging.StreamHandler())
+        time.sleep(1)
         self.p = start_example_app_process2()
-        time.sleep(2)
+        time.sleep(1)
         self.gateway = JavaGateway(start_callback_server=True)
         
     def tearDown(self):
         self.p.terminate()
         self.gateway.shutdown()
-        time.sleep(3)
+        time.sleep(1)
         
     def testPeriodicCleanup(self):
         operator = FalseAddition()
