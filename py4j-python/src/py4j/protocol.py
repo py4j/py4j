@@ -1,4 +1,17 @@
 '''
+The protocol module defines the primitives and the escaping used by
+Py4J protocol.
+
+This is a text-based protocol that is efficient for general-purpose
+method calling, but very inefficient with large numbers (becayse 
+they are text-based).
+
+Binary protocol (e.g., protobuf) was considered in the past, but
+internal benchmarking showed that it was less efficient in 
+terms of size and time. This is due to the fact that a lot
+of small strings are exchanged (method name, class name, variable
+names, etc.).
+
 Created on Oct 14, 2010
 
 :author: Barthelemy Dagenais

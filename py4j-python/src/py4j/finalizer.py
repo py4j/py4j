@@ -1,9 +1,11 @@
 # -*- coding: UTF-8 -*-
-"""Module that defines a Finalizer class responsible for registering and cleaning finalizer
+"""
+Module that defines a Finalizer class responsible for registering and cleaning
+finalizer
 
 Created on Mar 7, 2010
 
-@author: Barthelemy Dagenais
+:author: Barthelemy Dagenais
 """
 
 from threading import RLock

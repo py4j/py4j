@@ -1,7 +1,12 @@
+# -*- coding: UTF-8 -*-
 '''
+Module responsible for converting Java collection classes to Python collection
+classes. This module is optional but loaded by default.
+
+
 Created on Jan 22, 2010
 
-@author: barthelemy
+:author: Barthelemy Dagenais
 '''
 from collections import MutableMapping, Sequence, MutableSequence, MutableSet, Set
 from py4j.java_gateway import JavaObject, JavaMember, get_method, JavaClass
@@ -40,13 +45,13 @@ class JavaMap(JavaObject, MutableMapping):
     
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
-        self._get = get_method(self,'get')
+        self._get = get_method(self, 'get')
     
     def __getitem__(self, key):
         return self._get(key)
     
     def __setitem__(self, key, value):
-        self.put(key,value)
+        self.put(key, value)
     
     def __len__(self):
         return self.size()
@@ -82,9 +87,9 @@ class JavaSet(JavaObject, MutableSet):
     
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
-        self._add = get_method(self,'add')
-        self._clear = get_method(self,'clear')
-        self._remove = get_method(self,'remove')
+        self._add = get_method(self, 'add')
+        self._clear = get_method(self, 'clear')
+        self._remove = get_method(self, 'remove')
         
     def add(self, value):
         self._add(value)
@@ -134,7 +139,7 @@ class JavaArray(JavaObject, Sequence):
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
     
-    def __compute_index(self, key, adjustLast = False):
+    def __compute_index(self, key, adjustLast=False):
         size = len(self)
         if 0 <= key < size:
             return key
@@ -193,9 +198,9 @@ class JavaArray(JavaObject, Sequence):
             lenr = len(self_range)
             lenv = len(value)
             if lenr != lenv:
-                raise ValueError("attempt to assign sequence of size %d to extended slice of size %d" % (lenv,lenr))
+                raise ValueError("attempt to assign sequence of size %d to extended slice of size %d" % (lenv, lenr))
             else:
-                return self.__repl_item_from_slice(self_range,value)
+                return self.__repl_item_from_slice(self_range, value)
             
         elif isinstance(key, int):
             return self.__set_item(key, value)
@@ -226,7 +231,7 @@ class JavaList(JavaObject, MutableSequence):
     def __iter__(self):
         return self.iterator()
     
-    def __compute_index(self, key, adjustLast = False):
+    def __compute_index(self, key, adjustLast=False):
         size = self.size()
         if 0 <= key < size:
             return key
@@ -262,13 +267,13 @@ class JavaList(JavaObject, MutableSequence):
         
         # Then insert if from_slice < to_slice 
         for elem in value_iter:
-            self.insert(last,elem)
+            self.insert(last, elem)
             last += 1
     
     def __insert_item_from_slice(self, indices, iterable):
         index = indices[0]
         for elem in iterable:
-            self.insert(index,elem)
+            self.insert(index, elem)
             index += 1
     
     def __repl_item_from_slice(self, range, iterable):
@@ -300,9 +305,9 @@ class JavaList(JavaObject, MutableSequence):
                 lenr = len(self_range)
                 lenv = len(value)
                 if lenr != lenv:
-                    raise ValueError("attempt to assign sequence of size %d to extended slice of size %d" % (lenv,lenr))
+                    raise ValueError("attempt to assign sequence of size %d to extended slice of size %d" % (lenv, lenr))
                 else:
-                    return self.__repl_item_from_slice(self_range,value)
+                    return self.__repl_item_from_slice(self_range, value)
             
         elif isinstance(key, int):
             return self.__set_item(key, value)
@@ -405,7 +410,7 @@ class JavaList(JavaObject, MutableSequence):
         
     def remove(self, value):
         # Ensures that we are deleting the int value and not the index (Java API)
-        if isinstance(value,int):
+        if isinstance(value, int):
             new_value = self.indexOf(value)
         else:
             new_value = value
@@ -432,7 +437,7 @@ class SetConverter(object):
         return isinstance(object, Set)
     
     def convert(self, object, gateway_client):
-        JavaSet = JavaClass('java.util.HashSet',gateway_client)
+        JavaSet = JavaClass('java.util.HashSet', gateway_client)
         java_set = JavaSet()
         for element in object:
             java_set.add(element)
@@ -444,7 +449,7 @@ class ListConverter(object):
         return hasattr(object, '__iter__')
     
     def convert(self, object, gateway_client):
-        ArrayList = JavaClass('java.util.ArrayList',gateway_client)
+        ArrayList = JavaClass('java.util.ArrayList', gateway_client)
         java_list = ArrayList()
         for element in object:
             java_list.add(element)
@@ -455,7 +460,7 @@ class MapConverter(object):
         return hasattr(object, 'keys') and hasattr(object, '__getitem__')
     
     def convert(self, object, gateway_client):
-        HashMap = JavaClass('java.util.HashMap',gateway_client)
+        HashMap = JavaClass('java.util.HashMap', gateway_client)
         java_map = HashMap()
         for key in object.keys():
             java_map[key] = object[key]

@@ -6,7 +6,7 @@ recommend to start with an underscore so clashes become unlikely).
 
 Created on Dec 3, 2009
 
-@author: Barthelemy Dagenais
+:author: Barthelemy Dagenais
 """
 
 from py4j.finalizer import ThreadSafeFinalizer
