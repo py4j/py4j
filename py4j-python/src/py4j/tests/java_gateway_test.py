@@ -46,6 +46,12 @@ def get_test_socket():
     testSocket.connect(('localhost', TEST_PORT))
     return testSocket
 
+def safe_shutdown(instance):
+    try:
+        instance.gateway.shutdown()
+    except Exception:
+        pass
+
 class TestConnection(object):
     """Connection that does nothing. Useful for testing."""
     
@@ -70,6 +76,10 @@ class TestConnection(object):
         return self.return_message + str(TestConnection.counter)
     
 class ProtocolTest(unittest.TestCase):
+    
+    def tearDown(self):
+        # Safety check in case there was an exception...
+        safe_shutdown(self)
     
     def testEscape(self):
         self.assertEqual("Hello\t\rWorld\n\\", unescape_new_line(escape_new_line("Hello\t\rWorld\n\\")))
@@ -104,14 +114,14 @@ class ProtocolTest(unittest.TestCase):
             testSocket.close()
             time.sleep(1)
             
-            gateway = JavaGateway(auto_field=True)
-            ex = gateway.getNewExample()
+            self.gateway = JavaGateway(auto_field=True)
+            ex = self.gateway.getNewExample()
             self.assertEqual('Hello World', ex.method3(1, True))
             self.assertEqual(123, ex.method3())
             self.assertAlmostEqual(1.25, ex.method3())
             self.assertTrue(ex.method2() == None)
             self.assertTrue(ex.method4())
-            gateway.shutdown()
+            self.gateway.shutdown()
                         
         except Exception as e:
             print('Error has occurred', e)
@@ -126,6 +136,8 @@ class IntegrationTest(unittest.TestCase):
         time.sleep(1)
 
     def tearDown(self):
+        # Safety check in case there was an exception...
+        safe_shutdown(self)
         self.p.join()
 
     def testIntegration(self):
@@ -142,17 +154,18 @@ class IntegrationTest(unittest.TestCase):
             testSocket.close()
             time.sleep(1)
             
-            gateway = JavaGateway(auto_field=True)
-            ex = gateway.getNewExample()
+            self.gateway = JavaGateway(auto_field=True)
+            ex = self.gateway.getNewExample()
             response = ex.method3(1, True)
             self.assertEqual('Hello World', response)
-            ex2 = gateway.entry_point.getNewExample();
+            ex2 = self.gateway.entry_point.getNewExample();
             response = ex2.method3(1, True)
             self.assertEqual('Hello World2', response)
-            gateway.shutdown()
+            self.gateway.shutdown()
         except Exception as e:
             print('Error has occurred', e)
             self.fail('Problem occurred')
+                
             
     def testException(self):
         try:
@@ -164,25 +177,24 @@ class IntegrationTest(unittest.TestCase):
             testSocket.close()
             time.sleep(1)
             
-            gateway = JavaGateway(auto_field=True)
-            ex = gateway.getNewExample()
+            self.gateway = JavaGateway(auto_field=True)
+            ex = self.gateway.getNewExample()
                 
             try:
                 ex.method3(1, True)
                 self.fail('Should have failed!')
             except Py4JError:
                 self.assertTrue(True)
-            
-            gateway.shutdown()
-            
+            self.gateway.shutdown()
         except Exception as e:
             print('Error has occurred', e)   
             self.fail('Problem occurred')
+                
 
 class CloseTest(unittest.TestCase):
     def testNoCallbackServer(self):
         # Test that the program can continue to move on and that no close is required.
-        gateway = JavaGateway()
+        JavaGateway()
         self.assertTrue(True)
 
     def testCallbackServer(self):
@@ -197,15 +209,14 @@ class MethodTest(unittest.TestCase):
         self.p = start_example_app_process()
         # This is to ensure that the server is started before connecting to it!
         time.sleep(1)
+        self.gateway = JavaGateway()
 
     def tearDown(self):
-        self.gateway.shutdown()
+        safe_shutdown(self)
         self.p.join()
         
     def testNoneArg(self):
-        self.gateway = JavaGateway()
-        gateway = self.gateway
-        ex = gateway.getNewExample()
+        ex = self.gateway.getNewExample()
         try:
             ex.method2(None)
             ex2 = ex.method4(None)
@@ -216,16 +227,12 @@ class MethodTest(unittest.TestCase):
             self.fail()
             
     def testUnicode(self):
-        self.gateway = JavaGateway()
-        gateway = self.gateway
-        sb = gateway.jvm.java.lang.StringBuffer()
+        sb = self.gateway.jvm.java.lang.StringBuffer()
         sb.append(u'\r\n\tHello\r\n\t')
         self.assertEqual(u'\r\n\tHello\r\n\t', sb.toString())
     
     def testEscape(self):
-        self.gateway = JavaGateway()
-        gateway = self.gateway
-        sb = gateway.jvm.java.lang.StringBuffer()
+        sb = self.gateway.jvm.java.lang.StringBuffer()
         sb.append('\r\n\tHello\r\n\t')
         self.assertEqual(u'\r\n\tHello\r\n\t', sb.toString())
 
@@ -236,13 +243,12 @@ class FieldTest(unittest.TestCase):
         time.sleep(1)
 
     def tearDown(self):
-        self.gateway.shutdown()
+        safe_shutdown(self)
         self.p.join()
         
     def testAutoField(self):
         self.gateway = JavaGateway(auto_field=True)
-        gateway = self.gateway
-        ex = gateway.getNewExample()
+        ex = self.gateway.getNewExample()
         self.assertEqual(ex.field10, 10)
         sb = ex.field20
         sb.append('Hello')
@@ -251,15 +257,13 @@ class FieldTest(unittest.TestCase):
     
     def testNoField(self):
         self.gateway = JavaGateway(auto_field=True)
-        gateway = self.gateway
-        ex = gateway.getNewExample()
+        ex = self.gateway.getNewExample()
         member = ex.field50
         self.assertTrue(isinstance(member, JavaMember))
         
     def testNoAutoField(self):
         self.gateway = JavaGateway(auto_field=False)
-        gateway = self.gateway
-        ex = gateway.getNewExample()
+        ex = self.gateway.getNewExample()
         self.assertTrue(isinstance(ex.field10, JavaMember))
         self.assertTrue(isinstance(ex.field50, JavaMember))
         self.assertEqual(10, get_field(ex, 'field10'))
@@ -283,8 +287,7 @@ class FieldTest(unittest.TestCase):
             
     def testSetField(self):
         self.gateway = JavaGateway(auto_field=False)
-        gateway = self.gateway
-        ex = gateway.getNewExample()
+        ex = self.gateway.getNewExample()
         
         set_field(ex, 'field10',2334)
         self.assertEquals(get_field(ex,'field10'),2334)
@@ -303,8 +306,7 @@ class FieldTest(unittest.TestCase):
     def testGetMethod(self):
         # This is necessary if a field hides a method...
         self.gateway = JavaGateway()
-        gateway = self.gateway
-        ex = gateway.getNewExample()
+        ex = self.gateway.getNewExample()
         self.assertEqual(1, get_method(ex, 'method1')())
         
 class MemoryManagementText(unittest.TestCase):
@@ -314,16 +316,16 @@ class MemoryManagementText(unittest.TestCase):
         time.sleep(1)
         
     def tearDown(self):
+        safe_shutdown(self)
         self.p.join()
         gc.collect()
         
-        
     def testNoAttach(self):
-        gateway = JavaGateway()
+        self.gateway = JavaGateway()
         gateway2 = JavaGateway()
-        sb = gateway.jvm.java.lang.StringBuffer()
+        sb = self.gateway.jvm.java.lang.StringBuffer()
         sb.append('Hello World')
-        gateway.shutdown()
+        self.gateway.shutdown()
         try:
             sb.append('Python')
             self.fail('Should have failed')
@@ -337,16 +339,16 @@ class MemoryManagementText(unittest.TestCase):
             self.assertTrue(True)
         
     def testDetach(self):
-        gateway = JavaGateway()
-        sb = gateway.jvm.java.lang.StringBuffer()
+        self.gateway = JavaGateway()
+        sb = self.gateway.jvm.java.lang.StringBuffer()
         sb.append('Hello World')
-        gateway.detach(sb)
-        sb2 = gateway.jvm.java.lang.StringBuffer()
+        self.gateway.detach(sb)
+        sb2 = self.gateway.jvm.java.lang.StringBuffer()
         sb2.append('Hello World')
         sb2._detach()
         gc.collect()
         self.assertEqual(len(ThreadSafeFinalizer.finalizers), 1)
-        gateway.shutdown()
+        self.gateway.shutdown()
 
 class TypeConversionTest(unittest.TestCase):
     def setUp(self):
@@ -356,7 +358,7 @@ class TypeConversionTest(unittest.TestCase):
         self.gateway = JavaGateway()
 
     def tearDown(self):
-        self.gateway.shutdown()
+        safe_shutdown(self)
         self.p.join()
         
     def testLongInt(self):
@@ -372,7 +374,7 @@ class JVMTest(unittest.TestCase):
         self.gateway = JavaGateway()
 
     def tearDown(self):
-        self.gateway.shutdown()
+        safe_shutdown(self)
         self.p.join()
         
     def testConstructors(self):
@@ -442,7 +444,7 @@ class HelpTest(unittest.TestCase):
         self.gateway = JavaGateway()
 
     def tearDown(self):
-        self.gateway.shutdown()
+        safe_shutdown(self)
         self.p.join()
         
     def testHelpObject(self):
@@ -493,7 +495,7 @@ class ThreadTest(unittest.TestCase):
         self.gateway = JavaGateway(gateway_client=gateway_client)
 
     def tearDown(self):
-        self.gateway.shutdown()
+        safe_shutdown(self)
         self.p.join()
         
     def testStress(self):
