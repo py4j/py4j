@@ -347,7 +347,23 @@ class MemoryManagementText(unittest.TestCase):
         gc.collect()
         self.assertEqual(len(ThreadSafeFinalizer.finalizers), 1)
         gateway.shutdown()
+
+class TypeConversionTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+        self.gateway = JavaGateway()
+
+    def tearDown(self):
+        self.gateway.shutdown()
+        self.p.join()
         
+    def testLongInt(self):
+        ex = self.gateway.getNewExample()
+        self.assertEqual(1,ex.method7(1234))
+        self.assertEqual(4,ex.method7(2147483648))
+
 class JVMTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
@@ -433,13 +449,13 @@ class HelpTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, short_name=True, display=False)
         print(help_page)
-        self.assertEqual(912, len(help_page))
+        self.assertEqual(939, len(help_page))
         
     def testHelpObjectWithPattern(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, pattern='m*', short_name=True, display=False)
         print(help_page)
-        self.assertEqual(617, len(help_page))
+        self.assertEqual(644, len(help_page))
         
     def testHelpClass(self):
         String = self.gateway.jvm.java.lang.String

@@ -163,6 +163,18 @@ public class Protocol {
 	public final static int getInteger(String commandPart) {
 		return Integer.parseInt(commandPart.substring(1, commandPart.length()));
 	}
+	
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return The long value corresponding to this command part.
+	 */
+	public final static long getLong(String commandPart) {
+		return Long.parseLong(commandPart.substring(1, commandPart.length()));
+	}
 
 	public final static String getMemberOutputCommand(char memberType) {
 		StringBuilder builder = new StringBuilder();
@@ -212,7 +224,12 @@ public class Protocol {
 			case DOUBLE_TYPE:
 				return getDouble(commandPart);
 			case INTEGER_TYPE:
-				return getInteger(commandPart);
+				try {
+					return getInteger(commandPart);
+				} catch (NumberFormatException e) {
+					return getLong(commandPart);
+				}
+				
 			case NULL_TYPE:
 				return getNull(commandPart);
 			case VOID:

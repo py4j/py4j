@@ -73,6 +73,13 @@ public class ProtocolTest {
 		assertEquals(1, Protocol.getInteger("i1"));
 		assertEquals(234, Protocol.getInteger("i234"));
 	}
+	
+	@Test
+	public void testLongs() {
+		assertTrue(Protocol.isInteger("i2147483648"));
+		assertEquals(2147483648l, Protocol.getLong("i2147483648"));
+		assertEquals(2147483648l, Protocol.getObject("i2147483648", null));
+	}
 
 	@Test
 	public void testBooleans() {

@@ -127,4 +127,8 @@ public class ExampleClass {
 	public int method7(Object o) {
 		return 3;
 	}
+	
+	public int method7(long l) {
+		return 4;
+	}
 }
