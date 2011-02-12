@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2009, 2010, Barthelemy Dagenais All rights reserved.
+ * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -77,14 +77,22 @@ public class ReturnObject {
 	public static ReturnObject getErrorReturnObject(Throwable throwable) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isError = true;
-		rObject.commandPart = Protocol.ERROR + Protocol.getThrowableAsString(throwable);
+		rObject.commandPart = Protocol.ERROR + Protocol.STRING_TYPE + Protocol.getThrowableAsString(throwable);
 		return rObject;
 	}
 	
 	public static ReturnObject getErrorReturnObject(String errorMessage) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isError = true;
-		rObject.commandPart = Protocol.ERROR + errorMessage;
+		rObject.commandPart = Protocol.ERROR + Protocol.STRING_TYPE + errorMessage;
+		return rObject;
+	}
+	
+	public static ReturnObject getErrorReferenceReturnObject(String name) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.name = name;
+		rObject.isError = true;
+		rObject.commandPart = Protocol.ERROR + Protocol.REFERENCE_TYPE + name;
 		return rObject;
 	}
 

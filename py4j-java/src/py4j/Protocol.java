@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- * Copyright (c) 2009, 2010, Barthelemy Dagenais All rights reserved.
+ * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -229,7 +229,6 @@ public class Protocol {
 				} catch (NumberFormatException e) {
 					return getLong(commandPart);
 				}
-				
 			case NULL_TYPE:
 				return getNull(commandPart);
 			case VOID:
@@ -265,11 +264,11 @@ public class Protocol {
 	}
 
 	public final static String getOutputErrorCommand(String errorMessage) {
-		return ERROR + errorMessage + END_OUTPUT;
+		return ERROR + Protocol.STRING_TYPE + errorMessage + END_OUTPUT;
 	}
 
 	public final static String getOutputErrorCommand(Throwable throwable) {
-		return ERROR + getThrowableAsString(throwable) + END_OUTPUT;
+		return ERROR + Protocol.STRING_TYPE + getThrowableAsString(throwable) + END_OUTPUT;
 	}
 
 	public final static Throwable getRootThrowable(Throwable throwable,
