@@ -209,7 +209,11 @@ public class Gateway {
 			MethodInvoker method = rEngine.getConstructor(fqn, parameters);
 			Object object = rEngine.invoke(null, method, parameters);
 			returnObject = getReturnObject(object);
-
+		} catch(Py4JJavaException je) {
+			String id = putNewObject(je.getCause());
+			returnObject = ReturnObject.getErrorReferenceReturnObject(id);
+		} catch (Py4JException pe) {
+			throw pe;
 		} catch (Exception e) {
 			throw new Py4JException(e);
 		}
@@ -250,6 +254,11 @@ public class Gateway {
 
 			Object object = rEngine.invoke(targetObject, method, parameters);
 			returnObject = getReturnObject(object);
+		} catch(Py4JJavaException je) {
+			String id = putNewObject(je.getCause());
+			returnObject = ReturnObject.getErrorReferenceReturnObject(id);
+		} catch(Py4JException pe) {
+			throw pe;
 		} catch (Exception e) {
 			throw new Py4JException(e);
 		}

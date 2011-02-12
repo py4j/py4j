@@ -132,7 +132,7 @@ class DummyRLock(object):
         pass
     
 
-class Py4JNetworkError(Exception):
+class Py4JNetworkError(Py4JError):
     """Exception thrown when a network error occurs with Py4J."""
     pass
 

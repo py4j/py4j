@@ -10,6 +10,7 @@ import logging
 import subprocess
 import time
 import unittest
+from py4j.protocol import Py4JJavaError, Py4JError
 
 
 def start_example_server():
@@ -338,6 +339,16 @@ class Test(unittest.TestCase):
         #self.assertTrue(jList == pList)
 #        self.assertTrue(jList2 != pList)
 #        self.assertTrue(jList2 > pList)
+
+    def testException(self):
+        ex = self.gateway.getNewExample()
+        jList = ex.getList(1)
+        try:
+            jList.get(5)
+        except Py4JJavaError:
+            self.assertTrue(True)
+        except Py4JError:
+            self.fail()
         
         
 

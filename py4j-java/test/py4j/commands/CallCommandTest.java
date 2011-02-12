@@ -87,12 +87,12 @@ public class CallCommandTest {
 	}
 	
 	@Test
-	public void testException() {
+	public void testReflectionException() {
 		String inputCommand = "z:java.lang.String\nvalueOf2\ni123\ne\n";
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertTrue(sWriter.toString().startsWith("xpy4j.Py4JException: "));
+			assertTrue(sWriter.toString().startsWith("xspy4j.Py4JException: "));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -100,12 +100,25 @@ public class CallCommandTest {
 	}
 	
 	@Test
-	public void testException2() {
+	public void testReflectionException2() {
 		String inputCommand = target + "\nmethod1aa\ne\n";
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertTrue(sWriter.toString().startsWith("xpy4j.Py4JException: "));
+			assertTrue(sWriter.toString().startsWith("xspy4j.Py4JException: "));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	@Test
+	public void testClientCodeException() {
+		String inputCommand = "z:java.lang.Integer\nvalueOf\nsallo\ne\n";
+		try {
+			command.execute("c", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			assertEquals("xro1\n",sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

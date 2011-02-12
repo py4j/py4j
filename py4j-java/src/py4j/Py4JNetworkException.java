@@ -37,7 +37,7 @@ package py4j;
  * @author Barthelemy Dagenais
  * 
  */
-public class Py4JNetworkException extends RuntimeException {
+public class Py4JNetworkException extends Py4JException {
 
 	/**
 	 * 

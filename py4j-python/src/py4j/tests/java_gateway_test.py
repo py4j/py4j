@@ -7,7 +7,7 @@ from multiprocessing.process import Process
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
 from py4j.java_gateway import JavaGateway, Py4JError, JavaMember, get_field, get_method, \
-     GatewayConnection, GatewayClient, set_field, java_import
+     GatewayConnection, GatewayClient, set_field, java_import, Py4JNetworkError, JavaObject
 
 from socket import AF_INET, SOCK_STREAM, socket
 from threading import Thread
@@ -365,6 +365,63 @@ class TypeConversionTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         self.assertEqual(1,ex.method7(1234))
         self.assertEqual(4,ex.method7(2147483648))
+
+class ExceptionTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+        self.gateway = JavaGateway()
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+        
+    def testJavaError(self):
+        try:
+            self.gateway.jvm.Integer.valueOf('allo')
+        except Py4JJavaError as e:
+            self.assertEqual('java.lang.NumberFormatException',e.java_exception.getClass().getName())
+            self.assertTrue(True)
+        except Exception:
+            self.fail()
+            
+    def testJavaConstructorError(self):
+        try:
+            self.gateway.jvm.Integer('allo')
+        except Py4JJavaError as e:
+            self.assertEqual('java.lang.NumberFormatException',e.java_exception.getClass().getName())
+            self.assertTrue(True)
+        except Exception:
+            self.fail()
+            
+    def doError(self):
+        id = ''
+        try:
+            self.gateway.jvm.Integer.valueOf('allo')
+        except Py4JJavaError as e:
+            id = e.java_exception._target_id
+        return id
+    
+    def testJavaErrorGC(self):
+        id = self.doError()
+        java_object = JavaObject(id, self.gateway._gateway_client)
+        try:
+            # Should fail because it should have been garbage collected...
+            java_object.getCause()
+            self.fail()
+        except Py4JError:
+            self.assertTrue(True)
+        
+    def testReflectionError(self):
+        try:
+            self.gateway.jvm.Integer.valueOf2('allo')
+        except Py4JJavaError:
+            self.fail()
+        except Py4JNetworkError:
+            self.fail()
+        except Py4JError:
+            self.assertTrue(True)
 
 class JVMTest(unittest.TestCase):
     def setUp(self):

@@ -222,7 +222,12 @@ def get_return_value(answer, gateway_client, target_id=None, name=None):
     """
     if is_error(answer)[0]:
         if len(answer) > 1:
-            raise Py4JError('An error occurred while calling %s%s%s. Trace:\n%s\n' % (target_id, '.', name, unescape_new_line(answer[1:])))
+            type = answer[1]
+            value = OUTPUT_CONVERTER[type](answer[2:], gateway_client)
+            if answer[1] == REFERENCE_TYPE:
+                raise Py4JJavaError('An error occurred while calling %s%s%s.\n' % (target_id, '.', name), value)
+            else:
+                raise Py4JError('An error occurred while calling %s%s%s. Trace:\n%s\n' % (target_id, '.', name, value))
         else:
             raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))
     else:
@@ -266,7 +271,12 @@ class Py4JError(Exception):
     """Exception thrown when a problem occurs with Py4J."""
     pass
 
-
+class Py4JJavaError(Py4JError):
+    """Exception thrown when an exception occurs in the client code."""
+    def __init__(self, msg, java_exception):
+        self.args = (msg, java_exception)
+        self.errmsg = msg
+        self.java_exception = java_exception
 
 # For circular dependencies
 # Purists should close their eyes

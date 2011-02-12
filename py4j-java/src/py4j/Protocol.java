@@ -264,11 +264,21 @@ public class Protocol {
 	}
 
 	public final static String getOutputErrorCommand(String errorMessage) {
-		return ERROR + Protocol.STRING_TYPE + errorMessage + END_OUTPUT;
+		StringBuilder builder = new StringBuilder();
+		builder.append(ERROR);
+		builder.append(Protocol.STRING_TYPE);
+		builder.append(errorMessage);
+		builder.append(END_OUTPUT);
+		return builder.toString();
 	}
 
 	public final static String getOutputErrorCommand(Throwable throwable) {
-		return ERROR + Protocol.STRING_TYPE + getThrowableAsString(throwable) + END_OUTPUT;
+		StringBuilder builder = new StringBuilder();
+		builder.append(ERROR);
+		builder.append(Protocol.STRING_TYPE);
+		builder.append(getThrowableAsString(throwable));
+		builder.append(END_OUTPUT);
+		return builder.toString();
 	}
 
 	public final static Throwable getRootThrowable(Throwable throwable,
