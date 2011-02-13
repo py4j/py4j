@@ -71,7 +71,7 @@ MEMORY_COMMAND_NAME = "m\n"
 HELP_COMMAND_NAME = 'h\n'
 ARRAY_COMMAND_NAME = "a\n"
 JVMVIEW_COMMAND_NAME = "j\n";
-
+EXCEPTION_COMMAND_NAME = "p\n";
 
 # Array subcommands
 ARRAY_GET_SUB_COMMAND_NAME = 'g\n'
@@ -277,6 +277,13 @@ class Py4JJavaError(Py4JError):
         self.args = (msg, java_exception)
         self.errmsg = msg
         self.java_exception = java_exception
+        self.exception_cmd = EXCEPTION_COMMAND_NAME + REFERENCE_TYPE + java_exception._target_id + '\n' + END_COMMAND_PART
+        
+    def __str__(self):
+        gateway_client = self.java_exception._gateway_client
+        answer = gateway_client.send_command(self.exception_cmd)
+        return_value = get_return_value(answer, gateway_client, None, None)
+        return '{0}: {1}'.format(self.errmsg, return_value)
 
 # For circular dependencies
 # Purists should close their eyes

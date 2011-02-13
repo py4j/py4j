@@ -47,6 +47,7 @@ import py4j.commands.ArrayCommand;
 import py4j.commands.CallCommand;
 import py4j.commands.Command;
 import py4j.commands.ConstructorCommand;
+import py4j.commands.ExceptionCommand;
 import py4j.commands.FieldCommand;
 import py4j.commands.HelpPageCommand;
 import py4j.commands.JVMViewCommand;
@@ -98,6 +99,7 @@ public class GatewayConnection implements Runnable {
 		baseCommands.add(ReflectionCommand.class);
 		baseCommands.add(ShutdownGatewayServerCommand.class);
 		baseCommands.add(JVMViewCommand.class);
+		baseCommands.add(ExceptionCommand.class);
 	}
 
 	public GatewayConnection(Gateway gateway, Socket socket,

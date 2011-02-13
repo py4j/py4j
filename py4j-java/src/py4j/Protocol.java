@@ -267,7 +267,7 @@ public class Protocol {
 		StringBuilder builder = new StringBuilder();
 		builder.append(ERROR);
 		builder.append(Protocol.STRING_TYPE);
-		builder.append(errorMessage);
+		builder.append(StringUtil.escape(errorMessage));
 		builder.append(END_OUTPUT);
 		return builder.toString();
 	}
@@ -276,7 +276,7 @@ public class Protocol {
 		StringBuilder builder = new StringBuilder();
 		builder.append(ERROR);
 		builder.append(Protocol.STRING_TYPE);
-		builder.append(getThrowableAsString(throwable));
+		builder.append(StringUtil.escape(getThrowableAsString(throwable)));
 		builder.append(END_OUTPUT);
 		return builder.toString();
 	}
@@ -306,7 +306,7 @@ public class Protocol {
 		StringWriter stringWriter = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(stringWriter);
 		root.printStackTrace(printWriter);
-		return StringUtil.escape(stringWriter.toString());
+		return stringWriter.toString();
 	}
 
 	public final static String getOutputVoidCommand() {

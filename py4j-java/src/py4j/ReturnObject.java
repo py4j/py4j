@@ -80,18 +80,7 @@ public class ReturnObject {
 		StringBuilder builder = new StringBuilder();
 		builder.append(Protocol.ERROR);
 		builder.append(Protocol.STRING_TYPE);
-		builder.append(Protocol.getThrowableAsString(throwable));
-		rObject.commandPart = builder.toString();
-		return rObject;
-	}
-	
-	public static ReturnObject getErrorReturnObject(String errorMessage) {
-		ReturnObject rObject = new ReturnObject();
-		rObject.isError = true;
-		StringBuilder builder = new StringBuilder();
-		builder.append(Protocol.ERROR);
-		builder.append(Protocol.STRING_TYPE);
-		builder.append(errorMessage);
+		builder.append(StringUtil.escape(Protocol.getThrowableAsString(throwable)));
 		rObject.commandPart = builder.toString();
 		return rObject;
 	}

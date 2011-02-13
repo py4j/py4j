@@ -422,6 +422,15 @@ class ExceptionTest(unittest.TestCase):
             self.fail()
         except Py4JError:
             self.assertTrue(True)
+            
+    def testStrError(self):
+        try:
+            self.gateway.jvm.Integer.valueOf('allo')
+        except Py4JJavaError as e:
+            self.assertTrue(str(e).startswith('An error occurred while calling z:java.lang.Integer.valueOf.\n: java.lang.NumberFormatException:'))
+        except Exception:
+            self.fail()
+
 
 class JVMTest(unittest.TestCase):
     def setUp(self):
