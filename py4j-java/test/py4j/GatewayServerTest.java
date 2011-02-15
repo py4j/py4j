@@ -82,6 +82,21 @@ public class GatewayServerTest {
 		assertTrue(listener.values.contains(new Long(10000)));
 		assertEquals(5, listener.values.size());
 	}
+	
+	@Test
+	public void testEphemeralPort() {
+		GatewayServer server = new GatewayServer(null, 0);
+		server.start(true);
+		try {
+			Thread.sleep(250);
+		} catch (Exception e) {
+
+		}
+		int listeningPort = server.getListeningPort();
+		assertTrue(listeningPort > 0);
+		assertTrue(server.getPort() != listeningPort);
+		server.shutdown();
+	}
 
 }
 

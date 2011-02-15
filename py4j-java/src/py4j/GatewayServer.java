@@ -212,8 +212,12 @@ public class GatewayServer implements Runnable {
 	}
 
 	/**
-	 * <p>Starts the ServerSocket.</p>
-	 * @throws Py4JNetworkException If the port is busy.
+	 * <p>
+	 * Starts the ServerSocket.
+	 * </p>
+	 * 
+	 * @throws Py4JNetworkException
+	 *             If the port is busy.
 	 */
 	protected void startSocket() throws Py4JNetworkException {
 		try {
@@ -320,6 +324,34 @@ public class GatewayServer implements Runnable {
 
 	public int getPythonPort() {
 		return pythonPort;
+	}
+
+	/**
+	 * 
+	 * @return The port specified when the gateway server is initialized. This
+	 *         is the port that is passed to the server socket.
+	 */
+	public int getPort() {
+		return port;
+	}
+
+	/**
+	 * 
+	 * @return The port the server socket is listening on. It will be different
+	 *         than the specified port if the socket is listening on an
+	 *         ephemeral port (specified port = 0). Returns -1 if the server
+	 *         socket is not listening on anything.
+	 */
+	public int getListeningPort() {
+		int port = -1;
+		try {
+			if (sSocket.isBound()) {
+				port = sSocket.getLocalPort();
+			}
+		} catch (Exception e) {
+			// do nothing
+		}
+		return port;
 	}
 
 	public CallbackClient getCallbackClient() {
