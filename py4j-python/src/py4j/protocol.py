@@ -268,11 +268,23 @@ def register_input_converter(converter):
     INPUT_CONVERTER.append(converter)
 
 class Py4JError(Exception):
-    """Exception thrown when a problem occurs with Py4J."""
+    """Exception raised when a problem occurs with Py4J."""
+    pass
+
+class Py4JNetworkError(Py4JError):
+    """Exception raised when a network error occurs with Py4J."""
     pass
 
 class Py4JJavaError(Py4JError):
-    """Exception thrown when an exception occurs in the client code."""
+    """Exception raised when an exception occurs in the client code.
+    
+    The exception instance that was thrown on the Java side can be accessed
+    with `Py4JJavaError.java_exception`.
+
+    `str(py4j_java_error)` returns the error message and the stack trace
+    available on the Java side (similar to printStackTrace()).
+    """
+
     def __init__(self, msg, java_exception):
         self.args = (msg, java_exception)
         self.errmsg = msg

@@ -20,6 +20,19 @@ Py4JError
    :members:
    :undoc-members:
 
+Py4JJavaError
+-------------
+
+.. autoclass:: py4j.protocol.Py4JJavaError
+   :members:
+   :undoc-members:
+
+Py4JJavaError
+-------------
+
+.. autoclass:: py4j.protocol.Py4JNetworkError
+   :members:
+   :undoc-members:
 
 Py4J Protocol Functions
 -----------------------

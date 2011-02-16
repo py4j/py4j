@@ -349,6 +349,36 @@ go through all registered converters for all parameters. This is why automatic
 conversion is disabled by default.
 
 
+.. _py4j_exceptions:
+
+Py4J Exceptions
+---------------
+
+Py4J can raise three exceptions on the Python side:
+
+* :class:`Py4JJavaError <py4j.protocol.Py4JJavaError>`. This exception is
+  raised when an exception occurs in the Java client code. For example, if you
+  try to pop an element from an empty stack. The instance of the Java exception
+  thrown is stored in the `java_exception` member.
+
+* :class:`Py4JNetworkError <py4j.protocol.Py4JNetworkError>`. This exception is
+  raised when a problem occurs during network transfer (e.g., connection lost).
+
+* :class:`Py4JError <py4j.protocol.Py4JError>`. This exception is raised when
+  any other error occurs such as when the client program tries to access an
+  object that no longer exists on the Java side.
+
+Both `Py4JJavaError` and `Py4JNetworkError` inherits from `Py4JError` so it is
+possible to catch all related Py4J errors with one except clause:
+
+::
+
+  try:
+    java_object.doSomething()
+  except Py4JError:
+    traceback.print_exc()
+
+
 .. _jvm_views:
 
 Importing packages with JVM Views

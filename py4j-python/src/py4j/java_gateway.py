@@ -132,22 +132,18 @@ class DummyRLock(object):
         pass
     
 
-class Py4JNetworkError(Py4JError):
-    """Exception thrown when a network error occurs with Py4J."""
-    pass
 
 class GatewayClient(object):
     """Responsible for managing connections to the JavaGateway.
     
-    This implementation is thread-safe and connections are created on-demand. 
-    This means that Py4J-Python can be accessed by multiple threads and 
+    This implementation is thread-safe and connections are created on-demand.
+    This means that Py4J-Python can be accessed by multiple threads and
     messages are sent to and processed concurrently by the Java Gateway.
     
-    When creating a custom :class:`JavaGateway`, it is recommended to pass an instance of 
-    :class:`GatewayClient` instead of a :class:`GatewayConnection`: both have the same interface, 
-    but the client supports multiple threads and connections, which is essential when using 
-    callbacks.
-    """
+    When creating a custom :class:`JavaGateway`, it is recommended to pass an
+    instance of :class:`GatewayClient` instead of a :class:`GatewayConnection`:
+    both have the same interface, but the client supports multiple threads and
+    connections, which is essential when using callbacks.  """
     
     def __init__(self, address='localhost', port=25333, auto_close=True, gateway_property=None):
         """
