@@ -41,7 +41,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'Py4J'
-copyright = u'2009-2010, Barthélémy Dagenais'
+copyright = u'2009-2011, Barthélémy Dagenais'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

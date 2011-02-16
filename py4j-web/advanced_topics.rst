@@ -412,15 +412,18 @@ how to create and use a `JVMView`:
 ::  
   
   >>> module1_view = gateway.new_jvm_view()
+  >>> module2_view = gateway.new_jvm_view()
   >>> jList2 = module1_view.ArrayList()
   Py4JError: Trying to call a package.
   ...
   >>> java_import(module1_view,'java.util.ArrayList')
   >>> jList2 = module1_view.ArrayList()
-  >>> jMap2 = module1_view.HashMap()
+  >>> jList3 = module2_view.ArrayList()
   Py4JError: Trying to call a package.
   ...
 
+As you can see from the previous example, the import of `java.util.ArrayList`
+only affects `module1_view`.
 
 .. note::
   In fact, the `gateway.jvm` member is also an instance of :class:`JVMView

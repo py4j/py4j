@@ -75,6 +75,29 @@ when you create the gateway:
   >>> object = gateway.entry_point.getObject()
   >>> field_value = object.public_field
 
+How to import a class?
+----------------------
+
+As in Java, you can always access any class using its fully qualified name, but
+you can also import the fully qualified name to only refer to the simple name
+later on:
+
+::
+
+  >>> from py4j.java_gateway import JavaGateway
+  >>> from py4j.java_gateway import java_import
+  >>> gateway = JavaGateway()
+  >>> jList1 = gateway.jvm.java.util.ArrayList()
+  >>> java_import(gateway.jvm,'java.util.*')
+  >>> jList2 = gateway.jvm.ArrayList()
+  >>> jMap = gateway.jvm.HashMap()
+  >>> gateway.jvm.java.lang.String("a")
+  u'a'
+  >>> gateway.jvm.String("a")
+  u'a'
+
+Read how to use :ref:`jvm views <jvm_views>` to make sure that an import
+statement only affects the current Python module.
 
 How to create an array?
 -----------------------

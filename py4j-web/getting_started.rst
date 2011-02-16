@@ -236,6 +236,10 @@ exception that was thrown on the Java side and its stack trace. Read the
 :ref:`advanced topics <py4j_exceptions>` for more information on exceptions
 raised by Py4J.
 
+
+Collections, Help, and Constructors
+-----------------------------------
+
 Now, you will experiment with lists. Add another element and get the internal
 list of the stack:
 
