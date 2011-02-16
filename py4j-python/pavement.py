@@ -10,7 +10,7 @@ import os.path
 
 DOC_DIR = 'doc'
 DIST_DIR = 'dist'
-VERSION = '0.5'
+VERSION = '0.6'
 RELEASE = 'py4j-' + VERSION
 JAR_FILE = 'py4j' + VERSION + '.jar'
 JAR_FILE_PATH = os.path.join('py4j-java',JAR_FILE)
