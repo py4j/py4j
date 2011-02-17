@@ -1,8 +1,17 @@
 Changelog
 =========
 
-The changelog describes in plain English the changes that occurred between Py4J releases. Please look at the `roadmap
-<http://sourceforge.net/apps/trac/py4j/roadmap?show=all>`_ for more detailed information. 
+The changelog describes in plain English the changes that occurred between Py4J releases.
+
+Py4J 0.6
+--------
+
+- Added new exception ``Py4JJavaError`` that enables Python client programs to access
+  instance of Java exception thrown in the Java client code.
+- Improved Py4J setup: no more warnings displayed when installing Py4J.
+- Bug fixes and API additions.
+- `github 0.6 milestone
+  <https://github.com/bartdag/py4j/issues/labels/v0.6>`_
 
 Py4J 0.5
 --------
