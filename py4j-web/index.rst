@@ -63,6 +63,7 @@ Resources
 News
 ====
 
+* **February 17th 2010** - Py4J 0.6 has been released. See the :doc:`changelog` for more details about the new features.
 * **October 30th 2010** - Py4J 0.5 has been released. See the :doc:`changelog` for more details about the new features.
 * **September 19th 2010** - Py4J 0.4 has been released. See the :doc:`changelog` for more details about the new features.
 * **April 27th 2010** - Py4J 0.3 has been released. See the :doc:`changelog` for more details about the new features!

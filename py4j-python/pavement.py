@@ -123,7 +123,7 @@ def deploy():
     """Deploy web site on sourceforge."""
     docdir = path(DOC_DIR)
     docdir.symlink('htdocs')
-    scp_dir('htdocs', 'barthe,py4j@web.sourceforge.net:/home/groups/p/py/py4j')
+    scp_dir('htdocs', 'barthe@web.sourceforge.net:/home/project-web/py4j')
     htdocs = path('htdocs')
     htdocs.remove()
     
