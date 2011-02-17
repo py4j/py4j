@@ -2,7 +2,7 @@
 <feature
       id="net.sf.py4j.defaultserver.feature"
       label="Py4J Default Server"
-      version="0.5.0.qualifier"
+      version="0.6.0.qualifier"
       provider-name="Py4J">
 
    <description url="http://py4j.sourceforge.net/">

@@ -1,19 +1,19 @@
-/*******************************************************************************
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- *
+/**
+ * Copyright (c) 2011, Barthelemy Dagenais All rights reserved.
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * - Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *
+ * 
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *
+ * 
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,58 +25,39 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
-package py4j;
+ */
 
-import java.io.Closeable;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+package py4j;
 
 /**
  * <p>
- * Utility class used to perform network operations.
+ * Exception raised when an exception is thrown in the client code.
  * </p>
  * 
  * @author Barthelemy Dagenais
  * 
  */
-public class NetworkUtil {
+public class Py4JJavaException extends Py4JException {
 
-	private final static Logger logger = Logger.getLogger(NetworkUtil.class
-			.getName());
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8121049552991788743L;
 
-	public static void quietlyClose(Closeable closeable) {
-		try {
-			if (closeable != null) {
-				closeable.close();
-			}
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Closeable cannot be closed.", e);
-		}
+	public Py4JJavaException() {
 	}
 
-	public static void quietlyClose(Socket closeable) {
-		try {
-			if (closeable != null) {
-				closeable.shutdownInput();
-				closeable.shutdownOutput();
-				closeable.close();
-			}
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Socket cannot be closed.", e);
-		}
+	public Py4JJavaException(String message) {
+		super(message);
 	}
 
-	public static void quietlyClose(ServerSocket closeable) {
-		try {
-			if (closeable != null) {
-				closeable.close();
-			}
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Socket cannot be closed.", e);
-		}
+	public Py4JJavaException(Throwable cause) {
+		super(cause);
 	}
+
+	public Py4JJavaException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 
 }

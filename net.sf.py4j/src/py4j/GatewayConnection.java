@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2009, 2010, Barthelemy Dagenais All rights reserved.
+ * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -47,6 +47,7 @@ import py4j.commands.ArrayCommand;
 import py4j.commands.CallCommand;
 import py4j.commands.Command;
 import py4j.commands.ConstructorCommand;
+import py4j.commands.ExceptionCommand;
 import py4j.commands.FieldCommand;
 import py4j.commands.HelpPageCommand;
 import py4j.commands.JVMViewCommand;
@@ -78,13 +79,13 @@ import py4j.commands.ShutdownGatewayServerCommand;
 public class GatewayConnection implements Runnable {
 
 	private final static List<Class<? extends Command>> baseCommands;
-	private final Gateway gateway;
 	private final Socket socket;
 	private final BufferedWriter writer;
 	private final BufferedReader reader;
 	private final Map<String, Command> commands;
 	private final Logger logger = Logger.getLogger(GatewayConnection.class
 			.getName());
+	private final List<GatewayServerListener> listeners;
 
 	static {
 		baseCommands = new ArrayList<Class<? extends Command>>();
@@ -98,12 +99,12 @@ public class GatewayConnection implements Runnable {
 		baseCommands.add(ReflectionCommand.class);
 		baseCommands.add(ShutdownGatewayServerCommand.class);
 		baseCommands.add(JVMViewCommand.class);
+		baseCommands.add(ExceptionCommand.class);
 	}
 
 	public GatewayConnection(Gateway gateway, Socket socket,
-			List<Class<? extends Command>> customCommands) throws IOException {
+			List<Class<? extends Command>> customCommands, List<GatewayServerListener> listeners) throws IOException {
 		super();
-		this.gateway = gateway;
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(
 				socket.getInputStream(), Charset.forName("UTF-8")));
@@ -114,12 +115,13 @@ public class GatewayConnection implements Runnable {
 		if (customCommands != null) {
 			initCommands(gateway, customCommands);
 		}
+		this.listeners = listeners;
 		Thread t = new Thread(this);
 		t.start();
 	}
 
 	public GatewayConnection(Gateway gateway, Socket socket) throws IOException {
-		this(gateway, socket, null);
+		this(gateway, socket, null, new ArrayList<GatewayServerListener>());
 	}
 
 	/**
@@ -160,15 +162,18 @@ public class GatewayConnection implements Runnable {
 
 	@Override
 	public void run() {
+		boolean executing = false;
 		try {
 			logger.info("Gateway Connection ready to receive messages");
 			String commandLine = null;
 			do {
 				commandLine = reader.readLine();
+				executing = true;
 				logger.info("Received command: " + commandLine);
 				Command command = commands.get(commandLine);
 				if (command != null) {
 					command.execute(commandLine, reader, writer);
+					executing = false;
 				} else {
 					logger.log(Level.WARNING, "Unknown command " + commandLine);
 				}
@@ -176,12 +181,35 @@ public class GatewayConnection implements Runnable {
 		} catch (Exception e) {
 			logger.log(Level.WARNING,
 					"Error occurred while waiting for a command.", e);
+			if (executing && writer != null) {
+				quietSendError(writer, e);
+			}
 		} finally {
-			logger.log(Level.INFO, "Closing connection.");
-			// NetworkUtil.quietlyClose(writer);
-			// NetworkUtil.quietlyClose(reader);
 			NetworkUtil.quietlyClose(socket);
-			gateway.closeConnection();
+			fireConnectionStopped();
+		}
+	}
+	
+	protected void fireConnectionStopped() {
+		logger.info("Connection Stopped");
+		
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.connectionStopped();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
+	}
+
+	private void quietSendError(BufferedWriter writer, Throwable exception) {
+		try {
+			String returnCommand = Protocol.getOutputErrorCommand(exception);
+			logger.warning("Trying to return error: " + returnCommand);
+			writer.write(returnCommand);
+			writer.flush();
+		} catch (Exception e) {
+
 		}
 	}
 

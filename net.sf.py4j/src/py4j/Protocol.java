@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- * Copyright (c) 2009, 2010, Barthelemy Dagenais All rights reserved.
+ * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -163,6 +163,18 @@ public class Protocol {
 	public final static int getInteger(String commandPart) {
 		return Integer.parseInt(commandPart.substring(1, commandPart.length()));
 	}
+	
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return The long value corresponding to this command part.
+	 */
+	public final static long getLong(String commandPart) {
+		return Long.parseLong(commandPart.substring(1, commandPart.length()));
+	}
 
 	public final static String getMemberOutputCommand(char memberType) {
 		StringBuilder builder = new StringBuilder();
@@ -212,7 +224,11 @@ public class Protocol {
 			case DOUBLE_TYPE:
 				return getDouble(commandPart);
 			case INTEGER_TYPE:
-				return getInteger(commandPart);
+				try {
+					return getInteger(commandPart);
+				} catch (NumberFormatException e) {
+					return getLong(commandPart);
+				}
 			case NULL_TYPE:
 				return getNull(commandPart);
 			case VOID:
@@ -248,11 +264,21 @@ public class Protocol {
 	}
 
 	public final static String getOutputErrorCommand(String errorMessage) {
-		return ERROR + errorMessage + END_OUTPUT;
+		StringBuilder builder = new StringBuilder();
+		builder.append(ERROR);
+		builder.append(Protocol.STRING_TYPE);
+		builder.append(StringUtil.escape(errorMessage));
+		builder.append(END_OUTPUT);
+		return builder.toString();
 	}
 
 	public final static String getOutputErrorCommand(Throwable throwable) {
-		return ERROR + getThrowableAsString(throwable) + END_OUTPUT;
+		StringBuilder builder = new StringBuilder();
+		builder.append(ERROR);
+		builder.append(Protocol.STRING_TYPE);
+		builder.append(StringUtil.escape(getThrowableAsString(throwable)));
+		builder.append(END_OUTPUT);
+		return builder.toString();
 	}
 
 	public final static Throwable getRootThrowable(Throwable throwable,
@@ -280,7 +306,7 @@ public class Protocol {
 		StringWriter stringWriter = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(stringWriter);
 		root.printStackTrace(printWriter);
-		return StringUtil.escape(stringWriter.toString());
+		return stringWriter.toString();
 	}
 
 	public final static String getOutputVoidCommand() {

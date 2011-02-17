@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, Barthelemy Dagenais All rights reserved.
+ * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,6 +29,7 @@
 package py4j.reflection;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import py4j.Py4JException;
+import py4j.Py4JJavaException;
 
 /**
  * <p>
@@ -119,6 +121,9 @@ public class MethodInvoker {
 				constructor.setAccessible(true);
 				returnObject = constructor.newInstance(newArguments);
 			}
+		} catch (InvocationTargetException ie) {
+			logger.log(Level.WARNING, "Exception occurred in client code.", ie);
+			throw new Py4JJavaException (ie.getCause());
 		} catch (Exception e) {
 			logger
 					.log(
