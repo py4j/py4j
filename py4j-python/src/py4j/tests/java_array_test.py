@@ -3,6 +3,7 @@ Created on Mar 24, 2010
 
 @author: Barthelemy Dagenais
 '''
+from __future__ import unicode_literals
 from multiprocessing.process import Process
 import subprocess
 import time
@@ -46,12 +47,12 @@ class Test(unittest.TestCase):
         self.assertEqual(3, len(array1))
         self.assertEqual(4, len(array2))
 
-        self.assertEqual(u'333', array1[2])
+        self.assertEqual('333', array1[2])
         self.assertEqual(5, array2[1])
 
         array1[2] = 'aaa'
         array2[1] = 6
-        self.assertEqual(u'aaa', array1[2])
+        self.assertEqual('aaa', array1[2])
         self.assertEqual(6, array2[1])
 
         new_array = array2[1:3]

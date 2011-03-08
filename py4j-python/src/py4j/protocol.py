@@ -16,6 +16,9 @@ Created on Oct 14, 2010
 
 :author: Barthelemy Dagenais
 '''
+from py4j.compat import long, basestring
+
+
 ESCAPE_CHAR = "\\"
 
 # Entry point

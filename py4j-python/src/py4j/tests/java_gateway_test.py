@@ -3,6 +3,7 @@ Created on Dec 10, 2009
 
 @author: barthelemy
 '''
+from __future__ import unicode_literals
 from multiprocessing.process import Process
 from socket import AF_INET, SOCK_STREAM, socket
 from threading import Thread
@@ -17,6 +18,7 @@ from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
 from py4j.java_gateway import JavaGateway, JavaMember, get_field, get_method, \
      GatewayClient, set_field, java_import, JavaObject
+from py4j.compat import range
 
 
 SERVER_PORT = 25333
@@ -90,7 +92,7 @@ class ProtocolTest(unittest.TestCase):
 
     def testEscape(self):
         self.assertEqual("Hello\t\rWorld\n\\", unescape_new_line(escape_new_line("Hello\t\rWorld\n\\")))
-        self.assertEqual(u"Hello\t\rWorld\n\\", unescape_new_line(escape_new_line(u"Hello\t\rWorld\n\\")))
+        self.assertEqual("Hello\t\rWorld\n\\", unescape_new_line(escape_new_line("Hello\t\rWorld\n\\")))
 
     def testProtocolSend(self):
         testConnection = TestConnection()
@@ -179,7 +181,7 @@ class IntegrationTest(unittest.TestCase):
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yro0\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
-            testSocket.sendall('x\n')
+            testSocket.sendall(b'x\n')
             testSocket.close()
             time.sleep(1)
 
@@ -235,13 +237,13 @@ class MethodTest(unittest.TestCase):
 
     def testUnicode(self):
         sb = self.gateway.jvm.java.lang.StringBuffer()
-        sb.append(u'\r\n\tHello\r\n\t')
-        self.assertEqual(u'\r\n\tHello\r\n\t', sb.toString())
+        sb.append('\r\n\tHello\r\n\t')
+        self.assertEqual('\r\n\tHello\r\n\t', sb.toString())
 
     def testEscape(self):
         sb = self.gateway.jvm.java.lang.StringBuffer()
         sb.append('\r\n\tHello\r\n\t')
-        self.assertEqual(u'\r\n\tHello\r\n\t', sb.toString())
+        self.assertEqual('\r\n\tHello\r\n\t', sb.toString())
 
 
 class FieldTest(unittest.TestCase):
@@ -260,7 +262,7 @@ class FieldTest(unittest.TestCase):
         self.assertEqual(ex.field10, 10)
         sb = ex.field20
         sb.append('Hello')
-        self.assertEqual(u'Hello', sb.toString())
+        self.assertEqual('Hello', sb.toString())
         self.assertTrue(ex.field21 == None)
 
     def testNoField(self):
@@ -285,7 +287,7 @@ class FieldTest(unittest.TestCase):
         ex._auto_field = True
         sb = ex.field20
         sb.append('Hello')
-        self.assertEqual(u'Hello', sb.toString())
+        self.assertEqual('Hello', sb.toString())
 
         try:
             get_field(ex, 'field20')
@@ -302,7 +304,7 @@ class FieldTest(unittest.TestCase):
 
         sb = self.gateway.jvm.java.lang.StringBuffer('Hello World!')
         set_field(ex, 'field21', sb)
-        self.assertEquals(get_field(ex, 'field21').toString(), u'Hello World!')
+        self.assertEquals(get_field(ex, 'field21').toString(), 'Hello World!')
 
         try:
             set_field(ex, 'field1', 123)
@@ -458,14 +460,14 @@ class JVMTest(unittest.TestCase):
         sb = jvm.java.lang.StringBuffer('hello')
         sb.append('hello world')
         sb.append(1)
-        self.assertEqual(sb.toString(), u'hellohello world1')
+        self.assertEqual(sb.toString(), 'hellohello world1')
 
         l1 = jvm.java.util.ArrayList()
         l1.append('hello world')
         l1.append(1)
         self.assertEqual(2, len(l1))
-        self.assertEqual(u'hello world', l1[0])
-        l2 = [u'hello world', 1]
+        self.assertEqual('hello world', l1[0])
+        l2 = ['hello world', 1]
         print(l1)
         print(l2)
         self.assertEqual(str(l2), str(l1))
@@ -473,7 +475,7 @@ class JVMTest(unittest.TestCase):
     def testStaticMethods(self):
         System = self.gateway.jvm.java.lang.System
         self.assertTrue(System.currentTimeMillis() > 0)
-        self.assertEqual(u'123', self.gateway.jvm.java.lang.String.valueOf(123))
+        self.assertEqual('123', self.gateway.jvm.java.lang.String.valueOf(123))
 
     def testStaticFields(self):
         Short = self.gateway.jvm.java.lang.Short
@@ -483,7 +485,7 @@ class JVMTest(unittest.TestCase):
 
     def testDefaultImports(self):
         self.assertTrue(self.gateway.jvm.System.currentTimeMillis() > 0)
-        self.assertEqual(u'123', self.gateway.jvm.String.valueOf(123))
+        self.assertEqual('123', self.gateway.jvm.String.valueOf(123))
 
     def testNone(self):
         ex = self.gateway.entry_point.getNewExample()
@@ -581,9 +583,9 @@ class ThreadTest(unittest.TestCase):
 #        runner2 = Runner(xrange(1000,1000000,10000), self.gateway)
 #        runner3 = Runner(xrange(1000,1000000,10000), self.gateway)
         # Small stress test
-        runner1 = Runner(xrange(1, 10000, 1000), self.gateway)
-        runner2 = Runner(xrange(1000, 1000000, 100000), self.gateway)
-        runner3 = Runner(xrange(1000, 1000000, 100000), self.gateway)
+        runner1 = Runner(range(1, 10000, 1000), self.gateway)
+        runner2 = Runner(range(1000, 1000000, 100000), self.gateway)
+        runner3 = Runner(range(1000, 1000000, 100000), self.gateway)
         runner1.start()
         runner2.start()
         runner3.start()

@@ -11,6 +11,7 @@ import unittest
 
 from py4j.java_gateway import JavaGateway
 from py4j.tests.java_gateway_test import PY4J_JAVA_PATH
+from py4j.compat import range
 
 
 def start_example_server():
@@ -30,7 +31,7 @@ class TestJVM1(Thread):
         self.gateway = gateway
 
     def run(self):
-        for i in xrange(3):
+        for i in range(3):
             print(self.gateway.jvm.java.lang.System.currentTimeMillis())
             time.sleep(0.5)
 
@@ -41,7 +42,7 @@ class TestJVM2(Thread):
         self.System = System
 
     def run(self):
-        for i in xrange(3):
+        for i in range(3):
             print(self.System.currentTimeMillis())
             time.sleep(0.5)
 
@@ -52,7 +53,7 @@ class TestJVM3(Thread):
         self.jvm = jvm
 
     def run(self):
-        for i in xrange(3):
+        for i in range(3):
             print(self.jvm.java.lang.System.currentTimeMillis())
             time.sleep(0.5)
 
@@ -86,7 +87,7 @@ class JVMMultiProcessTest(unittest.TestCase):
         time.sleep(0.5)
 
     def testMultiProcessJVMAccess(self):
-        workers = [TestJVM1(self.gateway) for _ in xrange(8)]
+        workers = [TestJVM1(self.gateway) for _ in range(8)]
 
         for worker in workers:
             worker.start()
@@ -96,7 +97,7 @@ class JVMMultiProcessTest(unittest.TestCase):
 
     def testMultiProcessSystemReference(self):
         System = self.gateway.jvm.java.lang.System
-        workers = [TestJVM2(System) for _ in xrange(8)]
+        workers = [TestJVM2(System) for _ in range(8)]
 
         for worker in workers:
             worker.start()
@@ -106,7 +107,7 @@ class JVMMultiProcessTest(unittest.TestCase):
 
     def testMultiProcessJVMReference(self):
         jvm = self.gateway.jvm
-        workers = [TestJVM3(jvm) for _ in xrange(8)]
+        workers = [TestJVM3(jvm) for _ in range(8)]
 
         for worker in workers:
             worker.start()
@@ -116,7 +117,7 @@ class JVMMultiProcessTest(unittest.TestCase):
 
     def testMultiProcessJVMError(self):
         System = self.gateway.jvm.java.lang.System
-        workers = [TestJVM4(System) for _ in xrange(8)]
+        workers = [TestJVM4(System) for _ in range(8)]
 
         for worker in workers:
             worker.start()

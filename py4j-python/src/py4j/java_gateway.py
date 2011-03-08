@@ -20,6 +20,7 @@ import os
 
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
+from py4j.compat import range
 
 
 class NullHandler(logging.Handler):
@@ -258,7 +259,7 @@ class GatewayConnection(object):
         """Starts the connection by connecting to the `address` and the `port`"""
         self.socket.connect((self.address, self.port))
         self.is_connected = True
-        self.stream = self.socket.makefile('r', 0)
+        self.stream = self.socket.makefile('rb', 0)
 
     def close(self, throw_exception=False):
         """Closes the connection by closing the socket."""
@@ -703,7 +704,7 @@ class CallbackServer(object):
 
             while not self.is_shutdown:
                 socket, _ = self.server_socket.accept()
-                input = socket.makefile('r', 0)
+                input = socket.makefile('rb', 0)
                 connection = CallbackConnection(self.pool, input, socket, self.gateway_client)
                 with self.lock:
                     if not self.is_shutdown:

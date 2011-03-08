@@ -10,6 +10,8 @@ Created on Mar 7, 2010
 
 from threading import RLock
 
+from py4j.compat import items
+
 
 class ThreadSafeFinalizer(object):
     """A `ThreadSafeFinalizer` is a global class used to register weak reference finalizers
@@ -57,7 +59,7 @@ class ThreadSafeFinalizer(object):
             if clear_all:
                 cls.finalizers.clear()
             else:
-                for id, ref in cls.finalizers.items():
+                for id, ref in items(cls.finalizers):
                     if ref() is None:
                         cls.finalizers.pop(id, None)
 
@@ -104,7 +106,7 @@ class Finalizer(object):
         if clear_all:
             cls.finalizers.clear()
         else:
-            for id, ref in cls.finalizers.items():
+            for id, ref in items(cls.finalizers):
                 if ref() is None:
                     cls.finalizers.pop(id, None)
 

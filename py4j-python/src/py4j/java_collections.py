@@ -9,9 +9,11 @@ Created on Jan 22, 2010
 :author: Barthelemy Dagenais
 '''
 from collections import MutableMapping, Sequence, MutableSequence, MutableSet, Set
+import sys
 
 from py4j.java_gateway import JavaObject, JavaMember, get_method, JavaClass
 from py4j.protocol import *
+from py4j.compat import iteritems, next
 
 
 class JavaIterator(JavaObject):
@@ -38,6 +40,8 @@ class JavaIterator(JavaObject):
             return self._methods[self._next_name]()
         except Py4JError:
             raise StopIteration()
+    
+    __next__ = next
 
 
 class JavaMap(JavaObject, MutableMapping):
@@ -70,23 +74,30 @@ class JavaMap(JavaObject, MutableMapping):
     def __str__(self):
         return self.__repr__()
 
-    def __repr__(self):
-        # TODO Make it more efficient/pythonic
-        # TODO Debug why strings are not outputed with apostrophes.
-        if len(self) == 0:
-            return '{}'
-        else:
-            srep = '{'
-            for key in self:
-                srep += repr(key) + ': ' + repr(self[key]) + ', '
+#    def __repr__(self):
+#        # TODO Make it more efficient/pythonic
+#        # TODO Debug why strings are not outputed with apostrophes.
+#        if len(self) == 0:
+#            return '{}'
+#        else:
+#            srep = '{'
+#            for key in self:
+#                srep += repr(key) + ': ' + repr(self[key]) + ', '
+#
+#            return srep[:-2] + '}'
 
-            return srep[:-2] + '}'
+    def __repr__(self):
+        items = ('{0}: {1}'.format(repr(k), repr(v)) for k, v in iteritems(self))
+        return '{{{0}}}'.format(', '.join(items))
 
 
 class JavaSet(JavaObject, MutableSet):
     """Maps a Python Set to a Java Set.
 
     All operations possible on a Python set are implemented."""
+
+    __EMPTY_SET = 'set([])' if sys.version_info[0] < 3 else 'set()'
+    __SET_TEMPLATE = 'set([{0}])' if sys.version_info[0] < 3 else '{{{0}}}'
 
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
@@ -122,14 +133,9 @@ class JavaSet(JavaObject, MutableSet):
         return self.__repr__()
 
     def __repr__(self):
-        if len(self) == 0:
-            return 'set([])'
-        else:
-            srep = 'set(['
-            for value in self:
-                srep += repr(value) + ', '
-
-            return srep[:-2] + '])'
+        if len(self):
+            return self.__SET_TEMPLATE.format(', '.join((repr(x) for x in self)))
+        return self.__EMPTY_SET
 
 
 class JavaArray(JavaObject, Sequence):
@@ -182,7 +188,7 @@ class JavaArray(JavaObject, Sequence):
     def __repl_item_from_slice(self, range, iterable):
         value_iter = iter(iterable)
         for i in range:
-            value = value_iter.next()
+            value = next(value_iter)
             self.__set_item(i, value)
 
     def __set_item(self, key, value):
@@ -225,6 +231,9 @@ class JavaList(JavaObject, MutableSequence):
     will create a copy of the list on the JVM. Slicing is thus not equivalent to subList(), because
     a modification to a slice such as the addition of a new element will not affect the original
     list."""
+    
+    __EMPTY_SET = '[]' if sys.version_info[0] < 3 else '{}'
+    __REPR_TEMPLATE = 'set([%s])' if sys.version_info[0] < 3 else '{%s}'
 
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
@@ -263,7 +272,7 @@ class JavaList(JavaObject, MutableSequence):
         # First replace and delete if from_slice > to_slice
         for i in range(*indices):
             try:
-                value = value_iter.next()
+                value = next(value_iter)
                 self.__set_item(i, value)
             except StopIteration:
                 self.__del_item(i)
@@ -284,7 +293,7 @@ class JavaList(JavaObject, MutableSequence):
     def __repl_item_from_slice(self, range, iterable):
         value_iter = iter(iterable)
         for i in range:
-            value = value_iter.next()
+            value = value = next(value_iter)
             self.__set_item(i, value)
 
     def __append_item_from_slice(self, range, iterable):
@@ -426,14 +435,8 @@ class JavaList(JavaObject, MutableSequence):
         return self.__repr__()
 
     def __repr__(self):
-        if len(self) == 0:
-            return '[]'
-        else:
-            srep = '['
-            for elem in self:
-                srep += repr(elem) + ', '
-
-            return srep[:-2] + ']'
+        items = (repr(x) for x in self)
+        return '[{0}]'.format(', '.join(items))
 
 
 class SetConverter(object):

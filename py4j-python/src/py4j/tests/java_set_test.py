@@ -3,6 +3,7 @@ Created on Mar 26, 2010
 
 @author: Barthelemy Dagenais
 '''
+from __future__ import unicode_literals
 from multiprocessing.process import Process
 import subprocess
 import time
@@ -64,59 +65,59 @@ class Test(unittest.TestCase):
 #        self.gateway.jvm.py4j.GatewayServer.turnLoggingOn()
         set1 = set()
         set2 = self.gateway.jvm.java.util.TreeSet()
-        set1.add(u'a')
-        set2.add(u'a')
+        set1.add('a')
+        set2.add('a')
         self.assertEqual(len(set1), len(set2))
-        self.assertEqual(u'a' in set1, u'a' in set2)
+        self.assertEqual('a' in set1, 'a' in set2)
         self.assertEqual(repr(set1), repr(set2))
 
-        set1.add(u'b')
-        set2.add(u'b')
+        set1.add('b')
+        set2.add('b')
         self.assertEqual(len(set1), len(set2))
-        self.assertEqual(u'a' in set1, u'a' in set2)
-        self.assertEqual(u'b' in set1, u'b' in set2)
+        self.assertEqual('a' in set1, 'a' in set2)
+        self.assertEqual('b' in set1, 'b' in set2)
         self.assertEqual(repr(set1), repr(set2))
 
-        set1.remove(u'a')
-        set2.remove(u'a')
+        set1.remove('a')
+        set2.remove('a')
         self.assertEqual(len(set1), len(set2))
-        self.assertEqual(u'a' in set1, u'a' in set2)
-        self.assertEqual(u'b' in set1, u'b' in set2)
+        self.assertEqual('a' in set1, 'a' in set2)
+        self.assertEqual('b' in set1, 'b' in set2)
         self.assertEqual(repr(set1), repr(set2))
 
         set1.clear()
         set2.clear()
         self.assertEqual(len(set1), len(set2))
-        self.assertEqual(u'a' in set1, u'a' in set2)
-        self.assertEqual(u'b' in set1, u'b' in set2)
+        self.assertEqual('a' in set1, 'a' in set2)
+        self.assertEqual('b' in set1, 'b' in set2)
         self.assertEqual(repr(set1), repr(set2))
 
     def testHashSet(self):
         set1 = set()
         set2 = self.gateway.jvm.java.util.HashSet()
-        set1.add(u'a')
-        set2.add(u'a')
+        set1.add('a')
+        set2.add('a')
         set1.add(1)
         set2.add(1)
-        set1.add(u'b')
-        set2.add(u'b')
+        set1.add('b')
+        set2.add('b')
         self.assertEqual(len(set1), len(set2))
-        self.assertEqual(u'a' in set1, u'a' in set2)
-        self.assertEqual(u'b' in set1, u'b' in set2)
+        self.assertEqual('a' in set1, 'a' in set2)
+        self.assertEqual('b' in set1, 'b' in set2)
         self.assertEqual(1 in set1, 1 in set2)
 
         set1.remove(1)
         set2.remove(1)
         self.assertEqual(len(set1), len(set2))
-        self.assertEqual(u'a' in set1, u'a' in set2)
-        self.assertEqual(u'b' in set1, u'b' in set2)
+        self.assertEqual('a' in set1, 'a' in set2)
+        self.assertEqual('b' in set1, 'b' in set2)
         self.assertEqual(1 in set1, 1 in set2)
 
         set1.clear()
         set2.clear()
         self.assertEqual(len(set1), len(set2))
-        self.assertEqual(u'a' in set1, u'a' in set2)
-        self.assertEqual(u'b' in set1, u'b' in set2)
+        self.assertEqual('a' in set1, 'a' in set2)
+        self.assertEqual('b' in set1, 'b' in set2)
         self.assertEqual(1 in set1, 1 in set2)
 
 

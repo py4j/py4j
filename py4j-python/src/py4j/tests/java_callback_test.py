@@ -11,6 +11,7 @@ import unittest
 
 from py4j.java_gateway import JavaGateway, PythonProxyPool
 from py4j.tests.java_gateway_test import PY4J_JAVA_PATH
+from py4j.compat import range
 
 
 def start_example_server():
@@ -83,7 +84,7 @@ class TestPool(unittest.TestCase):
 
     def testPool(self):
         pool = PythonProxyPool()
-        runners = [Runner(xrange(0, 10000), pool) for _ in xrange(0, 3)]
+        runners = [Runner(range(0, 10000), pool) for _ in range(0, 3)]
         for runner in runners:
             runner.start()
 
