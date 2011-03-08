@@ -3,11 +3,11 @@ The protocol module defines the primitives and the escaping used by
 Py4J protocol.
 
 This is a text-based protocol that is efficient for general-purpose
-method calling, but very inefficient with large numbers (becayse 
+method calling, but very inefficient with large numbers (because
 they are text-based).
 
 Binary protocol (e.g., protobuf) was considered in the past, but
-internal benchmarking showed that it was less efficient in 
+internal benchmarking showed that it was less efficient in
 terms of size and time. This is due to the fact that a lot
 of small strings are exchanged (method name, class name, variable
 names, etc.).
@@ -38,10 +38,10 @@ SET_TYPE = 'h'
 LIST_TYPE = 'l'
 MAP_TYPE = 'a'
 NULL_TYPE = 'n'
-PACKAGE_TYPE = 'p';
-CLASS_TYPE = 'c';
-METHOD_TYPE = 'm';
-NO_MEMBER = 'o';
+PACKAGE_TYPE = 'p'
+CLASS_TYPE = 'c'
+METHOD_TYPE = 'm'
+NO_MEMBER = 'o'
 VOID_TYPE = 'v'
 ITERATOR_TYPE = 'g'
 PYTHON_PROXY_TYPE = 'f'
@@ -50,7 +50,6 @@ PYTHON_PROXY_TYPE = 'f'
 END = 'e'
 ERROR = 'x'
 SUCCESS = 'y'
-
 
 
 # Shortcuts
@@ -70,8 +69,8 @@ REFLECTION_COMMAND_NAME = "r\n"
 MEMORY_COMMAND_NAME = "m\n"
 HELP_COMMAND_NAME = 'h\n'
 ARRAY_COMMAND_NAME = "a\n"
-JVMVIEW_COMMAND_NAME = "j\n";
-EXCEPTION_COMMAND_NAME = "p\n";
+JVMVIEW_COMMAND_NAME = "j\n"
+EXCEPTION_COMMAND_NAME = "p\n"
 
 # Array subcommands
 ARRAY_GET_SUB_COMMAND_NAME = 'g\n'
@@ -83,7 +82,7 @@ ARRAY_CREATE_SUB_COMMAND_NAME = 'c\n'
 # Reflection subcommands
 REFL_GET_UNKNOWN_SUB_COMMAND_NAME = 'u\n'
 REFL_GET_MEMBER_SUB_COMMAND_NAME = 'm\n'
-    
+
 
 # List subcommands
 LIST_SORT_SUBCOMMAND_NAME = 's\n'
@@ -128,24 +127,26 @@ OUTPUT_CONVERTER = {NULL_TYPE: (lambda x, y: None),
 
 INPUT_CONVERTER = []
 
+
 def escape_new_line(original):
     """Replaces new line characters by a backslash followed by a n.
-    
+
     Backslashes are also escaped by another backslash.
-    
+
     :param original: the string to escape
-    
+
     :rtype: an escaped string
     """
     return original.replace('\\', '\\\\').replace('\r', '\\r').replace('\n', '\\n')
 
+
 def unescape_new_line(escaped):
     """Replaces escaped characters by unescaped characters.
-    
+
     For example, double backslashes are replaced by a single backslash.
-    
+
     :param escaped: the escaped string
-    
+
     :rtype: the original string
     """
     escaping = False
@@ -164,10 +165,10 @@ def unescape_new_line(escaped):
             else:
                 original += c
             escaping = False
-            
+
     return original
 
-    
+
 def is_python_proxy(parameter):
     """Determines whether parameter is a Python Proxy, i.e., it has a Java internal class with an
     implements member.
@@ -178,14 +179,15 @@ def is_python_proxy(parameter):
         is_proxy = len(parameter.Java.implements) > 0
     except:
         is_proxy = False
-    
+
     return is_proxy
-    
+
+
 def get_command_part(parameter, python_proxy_pool=None):
     """Converts a Python object into a string representation respecting the Py4J protocol.
-    
+
     For example, the integer `1` is converted to `u'i1'`
-    
+
     :param parameter: the object to convert
     :rtype: the string representing the command part
     """
@@ -197,7 +199,7 @@ def get_command_part(parameter, python_proxy_pool=None):
     elif isinstance(parameter, int) or isinstance(parameter, long):
         command_part = INTEGER_TYPE + str(parameter)
     elif isinstance(parameter, float):
-        command_part = DOUBLE_TYPE + str(parameter) 
+        command_part = DOUBLE_TYPE + str(parameter)
     elif isinstance(parameter, basestring):
         command_part = STRING_TYPE + escape_new_line(parameter)
     elif is_python_proxy(parameter):
@@ -206,15 +208,16 @@ def get_command_part(parameter, python_proxy_pool=None):
             command_part += ';' + interface
     else:
         command_part = REFERENCE_TYPE + parameter._get_object_id()
-    
+
     return command_part + '\n'
+
 
 def get_return_value(answer, gateway_client, target_id=None, name=None):
     """Converts an answer received from the Java gateway into a Python object.
-    
-    For example, string representation of integers are converted to Python integer, 
+
+    For example, string representation of integers are converted to Python integer,
     string representation of objects are converted to JavaObject instances, etc.
-    
+
     :param answer: the string returned by the Java gateway
     :param gateway_client: the gateway client used to communicate with the Java Gateway. Only necessary if the answer is a reference (e.g., object, list, map)
     :param target_id: the name of the object from which the answer comes from (e.g., *object1* in `object1.hello()`). Optional.
@@ -236,48 +239,54 @@ def get_return_value(answer, gateway_client, target_id=None, name=None):
             return
         else:
             return OUTPUT_CONVERTER[type](answer[2:], gateway_client)
-        
+
+
 def is_error(answer):
     if len(answer) == 0 or answer[0] != SUCCESS:
         return (True, None)
     else:
         return (False, None)
 
+
 def register_output_converter(output_type, converter):
     """Registers an output converter to the list of global output converters.
-    
+
     :param output_type: A Py4J type of a return object (e.g., MAP_TYPE, BOOLEAN_TYPE).
-    :param converter: A function that takes an object_id and a gateway_client as parameter and that 
-                      returns a Python object (like a `bool` or a `JavaObject` instance). 
-                      
+    :param converter: A function that takes an object_id and a gateway_client as parameter and that
+                      returns a Python object (like a `bool` or a `JavaObject` instance).
+
     """
     global OUTPUT_CONVERTER
     OUTPUT_CONVERTER[output_type] = converter
-    
+
+
 def register_input_converter(converter):
     """Registers an input converter to the list of global input converters.
-    
-    When initialized with `auto_convert=True`, a :class:`JavaGateway <py4j.java_gateway.JavaGateway>` 
-    will use the input converters on any parameter that is not a 
+
+    When initialized with `auto_convert=True`, a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
+    will use the input converters on any parameter that is not a
     :class:`JavaObject <py4j.java_gateway.JavaObject>` or `basestring` instance.
-    
+
     :param converter: A converter that declares the methods `can_convert(object)` and `convert(object,gateway_client)`.
-    
+
     """
     global INPUT_CONVERTER
     INPUT_CONVERTER.append(converter)
+
 
 class Py4JError(Exception):
     """Exception raised when a problem occurs with Py4J."""
     pass
 
+
 class Py4JNetworkError(Py4JError):
     """Exception raised when a network error occurs with Py4J."""
     pass
 
+
 class Py4JJavaError(Py4JError):
     """Exception raised when an exception occurs in the client code.
-    
+
     The exception instance that was thrown on the Java side can be accessed
     with `Py4JJavaError.java_exception`.
 
@@ -290,7 +299,7 @@ class Py4JJavaError(Py4JError):
         self.errmsg = msg
         self.java_exception = java_exception
         self.exception_cmd = EXCEPTION_COMMAND_NAME + REFERENCE_TYPE + java_exception._target_id + '\n' + END_COMMAND_PART
-        
+
     def __str__(self):
         gateway_client = self.java_exception._gateway_client
         answer = gateway_client.send_command(self.exception_cmd)
