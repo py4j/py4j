@@ -406,7 +406,7 @@ class JavaObject(object):
     def __eq__(self, other):
         if other == None:
             return False
-        elif (hasattr(other, '_get_object_id')):
+        elif (hasattr2(other, '_get_object_id')):
             return self.equals(other)
         else:
             return other.__eq__(self)
@@ -638,9 +638,9 @@ class JavaGateway(object):
         :param short_name: If True, only the simple name of the parameter types and return types will be displayed. If False, the fully qualified name of the types will be displayed.
         :param display: If True, the help page is displayed in an interactive page similar to the `help` command in Python. If False, the page is returned as a string.
         """
-        if hasattr(var, '_get_object_id'):
+        if hasattr2(var, '_get_object_id'):
             answer = self._gateway_client.send_command(HELP_COMMAND_NAME + HELP_OBJECT_SUBCOMMAND_NAME + var._get_object_id() + '\n' + get_command_part(pattern) + get_command_part(short_name) + 'e\n')
-        elif hasattr(var, '_fqn'):
+        elif hasattr2(var, '_fqn'):
             answer = self._gateway_client.send_command(HELP_COMMAND_NAME + HELP_CLASS_SUBCOMMAND_NAME + var._fqn + '\n' + get_command_part(pattern) + get_command_part(short_name) + 'e\n')
         else:
             raise Py4JError('var is neither a Java Object nor a Java Class')

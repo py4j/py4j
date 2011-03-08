@@ -453,7 +453,7 @@ class SetConverter(object):
 
 class ListConverter(object):
     def can_convert(self, object):
-        return hasattr(object, '__iter__')
+        return hasattr2(object, '__iter__')
 
     def convert(self, object, gateway_client):
         ArrayList = JavaClass('java.util.ArrayList', gateway_client)
@@ -465,7 +465,7 @@ class ListConverter(object):
 
 class MapConverter(object):
     def can_convert(self, object):
-        return hasattr(object, 'keys') and hasattr(object, '__getitem__')
+        return hasattr2(object, 'keys') and hasattr2(object, '__getitem__')
 
     def convert(self, object, gateway_client):
         HashMap = JavaClass('java.util.HashMap', gateway_client)

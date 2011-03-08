@@ -131,6 +131,16 @@ OUTPUT_CONVERTER = {NULL_TYPE: (lambda x, y: None),
 INPUT_CONVERTER = []
 
 
+def hasattr2(obj, att):
+    """Checks if `obj` has an `att`. Swallows any thrown exceptions.
+    Necessary, thanks to Python 3.2 hasattr "fix"."""
+
+    try:
+        return hasattr(obj, att)
+    except Exception:
+        return False
+
+
 def escape_new_line(original):
     """Replaces new line characters by a backslash followed by a n.
 
