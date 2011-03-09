@@ -1,2 +1,4 @@
 bin/
 javadoc/
+*.swp
+.ant-targets-build.xml

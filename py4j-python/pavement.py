@@ -8,43 +8,6 @@ import paver.doctools
 from paver.setuputils import setup, find_package_data
 import os.path
 
-DOC_DIR = 'doc'
-DIST_DIR = 'dist'
-VERSION = '0.6'
-RELEASE = 'py4j-' + VERSION
-JAR_FILE = 'py4j' + VERSION + '.jar'
-JAR_FILE_PATH = os.path.join('py4j-java',JAR_FILE)
-
-setup(
-    name="Py4J",
-    packages=['py4j', 'py4j.tests'],
-    package_dir={'':'src'},
-    include_package_data = True,
-    data_files=[('share/py4j',[JAR_FILE_PATH])],
-    version=VERSION,
-    description='Enables Python programs to dynamically access arbitrary Java objects',
-    long_description='Py4J enables Python programs running in a Python interpreter to dynamically \
-                    access Java objects in a Java Virtual Machine. Methods are called as if the Java \
-                    objects resided in the Python interpreter and Java collections can be accessed \
-                    through standard Python collection methods. Py4J also enables Java programs to \
-                    call back Python objects.',
-    url="http://py4j.sourceforge.net/",
-    author="Barthelemy Dagenais",
-    author_email="barthe@users.sourceforge.net",
-    license="BSD License",
-    zip_safe = True,
-    classifiers=[
-          'Development Status :: 4 - Beta',
-          'Intended Audience :: Developers',
-          'License :: OSI Approved :: BSD License',
-          'Operating System :: OS Independent',
-          'Programming Language :: Python',
-          'Programming Language :: Java',
-          'Topic :: Software Development :: Libraries',
-          'Topic :: Software Development :: Object Brokering',
-          ],
-
-)
 
 options(
     sphinx=Bunch(
