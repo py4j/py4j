@@ -36,7 +36,7 @@
     <property name="source" value="1.6"/>
 	<property name="jar.name" value="py4j${version}.jar"/>
     <property name="release.name" value="py4j-${version}"/>
-
+    <property name="junit.src.tests" value="test"/>
 
     <property name="py4jpy.dir" value="../py4j-python"/>
     <property name="py4jpy.dist.dir" value="${py4jpy.dir}/dist"/>
@@ -45,6 +45,7 @@
     <property name="py4jdoc.dir" value="../py4j-web"/>
     <property name="doc.src.dir" value="${py4jdoc.dir}/_build/html/"/>
     <property name="doc.dst.dir" value="${py4jpy.dir}/doc" />
+    <property name="htdocs.dst.dir" value="${basedir}/${py4jpy.dir}/htdocs"/>
     <property name="doc.javadoc.dst.dir" value="${doc.dst.dir}/_static/javadoc" />
 
 
@@ -101,7 +102,7 @@
     </target>
     
     <target name="clean-junit">
-        <delete dir="junit.output.dir}"/>
+        <delete dir="${junit.output.dir}"/>
     </target>
     
     <target depends="clean" name="clean-dist">
@@ -112,7 +113,7 @@
         <delete file="${jar.name}"/>
     </target>
 
-    <target depends="clean,clean-javadoc,clean-junit,clean-dist" name="cleanall"/>
+    <target depends="clean,clean-javadoc,clean-junit,clean-dist,clean-jar" name="cleanall"/>
 
     <target depends="cleanall" name="clean-java-release">
         <delete dir="${java.dst.dir}"/>
@@ -137,18 +138,15 @@
     </target>
 
     <!-- JAVA - JUNIT -->
-    <target name="py4j-tests">
+    <target depends="build" name="java-test">
         <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="withOutAndErr">
+        <junit fork="yes" haltonfailure="true" printsummary="on">
             <formatter type="xml"/>
-            <test name="py4j.BufferGatewayTest" todir="${junit.output.dir}"/>
-            <test name="py4j.CallCommandTest" todir="${junit.output.dir}"/>
-            <test name="py4j.DefaultJavaGatewayTest" todir="${junit.output.dir}"/>
-            <test name="py4j.EchoClientTest" todir="${junit.output.dir}"/>
-            <test name="py4j.EchoServerTest" todir="${junit.output.dir}"/>
-            <test name="py4j.ListCommandTest" todir="${junit.output.dir}"/>
-            <test name="py4j.ProtocolTest" todir="${junit.output.dir}"/>
-            <test name="py4j.StringUtilTest" todir="${junit.output.dir}"/>
+            <batchtest todir="${junit.output.dir}">
+                <fileset dir="${junit.src.tests}">
+                    <include name="**/*Test.java"/>
+                </fileset>
+            </batchtest>
             <classpath refid="py4j.classpath"/>
         </junit>
     </target>
@@ -196,7 +194,7 @@
 		<delete file="${dist.dir}/${release.name}.tar"/>
 	</target>
 
-    <target depends="dist,init-java-release,javadoc" name="java-release">
+    <target depends="dist,java-test,init-java-release,javadoc" name="java-release">
         <copy todir="${java.dst.dir}">
             <fileset dir="${dist.dir}/${release.name}"/> 
         </copy>
@@ -233,6 +231,7 @@
 
     <target depends="clean-sphinx,clean-javadoc" name="clean-sphinx-release">
         <delete dir="${doc.dst.dir}"/>
+        <delete dir="${htdocs.dst.dir}"/>
     </target>
 
     <target depends="sphinx,javadoc" name="sphinx-release">
@@ -244,6 +243,15 @@
         </copy>
     </target>
 
+    <target depends="sphinx-release" name="deploy-website">
+        <symlink resource="${doc.dst.dir}" link="${htdocs.dst.dir}" />
+        <exec executable="scp" dir="${py4jpy.dir}">
+            <arg line="-r"/>
+            <arg line="htdocs"/>
+            <arg line="barthe@web.sourceforge.net:/home/project-web/py4j"/>
+        </exec>
+    </target>
+
     <!-- Py4J PYTHON DISTRIBUTION -->
 
     <target name="clean-python-release">
@@ -251,7 +259,20 @@
         <delete file="${py4jpy.dir}/MANIFEST"/>
     </target>
 
-    <target depends="java-release,sphinx-release" name="python-release">
+    <target depends="build" name="python-test">
+        <exec executable="nosetests" dir="${py4jpy.dir}" failonerror="true">
+            <arg line="-w src"/>
+            <arg line="-c nose.cfg"/>
+        </exec>
+    </target>
+
+    <target depends="java-release" name="python-tox">
+        <exec executable="tox" dir="${py4jpy.dir}" failonerror="true">
+            <arg line="--"/>
+        </exec>
+    </target>
+
+    <target depends="java-release,sphinx-release,python-tox" name="python-release">
         <exec executable="python" dir="${py4jpy.dir}">
             <arg line="setup.py"/>
             <arg line="sdist"/>
