@@ -182,6 +182,14 @@ in any plug-in.
 
 See :ref:`Py4J and Eclipse <eclipse_features>` for more details.
 
+Can I use Py4J with Python 3?
+-----------------------------
+
+Yes, thanks to a `generous contributor
+<https://github.com/bartdag/py4j/commit/36a145671501ed47bc4002af7cab49b490eb6e0b>`_,
+Py4J now works with Python 3. 
+
+
 I found a bug, how do I report it?
 ----------------------------------
 

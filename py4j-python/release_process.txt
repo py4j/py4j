@@ -1,17 +1,16 @@
-1. paver big_release --formats=zip,gztar
-1.5 test release file on windows and ubuntu
+1. ant python-release
 2. create signature using gpg (gpg -b --armor)
 3. create folder on sourceforge
 4. upload to sourceforge using scp command:
 scp Py4J-0.4.zip barthe,py4j@frs.sourceforge.net:/home/frs/project/p/py/py4j/0.4 (note: sourceforge sometimes refuse the connection/user/password for whatever reason).
 
-5. copy source of py4j-java
-6. upload update site
-7. don't forget to remove artifact.jar and the like: they break the update site (e.g., no category)
+5. copy source of py4j-java in eclipse plug-ins
+6. don't forget to remove artifact.jar and the like: they break the update site (e.g., no category)
+7. upload update site
 
-8. paver register
+8. python setup.py register
 9. upload to PyPI
-10. paver deploy
-11. close milestone on Trac
-12. tag the release on SVN
+10. ant deploy-website
+11. close all bugs on github
+12. tag the release on git
 13. send an email to the mailing list.

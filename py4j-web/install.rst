@@ -3,13 +3,12 @@
 Installing Py4J
 ===============
 
-Installing Python 2.6+ 
-----------------------
+Installing Python 2.6+ or 3.1+
+------------------------------
 
 Py4J is a library written in Python and Java. Currently, Py4J has been tested
-with Python 2.6 and Python 2.7 only. You can install
-Python by going to the `official Python download page
-<http://www.python.org/download/>`_.
+with Python 2.6, 2.7, 3.1, and 3.2. You can install Python by going to the
+`official Python download page <http://www.python.org/download/>`_.
 
 
 Installing Java 6
@@ -56,8 +55,8 @@ Using an official release
 3. Run ``python setup.py install`` (don't forget to prefix with sudo if you
    install Py4J system-wide).
 4. Py4J should now be in your PYTHONPATH.
-5. The Py4J Java library is located under ``Py4J-0.x/py4j-java/py4j0.x.jar``.
-   Add this library to your classpath when using Py4J in a Java program.
+5. The Py4J Java library is located under ``py4j-java/py4j0.x.jar``.  Add this
+   library to your classpath when using Py4J in a Java program. 
 
 Using the latest development source code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -74,9 +73,11 @@ Briefly, you need:
 3. `Sphinx <http://sphinx.pocoo.org/>`_ to build the documentation. Just
    execute the command line ``make html``  in the
    py4j-web project.
-4. `Paver <http://paver.github.com/paver/>`_ to build the Py4J
-   Python library. Execute the command line ``paver big_release`` in the
-   py4j-python directory to create a tar.gz source distribution and an egg
-   file. The ``big_release`` target will also create the jar file and the
-   documentation and will add them to the source distribution. This means that
-   you need ant and Sphinx to build the Py4J Python library.
+4. `nose <http://pypi.python.org/pypi/nose/>`_ to test the Py4J Python
+   library. 
+   
+Execute the command line ``ant python-light-release`` in the py4j-java
+directory to create a tar.gz and zip source distribution. The
+``python-light-release`` target will (1) build the Py4J Java library, (2) test
+the Py4J Java library, (3) build the documentation, (4) test the Py4J Python
+library, (5) create a tar.gz source distribution. 

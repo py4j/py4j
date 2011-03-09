@@ -272,6 +272,14 @@
         </exec>
     </target>
 
+    <target depends="java-release,sphinx-release,python-test" name="python-light-release">
+        <exec executable="python" dir="${py4jpy.dir}">
+            <arg line="setup.py"/>
+            <arg line="sdist"/>
+            <arg line="--formats=zip,gztar"/>
+        </exec>
+    </target>
+
     <target depends="java-release,sphinx-release,python-tox" name="python-release">
         <exec executable="python" dir="${py4jpy.dir}">
             <arg line="setup.py"/>
