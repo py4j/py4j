@@ -27,4 +27,4 @@ else:
 if hasattr(inspect, 'getattr_static'):
     hasattr2 = lambda obj, attr: bool(inspect.getattr_static(obj, attr, False))
 else:
-    hasattr2 = hasattr 
+    hasattr2 = hasattr
