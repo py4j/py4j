@@ -5,7 +5,7 @@ Compatibility functions for unified behavior between Python 2.x and 3.x.
 :author: Alex Grönholm
 '''
 import sys
-
+import inspect
 
 if sys.version_info[0] < 3:
     items = lambda d: d.items()
@@ -23,3 +23,8 @@ else:
     long = int
     basestring = str
     unicode = str
+
+if hasattr(inspect, 'getattr_static'):
+    hasattr2 = lambda obj, attr: bool(inspect.getattr_static(obj, attr, False))
+else:
+    hasattr2 = hasattr 

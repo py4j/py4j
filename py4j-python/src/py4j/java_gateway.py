@@ -20,7 +20,7 @@ import os
 
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
-from py4j.compat import range
+from py4j.compat import range, hasattr2
 
 
 class NullHandler(logging.Handler):

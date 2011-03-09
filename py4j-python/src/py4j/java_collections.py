@@ -13,7 +13,7 @@ import sys
 
 from py4j.java_gateway import JavaObject, JavaMember, get_method, JavaClass
 from py4j.protocol import *
-from py4j.compat import iteritems, next
+from py4j.compat import iteritems, next, hasattr2
 
 
 class JavaIterator(JavaObject):
