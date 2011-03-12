@@ -443,8 +443,6 @@ class ByteTest(unittest.TestCase):
 
         self.assertEqual(b1, decode_bytearray(encoded1))
         self.assertEqual(b2, decode_bytearray(encoded2))
-        self.assertEqual(b1, decode_bytearray(encoded1.decode('utf-8')))
-        self.assertEqual(b2, decode_bytearray(encoded2.decode('utf-8')))
 
     def testBytesType(self):
         ex = self.gateway.jvm.py4j.examples.UTFExample()

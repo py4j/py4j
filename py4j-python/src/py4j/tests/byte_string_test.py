@@ -23,7 +23,7 @@ class ByteStringTest(unittest.TestCase):
         # NOTE: this is only a byte string if executed by Python 2.
         ex = self.gateway.jvm.py4j.examples.UTFExample()
         s1 = 'allo'
-        s2 = unicode('alloé')
+        s2 = unicode('alloé', 'utf-8')
         array1 = ex.getUtfValue(s1)
         array2 = ex.getUtfValue(s2)
         self.assertEqual(len(s1), len(array1))
