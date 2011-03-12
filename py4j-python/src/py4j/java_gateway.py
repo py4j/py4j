@@ -123,7 +123,8 @@ def get_method(java_object, method_name):
 
 def _garbage_collect_object(gateway_client, target_id):
 #    print(target_id + ' deleted')
-    ThreadSafeFinalizer.remove_finalizer(str(gateway_client.address) + str(gateway_client.port) + target_id)
+    ThreadSafeFinalizer.remove_finalizer(smart_decode(gateway_client.address) +
+            smart_decode(gateway_client.port) + target_id)
     if target_id != ENTRY_POINT_OBJECT_ID and gateway_client.is_connected:
         try:
             gateway_client.send_command(MEMORY_COMMAND_NAME + MEMORY_DEL_SUBCOMMAND_NAME + target_id + '\ne\n')
@@ -324,7 +325,7 @@ class GatewayConnection(object):
             #print(command)
             #print(type(command))
             self.socket.sendall(command.encode('utf-8'))
-            answer = smart_decode(self.stream.readline())[:-1]
+            answer = smart_decode(self.stream.readline()[:-1])
             logger.debug("Answer received: %s" % (answer))
             # Happens when a the other end is dead. There might be an empty answer before the socket raises an error.
             if answer.strip() == '':
@@ -400,7 +401,7 @@ class JavaObject(object):
         self._auto_field = gateway_client.gateway_property.auto_field
         self._methods = {}
         ThreadSafeFinalizer.add_finalizer(\
-            str(self._gateway_client.address) + str(self._gateway_client.port) + self._target_id, \
+            smart_decode(self._gateway_client.address) + smart_decode(self._gateway_client.port) + self._target_id, \
             weakref.ref(self, lambda wr, cc=self._gateway_client, id=self._target_id: _garbage_collect_object(cc, id)))
 
     def _detach(self):
@@ -508,7 +509,9 @@ class JavaPackage():
 
 
 class JVMView(object):
-    """A `JVMView` allows access to the Java Virtual Machine of a `JavaGateway`. This can be used to reference static members (fields and methods) and to call constructors."""
+    """A `JVMView` allows access to the Java Virtual Machine of a `JavaGateway`.
+    This can be used to reference static members (fields and methods) and to
+    call constructors."""
 
     def __init__(self, gateway_client, jvm_name, id=None, jvm_object=None):
         self._gateway_client = gateway_client
@@ -517,12 +520,16 @@ class JVMView(object):
             self._id = id
         elif jvm_object is not None:
             self._id = REFERENCE_TYPE + jvm_object._get_object_id()
-            # So that both JVMView instances (on Python and Java) have the same lifecycle.
-            # Theoretically, JVMView could inherit from JavaObject, but I would like to avoid the use of reflection for regular Py4J classes.
+            # So that both JVMView instances (on Python and Java) have the 
+            # same lifecycle. Theoretically, JVMView could inherit from 
+            # JavaObject, but I would like to avoid the use of reflection 
+            # for regular Py4J classes.
             self._jvm_object = jvm_object
 
     def __getattr__(self, name):
-        answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME + REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + self._id + '\n' + END_COMMAND_PART)
+        answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME +\
+                REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + self._id +\
+                '\n' + END_COMMAND_PART)
         if answer == SUCCESS_PACKAGE:
             return JavaPackage(name, self._gateway_client, jvm_id=self._id)
         elif answer.startswith(SUCCESS_CLASS):
@@ -727,7 +734,7 @@ class CallbackServer(object):
                 self.is_shutdown = False
             logger.info('Callback Server Starting')
             self.server_socket.listen(5)
-            logger.info('Socket listening on' + str(self.server_socket.getsockname()))
+            logger.info('Socket listening on' + smart_decode(self.server_socket.getsockname()))
 
             while not self.is_shutdown:
                 socket, _ = self.server_socket.accept()
@@ -853,7 +860,7 @@ class PythonProxyPool(object):
         :rtype: A unique identifier associated with the object.
         """
         with self.lock:
-            id = PYTHON_PROXY_PREFIX + str(self.next_id)
+            id = PYTHON_PROXY_PREFIX + smart_decode(self.next_id)
             self.next_id += 1
             self.dict[id] = object
         return id

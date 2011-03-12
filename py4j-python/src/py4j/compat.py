@@ -17,6 +17,8 @@ if sys.version_info[0] < 3:
     unicode = unicode
     bytearray = bytearray
     unichr = unichr
+    bytestr = str
+    tobytestr = str
     isbytestr = lambda s: isinstance(s, str)
     isbytearray = lambda s: isinstance(s, bytearray)
 else:
@@ -29,6 +31,8 @@ else:
     unicode = str
     bytearray = bytes
     unichr = chr
+    bytestr = bytes
+    tobytestr = lambda s: bytes(s, 'ascii')
     isbytestr = lambda s: False
     isbytearray = lambda s: isinstance(s, bytearray) or isinstance(s, bytes)
 

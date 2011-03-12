@@ -18,7 +18,7 @@ Created on Oct 14, 2010
 '''
 from __future__ import unicode_literals
 from py4j.compat import long, basestring, unicode, bytearray, unichr,\
-        isbytestr, isbytearray
+        bytestr, isbytestr, isbytearray
 
 
 ESCAPE_CHAR = "\\"
@@ -179,7 +179,7 @@ def unescape_new_line(escaped):
 def smart_decode(s):
     if isinstance(s, unicode):
         return s
-    elif isinstance(s, str):
+    elif isinstance(s, bytestr):
         # Should never reach this case in Python 3
         return unicode(s, 'utf-8')
     else:

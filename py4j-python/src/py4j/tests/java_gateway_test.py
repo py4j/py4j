@@ -20,7 +20,7 @@ from py4j.protocol import *
 from py4j.java_gateway import JavaGateway, JavaMember, get_field, get_method, \
      GatewayClient, set_field, java_import, JavaObject
 
-from py4j.compat import range, isbytearray
+from py4j.compat import range, isbytearray, tobytestr
 import py4j.compat
 
 SERVER_PORT = 25333
@@ -110,18 +110,18 @@ class ProtocolTest(unittest.TestCase):
         time.sleep(1)
         try:
             testSocket = get_test_socket()
-            testSocket.sendall('yo\n'.decode('utf-8'))
-            testSocket.sendall('yro0\n'.decode('utf-8'))
-            testSocket.sendall('yo\n'.decode('utf-8'))
-            testSocket.sendall('ysHello World\n'.decode('utf-8'))
-            #testSocket.sendall('yo\n'.decode('utf-8')) Not necessary because method3 is cached!
-            testSocket.sendall('yi123\n'.decode('utf-8'))
-            #testSocket.sendall('yo\n'.decode('utf-8')) Not necessary because method3 is cached!
-            testSocket.sendall('yd1.25\n'.decode('utf-8'))
-            testSocket.sendall('yo\n'.decode('utf-8'))
-            testSocket.sendall('yn\n'.decode('utf-8'))
-            testSocket.sendall('yo\n'.decode('utf-8'))
-            testSocket.sendall('ybTrue\n'.decode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
+            testSocket.sendall('yro0\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
+            testSocket.sendall('ysHello World\n'.encode('utf-8'))
+            #testSocket.sendall('yo\n'.encode('utf-8')) Not necessary because method3 is cached!
+            testSocket.sendall('yi123\n'.encode('utf-8'))
+            #testSocket.sendall('yo\n'.encode('utf-8')) Not necessary because method3 is cached!
+            testSocket.sendall('yd1.25\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
+            testSocket.sendall('yn\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
+            testSocket.sendall('ybTrue\n'.encode('utf-8'))
             testSocket.close()
             time.sleep(1)
 
@@ -154,14 +154,14 @@ class IntegrationTest(unittest.TestCase):
     def testIntegration(self):
         try:
             testSocket = get_test_socket()
-            testSocket.sendall('yo\n'.decode('utf-8'))
-            testSocket.sendall('yro0\n'.decode('utf-8'))
-            testSocket.sendall('yo\n'.decode('utf-8'))
-            testSocket.sendall('ysHello World\n'.decode('utf-8'))
-#            testSocket.sendall('yo\n'.decode('utf-8')) # No need because getNewExampe is in cache now!
-            testSocket.sendall('yro1\n'.decode('utf-8'))
-            testSocket.sendall('yo\n'.decode('utf-8'))
-            testSocket.sendall('ysHello World2\n'.decode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
+            testSocket.sendall('yro0\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
+            testSocket.sendall('ysHello World\n'.encode('utf-8'))
+#            testSocket.sendall('yo\n'.encode('utf-8')) # No need because getNewExampe is in cache now!
+            testSocket.sendall('yro1\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
+            testSocket.sendall('ysHello World2\n'.encode('utf-8'))
             testSocket.close()
             time.sleep(1)
 
@@ -180,9 +180,9 @@ class IntegrationTest(unittest.TestCase):
     def testException(self):
         try:
             testSocket = get_test_socket()
-            testSocket.sendall('yo\n'.decode('utf-8'))
-            testSocket.sendall('yro0\n'.decode('utf-8'))
-            testSocket.sendall('yo\n'.decode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
+            testSocket.sendall('yro0\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall(b'x\n')
             testSocket.close()
             time.sleep(1)
@@ -435,7 +435,7 @@ class ByteTest(unittest.TestCase):
         self.assertEqual(-1, ex.getJavaByteValue(ba[4]))
 
     def testProtocolConversion(self):
-        b1 = str('abc\n')
+        b1 = tobytestr('abc\n')
         b2 = bytearray([1, 2, 3, 255, 0, 128, 127])
 
         encoded1 = encode_bytearray(b1)
