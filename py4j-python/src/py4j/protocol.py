@@ -16,7 +16,9 @@ Created on Oct 14, 2010
 
 :author: Barthelemy Dagenais
 '''
-from py4j.compat import long, basestring
+from __future__ import unicode_literals
+from py4j.compat import long, basestring, unicode, bytearray, unichr,\
+        isbytestr, isbytearray
 
 
 ESCAPE_CHAR = "\\"
@@ -31,6 +33,7 @@ DEFAULT_JVM_ID = 'rj'
 DEFAULT_JVM_NAME = 'default'
 
 # Types
+BYTES_TYPE = 'j'
 INTEGER_TYPE = 'i'
 BOOLEAN_TYPE = 'b'
 DOUBLE_TYPE = 'd'
@@ -124,6 +127,7 @@ GARBAGE_COLLECT_PROXY_COMMAND_NAME = 'g'
 OUTPUT_CONVERTER = {NULL_TYPE: (lambda x, y: None),
               BOOLEAN_TYPE: (lambda value, y: value.lower() == 'true'),
               INTEGER_TYPE: (lambda value, y: int(value)),
+              BYTES_TYPE: (lambda value, y: decode_bytearray(value)),
               DOUBLE_TYPE: (lambda value, y: float(value)),
               STRING_TYPE: (lambda value, y: unescape_new_line(value)),
               }
@@ -140,7 +144,7 @@ def escape_new_line(original):
 
     :rtype: an escaped string
     """
-    return original.replace('\\', '\\\\').replace('\r', '\\r').replace('\n', '\\n')
+    return smart_decode(original).replace('\\', '\\\\').replace('\r', '\\r').replace('\n', '\\n')
 
 
 def unescape_new_line(escaped):
@@ -172,6 +176,27 @@ def unescape_new_line(escaped):
     return original
 
 
+def smart_decode(s):
+    if isinstance(s, unicode):
+        return s
+    elif isinstance(s, str):
+        # Should never reach this case in Python 3
+        return unicode(s, 'utf-8')
+    else:
+        return unicode(s)
+
+
+def encode_bytearray(barray):
+    if isbytestr(barray):
+        return unicode().join((unichr(ord(by) << 8) for by in barray))
+    else:
+        return unicode().join((unichr(by << 8) for by in barray))
+
+
+def decode_bytearray(encoded):
+    return bytearray(((ord(c) >> 8) for c in encoded))
+
+
 def is_python_proxy(parameter):
     """Determines whether parameter is a Python Proxy, i.e., it has a Java internal class with an
     implements member.
@@ -198,11 +223,13 @@ def get_command_part(parameter, python_proxy_pool=None):
     if parameter == None:
         command_part = NULL_TYPE
     elif isinstance(parameter, bool):
-        command_part = BOOLEAN_TYPE + str(parameter)
+        command_part = BOOLEAN_TYPE + smart_decode(parameter)
     elif isinstance(parameter, int) or isinstance(parameter, long):
-        command_part = INTEGER_TYPE + str(parameter)
+        command_part = INTEGER_TYPE + smart_decode(parameter)
     elif isinstance(parameter, float):
-        command_part = DOUBLE_TYPE + str(parameter)
+        command_part = DOUBLE_TYPE + smart_decode(parameter)
+    elif isbytearray(parameter):
+        command_part = BYTES_TYPE + encode_bytearray(parameter)
     elif isinstance(parameter, basestring):
         command_part = STRING_TYPE + escape_new_line(parameter)
     elif is_python_proxy(parameter):
@@ -212,7 +239,14 @@ def get_command_part(parameter, python_proxy_pool=None):
     else:
         command_part = REFERENCE_TYPE + parameter._get_object_id()
 
-    return command_part + '\n'
+    command_part += '\n'
+
+    #print('THIS IS GOING OUT: {0}'.format(command_part))
+    #print(type(command_part))
+    #for c in command_part:
+        #print(ord(c))
+
+    return command_part
 
 
 def get_return_value(answer, gateway_client, target_id=None, name=None):

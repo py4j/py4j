@@ -1,14 +1,16 @@
 # -*- coding: UTF-8 -*-
-"""Module to interact with objects in a Java Virtual Machine from a Pyton Virtual Machine.
+"""Module to interact with objects in a Java Virtual Machine from a
+Pyton Virtual Machine.
 
-Variables that might clash with the JVM start with an underscore (Java Naming Convention do not
-recommend to start with an underscore so clashes become unlikely).
+Variables that might clash with the JVM start with an underscore
+(Java Naming Convention do not recommend to start with an underscore
+so clashes become unlikely).
 
 Created on Dec 3, 2009
 
 :author: Barthelemy Dagenais
 """
-
+from __future__ import unicode_literals
 from collections import deque
 from pydoc import ttypager
 from socket import AF_INET, SOCK_STREAM
@@ -17,6 +19,7 @@ import logging
 import socket
 import weakref
 import os
+#from traceback import print_exc
 
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
@@ -39,13 +42,18 @@ PY4J_TRUE = set(['yes', 'y', 't', 'true'])
 
 
 def java_import(jvm_view, import_str):
-    """Imports the package or class specified by `import_str` in the jvm view namespace.
+    """Imports the package or class specified by `import_str` in the
+    jvm view namespace.
 
     :param jvm_view: The jvm_view in which to import a class/package.
-    :import_str: The class (e.g., java.util.List) or the package (e.g., java.io.*) to import
+    :import_str: The class (e.g., java.util.List) or the package
+                 (e.g., java.io.*) to import
     """
     gateway_client = jvm_view._gateway_client
-    command = JVMVIEW_COMMAND_NAME + JVM_IMPORT_SUB_COMMAND_NAME + jvm_view._id + '\n' + escape_new_line(import_str) + '\n' + END_COMMAND_PART
+    command = JVMVIEW_COMMAND_NAME + JVM_IMPORT_SUB_COMMAND_NAME +\
+            jvm_view._id + '\n' + escape_new_line(import_str) + '\n' +\
+            END_COMMAND_PART + '\n' + escape_new_line(import_str) + '\n' +\
+            END_COMMAND_PART
     answer = gateway_client.send_command(command)
     return_value = get_return_value(answer, gateway_client, None, None)
     return return_value
@@ -54,48 +62,63 @@ def java_import(jvm_view, import_str):
 def get_field(java_object, field_name):
     """Retrieves the field named `field_name` from the `java_object`.
 
-    This function is useful when `auto_field=false` in a gateway or Java object.
+    This function is useful when `auto_field=false` in a gateway or
+    Java object.
 
     :param java_object: the instance containing the field
     :param field_name: the name of the field to retrieve
     """
-    command = FIELD_COMMAND_NAME + FIELD_GET_SUBCOMMAND_NAME + java_object._target_id + '\n' + field_name + '\n' + END_COMMAND_PART
+    command = FIELD_COMMAND_NAME + FIELD_GET_SUBCOMMAND_NAME +\
+            java_object._target_id + '\n' + field_name + '\n' +\
+            END_COMMAND_PART
     answer = java_object._gateway_client.send_command(command)
+
     if answer == NO_MEMBER_COMMAND or is_error(answer)[0]:
-        raise Py4JError('no field %s in object %s' % (field_name, java_object._target_id))
+        raise Py4JError('no field {0} in object {1}'.format(
+            field_name, java_object._target_id))
     else:
-        return get_return_value(answer, java_object._gateway_client, java_object._target_id, field_name)
+        return get_return_value(answer, java_object._gateway_client,
+                java_object._target_id, field_name)
 
 
 def set_field(java_object, field_name, value):
     """Sets the field named `field_name` of `java_object` to `value`.
 
-    This function is the only way to set a field because the assignment operator in Python cannot
-    be overloaded.
+    This function is the only way to set a field because the assignment
+    operator in Python cannot be overloaded.
 
     :param java_object: the instance containing the field
     :param field_name: the name of the field to set
     :param value: the value to assign to the field
     """
-    command = FIELD_COMMAND_NAME + FIELD_SET_SUBCOMMAND_NAME + java_object._target_id + '\n' + field_name + '\n' \
-        + get_command_part(value, java_object._gateway_client.gateway_property.pool) + '\n' + END_COMMAND_PART
+
+    command_part = get_command_part(value,
+            java_object._gateway_client.gateway_property.pool)
+
+    command = FIELD_COMMAND_NAME + FIELD_SET_SUBCOMMAND_NAME +\
+            java_object._target_id + '\n' + field_name + '\n' +\
+            command_part + '\n' + END_COMMAND_PART
 
     answer = java_object._gateway_client.send_command(command)
     if answer == NO_MEMBER_COMMAND or is_error(answer)[0]:
-        raise Py4JError('no field %s in object %s' % (field_name, java_object._target_id))
-        return get_return_value(answer, java_object._gateway_client, java_object._target_id, field_name)
+        raise Py4JError('no field {0} in object {1}'.format(
+            field_name, java_object._target_id))
+        return get_return_value(answer, java_object._gateway_client,
+            java_object._target_id, field_name)
 
 
 def get_method(java_object, method_name):
     """Retrieves a reference to the method of an object.
 
-    This function is useful when `auto_field=true` and an instance field has the same name as a method.
-    The full signature of the method is not required: it is determined when the method is called.
+    This function is useful when `auto_field=true` and an instance field has
+    the same name as a method. The full signature of the method is not
+    required: it is determined when the method is called.
 
     :param java_object: the instance containing the method
     :param method_name: the name of the method to retrieve
     """
-    return JavaMember(method_name, java_object, java_object._target_id, java_object._gateway_client)
+    return JavaMember(method_name, java_object, java_object._target_id,
+            java_object._gateway_client)
 
 
 def _garbage_collect_object(gateway_client, target_id):
@@ -215,6 +238,7 @@ class GatewayClient(object):
             self._give_back_connection(connection)
         except Py4JNetworkError:
             if retry:
+                #print_exc()
                 response = self.send_command(command)
             else:
                 response = ERROR
@@ -297,8 +321,10 @@ class GatewayConnection(object):
         """
         logger.debug("Command to send: %s" % (command))
         try:
+            #print(command)
+            #print(type(command))
             self.socket.sendall(command.encode('utf-8'))
-            answer = self.stream.readline().decode('utf-8')[:-1]
+            answer = smart_decode(self.stream.readline())[:-1]
             logger.debug("Answer received: %s" % (answer))
             # Happens when a the other end is dead. There might be an empty answer before the socket raises an error.
             if answer.strip() == '':
@@ -306,6 +332,7 @@ class GatewayConnection(object):
                 raise Py4JError()
             return answer
         except:
+            #print_exc()
             logger.exception('Error while sending or receiving.')
             raise Py4JNetworkError('Error while sending or receiving')
 
@@ -757,8 +784,8 @@ class CallbackConnection(Thread):
         logger.info('Callback Connection ready to receive messages')
         try:
             while True:
-                command = self.input.readline().decode('utf-8')[:-1]
-                obj_id = self.input.readline().decode('utf-8')[:-1]
+                command = smart_decode(self.input.readline())[:-1]
+                obj_id = smart_decode(self.input.readline())[:-1]
                 logger.info('Received command %s on object id %s' % (command, obj_id))
                 if obj_id is None or len(obj_id.strip()) == 0:
                     break
@@ -784,7 +811,7 @@ class CallbackConnection(Thread):
         return_message = ERROR_RETURN_MESSAGE
         if obj_id in self.pool:
             try:
-                method = input.readline().decode('utf-8')[:-1]
+                method = smart_decode(input.readline())[:-1]
                 params = self._get_params(input)
                 return_value = getattr(self.pool[obj_id], method)(*params)
                 return_message = 'y' + get_command_part(return_value)
@@ -794,11 +821,11 @@ class CallbackConnection(Thread):
 
     def _get_params(self, input):
         params = []
-        temp = input.readline().decode('utf-8')[:-1]
+        temp = smart_decode(input.readline())[:-1]
         while temp != END:
             param = get_return_value('y' + temp, self.gateway_client)
             params.append(param)
-            temp = input.readline().decode('utf-8')[:-1]
+            temp = smart_decode(input.readline())[:-1]
         return params
 
 

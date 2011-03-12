@@ -29,9 +29,11 @@
  *******************************************************************************/
 package py4j;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -48,6 +50,18 @@ public class ProtocolTest {
 		assertFalse(Protocol.isEmpty("btrue"));
 	}
 
+	@Test
+	public void testBytes() {
+		byte[] bytes = {1, 100, 127, 0, 60, 15, -128, -1, 14, -55};
+		String bytesString = Protocol.BYTES_TYPE + Protocol.encodeBytes(bytes);
+		byte[] bytes2 = Protocol.getBytes(bytesString);
+		assertArrayEquals(bytes, bytes2);
+		
+		Gateway g = new Gateway(null);
+		ReturnObject rObject = g.getReturnObject(bytes);
+		assertNotNull(rObject.getPrimitiveObject());
+	}
+	
 	@Test
 	public void testIntegers() {
 		assertTrue(Protocol.isInteger("i123"));

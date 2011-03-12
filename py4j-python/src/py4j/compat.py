@@ -15,6 +15,10 @@ if sys.version_info[0] < 3:
     long = long
     basestring = basestring
     unicode = unicode
+    bytearray = bytearray
+    unichr = unichr
+    isbytestr = lambda s: isinstance(s, str)
+    isbytearray = lambda s: isinstance(s, bytearray)
 else:
     items = lambda d: list(d.items())
     iteritems = lambda d: d.items()
@@ -23,6 +27,10 @@ else:
     long = int
     basestring = str
     unicode = str
+    bytearray = bytes
+    unichr = chr
+    isbytestr = lambda s: False
+    isbytearray = lambda s: isinstance(s, bytearray) or isinstance(s, bytes)
 
 if hasattr(inspect, 'getattr_static'):
     hasattr2 = lambda obj, attr: bool(inspect.getattr_static(obj, attr, False))

@@ -8,6 +8,7 @@ Created on Jan 22, 2010
 
 :author: Barthelemy Dagenais
 '''
+from __future__ import unicode_literals
 from collections import MutableMapping, Sequence, MutableSequence, MutableSet, Set
 import sys
 

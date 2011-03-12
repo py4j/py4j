@@ -126,6 +126,11 @@ Map
   c:2
 
 
+Byte array (byte[])
+-------------------
+
+
+
 Implementing Java interfaces from Python (callback)
 ---------------------------------------------------
 

@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 '''
 Created on Dec 10, 2009
 
@@ -18,8 +19,9 @@ from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
 from py4j.java_gateway import JavaGateway, JavaMember, get_field, get_method, \
      GatewayClient, set_field, java_import, JavaObject
-from py4j.compat import range
 
+from py4j.compat import range, isbytearray
+import py4j.compat
 
 SERVER_PORT = 25333
 TEST_PORT = 25332
@@ -108,18 +110,18 @@ class ProtocolTest(unittest.TestCase):
         time.sleep(1)
         try:
             testSocket = get_test_socket()
-            testSocket.sendall('yo\n'.encode('utf-8'))
-            testSocket.sendall('yro0\n'.encode('utf-8'))
-            testSocket.sendall('yo\n'.encode('utf-8'))
-            testSocket.sendall('ysHello World\n'.encode('utf-8'))
-            #testSocket.sendall('yo\n'.encode('utf-8')) Not necessary because method3 is cached!
-            testSocket.sendall('yi123\n'.encode('utf-8'))
-            #testSocket.sendall('yo\n'.encode('utf-8')) Not necessary because method3 is cached!
-            testSocket.sendall('yd1.25\n'.encode('utf-8'))
-            testSocket.sendall('yo\n'.encode('utf-8'))
-            testSocket.sendall('yn\n'.encode('utf-8'))
-            testSocket.sendall('yo\n'.encode('utf-8'))
-            testSocket.sendall('ybTrue\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.decode('utf-8'))
+            testSocket.sendall('yro0\n'.decode('utf-8'))
+            testSocket.sendall('yo\n'.decode('utf-8'))
+            testSocket.sendall('ysHello World\n'.decode('utf-8'))
+            #testSocket.sendall('yo\n'.decode('utf-8')) Not necessary because method3 is cached!
+            testSocket.sendall('yi123\n'.decode('utf-8'))
+            #testSocket.sendall('yo\n'.decode('utf-8')) Not necessary because method3 is cached!
+            testSocket.sendall('yd1.25\n'.decode('utf-8'))
+            testSocket.sendall('yo\n'.decode('utf-8'))
+            testSocket.sendall('yn\n'.decode('utf-8'))
+            testSocket.sendall('yo\n'.decode('utf-8'))
+            testSocket.sendall('ybTrue\n'.decode('utf-8'))
             testSocket.close()
             time.sleep(1)
 
@@ -152,14 +154,14 @@ class IntegrationTest(unittest.TestCase):
     def testIntegration(self):
         try:
             testSocket = get_test_socket()
-            testSocket.sendall('yo\n'.encode('utf-8'))
-            testSocket.sendall('yro0\n'.encode('utf-8'))
-            testSocket.sendall('yo\n'.encode('utf-8'))
-            testSocket.sendall('ysHello World\n'.encode('utf-8'))
-#            testSocket.sendall('yo\n'.encode('utf-8')) # No need because getNewExampe is in cache now!
-            testSocket.sendall('yro1\n'.encode('utf-8'))
-            testSocket.sendall('yo\n'.encode('utf-8'))
-            testSocket.sendall('ysHello World2\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.decode('utf-8'))
+            testSocket.sendall('yro0\n'.decode('utf-8'))
+            testSocket.sendall('yo\n'.decode('utf-8'))
+            testSocket.sendall('ysHello World\n'.decode('utf-8'))
+#            testSocket.sendall('yo\n'.decode('utf-8')) # No need because getNewExampe is in cache now!
+            testSocket.sendall('yro1\n'.decode('utf-8'))
+            testSocket.sendall('yo\n'.decode('utf-8'))
+            testSocket.sendall('ysHello World2\n'.decode('utf-8'))
             testSocket.close()
             time.sleep(1)
 
@@ -178,9 +180,9 @@ class IntegrationTest(unittest.TestCase):
     def testException(self):
         try:
             testSocket = get_test_socket()
-            testSocket.sendall('yo\n'.encode('utf-8'))
-            testSocket.sendall('yro0\n'.encode('utf-8'))
-            testSocket.sendall('yo\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.decode('utf-8'))
+            testSocket.sendall('yro0\n'.decode('utf-8'))
+            testSocket.sendall('yo\n'.decode('utf-8'))
             testSocket.sendall(b'x\n')
             testSocket.close()
             time.sleep(1)
@@ -376,6 +378,96 @@ class TypeConversionTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         self.assertEqual(1, ex.method7(1234))
         self.assertEqual(4, ex.method7(2147483648))
+
+
+class UnicodeTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+        self.gateway = JavaGateway()
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+
+    #def testUtfMethod(self):
+        #ex = self.gateway.jvm.py4j.examples.UTFExample()
+
+        ## Only works for Python 3
+        #self.assertEqual(2, ex.strangeMéthod())
+
+    def testUnicodeString(self):
+        # NOTE: this is unicode because of import future unicode literal...
+        ex = self.gateway.jvm.py4j.examples.UTFExample()
+        s1 = 'allo'
+        s2 = 'alloé'
+        array1 = ex.getUtfValue(s1)
+        array2 = ex.getUtfValue(s2)
+        self.assertEqual(len(s1), len(array1))
+        self.assertEqual(len(s2), len(array2))
+        self.assertEqual(ord(s1[0]), array1[0])
+        self.assertEqual(ord(s2[4]), array2[4])
+
+class ByteTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+        self.gateway = JavaGateway()
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+
+    def testJavaByteConversion(self):
+        ex = self.gateway.jvm.py4j.examples.UTFExample()
+        ba = bytearray([0, 1, 127, 128, 255])
+        self.assertEqual(0, ex.getPositiveByteValue(ba[0]))
+        self.assertEqual(1, ex.getPositiveByteValue(ba[1]))
+        self.assertEqual(127, ex.getPositiveByteValue(ba[2]))
+        self.assertEqual(128, ex.getPositiveByteValue(ba[3]))
+        self.assertEqual(255, ex.getPositiveByteValue(ba[4]))
+        self.assertEqual(0, ex.getJavaByteValue(ba[0]))
+        self.assertEqual(1, ex.getJavaByteValue(ba[1]))
+        self.assertEqual(127, ex.getJavaByteValue(ba[2]))
+        self.assertEqual(-128, ex.getJavaByteValue(ba[3]))
+        self.assertEqual(-1, ex.getJavaByteValue(ba[4]))
+
+    def testProtocolConversion(self):
+        b1 = str('abc\n')
+        b2 = bytearray([1, 2, 3, 255, 0, 128, 127])
+
+        encoded1 = encode_bytearray(b1)
+        encoded2 = encode_bytearray(b2)
+
+        self.assertEqual(b1, decode_bytearray(encoded1))
+        self.assertEqual(b2, decode_bytearray(encoded2))
+        self.assertEqual(b1, decode_bytearray(encoded1.decode('utf-8')))
+        self.assertEqual(b2, decode_bytearray(encoded2.decode('utf-8')))
+
+    def testBytesType(self):
+        ex = self.gateway.jvm.py4j.examples.UTFExample()
+        int_list = [0, 1, 10, 127, 128, 255]
+        ba1 = bytearray(int_list)
+        # Same for Python2, bytes for Python 3
+        ba2 = py4j.compat.bytearray(int_list)
+        a1 = ex.getBytesValue(ba1)
+        a2 = ex.getBytesValue(ba2)
+        for i1, i2 in zip(a1, int_list):
+            self.assertEqual(i1, i2)
+
+        for i1, i2 in zip(a2, int_list):
+            self.assertEqual(i1, i2)
+
+
+    def testBytesType2(self):
+        ex = self.gateway.jvm.py4j.examples.UTFExample()
+        int_list = [0, 1, 10, 127, 255, 128]
+        a1 = ex.getBytesValue()
+        self.assertTrue(isbytearray(a1))
+        for i1, i2 in zip(a1, int_list):
+            self.assertEqual(i1, i2)
 
 
 class ExceptionTest(unittest.TestCase):
