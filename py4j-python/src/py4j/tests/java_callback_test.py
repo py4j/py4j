@@ -8,9 +8,10 @@ from threading import Thread
 import subprocess
 import time
 import unittest
+from traceback import print_exc
 
 from py4j.java_gateway import JavaGateway, PythonProxyPool
-from py4j.tests.java_gateway_test import PY4J_JAVA_PATH
+from py4j.tests.java_gateway_test import PY4J_JAVA_PATH, safe_shutdown
 from py4j.compat import range
 
 
@@ -20,6 +21,11 @@ def start_example_server():
 
 def start_example_server2():
     subprocess.call(["java", "-cp", PY4J_JAVA_PATH, "py4j.examples.OperatorExampleTest"])
+
+
+def start_example_server3():
+    subprocess.call(["java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.InterfaceExample"])
 
 
 def start_example_app_process():
@@ -32,6 +38,13 @@ def start_example_app_process():
 def start_example_app_process2():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_example_server2)
+    p.start()
+    return p
+
+
+def start_example_app_process3():
+    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    p = Process(target=start_example_server3)
     p.start()
     return p
 
@@ -225,6 +238,38 @@ class TestPeriodicCleanup(unittest.TestCase):
             self.assertTrue(False)
         except:
             self.assertTrue(True)
+
+
+class A(object):
+    class Java:
+        implements = ['py4j.examples.InterfaceA']
+
+
+class B(object):
+    def getA(self):
+        return A()
+
+    class Java:
+        implements = ['py4j.examples.InterfaceB']
+
+
+class InterfaceTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process3()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+        self.gateway = JavaGateway(start_callback_server=True)
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+
+    def testByteString(self):
+        try:
+            self.gateway.entry_point.test(B())
+        except Exception:
+            print_exc()
+            self.fail()
 
 
 if __name__ == "__main__":

@@ -127,7 +127,11 @@ def _garbage_collect_object(gateway_client, target_id):
             smart_decode(gateway_client.port) + target_id)
     if target_id != ENTRY_POINT_OBJECT_ID and gateway_client.is_connected:
         try:
-            gateway_client.send_command(MEMORY_COMMAND_NAME + MEMORY_DEL_SUBCOMMAND_NAME + target_id + '\ne\n')
+            gateway_client.send_command(MEMORY_COMMAND_NAME +
+                                        MEMORY_DEL_SUBCOMMAND_NAME +
+                                        target_id +
+                                        '\ne\n'
+                                        )
         except:
             pass
 
@@ -135,9 +139,10 @@ def _garbage_collect_object(gateway_client, target_id):
 def _garbage_collect_connection(socket):
     """Closes the socket if auto_delete is True and the socket is opened.
 
-    This is an acceptable practice if you know that your Python VM implements garbage collection
-    and closing sockets immediately is not a concern. Otherwise, it is always better (because it
-    is predictable) to explicitly close the socket by calling `GatewayConnection.close()`.
+    This is an acceptable practice if you know that your Python VM implements
+    garbage collection and closing sockets immediately is not a concern.
+    Otherwise, it is always better (because it is predictable) to explicitly
+    close the socket by calling `GatewayConnection.close()`.
     """
 #    print('delete connection')
     if socket != None:
@@ -821,9 +826,11 @@ class CallbackConnection(Thread):
                 method = smart_decode(input.readline())[:-1]
                 params = self._get_params(input)
                 return_value = getattr(self.pool[obj_id], method)(*params)
-                return_message = 'y' + get_command_part(return_value)
-            except:
-                logger.exception('There was an exception while executing the Python Proxy.')
+                return_message = 'y' + get_command_part(return_value, self.pool)
+            except Exception:
+                #print_exc()
+                logger.exception('There was an exception while executing the '\
+                                 'Python Proxy on the Python Side.')
         return return_message
 
     def _get_params(self, input):
