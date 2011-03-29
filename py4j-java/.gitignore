@@ -2,3 +2,6 @@ bin/
 javadoc/
 *.swp
 .ant-targets-build.xml
+dist/
+junit/
+py4j*.jar

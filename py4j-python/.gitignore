@@ -3,3 +3,6 @@ doc/
 *.swp
 *.tox/
 tags
+dist/
+MANIFEST
+py4j-java/

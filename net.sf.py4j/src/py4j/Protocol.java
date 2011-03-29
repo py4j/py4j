@@ -84,6 +84,7 @@ import py4j.reflection.PythonProxyHandler;
 public class Protocol {
 
 	// TYPES
+	public final static char BYTES_TYPE = 'j';
 	public final static char INTEGER_TYPE = 'i';
 	public final static char BOOLEAN_TYPE = 'b';
 	public final static char DOUBLE_TYPE = 'd';
@@ -122,7 +123,7 @@ public class Protocol {
 
 	// DEFAULT JVM VIEW
 	public final static String DEFAULT_JVM_OBJECT_ID = "j";
-	
+
 	// STATIC REFERENCES
 	public final static String STATIC_PREFIX = "z:";
 
@@ -135,8 +136,8 @@ public class Protocol {
 	 * @return The boolean value corresponding to this command part.
 	 */
 	public final static boolean getBoolean(String commandPart) {
-		return Boolean.parseBoolean(commandPart.substring(1, commandPart
-				.length()));
+		return Boolean.parseBoolean(commandPart.substring(1,
+				commandPart.length()));
 	}
 
 	/**
@@ -148,8 +149,8 @@ public class Protocol {
 	 * @return The double value corresponding to this command part.
 	 */
 	public final static double getDouble(String commandPart) {
-		return Double.parseDouble(commandPart
-				.substring(1, commandPart.length()));
+		return Double
+				.parseDouble(commandPart.substring(1, commandPart.length()));
 	}
 
 	/**
@@ -163,7 +164,26 @@ public class Protocol {
 	public final static int getInteger(String commandPart) {
 		return Integer.parseInt(commandPart.substring(1, commandPart.length()));
 	}
-	
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return The byte array corresponding to this command part.
+	 */
+	public final static byte[] getBytes(String commandPart) {
+		int size = commandPart.length() - 1;
+		byte[] bytes = new byte[size];
+
+		for (int i = 0; i < size; i++) {
+			bytes[i] = (byte) (commandPart.charAt(i + 1) >> 8);
+		}
+
+		return bytes;
+	}
+
 	/**
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
@@ -185,8 +205,9 @@ public class Protocol {
 
 		return builder.toString();
 	}
-	
-	public final static String getMemberOutputCommand(char memberType, String fqn) {
+
+	public final static String getMemberOutputCommand(char memberType,
+			String fqn) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(SUCCESS);
@@ -229,6 +250,8 @@ public class Protocol {
 				} catch (NumberFormatException e) {
 					return getLong(commandPart);
 				}
+			case BYTES_TYPE:
+				return getBytes(commandPart);
 			case NULL_TYPE:
 				return getNull(commandPart);
 			case VOID:
@@ -240,7 +263,8 @@ public class Protocol {
 			case PYTHON_PROXY_TYPE:
 				return getPythonProxy(commandPart, gateway);
 			default:
-				throw new Py4JException("Command Part is unknown: " + commandPart);
+				throw new Py4JException("Command Part is unknown: "
+						+ commandPart);
 			}
 		}
 	}
@@ -324,6 +348,8 @@ public class Protocol {
 			c = DOUBLE_TYPE;
 		} else if (primitiveObject instanceof Boolean) {
 			c = BOOLEAN_TYPE;
+		} else if (primitiveObject instanceof byte[]) {
+			c = BYTES_TYPE;
 		}
 
 		return c;
@@ -410,8 +436,8 @@ public class Protocol {
 	public final static String getString(String commandPart) {
 		String toReturn = "";
 		if (commandPart.length() >= 2) {
-			toReturn = StringUtil.unescape(commandPart.substring(1, commandPart
-					.length()));
+			toReturn = StringUtil.unescape(commandPart.substring(1,
+					commandPart.length()));
 		}
 		return toReturn;
 	}
@@ -486,6 +512,18 @@ public class Protocol {
 	 * </p>
 	 * 
 	 * @param commandPart
+	 * @return True if the command part is a byte array
+	 */
+	public final static boolean isBytes(String commandPart) {
+		return commandPart.charAt(0) == BYTES_TYPE;
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
 	 * @return True if the command part is null
 	 */
 	public final static boolean isNull(String commandPart) {
@@ -526,5 +564,23 @@ public class Protocol {
 	 */
 	public final static boolean isString(String commandPart) {
 		return commandPart.charAt(0) == STRING_TYPE;
+	}
+
+	/**
+	 * <p>
+	 * Transform the byte array into characters by adding two 0s in front of
+	 * each byte. This is to avoid the newline.
+	 * </p>
+	 * 
+	 * @param primitive
+	 * @return
+	 */
+	public static String encodeBytes(byte[] bytes) {
+		StringBuilder builder = new StringBuilder();
+		for (byte b : bytes) {
+			char c = (char) ((char)(b & 0xff) << 8);
+			builder.append(c);
+		}
+		return builder.toString();
 	}
 }

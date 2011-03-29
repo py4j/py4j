@@ -73,18 +73,19 @@ public class ReturnObject {
 		rObject.commandPart = String.valueOf(Protocol.ERROR);
 		return rObject;
 	}
-	
+
 	public static ReturnObject getErrorReturnObject(Throwable throwable) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isError = true;
 		StringBuilder builder = new StringBuilder();
 		builder.append(Protocol.ERROR);
 		builder.append(Protocol.STRING_TYPE);
-		builder.append(StringUtil.escape(Protocol.getThrowableAsString(throwable)));
+		builder.append(StringUtil.escape(Protocol
+				.getThrowableAsString(throwable)));
 		rObject.commandPart = builder.toString();
 		return rObject;
 	}
-	
+
 	public static ReturnObject getErrorReferenceReturnObject(String name) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
@@ -114,7 +115,7 @@ public class ReturnObject {
 		rObject.commandPart = Protocol.SET_TYPE + name;
 		return rObject;
 	}
-	
+
 	public static ReturnObject getMapReturnObject(String name, int size) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
@@ -123,7 +124,7 @@ public class ReturnObject {
 		rObject.commandPart = Protocol.MAP_TYPE + name;
 		return rObject;
 	}
-	
+
 	public static ReturnObject getIteratorReturnObject(String name) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
@@ -146,6 +147,9 @@ public class ReturnObject {
 		if (primitiveType == Protocol.STRING_TYPE) {
 			rObject.commandPart = primitiveType
 					+ StringUtil.escape(primitive.toString());
+		} else if (primitiveType == Protocol.BYTES_TYPE) {
+			rObject.commandPart = primitiveType
+			+ Protocol.encodeBytes((byte[])primitive);
 		} else {
 			rObject.commandPart = primitiveType + primitive.toString();
 		}
@@ -183,7 +187,7 @@ public class ReturnObject {
 	private boolean isVoid;
 
 	private boolean isArray;
-	
+
 	private boolean isIterator;
 
 	private boolean isSet;
@@ -298,5 +302,5 @@ public class ReturnObject {
 	public void setIterator(boolean isIterator) {
 		this.isIterator = isIterator;
 	}
-	
+
 }
