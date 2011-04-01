@@ -2,6 +2,8 @@ package net.sf.py4j.defaultserver;
 
 import net.sf.py4j.defaultserver.preferences.PreferenceConstants;
 
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -61,6 +63,14 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 
 	public static DefaultServerActivator getDefault() {
 		return activator;
+	}
+	
+	public void closeEclipse() {
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				PlatformUI.getWorkbench().close();
+			}
+		});
 	}
 
 }
