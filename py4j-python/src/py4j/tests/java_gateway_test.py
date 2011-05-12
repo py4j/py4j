@@ -449,7 +449,7 @@ class ByteTest(unittest.TestCase):
         int_list = [0, 1, 10, 127, 128, 255]
         ba1 = bytearray(int_list)
         # Same for Python2, bytes for Python 3
-        ba2 = py4j.compat.bytearray(int_list)
+        ba2 = py4j.compat.bytearray2(int_list)
         a1 = ex.getBytesValue(ba1)
         a2 = ex.getBytesValue(ba2)
         for i1, i2 in zip(a1, int_list):

@@ -17,7 +17,7 @@ Created on Oct 14, 2010
 :author: Barthelemy Dagenais
 '''
 from __future__ import unicode_literals
-from py4j.compat import long, basestring, unicode, bytearray, unichr,\
+from py4j.compat import long, basestring, unicode, bytearray2, unichr,\
         bytestr, isbytestr, isbytearray
 
 
@@ -194,7 +194,7 @@ def encode_bytearray(barray):
 
 
 def decode_bytearray(encoded):
-    return bytearray(((ord(c) >> 8) for c in encoded))
+    return bytearray2(((ord(c) >> 8) for c in encoded))
 
 
 def is_python_proxy(parameter):
@@ -220,6 +220,7 @@ def get_command_part(parameter, python_proxy_pool=None):
     :rtype: the string representing the command part
     """
     command_part = ''
+
     if parameter == None:
         command_part = NULL_TYPE
     elif isinstance(parameter, bool):

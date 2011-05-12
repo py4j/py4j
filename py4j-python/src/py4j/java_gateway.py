@@ -23,7 +23,7 @@ from traceback import print_exc
 
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
-from py4j.compat import range, hasattr2
+from py4j.compat import range, hasattr2, isbytearray
 
 
 class NullHandler(logging.Handler):

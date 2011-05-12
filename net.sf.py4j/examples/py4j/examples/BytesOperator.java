@@ -1,7 +1,6 @@
 /*******************************************************************************
- *
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- *  
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
@@ -29,44 +28,7 @@
  *******************************************************************************/
 package py4j.examples;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import py4j.GatewayServer;
-
-public class OperatorExample {
-
-	private final static int MAX = 1000;
+public interface BytesOperator {
 	
-	public byte[] callBytesOperator(BytesOperator op) {
-		byte[] input = {1,2,3,4,5};
-		
-		return op.returnBytes(input);
-	}
-	
-	public List<Integer> randomBinaryOperator(Operator op) {
-		Random random = new Random();
-		List<Integer> numbers = new ArrayList<Integer>();
-		numbers.add(random.nextInt(MAX));
-		numbers.add(random.nextInt(MAX));
-		numbers.add(op.doOperation(numbers.get(0), numbers.get(1)));
-		return numbers;
-	}
-	
-	public List<Integer> randomTernaryOperator(Operator op) {
-		Random random = new Random();
-		List<Integer> numbers = new ArrayList<Integer>();
-		numbers.add(random.nextInt(MAX));
-		numbers.add(random.nextInt(MAX));
-		numbers.add(random.nextInt(MAX));
-		numbers.add(op.doOperation(numbers.get(0), numbers.get(1), numbers.get(2)));
-		return numbers;
-	}
-	
-	public static void main(String[] args) {
-		GatewayServer server = new GatewayServer(new OperatorExample());
-		server.start();
-	}
-
+	public byte[] returnBytes(byte[] bytes);
 }
