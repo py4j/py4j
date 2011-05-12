@@ -30,7 +30,7 @@ There are three ways to install Py4J:
 Using easy_install
 ^^^^^^^^^^^^^^^^^^
 
-1. Run ``easy_install Py4J`` (don't forget to prefix with sudo if you install
+1. Run ``easy_install py4j`` (don't forget to prefix with sudo if you install
    Py4J system-wide on a \*NIX operating system).  
 2. Py4J should now be in your PYTHONPATH.
 3. The Py4J Java library is located in ``share/py4j/py4j0.x.jar``. The exact
@@ -51,7 +51,7 @@ Using an official release
    <http://pypi.python.org/pypi/Py4J>`_. If you are using a \*NIX OS, download
    the tar.gz file. If you are using Windows, download the zip file.
 2. Untar/Unzip the file and navigate to the newly created directory, e.g., ``cd
-   Py4J-0.x``.  
+   py4j-0.x``.  
 3. Run ``python setup.py install`` (don't forget to prefix with sudo if you
    install Py4J system-wide).
 4. Py4J should now be in your PYTHONPATH.
