@@ -1,6 +1,9 @@
 package py4j.examples;
 
+
 public class UTFExample {
+	
+	private Byte[] array = new Byte[] { 0, 1, 10, 127, -1, -128 };
 
 	public int strangeMéthod() {
 		return 2;
@@ -38,5 +41,9 @@ public class UTFExample {
 
 	public byte[] getBytesValue() {
 		return new byte[] { 0, 1, 10, 127, -1, -128 };
+	}
+	
+	public Byte[] getBytesArray() {
+		return array;
 	}
 }

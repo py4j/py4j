@@ -129,6 +129,32 @@ Map
 Byte array (byte[])
 -------------------
 
+Since version 0.7, Py4J automatically passes Java byte array (i.e., `byte[]`)
+by value and convert them to Python bytearray (2.x) or bytes (3.x) and vice
+versa. The rationale is that byte array are often used for binary processing
+and are often immutable: a program reads a series of byte from a data source
+and interpret it (or transform it into another byte array).
+
+Prior to 0.7, a Python program could interact with a Java byte[] but each
+access to a byte required a call between the Python and the Java interpreter
+(i.e., the Python program only had a reference to the array).
+
+In summary:
+
+* If from Java, you return a byte[], Py4J will convert the byte[] to a
+  bytearray (Python 2.x) or bytes (Python 3.x) variable in Python. 
+
+* If from Python, you pass a bytearray or bytes variable to the Java side,
+  Py4J will convert it to a byte[].
+
+* If you pass a byte[] from Java to Python, both arrays are disconnected: a
+  change to the array on one side will not be reflected on the other side.
+
+* If you want to pass an array by reference, use a `Byte[]` instead of a
+  `byte[]` or you can use  `Bytes.asList
+  <http://guava-libraries.googlecode.com/svn/trunk/javadoc/com/google/common/primitives/Bytes.html#asList(byte...)>`_
+  from `Guava <http://code.google.com/p/guava-libraries/>`_ to obtain a list
+  backed by a byte array.
 
 
 Implementing Java interfaces from Python (callback)
@@ -321,8 +347,10 @@ collections to Java Collections when calling a Java method: just set
 ::
 
   >>> gateway = JavaGateway(auto_convert=True)
-  >>> gateway.jvm.java.util.Collections.sort(my_list)
   >>> my_list
+  [3, 2, 1]
+  >>> gateway.jvm.java.util.Collections.sort(my_list)
+  >>> my_list # The python list is not sorted!
   [3, 2, 1]
   >>> gateway.jvm.java.util.Collections.frequency(my_list,2)
   1

@@ -9,7 +9,7 @@ JAR_FILE = 'py4j' + VERSION + '.jar'
 JAR_FILE_PATH = os.path.join('py4j-java',JAR_FILE)
 
 setup(
-    name="Py4J",
+    name="py4j",
     packages=['py4j', 'py4j.tests'],
     package_dir={'':'src'},
     data_files=[('share/py4j',[JAR_FILE_PATH])],

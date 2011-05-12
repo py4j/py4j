@@ -423,7 +423,7 @@ class JavaMember(object):
                 [get_command_part(arg, self.pool) for arg in new_args])
 
         command = CALL_COMMAND_NAME +\
-            self.command_heade +\
+            self.command_header +\
             args_command +\
             END_COMMAND_PART
 

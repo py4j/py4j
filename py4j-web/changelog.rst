@@ -3,6 +3,21 @@ Changelog
 
 The changelog describes in plain English the changes that occurred between Py4J releases.
 
+Py4J 0.7
+--------
+
+- Major refactoring to support Python 3. Thanks to Alex Grönholm for his
+  patch.
+- The build and setup files have been totally changed. Py4J no longer requires
+  Paver to build and everything is done through ant. The setup.py file only
+  uses distutils.
+- Added support for Java byte[]: byte array are passed by value and converted
+  to bytearray or bytes.
+- Py4J package named change from Py4J to py4j.
+- Bug fixes in the Python callback server and unicode support.
+- `github 0.7 milestone
+  <https://github.com/bartdag/py4j/issues/labels/v0.7>`_
+
 Py4J 0.6
 --------
 
