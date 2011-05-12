@@ -203,6 +203,15 @@
         </copy>
     </target>
 
+    <target depends="dist,init-java-release,javadoc" name="java-light-release">
+        <copy todir="${java.dst.dir}">
+            <fileset dir="${dist.dir}/${release.name}"/> 
+        </copy>
+        <copy todir="${javadoc.dst.dir}">
+            <fileset dir="${javadoc.dir}"/> 
+        </copy>
+    </target>
+
     <!-- JAVA - EXECUTE EXAMPLE APPLICATIONS -->
     <target name="BufferGateway">
         <java classname="py4j.examples.BufferGateway" failonerror="true" fork="yes">
@@ -272,7 +281,7 @@
         </exec>
     </target>
 
-    <target depends="java-release,sphinx-release,python-test" name="python-light-release">
+    <target depends="java-light-release,sphinx-release" name="python-light-release">
         <exec executable="python" dir="${py4jpy.dir}">
             <arg line="setup.py"/>
             <arg line="sdist"/>
