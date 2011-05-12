@@ -29,14 +29,12 @@ else:
     long = int
     basestring = str
     unicode = str
+    bytearray2 = bytes
     unichr = chr
     bytestr = bytes
     tobytestr = lambda s: bytes(s, 'ascii')
     isbytestr = lambda s: False
     isbytearray = lambda s: isinstance(s, bytearray) or isinstance(s, bytes)
-    # Must be at the end... Otherwise all other references to bytearray will
-    # point to this one...
-    bytearray2 = bytes
 
 if hasattr(inspect, 'getattr_static'):
     hasattr2 = lambda obj, attr: bool(inspect.getattr_static(obj, attr, False))
