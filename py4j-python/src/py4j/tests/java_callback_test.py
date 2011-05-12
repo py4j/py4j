@@ -61,6 +61,21 @@ class FalseAddition(object):
         implements = ['py4j.examples.Operator']
 
 
+class CustomBytesOperator(object):
+    def returnBytes(self, byte_array):
+        try:
+            b = bytearray()
+            for abyte in byte_array:
+                b.append(abyte + 1)
+            return b
+        except Exception:
+            print_exc()
+            return None
+
+    class Java:
+        implements = ['py4j.examples.BytesOperator']
+
+
 class Runner(Thread):
     def __init__(self, runner_range, pool):
         Thread.__init__(self)
@@ -201,6 +216,7 @@ class TestIntegration(unittest.TestCase):
         time.sleep(2)
         self.assertTrue(len(self.gateway.gateway_property.pool) < 2)
 
+
     def testDoubleCallbackServer(self):
         try:
             self.gateway2 = JavaGateway(start_callback_server=True)
@@ -238,6 +254,14 @@ class TestPeriodicCleanup(unittest.TestCase):
             self.assertTrue(False)
         except:
             self.assertTrue(True)
+
+    def testBytes(self):
+        time.sleep(1)
+        operator = CustomBytesOperator()
+        returnbytes = self.gateway.entry_point.callBytesOperator(operator)
+        self.assertEqual(2, returnbytes[0])
+        self.assertEqual(6, returnbytes[-1])
+        time.sleep(2)
 
 
 class A(object):
