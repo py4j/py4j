@@ -21,5 +21,17 @@
             class="net.sf.py4j.defaultserver.preferences.PreferenceInitializer">
       </initializer>
    </extension>
+   <extension
+         id="py4jheadless"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="net.sf.py4j.defaultserver.HeadlessApplication">
+         </run>
+      </application>
+   </extension>
 
 </plugin>
