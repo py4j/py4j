@@ -13,7 +13,7 @@ Py4J 0.7
   uses distutils.
 - Added support for Java byte[]: byte array are passed by value and converted
   to bytearray or bytes.
-- Py4J package named change from Py4J to py4j.
+- Py4J package name changed from Py4J to py4j.
 - Bug fixes in the Python callback server and unicode support.
 - `github 0.7 milestone
   <https://github.com/bartdag/py4j/issues/labels/v0.7>`_

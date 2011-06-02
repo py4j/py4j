@@ -78,6 +78,6 @@ Briefly, you need:
    
 Execute the command line ``ant python-light-release`` in the py4j-java
 directory to create a tar.gz and zip source distribution. The
-``python-light-release`` target will (1) build the Py4J Java library, (2) test
-the Py4J Java library, (3) build the documentation, (4) test the Py4J Python
-library, (5) create a tar.gz source distribution. 
+``python-light-release`` target will (1) build the Py4J Java library, (2)
+build the documentation, and (3) build the Py4J Python library and package it
+into a tar.gz and zip source distribution. 
