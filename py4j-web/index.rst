@@ -65,7 +65,7 @@ Resources
 News
 ====
 
-* **May 12th 2011** - Py4J 0.7 has been released. See the :doc:`changelog` for
+* **June 2nd 2011** - Py4J 0.7 has been released. See the :doc:`changelog` for
   more details about the new features.
 
 * **February 17th 2011** - Py4J 0.6 has been released. See the :doc:`changelog`
