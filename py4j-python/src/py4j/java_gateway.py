@@ -19,11 +19,11 @@ import logging
 import socket
 import weakref
 import os
-from traceback import print_exc
+#from traceback import print_exc
 
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
-from py4j.compat import range, hasattr2, isbytearray
+from py4j.compat import range, hasattr2 
 
 
 class NullHandler(logging.Handler):

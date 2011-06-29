@@ -78,7 +78,7 @@ public class CallbackClient {
 		super();
 		this.port = port;
 		try {
-			this.address = InetAddress.getByName("localhost");
+			this.address = InetAddress.getLocalHost();
 		} catch (Exception e) {
 			throw new Py4JNetworkException(
 					"Local Host could not be determined when creating communication channel.");
@@ -271,5 +271,9 @@ public class CallbackClient {
 	
 	public int getPort() {
 		return port;
+	}
+	
+	public InetAddress getAddress() {
+		return address;
 	}
 }

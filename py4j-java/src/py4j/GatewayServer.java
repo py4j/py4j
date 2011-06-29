@@ -30,8 +30,10 @@
 package py4j;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -84,9 +86,13 @@ public class GatewayServer implements Runnable {
 
 	public static final String GATEWAY_SERVER_ID = "GATEWAY_SERVER";
 
+	private final InetAddress address;
+
 	private final int port;
 
 	private final int pythonPort;
+
+	private final InetAddress pythonAddress;
 
 	private final Gateway gateway;
 
@@ -164,11 +170,17 @@ public class GatewayServer implements Runnable {
 		this.pythonPort = pythonPort;
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;
-		this.cbClient = new CallbackClient(pythonPort);
-		this.gateway = new Gateway(entryPoint, cbClient);
-		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 		this.customCommands = customCommands;
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
+		try {
+			this.address = InetAddress.getLocalHost();
+			this.pythonAddress = InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			throw new Py4JNetworkException(e);
+		}
+		this.cbClient = new CallbackClient(pythonPort, this.pythonAddress);
+		this.gateway = new Gateway(entryPoint, cbClient);
+		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 	}
 
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
@@ -179,11 +191,62 @@ public class GatewayServer implements Runnable {
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;
 		this.cbClient = cbClient;
-		this.pythonPort = cbClient.getPort();
 		this.gateway = new Gateway(entryPoint, cbClient);
+		this.pythonPort = cbClient.getPort();
+		this.pythonAddress = cbClient.getAddress();
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 		this.customCommands = customCommands;
 		this.listeners = new ArrayList<GatewayServerListener>();
+		try {
+			this.address = InetAddress.getLocalHost();
+		} catch (UnknownHostException e) {
+			throw new Py4JNetworkException(e);
+		}
+	}
+
+	/**
+	 * 
+	 * @param entryPoint
+	 *            The entry point of this Gateway. Can be null.
+	 * @param port
+	 *            The port the GatewayServer is listening to.
+	 * @param pythonPort
+	 *            The port used by a PythonProxyHandler to connect to a Python
+	 *            gateway. Essentially the port used for Python callbacks.
+	 * @param address
+	 *            The address the GatewayServer is listening to.
+	 * @param pythonAddress
+	 *            The address used by a PythonProxyHandler to connect to a Python
+	 *            gateway.
+	 * @param connectTimeout
+	 *            Time in milliseconds (0 = infinite). If a GatewayServer does
+	 *            not receive a connection request after this time, it closes
+	 *            the server socket and no other connection is accepted.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once a Python program is
+	 *            connected, if a GatewayServer does not receive a request
+	 *            (e.g., a method call) after this time, the connection with the
+	 *            Python program is closed.
+	 * @param customCommands
+	 *            A list of custom Command classes to augment the Server
+	 *            features. These commands will be accessible from Python
+	 *            programs. Can be null.
+	 */
+	public GatewayServer(Object entryPoint, int port, int pythonPort,
+			InetAddress address, InetAddress pythonAddress, int connectTimeout,
+			int readTimeout, List<Class<? extends Command>> customCommands) {
+		super();
+		this.port = port;
+		this.pythonPort = pythonPort;
+		this.connectTimeout = connectTimeout;
+		this.readTimeout = readTimeout;
+		this.customCommands = customCommands;
+		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
+		this.address = address;
+		this.pythonAddress = pythonAddress;
+		this.cbClient = new CallbackClient(pythonPort);
+		this.gateway = new Gateway(entryPoint, cbClient);
+		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 	}
 
 	/**
@@ -221,7 +284,7 @@ public class GatewayServer implements Runnable {
 	 */
 	protected void startSocket() throws Py4JNetworkException {
 		try {
-			sSocket = new ServerSocket(port);
+			sSocket = new ServerSocket(port, -1, address);
 			sSocket.setSoTimeout(connectTimeout);
 			sSocket.setReuseAddress(true);
 		} catch (IOException e) {
@@ -325,6 +388,10 @@ public class GatewayServer implements Runnable {
 	public int getPythonPort() {
 		return pythonPort;
 	}
+	
+	public InetAddress getPythonAddress() {
+		return pythonAddress;
+	}
 
 	/**
 	 * 
@@ -333,6 +400,10 @@ public class GatewayServer implements Runnable {
 	 */
 	public int getPort() {
 		return port;
+	}
+	
+	public InetAddress getAddress() {
+		return address;
 	}
 
 	/**
