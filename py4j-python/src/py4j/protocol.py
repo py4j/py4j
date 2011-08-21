@@ -144,7 +144,8 @@ def escape_new_line(original):
 
     :rtype: an escaped string
     """
-    return smart_decode(original).replace('\\', '\\\\').replace('\r', '\\r').replace('\n', '\\n')
+    return smart_decode(original).replace('\\', '\\\\').replace('\r', '\\r').\
+            replace('\n', '\\n')
 
 
 def unescape_new_line(escaped):
@@ -198,8 +199,9 @@ def decode_bytearray(encoded):
 
 
 def is_python_proxy(parameter):
-    """Determines whether parameter is a Python Proxy, i.e., it has a Java internal class with an
-    implements member.
+    """Determines whether parameter is a Python Proxy, i.e., it has a Java
+    internal class with an `implements` member.
+
     :param parameter: the object to check.
     :rtype: True if the parameter is a Python Proxy
     """
@@ -212,7 +214,8 @@ def is_python_proxy(parameter):
 
 
 def get_command_part(parameter, python_proxy_pool=None):
-    """Converts a Python object into a string representation respecting the Py4J protocol.
+    """Converts a Python object into a string representation respecting the
+    Py4J protocol.
 
     For example, the integer `1` is converted to `u'i1'`
 
@@ -253,24 +256,35 @@ def get_command_part(parameter, python_proxy_pool=None):
 def get_return_value(answer, gateway_client, target_id=None, name=None):
     """Converts an answer received from the Java gateway into a Python object.
 
-    For example, string representation of integers are converted to Python integer,
-    string representation of objects are converted to JavaObject instances, etc.
+    For example, string representation of integers are converted to Python
+    integer, string representation of objects are converted to JavaObject
+    instances, etc.
 
     :param answer: the string returned by the Java gateway
-    :param gateway_client: the gateway client used to communicate with the Java Gateway. Only necessary if the answer is a reference (e.g., object, list, map)
-    :param target_id: the name of the object from which the answer comes from (e.g., *object1* in `object1.hello()`). Optional.
-    :param name: the name of the member from which the answer comes from (e.g., *hello* in `object1.hello()`). Optional.
+    :param gateway_client: the gateway client used to communicate with the Java
+        Gateway. Only necessary if the answer is a reference (e.g., object,
+        list, map)
+    :param target_id: the name of the object from which the answer comes from
+        (e.g., *object1* in `object1.hello()`). Optional.
+    :param name: the name of the member from which the answer comes from
+        (e.g., *hello* in `object1.hello()`). Optional.
     """
     if is_error(answer)[0]:
         if len(answer) > 1:
             type = answer[1]
             value = OUTPUT_CONVERTER[type](answer[2:], gateway_client)
             if answer[1] == REFERENCE_TYPE:
-                raise Py4JJavaError('An error occurred while calling %s%s%s.\n' % (target_id, '.', name), value)
+                raise Py4JJavaError(
+                    'An error occurred while calling {0}{1}{2}.\n'.
+                    format(target_id, '.', name), value)
             else:
-                raise Py4JError('An error occurred while calling %s%s%s. Trace:\n%s\n' % (target_id, '.', name, value))
+                raise Py4JError(
+                    'An error occurred while calling {0}{1}{2}. Trace:\n{3}\n'.
+                    format(target_id, '.', name, value))
         else:
-            raise Py4JError('An error occurred while calling %s%s%s' % (target_id, '.', name))
+            raise Py4JError(
+                    'An error occurred while calling {0}{1}{2}'.
+                    format(target_id, '.', name))
     else:
         type = answer[1]
         if type == VOID_TYPE:
@@ -289,10 +303,11 @@ def is_error(answer):
 def register_output_converter(output_type, converter):
     """Registers an output converter to the list of global output converters.
 
-    :param output_type: A Py4J type of a return object (e.g., MAP_TYPE, BOOLEAN_TYPE).
-    :param converter: A function that takes an object_id and a gateway_client as parameter and that
-                      returns a Python object (like a `bool` or a `JavaObject` instance).
-
+    :param output_type: A Py4J type of a return object (e.g., MAP_TYPE,
+        BOOLEAN_TYPE).
+    :param converter: A function that takes an object_id and a gateway_client
+        as parameter and that returns a Python object (like a `bool` or a
+        `JavaObject` instance).
     """
     global OUTPUT_CONVERTER
     OUTPUT_CONVERTER[output_type] = converter
@@ -301,11 +316,13 @@ def register_output_converter(output_type, converter):
 def register_input_converter(converter):
     """Registers an input converter to the list of global input converters.
 
-    When initialized with `auto_convert=True`, a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
-    will use the input converters on any parameter that is not a
-    :class:`JavaObject <py4j.java_gateway.JavaObject>` or `basestring` instance.
+    When initialized with `auto_convert=True`, a :class:`JavaGateway
+    <py4j.java_gateway.JavaGateway>` will use the input converters on any
+    parameter that is not a :class:`JavaObject <py4j.java_gateway.JavaObject>`
+    or `basestring` instance.
 
-    :param converter: A converter that declares the methods `can_convert(object)` and `convert(object,gateway_client)`.
+    :param converter: A converter that declares the methods
+        `can_convert(object)` and `convert(object,gateway_client)`.
 
     """
     global INPUT_CONVERTER
@@ -336,13 +353,11 @@ class Py4JJavaError(Py4JError):
         self.args = (msg, java_exception)
         self.errmsg = msg
         self.java_exception = java_exception
-        self.exception_cmd = EXCEPTION_COMMAND_NAME + REFERENCE_TYPE + java_exception._target_id + '\n' + END_COMMAND_PART
+        self.exception_cmd = EXCEPTION_COMMAND_NAME + REFERENCE_TYPE + \
+                java_exception._target_id + '\n' + END_COMMAND_PART
 
     def __str__(self):
         gateway_client = self.java_exception._gateway_client
         answer = gateway_client.send_command(self.exception_cmd)
         return_value = get_return_value(answer, gateway_client, None, None)
         return '{0}: {1}'.format(self.errmsg, return_value)
-
-# For circular dependencies
-# Purists should close their eyes

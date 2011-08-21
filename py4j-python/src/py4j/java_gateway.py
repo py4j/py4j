@@ -23,7 +23,7 @@ import os
 
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
-from py4j.compat import range, hasattr2 
+from py4j.compat import range, hasattr2
 
 
 class NullHandler(logging.Handler):
@@ -360,12 +360,12 @@ class GatewayConnection(object):
         :rtype: the `string` answer received from the JVM. The answer follows
          the Py4J protocol.
         """
-        logger.debug("Command to send: %s" % (command))
+        logger.debug("Command to send: {0}".format(command))
         try:
             #print(command)
             self.socket.sendall(command.encode('utf-8'))
             answer = smart_decode(self.stream.readline()[:-1])
-            logger.debug("Answer received: %s" % (answer))
+            logger.debug("Answer received: {0}".format(answer))
             # Happens when a the other end is dead. There might be an empty
             # answer before the socket raises an error.
             if answer.strip() == '':
@@ -595,7 +595,7 @@ class JavaPackage():
         elif answer.startswith(SUCCESS_CLASS):
             return JavaClass(answer[CLASS_FQN_START:], self._gateway_client)
         else:
-            raise Py4JError('%s does not exist in the JVM' % new_fqn)
+            raise Py4JError('{0} does not exist in the JVM'.format(new_fqn))
 
 
 class JVMView(object):
@@ -628,7 +628,7 @@ class JVMView(object):
         elif answer.startswith(SUCCESS_CLASS):
             return JavaClass(answer[CLASS_FQN_START:], self._gateway_client)
         else:
-            raise Py4JError('%s does not exist in the JVM' % name)
+            raise Py4JError('{0} does not exist in the JVM'.format(name))
 
 
 class GatewayProperty(object):
@@ -976,7 +976,7 @@ class CallbackConnection(Thread):
                     self.input.readline()
                     del(self.pool[obj_id])
                 else:
-                    logger.error('Unknown command %s' % command)
+                    logger.error('Unknown command {0}'.format(command))
         except:
             logger.exception('Error while callback connection was waiting for'
                 'a message')

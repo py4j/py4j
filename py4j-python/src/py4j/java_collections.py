@@ -9,7 +9,8 @@ Created on Jan 22, 2010
 :author: Barthelemy Dagenais
 '''
 from __future__ import unicode_literals
-from collections import MutableMapping, Sequence, MutableSequence, MutableSet, Set
+from collections import MutableMapping, Sequence, MutableSequence,\
+        MutableSet, Set
 import sys
 
 from py4j.java_gateway import JavaObject, JavaMember, get_method, JavaClass
@@ -20,12 +21,13 @@ from py4j.compat import iteritems, next, hasattr2
 class JavaIterator(JavaObject):
     """Maps a Python list iterator to a Java list iterator.
 
-    The `JavaIterator` follows the Python iterator protocol and raises a `StopIteration` error when the iterator can no longer iterate."""
+    The `JavaIterator` follows the Python iterator protocol and raises a
+    `StopIteration` error when the iterator can no longer iterate."""
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
         self._next_name = 'next'
-        # To bind lifecycle of this iterator to the java iterator. To prevent gc of the iterator.
-#        self._java_object = java_object
+        # To bind lifecycle of this iterator to the java iterator. To prevent
+        # gc of the iterator.
 
     def __iter__(self):
         return self
@@ -36,12 +38,13 @@ class JavaIterator(JavaObject):
         The `Iterator.next()` method is called and if an exception occur (e.g.,
         NoSuchElementException), a StopIteration exception is raised."""
         if self._next_name not in self._methods:
-            self._methods[self._next_name] = JavaMember(self._next_name, self, self._target_id, self._gateway_client)
+            self._methods[self._next_name] = JavaMember(self._next_name, self,
+                    self._target_id, self._gateway_client)
         try:
             return self._methods[self._next_name]()
         except Py4JError:
             raise StopIteration()
-    
+
     __next__ = next
 
 
@@ -75,20 +78,9 @@ class JavaMap(JavaObject, MutableMapping):
     def __str__(self):
         return self.__repr__()
 
-#    def __repr__(self):
-#        # TODO Make it more efficient/pythonic
-#        # TODO Debug why strings are not outputed with apostrophes.
-#        if len(self) == 0:
-#            return '{}'
-#        else:
-#            srep = '{'
-#            for key in self:
-#                srep += repr(key) + ': ' + repr(self[key]) + ', '
-#
-#            return srep[:-2] + '}'
-
     def __repr__(self):
-        items = ('{0}: {1}'.format(repr(k), repr(v)) for k, v in iteritems(self))
+        items = ('{0}: {1}'.format(repr(k), repr(v))
+                for k, v in iteritems(self))
         return '{{{0}}}'.format(', '.join(items))
 
 
@@ -135,16 +127,17 @@ class JavaSet(JavaObject, MutableSet):
 
     def __repr__(self):
         if len(self):
-            return self.__SET_TEMPLATE.format(', '.join((repr(x) for x in self)))
+            return self.__SET_TEMPLATE.format(', '.join(
+                (repr(x) for x in self)))
         return self.__EMPTY_SET
 
 
 class JavaArray(JavaObject, Sequence):
-    """Maps a Java Array to a Semi-Mutable Sequence: elements inside the sequence can be modified,
-    but the length of the sequence cannot change.
+    """Maps a Java Array to a Semi-Mutable Sequence: elements inside the
+    sequence can be modified, but the length of the sequence cannot change.
 
-    The backing collection is a Sequence and not a Python array because these arrays only accept
-    primitives whereas Java arrays work for any types.
+    The backing collection is a Sequence and not a Python array because
+    these arrays only accept primitives whereas Java arrays work for any types.
     """
 
     def __init__(self, target_id, gateway_client):
@@ -163,14 +156,16 @@ class JavaArray(JavaObject, Sequence):
 
     def __compute_item(self, key):
         new_key = self.__compute_index(key)
-        command = ARRAY_COMMAND_NAME + ARRAY_GET_SUB_COMMAND_NAME + self._get_object_id() + '\n'
+        command = ARRAY_COMMAND_NAME + ARRAY_GET_SUB_COMMAND_NAME + \
+                self._get_object_id() + '\n'
         command += get_command_part(new_key)
         command += END_COMMAND_PART
         answer = self._gateway_client.send_command(command)
         return get_return_value(answer, self._gateway_client)
 
     def __get_slice(self, indices):
-        command = ARRAY_COMMAND_NAME + ARRAY_SLICE_SUB_COMMAND_NAME + self._get_object_id() + '\n'
+        command = ARRAY_COMMAND_NAME + ARRAY_SLICE_SUB_COMMAND_NAME + \
+                self._get_object_id() + '\n'
         for index in indices:
             command += get_command_part(index)
         command += END_COMMAND_PART
@@ -184,7 +179,8 @@ class JavaArray(JavaObject, Sequence):
         elif isinstance(key, int):
             return self.__compute_item(key)
         else:
-            raise TypeError("array indices must be integers, not %s" % key.__class__.__name__)
+            raise TypeError("array indices must be integers, not {0}".format(
+                key.__class__.__name__))
 
     def __repl_item_from_slice(self, range, iterable):
         value_iter = iter(iterable)
@@ -194,7 +190,8 @@ class JavaArray(JavaObject, Sequence):
 
     def __set_item(self, key, value):
         new_key = self.__compute_index(key)
-        command = ARRAY_COMMAND_NAME + ARRAY_SET_SUB_COMMAND_NAME + self._get_object_id() + '\n'
+        command = ARRAY_COMMAND_NAME + ARRAY_SET_SUB_COMMAND_NAME + \
+                self._get_object_id() + '\n'
         command += get_command_part(new_key)
         command += get_command_part(value)
         command += END_COMMAND_PART
@@ -209,17 +206,20 @@ class JavaArray(JavaObject, Sequence):
             lenr = len(self_range)
             lenv = len(value)
             if lenr != lenv:
-                raise ValueError("attempt to assign sequence of size %d to extended slice of size %d" % (lenv, lenr))
+                raise ValueError("attempt to assign sequence of size "
+                        "{0} to extended slice of size {1}".format(lenv, lenr))
             else:
                 return self.__repl_item_from_slice(self_range, value)
 
         elif isinstance(key, int):
             return self.__set_item(key, value)
         else:
-            raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+            raise TypeError("list indices must be integers, not {0}".format(
+                key.__class__.__name__))
 
     def __len__(self):
-        command = ARRAY_COMMAND_NAME + ARRAY_LEN_SUB_COMMAND_NAME + self._get_object_id() + '\n'
+        command = ARRAY_COMMAND_NAME + ARRAY_LEN_SUB_COMMAND_NAME + \
+                self._get_object_id() + '\n'
         command += END_COMMAND_PART
         answer = self._gateway_client.send_command(command)
         return get_return_value(answer, self._gateway_client)
@@ -228,13 +228,11 @@ class JavaArray(JavaObject, Sequence):
 class JavaList(JavaObject, MutableSequence):
     """Maps a Python list to a Java list.
 
-    All operations possible on a Python list are implemented. For example, slicing (e.g., list[1:3])
-    will create a copy of the list on the JVM. Slicing is thus not equivalent to subList(), because
-    a modification to a slice such as the addition of a new element will not affect the original
+    All operations possible on a Python list are implemented. For example,
+    slicing (e.g., list[1:3]) will create a copy of the list on the JVM.
+    Slicing is thus not equivalent to subList(), because a modification to a
+    slice such as the addition of a new element will not affect the original
     list."""
-    
-    __EMPTY_SET = '[]' if sys.version_info[0] < 3 else '{}'
-    __REPR_TEMPLATE = 'set([%s])' if sys.version_info[0] < 3 else '{%s}'
 
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
@@ -320,17 +318,20 @@ class JavaList(JavaObject, MutableSequence):
                 lenr = len(self_range)
                 lenv = len(value)
                 if lenr != lenv:
-                    raise ValueError("attempt to assign sequence of size %d to extended slice of size %d" % (lenv, lenr))
+                    raise ValueError("attempt to assign sequence of size "
+                        "{0} to extended slice of size {1}".format(lenv, lenr))
                 else:
                     return self.__repl_item_from_slice(self_range, value)
 
         elif isinstance(key, int):
             return self.__set_item(key, value)
         else:
-            raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+            raise TypeError("list indices must be integers, not {0}".format(
+                key.__class__.__name__))
 
     def __get_slice(self, indices):
-        command = LIST_COMMAND_NAME + LIST_SLICE_SUBCOMMAND_NAME + self._get_object_id() + '\n'
+        command = LIST_COMMAND_NAME + LIST_SLICE_SUBCOMMAND_NAME + \
+                self._get_object_id() + '\n'
         for index in indices:
             command += get_command_part(index)
         command += END_COMMAND_PART
@@ -344,7 +345,8 @@ class JavaList(JavaObject, MutableSequence):
         elif isinstance(key, int):
             return self.__compute_item(key)
         else:
-            raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+            raise TypeError("list indices must be integers, not {0}".format(
+                key.__class__.__name__))
 
     def __delitem__(self, key):
         if isinstance(key, slice):
@@ -356,13 +358,16 @@ class JavaList(JavaObject, MutableSequence):
         elif isinstance(key, int):
             return self.__del_item(key)
         else:
-            raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+            raise TypeError("list indices must be integers, not {0}".format(
+                key.__class__.__name__))
 
     def __contains__(self, item):
         return self.contains(item)
 
     def __add__(self, other):
-        command = LIST_COMMAND_NAME + LIST_CONCAT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + other._get_object_id() + '\n' + END_COMMAND_PART
+        command = LIST_COMMAND_NAME + LIST_CONCAT_SUBCOMMAND_NAME + \
+                self._get_object_id() + '\n' + other._get_object_id() + \
+                '\n' + END_COMMAND_PART
         answer = self._gateway_client.send_command(command)
         return get_return_value(answer, self._gateway_client)
 
@@ -374,7 +379,9 @@ class JavaList(JavaObject, MutableSequence):
         return self
 
     def __mul__(self, other):
-        command = LIST_COMMAND_NAME + LIST_MULT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + get_command_part(other) + END_COMMAND_PART
+        command = LIST_COMMAND_NAME + LIST_MULT_SUBCOMMAND_NAME + \
+                self._get_object_id() + '\n' + get_command_part(other) + \
+                END_COMMAND_PART
         answer = self._gateway_client.send_command(command)
         return get_return_value(answer, self._gateway_client)
 
@@ -382,7 +389,9 @@ class JavaList(JavaObject, MutableSequence):
         return self.__mul__(other)
 
     def __imul__(self, other):
-        command = LIST_COMMAND_NAME + LIST_IMULT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + get_command_part(other) + END_COMMAND_PART
+        command = LIST_COMMAND_NAME + LIST_IMULT_SUBCOMMAND_NAME + \
+                self._get_object_id() + '\n' + get_command_part(other) + \
+                END_COMMAND_PART
         self._gateway_client.send_command(command)
         return self
 
@@ -394,7 +403,8 @@ class JavaList(JavaObject, MutableSequence):
             new_key = self.__compute_index(key, True)
             return self.add(new_key, value)
         else:
-            raise TypeError("list indices must be integers, not %s" % key.__class__.__name__)
+            raise TypeError("list indices must be integers, not {0}".format(
+                key.__class__.__name__))
 
     def extend(self, other_list):
         self.addAll(other_list)
@@ -410,20 +420,25 @@ class JavaList(JavaObject, MutableSequence):
         return self.indexOf(value)
 
     def count(self, value):
-        command = LIST_COMMAND_NAME + LIST_COUNT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + get_command_part(value) + END_COMMAND_PART
+        command = LIST_COMMAND_NAME + LIST_COUNT_SUBCOMMAND_NAME + \
+                self._get_object_id() + '\n' + get_command_part(value) + \
+                END_COMMAND_PART
         answer = self._gateway_client.send_command(command)
         return get_return_value(answer, self._gateway_client)
 
     def sort(self):
-        command = LIST_COMMAND_NAME + LIST_SORT_SUBCOMMAND_NAME + self._get_object_id() + '\n' + END_COMMAND_PART
+        command = LIST_COMMAND_NAME + LIST_SORT_SUBCOMMAND_NAME + \
+                self._get_object_id() + '\n' + END_COMMAND_PART
         self._gateway_client.send_command(command)
 
     def reverse(self):
-        command = LIST_COMMAND_NAME + LIST_REVERSE_SUBCOMMAND_NAME + self._get_object_id() + '\n' + END_COMMAND_PART
+        command = LIST_COMMAND_NAME + LIST_REVERSE_SUBCOMMAND_NAME + \
+                self._get_object_id() + '\n' + END_COMMAND_PART
         self._gateway_client.send_command(command)
 
     def remove(self, value):
-        # Ensures that we are deleting the int value and not the index (Java API)
+        # Ensures that we are deleting the int value and not the index
+        # (Java API)
         if isinstance(value, int):
             new_value = self.indexOf(value)
         else:
@@ -479,8 +494,13 @@ register_input_converter(SetConverter())
 register_input_converter(MapConverter())
 register_input_converter(ListConverter())
 
-register_output_converter(MAP_TYPE, lambda target_id, gateway_client: JavaMap(target_id, gateway_client))
-register_output_converter(LIST_TYPE, lambda target_id, gateway_client: JavaList(target_id, gateway_client))
-register_output_converter(ARRAY_TYPE, lambda target_id, gateway_client: JavaArray(target_id, gateway_client))
-register_output_converter(SET_TYPE, lambda target_id, gateway_client: JavaSet(target_id, gateway_client))
-register_output_converter(ITERATOR_TYPE, lambda target_id, gateway_client: JavaIterator(target_id, gateway_client))
+register_output_converter(MAP_TYPE, lambda target_id, gateway_client:
+        JavaMap(target_id, gateway_client))
+register_output_converter(LIST_TYPE, lambda target_id, gateway_client:
+        JavaList(target_id, gateway_client))
+register_output_converter(ARRAY_TYPE, lambda target_id, gateway_client:
+        JavaArray(target_id, gateway_client))
+register_output_converter(SET_TYPE, lambda target_id, gateway_client:
+        JavaSet(target_id, gateway_client))
+register_output_converter(ITERATOR_TYPE, lambda target_id, gateway_client:
+        JavaIterator(target_id, gateway_client))
