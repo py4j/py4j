@@ -10,5 +10,5 @@ if __name__ == '__main__':
     buffer = gateway.getStringBuffer()
     buffer.append(True)
     buffer.append(1.0)
-    buffer.append('This is a Python %s' % 'string')
+    buffer.append('This is a Python {0}'.format('string'))
     print(buffer.toString())

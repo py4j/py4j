@@ -25,7 +25,8 @@ import py4j.compat
 
 SERVER_PORT = 25333
 TEST_PORT = 25332
-PY4J_JAVA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../../../py4j-java/bin')
+PY4J_JAVA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+    '../../../../py4j-java/bin')
 
 
 def start_echo_server():
@@ -40,7 +41,8 @@ def start_echo_server_process():
 
 
 def start_example_server():
-    subprocess.call(["java", "-Xmx512m", "-cp", PY4J_JAVA_PATH, "py4j.examples.ExampleApplication"])
+    subprocess.call(["java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.ExampleApplication"])
 
 
 def start_example_app_process():
@@ -93,16 +95,20 @@ class ProtocolTest(unittest.TestCase):
         safe_shutdown(self)
 
     def testEscape(self):
-        self.assertEqual("Hello\t\rWorld\n\\", unescape_new_line(escape_new_line("Hello\t\rWorld\n\\")))
-        self.assertEqual("Hello\t\rWorld\n\\", unescape_new_line(escape_new_line("Hello\t\rWorld\n\\")))
+        self.assertEqual("Hello\t\rWorld\n\\", unescape_new_line(
+            escape_new_line("Hello\t\rWorld\n\\")))
+        self.assertEqual("Hello\t\rWorld\n\\", unescape_new_line(
+            escape_new_line("Hello\t\rWorld\n\\")))
 
     def testProtocolSend(self):
         testConnection = TestConnection()
-        gateway = JavaGateway(testConnection, False)
-        e = gateway.getExample()
+        self.gateway = JavaGateway(testConnection, False)
+        e = self.gateway.getExample()
         self.assertEqual('c\nt\ngetExample\ne\n', testConnection.last_message)
         e.method1(1, True, 'Hello\nWorld', e, None, 1.5)
-        self.assertEqual('c\no0\nmethod1\ni1\nbTrue\nsHello\\nWorld\nro0\nn\nd1.5\ne\n', testConnection.last_message)
+        self.assertEqual(
+                'c\no0\nmethod1\ni1\nbTrue\nsHello\\nWorld\nro0\nn\nd1.5\ne\n',
+                testConnection.last_message)
         del(e)
 
     def testProtocolReceive(self):
@@ -114,9 +120,7 @@ class ProtocolTest(unittest.TestCase):
             testSocket.sendall('yro0\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ysHello World\n'.encode('utf-8'))
-            #testSocket.sendall('yo\n'.encode('utf-8')) Not necessary because method3 is cached!
             testSocket.sendall('yi123\n'.encode('utf-8'))
-            #testSocket.sendall('yo\n'.encode('utf-8')) Not necessary because method3 is cached!
             testSocket.sendall('yd1.25\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yn\n'.encode('utf-8'))
@@ -158,7 +162,6 @@ class IntegrationTest(unittest.TestCase):
             testSocket.sendall('yro0\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ysHello World\n'.encode('utf-8'))
-#            testSocket.sendall('yo\n'.encode('utf-8')) # No need because getNewExampe is in cache now!
             testSocket.sendall('yro1\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ysHello World2\n'.encode('utf-8'))
@@ -203,7 +206,8 @@ class IntegrationTest(unittest.TestCase):
 
 class CloseTest(unittest.TestCase):
     def testNoCallbackServer(self):
-        # Test that the program can continue to move on and that no close is required.
+        # Test that the program can continue to move on and that no close
+        # is required.
         JavaGateway()
         self.assertTrue(True)
 
@@ -233,7 +237,7 @@ class MethodTest(unittest.TestCase):
             ex2 = ex.method4(None)
             self.assertEquals(ex2.getField1(), 3)
             self.assertEquals(2, ex.method7(None))
-        except:
+        except Exception:
             print_exc()
             self.fail()
 
@@ -283,7 +287,7 @@ class FieldTest(unittest.TestCase):
         try:
             get_field(ex, 'field50')
             self.fail()
-        except:
+        except Exception:
             self.assertTrue(True)
 
         ex._auto_field = True
@@ -294,7 +298,7 @@ class FieldTest(unittest.TestCase):
         try:
             get_field(ex, 'field20')
             self.fail()
-        except:
+        except Exception:
             self.assertTrue(True)
 
     def testSetField(self):
@@ -311,7 +315,7 @@ class FieldTest(unittest.TestCase):
         try:
             set_field(ex, 'field1', 123)
             self.fail()
-        except:
+        except Exception:
             self.assertTrue(True)
 
     def testGetMethod(self):
@@ -341,13 +345,13 @@ class MemoryManagementText(unittest.TestCase):
         try:
             sb.append('Python')
             self.fail('Should have failed')
-        except:
+        except Exception:
             self.assertTrue(True)
         try:
             sb2 = gateway2.jvm.java.lang.StringBuffer()
             sb2.append('Python')
             self.fail('Should have failed')
-        except:
+        except Exception:
             self.assertTrue(True)
 
     def testDetach(self):
@@ -409,6 +413,7 @@ class UnicodeTest(unittest.TestCase):
         self.assertEqual(ord(s1[0]), array1[0])
         self.assertEqual(ord(s2[4]), array2[4])
 
+
 class ByteTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
@@ -458,7 +463,6 @@ class ByteTest(unittest.TestCase):
         for i1, i2 in zip(a2, int_list):
             self.assertEqual(i1, i2)
 
-
     def testBytesType2(self):
         ex = self.gateway.jvm.py4j.examples.UTFExample()
         int_list = [0, 1, 10, 127, 255, 128]
@@ -483,7 +487,8 @@ class ExceptionTest(unittest.TestCase):
         try:
             self.gateway.jvm.Integer.valueOf('allo')
         except Py4JJavaError as e:
-            self.assertEqual('java.lang.NumberFormatException', e.java_exception.getClass().getName())
+            self.assertEqual('java.lang.NumberFormatException',
+                    e.java_exception.getClass().getName())
             self.assertTrue(True)
         except Exception:
             self.fail()
@@ -492,7 +497,8 @@ class ExceptionTest(unittest.TestCase):
         try:
             self.gateway.jvm.Integer('allo')
         except Py4JJavaError as e:
-            self.assertEqual('java.lang.NumberFormatException', e.java_exception.getClass().getName())
+            self.assertEqual('java.lang.NumberFormatException',
+                    e.java_exception.getClass().getName())
             self.assertTrue(True)
         except Exception:
             self.fail()
@@ -529,7 +535,9 @@ class ExceptionTest(unittest.TestCase):
         try:
             self.gateway.jvm.Integer.valueOf('allo')
         except Py4JJavaError as e:
-            self.assertTrue(str(e).startswith('An error occurred while calling z:java.lang.Integer.valueOf.\n: java.lang.NumberFormatException:'))
+            self.assertTrue(str(e).startswith(
+                'An error occurred while calling z:java.lang.Integer.valueOf.'
+                '\n: java.lang.NumberFormatException:'))
         except Exception:
             self.fail()
 
@@ -622,7 +630,8 @@ class HelpTest(unittest.TestCase):
 
     def testHelpObjectWithPattern(self):
         ex = self.gateway.getNewExample()
-        help_page = self.gateway.help(ex, pattern='m*', short_name=True, display=False)
+        help_page = self.gateway.help(ex, pattern='m*', short_name=True,
+                display=False)
         print(help_page)
         self.assertEqual(644, len(help_page))
 
@@ -688,8 +697,4 @@ class ThreadTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testGateway']
-#    logger = logging.getLogger("py4j")
-#    logger.setLevel(logging.DEBUG)
-#    logger.addHandler(logging.StreamHandler())
     unittest.main()

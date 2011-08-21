@@ -10,13 +10,14 @@ import time
 import unittest
 
 from py4j.java_gateway import JavaGateway
-from py4j.tests.java_gateway_test import PY4J_JAVA_PATH
+from py4j.tests.java_gateway_test import PY4J_JAVA_PATH, safe_shutdown
 from py4j.protocol import Py4JJavaError, Py4JError
 from py4j.compat import unicode
 
 
 def start_example_server():
-    subprocess.call(["java", "-cp", PY4J_JAVA_PATH, "py4j.examples.ExampleApplication"])
+    subprocess.call(["java", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.ExampleApplication"])
 
 
 def start_example_app_process():
@@ -40,8 +41,8 @@ class AutoConvertTest(unittest.TestCase):
         self.gateway = JavaGateway(auto_convert=True)
 
     def tearDown(self):
-        self.p.terminate()
-        self.gateway.shutdown()
+        safe_shutdown(self)
+        self.p.join()
         time.sleep(0.5)
 
     def testAutoConvert(self):
@@ -61,8 +62,8 @@ class Test(unittest.TestCase):
         self.gateway = JavaGateway()
 
     def tearDown(self):
-        self.p.terminate()
-        self.gateway.shutdown()
+        safe_shutdown(self)
+        self.p.join()
         time.sleep(0.5)
 
     def testJavaListProtocol(self):
@@ -354,5 +355,4 @@ class Test(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testJavaList']
     unittest.main()

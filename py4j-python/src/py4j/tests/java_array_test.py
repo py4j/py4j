@@ -14,7 +14,8 @@ from py4j.tests.java_gateway_test import PY4J_JAVA_PATH
 
 
 def start_example_server():
-    subprocess.call(["java", "-cp", PY4J_JAVA_PATH, "py4j.examples.ExampleApplication"])
+    subprocess.call(["java", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.ExampleApplication"])
 
 
 def start_example_app_process():
@@ -36,11 +37,9 @@ class Test(unittest.TestCase):
     def tearDown(self):
         self.p.terminate()
         self.gateway.shutdown()
-
         time.sleep(0.5)
 
     def testArray(self):
-#        self.gateway.jvm.py4j.GatewayServer.turnLoggingOn()
         example = self.gateway.entry_point.getNewExample()
         array1 = example.getStringArray()
         array2 = example.getIntArray()
@@ -70,5 +69,4 @@ class Test(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

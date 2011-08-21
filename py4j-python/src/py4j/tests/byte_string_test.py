@@ -32,7 +32,6 @@ class ByteStringTest(unittest.TestCase):
         self.assertEqual(ord(s2[4]), array2[4])
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testGateway']
 #    logger = logging.getLogger("py4j")
 #    logger.setLevel(logging.DEBUG)
 #    logger.addHandler(logging.StreamHandler())

@@ -24,14 +24,16 @@ class AClass(object):
     def __init__(self, id, acc):
         self.id = id
         self.acc = acc
-        ThreadSafeFinalizer.add_finalizer(id, ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
+        ThreadSafeFinalizer.add_finalizer(id,
+                ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
 
 
 class AClass2(object):
     def __init__(self, id, acc):
         self.id = id
         self.acc = acc
-        Finalizer.add_finalizer(id, ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
+        Finalizer.add_finalizer(id,
+                ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
 
 
 class JavaObjecTest(object):
@@ -39,7 +41,8 @@ class JavaObjecTest(object):
         self.id = id
         self.acc = acc
         self.methods = []
-        ThreadSafeFinalizer.add_finalizer(id, ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
+        ThreadSafeFinalizer.add_finalizer(id,
+                ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
 
 
 class JavaMemberTest(object):
@@ -158,5 +161,4 @@ class TestFinalizer(unittest.TestCase):
         self.assertEqual(1, acc.acc)
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
