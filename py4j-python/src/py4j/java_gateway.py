@@ -132,7 +132,7 @@ def _garbage_collect_object(gateway_client, target_id):
                                         target_id +
                                         '\ne\n'
                                         )
-        except:
+        except Exception:
             pass
 
 
@@ -209,7 +209,7 @@ class GatewayClient(object):
             raise Py4JNetworkError('Gateway is not connected.')
         try:
             connection = self.deque.pop()
-        except:
+        except Exception:
             connection = self._create_connection()
         return connection
 
@@ -223,7 +223,7 @@ class GatewayClient(object):
     def _give_back_connection(self, connection):
         try:
             self.deque.append(connection)
-        except:
+        except Exception:
             pass
 
     def shutdown_gateway(self):
@@ -281,7 +281,7 @@ class GatewayClient(object):
             try:
                 connection = deque.pop()
                 connection.close()
-            except:
+            except Exception:
                 pass
 
 
@@ -362,7 +362,6 @@ class GatewayConnection(object):
         """
         logger.debug("Command to send: {0}".format(command))
         try:
-            #print(command)
             self.socket.sendall(command.encode('utf-8'))
             answer = smart_decode(self.stream.readline()[:-1])
             logger.debug("Answer received: {0}".format(answer))
@@ -372,7 +371,7 @@ class GatewayConnection(object):
                 self.close()
                 raise Py4JError()
             return answer
-        except:
+        except Exception:
             #print_exc()
             logger.exception('Error while sending or receiving.')
             raise Py4JNetworkError('Error while sending or receiving')
@@ -760,7 +759,7 @@ class JavaGateway(object):
         """
         try:
             self._gateway_client.shutdown_gateway()
-        except:
+        except Exception:
             pass
         self._shutdown_callback_server()
 
@@ -770,7 +769,7 @@ class JavaGateway(object):
         """
         try:
             self._callback_server.shutdown()
-        except:
+        except Exception:
             pass
 
     def restart_callback_server(self):
@@ -917,7 +916,7 @@ class CallbackServer(object):
                     else:
                         connection.socket.shutdown(socket.SHUT_RDWR)
                         connection.socket.close()
-        except:
+        except Exception:
             logger.exception('Error while waiting for a connection.')
 
     def shutdown(self):
@@ -933,14 +932,14 @@ class CallbackServer(object):
                 self.server_socket.shutdown(socket.SHUT_RDWR)
                 self.server_socket.close()
                 self.server_socket = None
-            except:
+            except Exception:
                 pass
 
             for connection in self.connections:
                 try:
                     connection.socket.shutdown(socket.SHUT_RDWR)
                     connection.socket.close()
-                except:
+                except Exception:
                     pass
 
             self.pool.clear()
@@ -977,7 +976,7 @@ class CallbackConnection(Thread):
                     del(self.pool[obj_id])
                 else:
                     logger.error('Unknown command {0}'.format(command))
-        except:
+        except Exception:
             logger.exception('Error while callback connection was waiting for'
                 'a message')
 

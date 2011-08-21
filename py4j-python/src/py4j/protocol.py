@@ -207,7 +207,7 @@ def is_python_proxy(parameter):
     """
     try:
         is_proxy = len(parameter.Java.implements) > 0
-    except:
+    except Exception:
         is_proxy = False
 
     return is_proxy
