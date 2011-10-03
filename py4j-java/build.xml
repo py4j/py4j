@@ -78,12 +78,12 @@
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
-		<copy includeemptydirs="false" todir="${build.dir}">
-            <fileset dir="examples">
-                <exclude name="**/*.launch"/>
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
+		<!--<copy includeemptydirs="false" todir="${build.dir}">-->
+            <!--<fileset dir="examples">-->
+                <!--<exclude name="**/*.launch"/>-->
+                <!--<exclude name="**/*.java"/>-->
+            <!--</fileset>-->
+        <!--</copy>-->
         <copy includeemptydirs="false" todir="${build.dir}">
             <fileset dir="test">
                 <exclude name="**/*.launch"/>
@@ -127,10 +127,10 @@
             <src path="src"/>
             <classpath refid="py4j.classpath"/>
         </javac>
-		<javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">
-            <src path="examples"/>
-            <classpath refid="py4j.classpath"/>
-        </javac>
+		<!--<javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">-->
+            <!--<src path="examples"/>-->
+            <!--<classpath refid="py4j.classpath"/>-->
+        <!--</javac>-->
         <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">
             <src path="test"/>
             <classpath refid="py4j.classpath"/>
