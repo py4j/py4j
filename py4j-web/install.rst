@@ -81,3 +81,12 @@ directory to create a tar.gz and zip source distribution. The
 ``python-light-release`` target will (1) build the Py4J Java library, (2)
 build the documentation, and (3) build the Py4J Python library and package it
 into a tar.gz and zip source distribution. 
+
+Maven install
+^^^^^^^^^^^^^
+
+1. Download the source code as explained above.
+2. Go to the py4j-java directory and execute ``mvn install``.
+3. Alternatively, if a test fails (possible because of sockets), execute
+   ``mvn -Dmaven.test.skip=true install``
+4. Builded binaries will be in the directory ``target/py4j-0.7.jar``.

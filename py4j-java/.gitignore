@@ -5,3 +5,4 @@ javadoc/
 dist/
 junit/
 py4j*.jar
+target/

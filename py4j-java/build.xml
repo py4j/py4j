@@ -78,12 +78,6 @@
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
-		<!--<copy includeemptydirs="false" todir="${build.dir}">-->
-            <!--<fileset dir="examples">-->
-                <!--<exclude name="**/*.launch"/>-->
-                <!--<exclude name="**/*.java"/>-->
-            <!--</fileset>-->
-        <!--</copy>-->
         <copy includeemptydirs="false" todir="${build.dir}">
             <fileset dir="test">
                 <exclude name="**/*.launch"/>
@@ -127,10 +121,6 @@
             <src path="src"/>
             <classpath refid="py4j.classpath"/>
         </javac>
-		<!--<javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">-->
-            <!--<src path="examples"/>-->
-            <!--<classpath refid="py4j.classpath"/>-->
-        <!--</javac>-->
         <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">
             <src path="test"/>
             <classpath refid="py4j.classpath"/>
@@ -145,6 +135,7 @@
             <batchtest todir="${junit.output.dir}">
                 <fileset dir="${junit.src.tests}">
                     <include name="**/*Test.java"/>
+                    <exclude name="py4j/examples/*.java"/>
                 </fileset>
             </batchtest>
             <classpath refid="py4j.classpath"/>
@@ -175,9 +166,6 @@
 	<target depends="init-dist,build,jar" name="dist">
 		<copy todir="${dist.dir}/${release.name}/src">
     		<fileset dir="src"/>
-  		</copy>
-		<copy todir="${dist.dir}/${release.name}/examples">
-    		<fileset dir="examples"/>
   		</copy>
 		<copy todir="${dist.dir}/${release.name}/test">
     		<fileset dir="test"/>
