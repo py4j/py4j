@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>net.sourceforge.py4j</groupId>
+    <artifactId>py4j</artifactId>
+    <packaging>jar</packaging>
+    <version>0.7</version>
+
+    <description>
+        Py4J
+        ====
+
+        Py4J enables Python programs running in a Python interpreter to dynamically
+        access Java objects in a Java Virtual Machine. Methods are called as if the
+        Java objects resided in the Python interpreter and Java collections can be
+        accessed through standard Python collection methods. Py4J also enables Java
+        programs to call back Python objects.
+
+        This is the source repository of Py4J projects. Please visit the `Py4J homepage
+        &lt;http://py4j.sourceforge.net&gt;`_ for more information.
+    </description>
+
+    <build>
+        <sourceDirectory>src/</sourceDirectory>
+        <testSourceDirectory>test/</testSourceDirectory>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+
+</project>
