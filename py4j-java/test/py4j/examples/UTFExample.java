@@ -8,6 +8,14 @@ public class UTFExample {
 	public int strangeMéthod() {
 		return 2;
 	}
+	
+	public Byte[] getSurrogateBytes() {
+		return new Byte[] {(byte) 0xD8, (byte) 0xD9, (byte) 0xDF};
+	}
+	
+	public byte[] getSurrogatebytes() {
+		return new byte[] {(byte) 0xD8, (byte) 0xD9, (byte) 0xDF};
+	}
 
 	public int getPositiveByteValue(byte b) {
 		return (int) (b & 0xff);
