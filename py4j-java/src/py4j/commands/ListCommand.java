@@ -93,7 +93,7 @@ public class ListCommand extends AbstractCommand {
 			returnCommand = call_collections_method(reader, subCommand);
 		}
 
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}

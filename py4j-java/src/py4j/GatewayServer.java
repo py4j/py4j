@@ -216,8 +216,8 @@ public class GatewayServer implements Runnable {
 	 * @param address
 	 *            The address the GatewayServer is listening to.
 	 * @param pythonAddress
-	 *            The address used by a PythonProxyHandler to connect to a Python
-	 *            gateway.
+	 *            The address used by a PythonProxyHandler to connect to a
+	 *            Python gateway.
 	 * @param connectTimeout
 	 *            Time in milliseconds (0 = infinite). If a GatewayServer does
 	 *            not receive a connection request after this time, it closes
@@ -388,7 +388,7 @@ public class GatewayServer implements Runnable {
 	public int getPythonPort() {
 		return pythonPort;
 	}
-	
+
 	public InetAddress getPythonAddress() {
 		return pythonAddress;
 	}
@@ -401,7 +401,7 @@ public class GatewayServer implements Runnable {
 	public int getPort() {
 		return port;
 	}
-	
+
 	public InetAddress getAddress() {
 		return address;
 	}
@@ -462,7 +462,11 @@ public class GatewayServer implements Runnable {
 	}
 
 	protected void fireServerError(Exception e) {
-		logger.log(Level.SEVERE, "Gateway Server Error", e);
+		if (e.getMessage().contains("Socket closed")) {
+			logger.log(Level.FINE, "Gateway Server Error", e);
+		} else {
+			logger.log(Level.SEVERE, "Gateway Server Error", e);
+		}
 		for (GatewayServerListener listener : listeners) {
 			try {
 				listener.serverError(e);
@@ -473,7 +477,7 @@ public class GatewayServer implements Runnable {
 	}
 
 	protected void fireServerPreShutdown() {
-		logger.info("Gateway Server Pre Shutdown");
+		logger.fine("Gateway Server Pre Shutdown");
 		for (GatewayServerListener listener : listeners) {
 			try {
 				listener.serverPreShutdown();
@@ -484,7 +488,7 @@ public class GatewayServer implements Runnable {
 	}
 
 	protected void fireServerPostShutdown() {
-		logger.info("Gateway Server Post Shutdown");
+		logger.fine("Gateway Server Post Shutdown");
 		for (GatewayServerListener listener : listeners) {
 			try {
 				listener.serverPostShutdown();
@@ -527,10 +531,21 @@ public class GatewayServer implements Runnable {
 
 	/**
 	 * <p>
-	 * Utility method to turn logging on. Logging is turned off by default.
+	 * Utility method to turn logging on. Logging is turned off by default. Log
+	 * messages up to INFO level will be logged.
 	 * </p>
 	 */
 	public static void turnLoggingOn() {
+		Logger.getLogger("py4j").setLevel(Level.INFO);
+	}
+
+	/**
+	 * <p>
+	 * Utility method to turn logging on. Logging is turned off by default. All
+	 * log messages will be logged.
+	 * </p>
+	 */
+	public static void turnAllLoggingOn() {
 		Logger.getLogger("py4j").setLevel(Level.ALL);
 	}
 }

@@ -82,7 +82,7 @@ public abstract class AbstractCommand implements Command {
 		String line = reader.readLine();
 
 		while (!Protocol.isEmpty(line) && !Protocol.isEnd(line)) {
-			logger.info("Raw String Argument: " + line);
+			logger.finest("Raw String Argument: " + line);
 			arguments.add(line);
 			line = reader.readLine();
 		}
@@ -124,7 +124,7 @@ public abstract class AbstractCommand implements Command {
 			returnObject = gateway
 					.invoke(methodName, targetObjectId, arguments);
 		} catch (Exception e) {
-			logger.log(Level.INFO,
+			logger.log(Level.FINE,
 					"Received exception while executing this command: "
 							+ methodName, e);
 			returnObject = ReturnObject.getErrorReturnObject(e);

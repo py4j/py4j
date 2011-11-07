@@ -77,7 +77,7 @@ public class PythonProxyHandler implements InvocationHandler {
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args)
 			throws Throwable {
-		logger.info("Method " + method.getName() + " called on Python object "
+		logger.fine("Method " + method.getName() + " called on Python object "
 				+ id);
 		StringBuilder sBuilder = new StringBuilder();
 		sBuilder.append(CALL_PROXY_COMMAND_NAME);
@@ -103,7 +103,7 @@ public class PythonProxyHandler implements InvocationHandler {
 	@Override
 	protected void finalize() throws Throwable {
 		try {
-			logger.info("Finalizing python proxy id " + this.id);
+			logger.fine("Finalizing python proxy id " + this.id);
 			cbClient.sendCommand(finalizeCommand);
 		} catch (Exception e) {
 			logger

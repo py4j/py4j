@@ -203,7 +203,7 @@ public class Gateway {
 		}
 		ReturnObject returnObject = null;
 		try {
-			logger.info("Calling constructor: " + fqn);
+			logger.finer("Calling constructor: " + fqn);
 			Object[] parameters = args.toArray();
 
 			MethodInvoker method = rEngine.getConstructor(fqn, parameters);
@@ -239,7 +239,7 @@ public class Gateway {
 		ReturnObject returnObject = null;
 		try {
 			Object targetObject = getObjectFromId(targetObjectId);
-			logger.info("Calling: " + methodName);
+			logger.finer("Calling: " + methodName);
 			Object[] parameters = args.toArray();
 
 			MethodInvoker method = null;

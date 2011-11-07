@@ -82,7 +82,7 @@ public class CallCommand extends AbstractCommand {
 				arguments);
 
 		String returnCommand = Protocol.getOutputCommand(returnObject);
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}

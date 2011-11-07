@@ -70,7 +70,7 @@ public class ConstructorCommand extends AbstractCommand {
 		ReturnObject returnObject = invokeConstructor(fqn, arguments);
 
 		String returnCommand = Protocol.getOutputCommand(returnObject);
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}
@@ -80,7 +80,7 @@ public class ConstructorCommand extends AbstractCommand {
 		try {
 			returnObject = gateway.invoke(fqn, arguments);
 		} catch (Exception e) {
-			logger.log(Level.INFO,
+			logger.log(Level.FINE,
 					"Received exception while executing this command: " + fqn,
 					e);
 			returnObject = ReturnObject.getErrorReturnObject(e);

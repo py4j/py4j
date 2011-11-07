@@ -71,7 +71,7 @@ public class MemoryCommand extends AbstractCommand {
 		if (subCommand.equals(MEMORY_DEL_SUB_COMMAND_NAME)) {
 			returnCommand = deleteObject(reader);
 		}
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}

@@ -169,7 +169,7 @@ public class GatewayConnection implements Runnable {
 			do {
 				commandLine = reader.readLine();
 				executing = true;
-				logger.info("Received command: " + commandLine);
+				logger.fine("Received command: " + commandLine);
 				Command command = commands.get(commandLine);
 				if (command != null) {
 					command.execute(commandLine, reader, writer);
@@ -205,7 +205,7 @@ public class GatewayConnection implements Runnable {
 	private void quietSendError(BufferedWriter writer, Throwable exception) {
 		try {
 			String returnCommand = Protocol.getOutputErrorCommand(exception);
-			logger.warning("Trying to return error: " + returnCommand);
+			logger.fine("Trying to return error: " + returnCommand);
 			writer.write(returnCommand);
 			writer.flush();
 		} catch (Exception e) {

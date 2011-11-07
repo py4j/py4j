@@ -93,7 +93,7 @@ public class JVMViewCommand extends AbstractCommand {
 		} else {
 			returnCommand = search(reader);
 		}
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}

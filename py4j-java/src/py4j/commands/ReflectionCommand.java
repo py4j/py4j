@@ -92,7 +92,7 @@ public class ReflectionCommand extends AbstractCommand {
 			returnCommand = getMember(reader);
 		}
 
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}

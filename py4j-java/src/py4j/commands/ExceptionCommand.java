@@ -33,7 +33,7 @@ public class ExceptionCommand extends AbstractCommand {
 		ReturnObject rObject = ReturnObject.getPrimitiveReturnObject(stackTrace);
 		returnCommand = Protocol.getOutputCommand(rObject);
 		
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}

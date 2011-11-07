@@ -76,7 +76,7 @@ public class HelpPageCommand extends AbstractCommand {
 		} else {
 			returnCommand = getHelpClass(reader);
 		}
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}

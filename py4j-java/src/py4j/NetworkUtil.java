@@ -53,7 +53,7 @@ public class NetworkUtil {
 				closeable.close();
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Closeable cannot be closed.", e);
+			logger.log(Level.FINE, "Closeable cannot be closed.", e);
 		}
 	}
 
@@ -65,7 +65,7 @@ public class NetworkUtil {
 				closeable.close();
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Socket cannot be closed.", e);
+			logger.log(Level.FINE, "Socket cannot be closed.", e);
 		}
 	}
 
@@ -75,7 +75,7 @@ public class NetworkUtil {
 				closeable.close();
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Socket cannot be closed.", e);
+			logger.log(Level.FINE, "Socket cannot be closed.", e);
 		}
 	}
 
