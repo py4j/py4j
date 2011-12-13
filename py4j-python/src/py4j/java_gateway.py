@@ -315,9 +315,15 @@ class GatewayConnection(object):
     def start(self):
         """Starts the connection by connecting to the `address` and the `port`
         """
-        self.socket.connect((self.address, self.port))
-        self.is_connected = True
-        self.stream = self.socket.makefile('rb', 0)
+        try:
+            self.socket.connect((self.address, self.port))
+            self.is_connected = True
+            self.stream = self.socket.makefile('rb', 0)
+        except Exception:
+            msg = 'An error occurred while trying to connect to the Java '\
+                'server'
+            logger.exception(msg)
+            raise Py4JNetworkError(msg)
 
     def close(self, throw_exception=False):
         """Closes the connection by closing the socket."""
@@ -369,7 +375,7 @@ class GatewayConnection(object):
             # answer before the socket raises an error.
             if answer.strip() == '':
                 self.close()
-                raise Py4JError()
+                raise Py4JError("Answer from Java side is empty")
             return answer
         except Exception:
             #print_exc()
@@ -917,7 +923,10 @@ class CallbackServer(object):
                         connection.socket.shutdown(socket.SHUT_RDWR)
                         connection.socket.close()
         except Exception:
-            logger.exception('Error while waiting for a connection.')
+            if self.is_shutdown:
+                logger.info('Error while waiting for a connection.')
+            else:
+                logger.exception('Error while waiting for a connection.')
 
     def shutdown(self):
         """Stops listening and accepting connection requests. All live
@@ -977,7 +986,8 @@ class CallbackConnection(Thread):
                 else:
                     logger.error('Unknown command {0}'.format(command))
         except Exception:
-            logger.exception('Error while callback connection was waiting for'
+            # This is a normal exception...
+            logger.info('Error while callback connection was waiting for'
                 'a message')
 
         try:
@@ -997,8 +1007,7 @@ class CallbackConnection(Thread):
                 return_message = 'y' +\
                         get_command_part(return_value, self.pool)
             except Exception:
-                #print_exc()
-                logger.exception('There was an exception while executing the '\
+                logger.info('There was an exception while executing the '\
                                  'Python Proxy on the Python Side.')
         return return_message
 
