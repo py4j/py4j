@@ -568,19 +568,13 @@ public class Protocol {
 
 	/**
 	 * <p>
-	 * Transform the byte array into characters by adding two 0s in front of
-	 * each byte. This is to avoid the newline.
+	 * Transform the byte array into Base64 characters.
 	 * </p>
 	 * 
 	 * @param primitive
 	 * @return
 	 */
 	public static String encodeBytes(byte[] bytes) {
-		StringBuilder builder = new StringBuilder();
-		for (byte b : bytes) {
-			char c = (char) ((char)(b & 0xff) << 8);
-			builder.append(c);
-		}
-		return builder.toString();
+		return Base64.encodeToString(bytes, false);
 	}
 }
