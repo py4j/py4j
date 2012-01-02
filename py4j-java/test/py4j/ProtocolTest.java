@@ -53,8 +53,8 @@ public class ProtocolTest {
 	@Test
 	public void testBytes() {
 		byte[] bytes = {1, 100, 127, 0, 60, 15, -128, -1, 14, -55};
-		String bytesString = Protocol.BYTES_TYPE + Protocol.encodeBytes(bytes);
-		byte[] bytes2 = Protocol.getBytes(bytesString);
+		String bytesString = Protocol.encodeBytes(bytes);
+		byte[] bytes2 = Base64.decode(bytesString);
 		assertArrayEquals(bytes, bytes2);
 		
 		Gateway g = new Gateway(null);

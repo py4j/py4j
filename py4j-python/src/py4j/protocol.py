@@ -17,6 +17,7 @@ Created on Oct 14, 2010
 :author: Barthelemy Dagenais
 '''
 from __future__ import unicode_literals
+import base64
 from py4j.compat import long, basestring, unicode, bytearray2, unichr,\
         bytestr, isbytestr, isbytearray
 
@@ -195,7 +196,7 @@ def encode_bytearray(barray):
 
 
 def decode_bytearray(encoded):
-    return bytearray2(((ord(c) >> 8) for c in encoded))
+    return bytearray2([ord(c) for c in base64.decodestring(encoded)])
 
 
 def is_python_proxy(parameter):
