@@ -16,6 +16,15 @@ control over the logging behavior, just obtain a Logger instance by calling
 <http://java.sun.com/javase/6/docs/technotes/guides/logging/overview.html>`_
 for more information on this framework.
 
+For example, in Java, you can do:
+
+.. code-block:: java
+  
+  GatewayServer.turnLoggingOn();
+  logger = Logger.getLogger("py4j");
+  logger.setLevel(Level.ALL);
+
+
 In Python, logging can be enabled this way:
 
 ::
