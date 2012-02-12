@@ -549,7 +549,7 @@ class JavaClass():
                 return JavaMember(name, None, STATIC_PREFIX + self._fqn,
                         self._gateway_client)
             elif answer[1].startswith(CLASS_TYPE):
-                return JavaClass(answer[CLASS_FQN_START:],
+                return JavaClass(self._fqn + '$' + name,
                         self._gateway_client)
             else:
                 return get_return_value(answer, self._gateway_client,

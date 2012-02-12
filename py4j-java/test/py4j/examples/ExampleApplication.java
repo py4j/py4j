@@ -31,6 +31,9 @@ package py4j.examples;
 
 import py4j.GatewayServer;
 
+//import java.util.logging.Level;
+//import java.util.logging.Logger;
+
 public class ExampleApplication {
 
 	/**
@@ -38,6 +41,8 @@ public class ExampleApplication {
 	 */
 	public static void main(String[] args) {
 		GatewayServer.turnLoggingOff();
+//		Logger logger = Logger.getLogger("py4j");
+//		logger.setLevel(Level.ALL);
 		GatewayServer server = new GatewayServer(new ExampleEntryPoint());
 		server.start();
 //		try {
