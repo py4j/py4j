@@ -52,7 +52,7 @@ def start_example_app_process():
     return p
 
 
-def get_test_socket():
+def get_socket():
     testSocket = socket(AF_INET, SOCK_STREAM)
     testSocket.connect(('localhost', TEST_PORT))
     return testSocket
@@ -115,7 +115,7 @@ class ProtocolTest(unittest.TestCase):
         p = start_echo_server_process()
         time.sleep(1)
         try:
-            testSocket = get_test_socket()
+            testSocket = get_socket()
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yro0\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
@@ -157,7 +157,7 @@ class IntegrationTest(unittest.TestCase):
 
     def testIntegration(self):
         try:
-            testSocket = get_test_socket()
+            testSocket = get_socket()
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yro0\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
@@ -182,7 +182,7 @@ class IntegrationTest(unittest.TestCase):
 
     def testException(self):
         try:
-            testSocket = get_test_socket()
+            testSocket = get_socket()
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yro0\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
@@ -427,12 +427,13 @@ class ByteTest(unittest.TestCase):
 
     def testJavaByteConversion(self):
         ex = self.gateway.jvm.py4j.examples.UTFExample()
-        ba = bytearray([0, 1, 127, 128, 255])
+        ba = bytearray([0, 1, 127, 128, 255, 216, 1, 220])
         self.assertEqual(0, ex.getPositiveByteValue(ba[0]))
         self.assertEqual(1, ex.getPositiveByteValue(ba[1]))
         self.assertEqual(127, ex.getPositiveByteValue(ba[2]))
         self.assertEqual(128, ex.getPositiveByteValue(ba[3]))
         self.assertEqual(255, ex.getPositiveByteValue(ba[4]))
+        self.assertEqual(216, ex.getPositiveByteValue(ba[5]))
         self.assertEqual(0, ex.getJavaByteValue(ba[0]))
         self.assertEqual(1, ex.getJavaByteValue(ba[1]))
         self.assertEqual(127, ex.getJavaByteValue(ba[2]))
@@ -609,6 +610,15 @@ class JVMTest(unittest.TestCase):
             self.assertTrue(True)
         java_import(newView, 'java.util.HashSet')
         self.assertTrue(newView.HashSet() is not None)
+
+    def testEnum(self):
+        self.assertEqual('FOO', str(self.gateway.jvm.py4j.examples.Enum2.FOO))
+
+    def testInnerClass(self):
+        self.assertEqual('FOO',
+            str(self.gateway.jvm.py4j.examples.EnumExample.MyEnum.FOO))
+        self.assertEqual('HELLO2',
+            self.gateway.jvm.py4j.examples.EnumExample.InnerClass.MY_CONSTANT2)
 
 
 class HelpTest(unittest.TestCase):
