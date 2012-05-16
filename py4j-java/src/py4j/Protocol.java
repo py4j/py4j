@@ -86,6 +86,7 @@ public class Protocol {
 	// TYPES
 	public final static char BYTES_TYPE = 'j';
 	public final static char INTEGER_TYPE = 'i';
+	public final static char LONG_TYPE = 'L';
 	public final static char BOOLEAN_TYPE = 'b';
 	public final static char DOUBLE_TYPE = 'd';
 	public final static char STRING_TYPE = 's';
@@ -244,6 +245,8 @@ public class Protocol {
 				return getBoolean(commandPart);
 			case DOUBLE_TYPE:
 				return getDouble(commandPart);
+			case LONG_TYPE:
+				return getLong(commandPart);
 			case INTEGER_TYPE:
 				try {
 					return getInteger(commandPart);
@@ -343,6 +346,8 @@ public class Protocol {
 		if (primitiveObject instanceof String
 				|| primitiveObject instanceof Character) {
 			c = STRING_TYPE;
+		} else if (primitiveObject instanceof Long) {
+			c = LONG_TYPE;
 		} else if (primitiveObject instanceof Double
 				|| primitiveObject instanceof Float) {
 			c = DOUBLE_TYPE;
