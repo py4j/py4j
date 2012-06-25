@@ -17,9 +17,9 @@ Created on Oct 14, 2010
 :author: Barthelemy Dagenais
 '''
 from __future__ import unicode_literals
-import base64
-from py4j.compat import long, basestring, unicode, bytearray2, unichr,\
-        bytestr, isbytestr, isbytearray
+from py4j.compat import long, basestring, unicode, bytearray2,\
+        bytestr, isbytestr, isbytearray, ispython3bytestr, decodeb64,\
+        encodeb64, bytetoint, bytetostr, strtobyte
 
 
 ESCAPE_CHAR = "\\"
@@ -189,14 +189,20 @@ def smart_decode(s):
 
 
 def encode_bytearray(barray):
+    # Because encodestring always add a \n at the end!
+    #return base64.encodestring(barray)[:-1]
     if isbytestr(barray):
-        return unicode().join((unichr(ord(by) << 8) for by in barray))
+        return bytetostr(encodeb64(barray)[:-1])
+        #return unicode().join((unichr(ord(by) << 8) for by in barray))
     else:
-        return unicode().join((unichr(by << 8) for by in barray))
+        newbytestr = bytestr(barray)
+        return bytetostr(encodeb64(newbytestr)[:-1])
+        #return unicode().join((unichr(by << 8) for by in barray))
 
 
 def decode_bytearray(encoded):
-    return bytearray2([ord(c) for c in base64.decodestring(encoded)])
+    new_bytes = strtobyte(encoded)
+    return bytearray2([bytetoint(b) for b in decodeb64(new_bytes)])
 
 
 def is_python_proxy(parameter):
@@ -234,6 +240,8 @@ def get_command_part(parameter, python_proxy_pool=None):
     elif isinstance(parameter, float):
         command_part = DOUBLE_TYPE + smart_decode(parameter)
     elif isbytearray(parameter):
+        command_part = BYTES_TYPE + encode_bytearray(parameter)
+    elif ispython3bytestr(parameter):
         command_part = BYTES_TYPE + encode_bytearray(parameter)
     elif isinstance(parameter, basestring):
         command_part = STRING_TYPE + escape_new_line(parameter)

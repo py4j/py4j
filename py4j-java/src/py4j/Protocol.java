@@ -174,14 +174,7 @@ public class Protocol {
 	 * @return The byte array corresponding to this command part.
 	 */
 	public final static byte[] getBytes(String commandPart) {
-		int size = commandPart.length() - 1;
-		byte[] bytes = new byte[size];
-
-		for (int i = 0; i < size; i++) {
-			bytes[i] = (byte) (commandPart.charAt(i + 1) >> 8);
-		}
-
-		return bytes;
+		return Base64.decode(commandPart.substring(1));
 	}
 
 	/**
