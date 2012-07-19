@@ -168,7 +168,7 @@ public class CallbackClient {
 	 * Closes all active channels, stops the periodic cleanup of channels and
 	 * mark the client as shutting down.
 	 * 
-	 * No more commands can be send after this method has been called,
+	 * No more commands can be sent after this method has been called,
 	 * <em>except</em> commands that were initiated before the shutdown method
 	 * was called..
 	 * </p>
@@ -228,8 +228,10 @@ public class CallbackClient {
 			lock.lock();
 			if (!isShutdown) {
 				cc = getConnection();
+				logger.log(Level.INFO, "Acquired CB Connection");
+			} else {
+				logger.log(Level.INFO, "Shuting down, no connection can be created.");
 			}
-			logger.log(Level.INFO, "Acquired CB Connection");
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Critical error while sending a command",
 					e);

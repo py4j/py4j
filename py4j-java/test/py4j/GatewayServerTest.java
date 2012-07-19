@@ -67,6 +67,11 @@ public class GatewayServerTest {
 		GatewayServer server1 = new GatewayServer(null);
 		server1.addListener(listener);
 		server1.start();
+		try {
+			Thread.sleep(250);
+		} catch (Exception e) {
+
+		}
 		server1.shutdown();
 		try {
 			Thread.sleep(250);
@@ -130,12 +135,12 @@ class TestListener implements GatewayServerListener {
 	}
 
 	@Override
-	public void connectionStarted() {
+	public void connectionStarted(GatewayConnection gatewayConnection) {
 		values.add(new Long(100000));
 	}
 
 	@Override
-	public void connectionStopped() {
+	public void connectionStopped(GatewayConnection gatewayConnection) {
 		values.add(new Long(1000000));
 	}
 

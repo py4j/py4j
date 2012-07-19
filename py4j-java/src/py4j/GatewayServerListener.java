@@ -64,9 +64,9 @@ public interface GatewayServerListener {
 	 */
 	void serverPostShutdown();
 	
-	void connectionStarted();
+	void connectionStarted(GatewayConnection gatewayConnection);
 	
-	void connectionStopped();
+	void connectionStopped(GatewayConnection gatewayConnection);
 	
 	void connectionError(Exception e);
 	
