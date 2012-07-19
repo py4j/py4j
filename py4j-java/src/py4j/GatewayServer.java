@@ -202,7 +202,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Runna
 		this.pythonAddress = cbClient.getAddress();
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 		this.customCommands = customCommands;
-		this.listeners = new ArrayList<GatewayServerListener>();
+		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 		try {
 			this.address = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
@@ -303,6 +303,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Runna
 		try {
 			gateway.startup();
 			fireServerStarted();
+			addListener(this);
 			while (!isShutdown) {
 				Socket socket = sSocket.accept();
 				processSocket(socket);
@@ -311,6 +312,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Runna
 			fireServerError(e);
 		}
 		fireServerStopped();
+		removeListener(this);
 	}
 
 	protected GatewayConnection createConnection(Gateway gateway, Socket socket)
