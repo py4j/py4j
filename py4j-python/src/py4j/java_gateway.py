@@ -279,7 +279,7 @@ class GatewayClient(object):
         size = len(self.deque)
         for _ in range(0, size):
             try:
-                connection = deque.pop()
+                connection = self.deque.pop()
                 connection.close()
             except Exception:
                 pass
