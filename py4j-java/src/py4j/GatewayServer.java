@@ -37,6 +37,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,7 +76,7 @@ import py4j.commands.Command;
  * @author Barthelemy Dagenais
  * 
  */
-public class GatewayServer implements Runnable {
+public class GatewayServer extends DefaultGatewayServerListener implements Runnable {
 
 	public static final int DEFAULT_PORT = 25333;
 
@@ -112,6 +114,10 @@ public class GatewayServer implements Runnable {
 	private final List<GatewayServerListener> listeners;
 
 	private ServerSocket sSocket;
+
+	private boolean isShutdown = false;
+
+	private final Lock lock = new ReentrantLock(true);
 
 	static {
 		GatewayServer.turnLoggingOff();
@@ -297,7 +303,7 @@ public class GatewayServer implements Runnable {
 		try {
 			gateway.startup();
 			fireServerStarted();
-			while (true) {
+			while (!isShutdown) {
 				Socket socket = sSocket.accept();
 				processSocket(socket);
 			}
@@ -307,21 +313,26 @@ public class GatewayServer implements Runnable {
 		fireServerStopped();
 	}
 
-	protected Object createConnection(Gateway gateway, Socket socket)
+	protected GatewayConnection createConnection(Gateway gateway, Socket socket)
 			throws IOException {
 		return new GatewayConnection(gateway, socket, customCommands, listeners);
 	}
 
 	private void processSocket(Socket socket) {
 		try {
-			fireConnectionStarted();
-			connections.add(socket);
-			socket.setSoTimeout(readTimeout);
-			createConnection(gateway, socket);
+			lock.lock();
+			if (!isShutdown) {
+				connections.add(socket);
+				socket.setSoTimeout(readTimeout);
+				GatewayConnection gatewayConnection = createConnection(gateway, socket);
+				fireConnectionStarted(gatewayConnection);
+			}
 		} catch (Exception e) {
 			// Error while processing a connection should not be prevent the
 			// gateway server from accepting new connections.
 			fireConnectionError(e);
+		} finally {
+			lock.unlock();
 		}
 	}
 
@@ -366,15 +377,20 @@ public class GatewayServer implements Runnable {
 	 */
 	public void shutdown() {
 		fireServerPreShutdown();
-		// TODO Check that all connections are indeed closed!
-		NetworkUtil.quietlyClose(sSocket);
-		for (Socket socket : connections) {
-			NetworkUtil.quietlyClose(socket);
+		try {
+			lock.lock();
+			isShutdown = true;
+			NetworkUtil.quietlyClose(sSocket);
+			for (Socket socket : connections) {
+				NetworkUtil.quietlyClose(socket);
+			}
+			connections.clear();
+			gateway.shutdown();
+			cbClient.shutdown();
+			fireServerPostShutdown();
+		} finally {
+			lock.unlock();
 		}
-		connections.clear();
-		gateway.shutdown();
-		cbClient.shutdown();
-		fireServerPostShutdown();
 	}
 
 	public int getConnectTimeout() {
@@ -498,11 +514,11 @@ public class GatewayServer implements Runnable {
 		}
 	}
 
-	protected void fireConnectionStarted() {
+	protected void fireConnectionStarted(GatewayConnection gatewayConnection) {
 		logger.info("Connection Started");
 		for (GatewayServerListener listener : listeners) {
 			try {
-				listener.connectionStarted();
+				listener.connectionStarted(gatewayConnection);
 			} catch (Exception e) {
 				logger.log(Level.SEVERE, "A listener crashed.", e);
 			}
@@ -547,5 +563,17 @@ public class GatewayServer implements Runnable {
 	 */
 	public static void turnAllLoggingOn() {
 		Logger.getLogger("py4j").setLevel(Level.ALL);
+	}
+	
+	public void connectionStopped(GatewayConnection gatewayConnection) {
+		try {
+			lock.lock();
+			if (!isShutdown) {
+				connections.remove(gatewayConnection.getSocket());
+			}
+		} finally {
+			lock.unlock();
+		}
+		
 	}
 }

@@ -195,7 +195,7 @@ public class GatewayConnection implements Runnable {
 		
 		for (GatewayServerListener listener : listeners) {
 			try {
-				listener.connectionStopped();
+				listener.connectionStopped(this);
 			} catch (Exception e) {
 				logger.log(Level.SEVERE, "A listener crashed.", e);
 			}
@@ -211,6 +211,14 @@ public class GatewayConnection implements Runnable {
 		} catch (Exception e) {
 
 		}
+	}
+	
+	/**
+	 * 
+	 * @return The socket used by this gateway connection.
+	 */
+	public Socket getSocket() {
+		return socket;
 	}
 
 }

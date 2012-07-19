@@ -63,11 +63,11 @@ public class DefaultGatewayServerListener implements GatewayServerListener {
 	}
 
 	@Override
-	public void connectionStarted() {
+	public void connectionStarted(GatewayConnection gatewayConnection) {
 	}
 
 	@Override
-	public void connectionStopped() {
+	public void connectionStopped(GatewayConnection gatewayConnection) {
 	}
 
 	@Override
