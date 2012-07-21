@@ -3,9 +3,11 @@ Created on Mar 7, 2010
 
 @author: barthelemy
 '''
-from weakref import ref
+from __future__ import unicode_literals, absolute_import
+
 import gc
 import unittest
+from weakref import ref
 
 from py4j.finalizer import ThreadSafeFinalizer, Finalizer, clear_finalizers
 

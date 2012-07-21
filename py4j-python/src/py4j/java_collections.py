@@ -8,14 +8,15 @@ Created on Jan 22, 2010
 
 :author: Barthelemy Dagenais
 '''
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
+
 from collections import MutableMapping, Sequence, MutableSequence,\
         MutableSet, Set
 import sys
 
+from py4j.compat import iteritems, next, hasattr2
 from py4j.java_gateway import JavaObject, JavaMember, get_method, JavaClass
 from py4j.protocol import *
-from py4j.compat import iteritems, next, hasattr2
 
 
 class JavaIterator(JavaObject):

@@ -16,11 +16,16 @@ Created on Oct 14, 2010
 
 :author: Barthelemy Dagenais
 '''
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
+
 from decimal import Decimal
+
 from py4j.compat import long, basestring, unicode, bytearray2,\
         bytestr, isbytestr, isbytearray, ispython3bytestr, decodeb64,\
         encodeb64, bytetoint, bytetostr, strtobyte
+
+
+JAVA_MAX_INT = 2147483647
 
 
 ESCAPE_CHAR = "\\"
@@ -242,10 +247,10 @@ def get_command_part(parameter, python_proxy_pool=None):
         command_part = BOOLEAN_TYPE + smart_decode(parameter)
     elif isinstance(parameter, Decimal):
         command_part = DECIMAL_TYPE + smart_decode(parameter)
-    elif isinstance(parameter, long):
-        command_part = LONG_TYPE + smart_decode(parameter)
-    elif isinstance(parameter, int) or isinstance(parameter, long):
+    elif isinstance(parameter, int) and parameter <= JAVA_MAX_INT:
         command_part = INTEGER_TYPE + smart_decode(parameter)
+    elif isinstance(parameter, long) or isinstance(parameter, int):
+        command_part = LONG_TYPE + smart_decode(parameter)
     elif isinstance(parameter, float):
         command_part = DOUBLE_TYPE + smart_decode(parameter)
     elif isbytearray(parameter):

@@ -3,16 +3,18 @@ Created on Apr 5, 2010
 
 @author: Barthelemy Dagenais
 '''
-from multiprocessing.process import Process
-from threading import Thread
-import subprocess
-import time
-import unittest
-from traceback import print_exc
+from __future__ import unicode_literals, absolute_import
 
+from multiprocessing.process import Process
+import subprocess
+from threading import Thread
+import time
+from traceback import print_exc
+import unittest
+
+from py4j.compat import range
 from py4j.java_gateway import JavaGateway, PythonProxyPool
 from py4j.tests.java_gateway_test import PY4J_JAVA_PATH, safe_shutdown
-from py4j.compat import range
 
 
 def start_example_server():

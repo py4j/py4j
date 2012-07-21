@@ -10,20 +10,19 @@ Created on Dec 3, 2009
 
 :author: Barthelemy Dagenais
 """
-from __future__ import unicode_literals
-from collections import deque
-from pydoc import ttypager
-from socket import AF_INET, SOCK_STREAM
-from threading import Thread, RLock
-import logging
-import socket
-import weakref
-import os
-#from traceback import print_exc
+from __future__ import unicode_literals, absolute_import
 
+from collections import deque
+import logging
+import os
+from pydoc import ttypager
+import socket
+from threading import Thread, RLock
+import weakref
+
+from py4j.compat import range, hasattr2
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
-from py4j.compat import range, hasattr2
 
 
 class NullHandler(logging.Handler):
@@ -137,7 +136,7 @@ def _garbage_collect_object(gateway_client, target_id):
             pass
 
 
-def _garbage_collect_connection(socket):
+def _garbage_collect_connection(socket_instance):
     """Closes the socket if auto_delete is True and the socket is opened.
 
     This is an acceptable practice if you know that your Python VM implements
@@ -146,10 +145,10 @@ def _garbage_collect_connection(socket):
     close the socket by calling `GatewayConnection.close()`.
     """
 #    print('delete connection')
-    if socket != None:
+    if socket_instance != None:
         try:
-            socket.shutdown(socket.SHUT_RDWR)
-            socket.close()
+            socket_instance.shutdown(socket.SHUT_RDWR)
+            socket_instance.close()
         except Exception:
             pass
 
@@ -306,12 +305,13 @@ class GatewayConnection(object):
         """
         self.address = address
         self.port = port
-        self.socket = socket.socket(AF_INET, SOCK_STREAM)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.is_connected = False
         self.auto_close = auto_close
         self.gateway_property = gateway_property
         self.wr = weakref.ref(self,
-            lambda wr, socket=self.socket: _garbage_collect_connection(socket))
+            lambda wr, socket_instance=self.socket:
+            _garbage_collect_connection(socket_instance))
 
     def start(self):
         """Starts the connection by connecting to the `address` and the `port`
@@ -914,9 +914,10 @@ class CallbackServer(object):
                     format(smart_decode(self.server_socket.getsockname())))
 
             while not self.is_shutdown:
-                socket, _ = self.server_socket.accept()
-                input = socket.makefile('rb', 0)
-                connection = CallbackConnection(self.pool, input, socket,
+                socket_instance, _ = self.server_socket.accept()
+                input = socket_instance.makefile('rb', 0)
+                connection = CallbackConnection(self.pool, input,
+                        socket_instance,
                         self.gateway_client)
                 with self.lock:
                     if not self.is_shutdown:
@@ -963,11 +964,11 @@ class CallbackConnection(Thread):
     """A `CallbackConnection` receives callbacks and garbage collection
        requests from the Java side.
     """
-    def __init__(self, pool, input, socket, gateway_client):
+    def __init__(self, pool, input, socket_instance, gateway_client):
         super(CallbackConnection, self).__init__()
         self.pool = pool
         self.input = input
-        self.socket = socket
+        self.socket = socket_instance
         self.gateway_client = gateway_client
 
     def run(self):
