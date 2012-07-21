@@ -38,6 +38,8 @@ public class ExampleClass {
 	
 	public int field10 = 10;
 	
+	public long field11 = 11l;
+	
 	public StringBuffer field20 = new StringBuffer();
 	
 	public StringBuffer field21;
@@ -130,5 +132,13 @@ public class ExampleClass {
 	
 	public int method7(long l) {
 		return 4;
+	}
+	
+	public long method8(long l) {
+		return l + 1;
+	}
+	
+	public Long method9(Long l) {
+		return l + 1;
 	}
 }
