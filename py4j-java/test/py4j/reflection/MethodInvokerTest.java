@@ -115,6 +115,10 @@ public class MethodInvokerTest {
 			Method m = Cat.class.getMethod("meow13", long.class, int.class,
 					short.class, byte.class, double.class, Float.class,
 					boolean.class, String.class, char.class);
+			
+			Method m2 = Cat.class.getMethod("meow14", Long.class, int.class,
+					short.class, byte.class, double.class, Float.class,
+					boolean.class, String.class, char.class);
 		
 			MethodInvoker invoker = MethodInvoker.buildInvoker(m, new Class[] {long.class, int.class,
 					short.class, byte.class, double.class, float.class,
@@ -122,13 +126,23 @@ public class MethodInvokerTest {
 			assertEquals(0, invoker.getCost());
 			assertNull(invoker.getConverters());
 			
-			// Distance greater than 0, but no conversion required.
+			// Distance greater than 0, but only long conversion required.
 			invoker = MethodInvoker.buildInvoker(m, new Class[] {int.class, byte.class,
 					short.class, byte.class, Float.class, float.class,
 					Boolean.class, String.class, Character.class});
 			assertEquals(4, invoker.getCost());
-			assertNull(invoker.getConverters());
+			assertEquals(9, invoker.getConverters().length);
+			assertEquals(TypeConverter.NUM_TO_LONG, invoker.getConverters()[0].getConversion());
 			
+			// Distance greater than 0, but only long conversion required.
+			invoker = MethodInvoker.buildInvoker(m2, new Class[] {int.class, byte.class,
+					short.class, byte.class, Float.class, float.class,
+					Boolean.class, String.class, Character.class});
+			assertEquals(4, invoker.getCost());
+			assertEquals(9, invoker.getConverters().length);
+			assertEquals(TypeConverter.NUM_TO_LONG, invoker.getConverters()[0].getConversion());
+						
+						
 			// Invalid.
 			invoker = MethodInvoker.buildInvoker(m, new Class[] {double.class, byte.class,
 					short.class, byte.class, Float.class, float.class,
