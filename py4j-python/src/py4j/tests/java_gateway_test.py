@@ -120,12 +120,15 @@ class ProtocolTest(unittest.TestCase):
             testSocket.sendall('yro0\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ysHello World\n'.encode('utf-8'))
+            # No extra echange (method3) because it is already cached.
             testSocket.sendall('yi123\n'.encode('utf-8'))
             testSocket.sendall('yd1.25\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yn\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ybTrue\n'.encode('utf-8'))
+            testSocket.sendall('yo\n'.encode('utf-8'))
+            testSocket.sendall('yL123\n'.encode('utf-8'))
             testSocket.close()
             time.sleep(1)
 
@@ -134,12 +137,14 @@ class ProtocolTest(unittest.TestCase):
             self.assertEqual('Hello World', ex.method3(1, True))
             self.assertEqual(123, ex.method3())
             self.assertAlmostEqual(1.25, ex.method3())
-            self.assertTrue(ex.method2() == None)
+            self.assertIsNone(ex.method2())
             self.assertTrue(ex.method4())
+            self.assertEqual(123l, ex.method8())
             self.gateway.shutdown()
 
         except Exception as e:
             print('Error has occurred', e)
+            print_exc()
             self.fail('Problem occurred')
         p.join()
 
@@ -266,6 +271,7 @@ class FieldTest(unittest.TestCase):
         self.gateway = JavaGateway(auto_field=True)
         ex = self.gateway.getNewExample()
         self.assertEqual(ex.field10, 10)
+        self.assertEqual(ex.field11, 11l)
         sb = ex.field20
         sb.append('Hello')
         self.assertEqual('Hello', sb.toString())
@@ -382,6 +388,11 @@ class TypeConversionTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         self.assertEqual(1, ex.method7(1234))
         self.assertEqual(4, ex.method7(2147483648))
+        self.assertEqual(4, ex.method7(2147483648l))
+        self.assertEqual(4l, ex.method8(3))
+        self.assertEqual(4, ex.method8(3))
+        self.assertEqual(4l, ex.method8(3l))
+        self.assertEqual(4l, ex.method9(3l))
 
 
 class UnicodeTest(unittest.TestCase):

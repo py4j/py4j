@@ -92,7 +92,9 @@ public class ProtocolTest {
 	public void testLongs() {
 		assertTrue(Protocol.isInteger("i2147483648"));
 		assertEquals(2147483648l, Protocol.getLong("i2147483648"));
-		assertEquals(2147483648l, Protocol.getObject("i2147483648", null));
+		assertTrue(Protocol.isLong("L2147483648"));
+		assertEquals(2147483648l, Protocol.getLong("L2147483648"));
+		assertEquals(2147483648l, Protocol.getObject("L2147483648", null));
 	}
 
 	@Test
@@ -322,7 +324,7 @@ public class ProtocolTest {
 		assertEquals("yd2.2\n", Protocol.getOutputCommand(rObject4));
 		assertEquals("ysc\n", Protocol.getOutputCommand(rObject5));
 		assertEquals("ysHello\\nWorld\n", Protocol.getOutputCommand(rObject6));
-		assertEquals("yi5\n", Protocol.getOutputCommand(rObject7));
+		assertEquals("yL5\n", Protocol.getOutputCommand(rObject7));
 		assertEquals("ybtrue\n", Protocol.getOutputCommand(rObject8));
 		assertEquals("ybfalse\n", Protocol.getOutputCommand(rObject9));
 		assertEquals("yn\n", Protocol.getOutputCommand(rObject10));

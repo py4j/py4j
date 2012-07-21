@@ -503,6 +503,18 @@ public class Protocol {
 	public final static boolean isInteger(String commandPart) {
 		return commandPart.charAt(0) == INTEGER_TYPE;
 	}
+	
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is a long
+	 */
+	public final static boolean isLong(String commandPart) {
+		return commandPart.charAt(0) == LONG_TYPE;
+	}
 
 	/**
 	 * <p>
