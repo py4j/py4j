@@ -36,6 +36,7 @@ DEFAULT_JVM_NAME = 'default'
 # Types
 BYTES_TYPE = 'j'
 INTEGER_TYPE = 'i'
+LONG_TYPE = 'L'
 BOOLEAN_TYPE = 'b'
 DOUBLE_TYPE = 'd'
 STRING_TYPE = 's'
@@ -127,6 +128,7 @@ GARBAGE_COLLECT_PROXY_COMMAND_NAME = 'g'
 
 OUTPUT_CONVERTER = {NULL_TYPE: (lambda x, y: None),
               BOOLEAN_TYPE: (lambda value, y: value.lower() == 'true'),
+              LONG_TYPE: (lambda value, y: long(value)),
               INTEGER_TYPE: (lambda value, y: int(value)),
               BYTES_TYPE: (lambda value, y: decode_bytearray(value)),
               DOUBLE_TYPE: (lambda value, y: float(value)),
@@ -235,6 +237,8 @@ def get_command_part(parameter, python_proxy_pool=None):
         command_part = NULL_TYPE
     elif isinstance(parameter, bool):
         command_part = BOOLEAN_TYPE + smart_decode(parameter)
+    elif isinstance(parameter, long):
+        command_part = LONG_TYPE + smart_decode(parameter)
     elif isinstance(parameter, int) or isinstance(parameter, long):
         command_part = INTEGER_TYPE + smart_decode(parameter)
     elif isinstance(parameter, float):
