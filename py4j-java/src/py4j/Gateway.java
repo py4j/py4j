@@ -114,12 +114,12 @@ public class Gateway {
 		return cbClient;
 	}
 
-	public Object getEntryPoint() {
-		return this.entryPoint;
-	}
-
 	public JVMView getDefaultJVMView() {
 		return this.defaultJVMView;
+	}
+
+	public Object getEntryPoint() {
+		return this.entryPoint;
 	}
 
 	protected String getNextObjectId() {
@@ -274,6 +274,14 @@ public class Gateway {
 		return object.getClass().isArray();
 	}
 
+	protected boolean isDecimalObject(Object object) {
+		return object instanceof BigDecimal;
+	}
+
+	private boolean isIterator(Object object) {
+		return object instanceof Iterator;
+	}
+
 	protected boolean isList(Object object) {
 		return object instanceof List;
 	}
@@ -283,22 +291,14 @@ public class Gateway {
 	}
 
 	protected boolean isPrimitiveObject(Object object) {
-		return object instanceof Boolean || object instanceof String
+		return object instanceof Boolean
+				|| object instanceof String
 				|| (object instanceof Number && !(object instanceof BigDecimal || object instanceof BigInteger))
-				|| object instanceof Character
-				|| object instanceof byte[];
-	}
-	
-	protected boolean isDecimalObject(Object object) {
-		return object instanceof BigDecimal;
+				|| object instanceof Character || object instanceof byte[];
 	}
 
 	protected boolean isSet(Object object) {
 		return object instanceof Set;
-	}
-
-	private boolean isIterator(Object object) {
-		return object instanceof Iterator;
 	}
 
 	public boolean isStarted() {

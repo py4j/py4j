@@ -32,8 +32,8 @@ package py4j;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -54,16 +54,16 @@ public class ProtocolTest {
 
 	@Test
 	public void testBytes() {
-		byte[] bytes = {1, 100, 127, 0, 60, 15, -128, -1, 14, -55};
+		byte[] bytes = { 1, 100, 127, 0, 60, 15, -128, -1, 14, -55 };
 		String bytesString = Protocol.encodeBytes(bytes);
 		byte[] bytes2 = Base64.decode(bytesString);
 		assertArrayEquals(bytes, bytes2);
-		
+
 		Gateway g = new Gateway(null);
 		ReturnObject rObject = g.getReturnObject(bytes);
 		assertNotNull(rObject.getPrimitiveObject());
 	}
-	
+
 	@Test
 	public void testIntegers() {
 		assertTrue(Protocol.isInteger("i123"));
@@ -89,7 +89,7 @@ public class ProtocolTest {
 		assertEquals(1, Protocol.getInteger("i1"));
 		assertEquals(234, Protocol.getInteger("i234"));
 	}
-	
+
 	@Test
 	public void testLongs() {
 		assertTrue(Protocol.isInteger("i2147483648"));
@@ -165,15 +165,15 @@ public class ProtocolTest {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getReference("r",null);
+			Protocol.getReference("r", null);
 			fail();
 		} catch (Exception e) {
 			assertTrue(true);
 		}
-		assertEquals(object1, Protocol.getReference("ro123",gateway));
-		assertEquals(object2, Protocol.getReference("ro2",gateway));
+		assertEquals(object1, Protocol.getReference("ro123", gateway));
+		assertEquals(object2, Protocol.getReference("ro2", gateway));
 	}
-	
+
 	@Test
 	public void testPythonProxies() {
 		Gateway gateway = new Gateway(null);
@@ -192,13 +192,15 @@ public class ProtocolTest {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getPythonProxy("pp123",null);
+			Protocol.getPythonProxy("pp123", null);
 			fail();
 		} catch (Exception e) {
 			assertTrue(true);
 		}
-		assertTrue(Protocol.getPythonProxy("fp123;java.lang.CharSequence",gateway) instanceof CharSequence);
-		assertTrue(Protocol.getPythonProxy("fp1;java.lang.CharSequence;java.lang.Runnable",gateway) instanceof Runnable);
+		assertTrue(Protocol.getPythonProxy("fp123;java.lang.CharSequence",
+				gateway) instanceof CharSequence);
+		assertTrue(Protocol.getPythonProxy(
+				"fp1;java.lang.CharSequence;java.lang.Runnable", gateway) instanceof Runnable);
 	}
 
 	@Test
@@ -263,46 +265,48 @@ public class ProtocolTest {
 		assertNull(Protocol.getNull(""));
 		assertNull(Protocol.getNull(null));
 	}
-	
+
 	@Test
 	public void testGetObject() {
 		Gateway gateway = new Gateway(null);
 		Object obj1 = new Object();
 		gateway.putObject("o123", obj1);
-		assertEquals(1, Protocol.getObject("i1",null));
-		assertEquals(true, Protocol.getObject("bTrue",null));
-		assertEquals(1.234,(Double)Protocol.getObject("d1.234",null),0.001);
-		assertEquals(obj1,Protocol.getObject("ro123",gateway));
-		assertEquals("Hello\nWorld\t", Protocol.getObject("sHello\\nWorld\t",null));
+		assertEquals(1, Protocol.getObject("i1", null));
+		assertEquals(true, Protocol.getObject("bTrue", null));
+		assertEquals(1.234, (Double) Protocol.getObject("d1.234", null), 0.001);
+		assertEquals(obj1, Protocol.getObject("ro123", gateway));
+		assertEquals("Hello\nWorld\t",
+				Protocol.getObject("sHello\\nWorld\t", null));
 		assertEquals(123l, Protocol.getObject("L123", null));
-		assertEquals(new BigDecimal("-14.456"), Protocol.getObject("D-14.456", null));
-		assertNull(Protocol.getObject("n",null));
+		assertEquals(new BigDecimal("-14.456"),
+				Protocol.getObject("D-14.456", null));
+		assertNull(Protocol.getObject("n", null));
 		try {
-			Protocol.getObject(null,null);
+			Protocol.getObject(null, null);
 			fail();
 		} catch (Py4JException e) {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getObject("",null);
+			Protocol.getObject("", null);
 			fail();
 		} catch (Py4JException e) {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getObject("e",null);
+			Protocol.getObject("e", null);
 			fail();
 		} catch (Py4JException e) {
 			assertTrue(true);
 		}
 		try {
-			Protocol.getObject("z123",null);
+			Protocol.getObject("z123", null);
 			fail();
 		} catch (Py4JException e) {
 			assertTrue(true);
 		}
 	}
-	
+
 	@Test
 	public void testGetOutputCommand() {
 		ReturnObject rObject1 = ReturnObject.getErrorReturnObject();
@@ -310,7 +314,8 @@ public class ProtocolTest {
 		ReturnObject rObject3 = ReturnObject.getPrimitiveReturnObject(2.2);
 		ReturnObject rObject4 = ReturnObject.getPrimitiveReturnObject(2.2f);
 		ReturnObject rObject5 = ReturnObject.getPrimitiveReturnObject('c');
-		ReturnObject rObject6 = ReturnObject.getPrimitiveReturnObject("Hello\nWorld");
+		ReturnObject rObject6 = ReturnObject
+				.getPrimitiveReturnObject("Hello\nWorld");
 		ReturnObject rObject7 = ReturnObject.getPrimitiveReturnObject(5L);
 		ReturnObject rObject8 = ReturnObject.getPrimitiveReturnObject(true);
 		ReturnObject rObject9 = ReturnObject.getPrimitiveReturnObject(false);
@@ -321,8 +326,9 @@ public class ProtocolTest {
 		ReturnObject rObject14 = ReturnObject.getSetReturnObject("o125", 3);
 		ReturnObject rObject15 = ReturnObject.getArrayReturnObject("o126", 3);
 		ReturnObject rObject16 = ReturnObject.getIteratorReturnObject("o127");
-		ReturnObject rObject17 = ReturnObject.getDecimalReturnObject(new BigDecimal("-14.532"));
-		
+		ReturnObject rObject17 = ReturnObject
+				.getDecimalReturnObject(new BigDecimal("-14.532"));
+
 		assertEquals("x\n", Protocol.getOutputCommand(rObject1));
 		assertEquals("yi2\n", Protocol.getOutputCommand(rObject2));
 		assertEquals("yd2.2\n", Protocol.getOutputCommand(rObject3));
@@ -342,5 +348,4 @@ public class ProtocolTest {
 		assertEquals("yD-14.532\n", Protocol.getOutputCommand(rObject17));
 	}
 
-	
 }

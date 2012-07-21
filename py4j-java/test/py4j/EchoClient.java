@@ -68,10 +68,10 @@ public class EchoClient {
 
 	public void connect() throws IOException {
 		clientSocket = new Socket(GatewayServer.DEFAULT_ADDRESS, port);
-		reader = new InputStreamReader(clientSocket.getInputStream(), Charset
-				.forName("UTF-8"));
-		writer = new BufferedWriter(new OutputStreamWriter(clientSocket
-				.getOutputStream(), Charset.forName("UTF-8")));
+		reader = new InputStreamReader(clientSocket.getInputStream(),
+				Charset.forName("UTF-8"));
+		writer = new BufferedWriter(new OutputStreamWriter(
+				clientSocket.getOutputStream(), Charset.forName("UTF-8")));
 	}
 
 	public void close() {

@@ -54,7 +54,7 @@ import py4j.ReturnObject;
 public abstract class AbstractCommand implements Command {
 
 	protected Gateway gateway;
-	
+
 	protected String commandName;
 
 	private final Logger logger = Logger.getLogger(AbstractCommand.class
@@ -64,9 +64,29 @@ public abstract class AbstractCommand implements Command {
 	public abstract void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException;
 
+	/**
+	 * 
+	 * @param reader
+	 * @return A list of the remaining arguments (converted using
+	 *         Protocol.getObject) in the reader. Consumes the end of command
+	 *         part.
+	 * @throws IOException
+	 */
+	protected List<Object> getArguments(BufferedReader reader)
+			throws IOException {
+		List<Object> arguments = new ArrayList<Object>();
+		List<String> stringArguments = getStringArguments(reader);
+
+		for (String stringArgument : stringArguments) {
+			arguments.add(Protocol.getObject(stringArgument, this.gateway));
+		}
+
+		return arguments;
+	}
+
 	@Override
-	public void init(Gateway gateway) {
-		this.gateway = gateway;
+	public String getCommandName() {
+		return commandName;
 	}
 
 	/**
@@ -90,28 +110,16 @@ public abstract class AbstractCommand implements Command {
 		return arguments;
 	}
 
-	/**
-	 * 
-	 * @param reader
-	 * @return A list of the remaining arguments (converted using
-	 *         Protocol.getObject) in the reader. Consumes the end of command
-	 *         part.
-	 * @throws IOException
-	 */
-	protected List<Object> getArguments(BufferedReader reader)
-			throws IOException {
-		List<Object> arguments = new ArrayList<Object>();
-		List<String> stringArguments = getStringArguments(reader);
-
-		for (String stringArgument : stringArguments) {
-			arguments.add(Protocol.getObject(stringArgument, this.gateway));
-		}
-
-		return arguments;
+	@Override
+	public void init(Gateway gateway) {
+		this.gateway = gateway;
 	}
 
 	/**
-	 * <p>Convenient shortcut to invoke a method dynamically.</p>
+	 * <p>
+	 * Convenient shortcut to invoke a method dynamically.
+	 * </p>
+	 * 
 	 * @param methodName
 	 * @param targetObjectId
 	 * @param arguments
@@ -132,11 +140,4 @@ public abstract class AbstractCommand implements Command {
 		return returnObject;
 	}
 
-	@Override
-	public String getCommandName() {
-		return commandName;
-	}
-
-	
-	
 }

@@ -42,7 +42,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import py4j.Gateway;
-import py4j.commands.HelpPageCommand;
 import py4j.examples.ExampleEntryPoint;
 
 public class HelpPageCommandTest {
@@ -69,7 +68,7 @@ public class HelpPageCommandTest {
 	public void tearDown() {
 		gateway.shutdown();
 	}
-	
+
 	@Test
 	public void testHelpObject() {
 		String inputCommand = "o\n" + target + "\nn\ntrue\ne\n";
@@ -79,13 +78,13 @@ public class HelpPageCommandTest {
 					inputCommand)), writer);
 			String page = sWriter.toString();
 			System.out.println(page);
-			assertEquals(1531,page.length());
+			assertEquals(1531, page.length());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testHelpObjectWithPattern() {
 		String inputCommand = "o\n" + target + "\nsm*\ntrue\ne\n";
@@ -95,13 +94,13 @@ public class HelpPageCommandTest {
 					inputCommand)), writer);
 			String page = sWriter.toString();
 			System.out.println(page);
-			assertEquals(1104,page.length());
+			assertEquals(1104, page.length());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testHelpClass() {
 		String inputCommand = "c\njava.lang.String\nn\ntrue\ne\n";
@@ -111,7 +110,7 @@ public class HelpPageCommandTest {
 					inputCommand)), writer);
 			String page = sWriter.toString();
 			System.out.println(page);
-			assertEquals(3588,page.length());
+			assertEquals(3588, page.length());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

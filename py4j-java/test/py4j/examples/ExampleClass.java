@@ -37,55 +37,55 @@ import java.util.List;
 public class ExampleClass {
 
 	private int field1 = 2;
-	
+
 	public int field10 = 10;
-	
+
 	public long field11 = 11l;
-	
+
 	public StringBuffer field20 = new StringBuffer();
-	
+
 	public StringBuffer field21;
-	
+
 	public ExampleClass() {
-		
+
 	}
-	
+
 	public ExampleClass(int field1) {
 		this.field1 = field1;
 	}
-	
+
 	public int method1() {
 		return 1;
 	}
-	
+
 	public void method2(String param1) {
-		
+
 	}
-	
+
 	public List<String> getList(int i) {
 		List<String> list = new ArrayList<String>();
 		for (int counter = 0; counter < i; counter++) {
-			list.add(""+counter);
+			list.add("" + counter);
 		}
 		return list;
 	}
-	
+
 	public String method3(int param1, boolean param2) {
 		return "Hello World";
 	}
-	
+
 	public ExampleClass method4(char param1) {
 		ExampleClass ex = new ExampleClass();
 		ex.field1 = 1;
 		return ex;
 	}
-	
+
 	public ExampleClass method4(String param1) {
 		ExampleClass ex = new ExampleClass();
 		ex.field1 = 3;
 		return ex;
 	}
-	
+
 	public int method5(ExampleClass param1) {
 		return 2;
 	}
@@ -97,66 +97,66 @@ public class ExampleClass {
 	public void setField1(int field1) {
 		this.field1 = field1;
 	}
-	
+
 	public ExampleClass method6(char param1) {
 		ExampleClass ex = new ExampleClass();
 		ex.field1 = 4;
 		return ex;
 	}
-	
+
 	public Object[] getStringArray() {
-		return new String[] {"222","111","333"};
+		return new String[] { "222", "111", "333" };
 	}
-	
+
 	public int[] getIntArray() {
-		return new int[] {2, 5, 1, 10};
+		return new int[] { 2, 5, 1, 10 };
 	}
-	
+
 	public String callHello(IHello hello) {
 		return hello.sayHello();
 	}
-	
+
 	public String callHello2(IHello hello) {
-		return hello.sayHello(10,"MyMy!\n;");
+		return hello.sayHello(10, "MyMy!\n;");
 	}
-	
+
 	public int method7(int i) {
 		return 1;
 	}
-	
+
 	public int method7(String s) {
 		return 2;
 	}
-	
+
 	public int method7(Object o) {
 		return 3;
 	}
-	
+
 	public int method7(long l) {
 		return 4;
 	}
-	
+
 	public long method8(long l) {
 		return l + 1;
 	}
-	
+
 	public Long method9(Long l) {
 		return l + 1;
 	}
-	
+
 	public BigDecimal method10(int i, int j) {
 		BigDecimal bd = new BigDecimal(new BigInteger(String.valueOf(i)), j);
 		return bd;
 	}
-	
+
 	public BigDecimal method10(BigDecimal bd) {
 		return bd.add(new BigDecimal("1"));
 	}
-	
+
 	public BigInteger method10(int i) {
 		return new BigInteger(String.valueOf(i));
 	}
-	
+
 	public BigInteger method11(BigInteger bi) {
 		return bi.add(new BigInteger("1"));
 	}

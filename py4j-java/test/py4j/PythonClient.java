@@ -42,19 +42,21 @@ public class PythonClient implements Runnable {
 	public volatile String lastProxyMessage;
 	public volatile String lastReturnMessage;
 	public volatile String nextProxyReturnMessage;
-	
+
 	private ServerSocket sSocket;
-	
+
 	public void startProxy() {
 		new Thread(this).start();
 	}
-	
+
 	public void run() {
 		try {
 			sSocket = new ServerSocket(25334);
 			Socket socket = sSocket.accept();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					socket.getInputStream()));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+					socket.getOutputStream()));
 			lastProxyMessage = "";
 			String temp = reader.readLine() + "\n";
 			lastProxyMessage += temp;
@@ -67,29 +69,32 @@ public class PythonClient implements Runnable {
 			writer.close();
 			reader.close();
 			socket.close();
-		} catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void stopProxy() {
 		NetworkUtil.quietlyClose(sSocket);
 	}
-	
+
 	public void sendMesage(String message) {
 		try {
-			Socket socket = new Socket(InetAddress.getByName(GatewayServer.DEFAULT_ADDRESS), 25333);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			Socket socket = new Socket(
+					InetAddress.getByName(GatewayServer.DEFAULT_ADDRESS), 25333);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					socket.getInputStream()));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+					socket.getOutputStream()));
 			writer.write(message);
 			writer.flush();
 			lastReturnMessage = reader.readLine();
 			writer.close();
 			reader.close();
 			socket.close();
-		} catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 }

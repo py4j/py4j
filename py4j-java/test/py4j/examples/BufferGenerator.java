@@ -33,22 +33,21 @@ import py4j.GatewayServer;
 public class BufferGenerator {
 
 	private static GatewayServer server;
-	
+
 	public StringBuffer getStringBuffer() {
 		StringBuffer sb = new StringBuffer("FromJava");
 		return sb;
 	}
-	
+
 	public static void main(String[] args) {
 		GatewayServer.turnLoggingOff();
 		server = new GatewayServer(new BufferGenerator());
 		server.start();
 	}
-	
-	
+
 	// Useful for unit tests
 	public static void shutdownGateway() {
 		server.shutdown();
 	}
-	
+
 }

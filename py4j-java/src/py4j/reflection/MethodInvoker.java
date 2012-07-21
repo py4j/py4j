@@ -60,92 +60,58 @@ public class MethodInvoker {
 
 	public final static int INVALID_INVOKER_COST = -1;
 
-	private int cost;
+	private static boolean allNoConverter(List<TypeConverter> converters) {
+		boolean allNo = true;
 
-	private TypeConverter[] converters;
+		for (TypeConverter converter : converters) {
+			if (converter != TypeConverter.NO_CONVERTER) {
+				allNo = false;
+				break;
+			}
+		}
 
-	private Method method;
-
-	private Constructor<?> constructor;
-
-	private final Logger logger = Logger.getLogger(MethodInvoker.class
-			.getName());
-
-	public static final MethodInvoker INVALID_INVOKER = new MethodInvoker(
-			(Method) null, null, INVALID_INVOKER_COST);
-
-	public MethodInvoker(Method method, TypeConverter[] converters, int cost) {
-		super();
-		this.method = method;
-		this.converters = converters;
-		this.cost = cost;
+		return allNo;
 	}
 
-	public MethodInvoker(Constructor<?> constructor,
-			TypeConverter[] converters, int cost) {
-		super();
-		this.constructor = constructor;
-		this.converters = converters;
-		this.cost = cost;
-	}
-
-	public int getCost() {
-		return cost;
-	}
-
-	public Method getMethod() {
-		return method;
-	}
-
-	public Constructor<?> getConstructor() {
-		return constructor;
-	}
-
-	public Object invoke(Object obj, Object[] arguments) {
-		Object returnObject = null;
-
-		try {
-			Object[] newArguments = arguments;
-
-			if (converters != null) {
-				int size = arguments.length;
-				newArguments = new Object[size];
-				for (int i = 0; i < size; i++) {
-					newArguments[i] = converters[i].convert(arguments[i]);
+	private static int buildConverters(List<TypeConverter> converters,
+			Class<?>[] parameters, Class<?>[] arguments) {
+		int cost = 0;
+		int tempCost = -1;
+		int size = arguments.length;
+		for (int i = 0; i < size; i++) {
+			if (arguments[i] == null) {
+				if (parameters[i].isPrimitive()) {
+					tempCost = -1;
+				} else {
+					tempCost = 0;
+					converters.add(TypeConverter.NO_CONVERTER);
 				}
+			} else if (parameters[i].isAssignableFrom(arguments[i])) {
+				tempCost = TypeUtil
+						.computeDistance(parameters[i], arguments[i]);
+				converters.add(TypeConverter.NO_CONVERTER);
+			} else if (TypeUtil.isNumeric(parameters[i])
+					&& TypeUtil.isNumeric(arguments[i])) {
+				tempCost = TypeUtil.computeNumericConversion(parameters[i],
+						arguments[i], converters);
+			} else if (TypeUtil.isCharacter(parameters[i])) {
+				tempCost = TypeUtil.computeCharacterConversion(parameters[i],
+						arguments[i], converters);
+			} else if (TypeUtil.isBoolean(parameters[i])
+					&& TypeUtil.isBoolean(arguments[i])) {
+				tempCost = 0;
+				converters.add(TypeConverter.NO_CONVERTER);
 			}
-			if (method != null) {
-				method.setAccessible(true);
-				returnObject = method.invoke(obj, newArguments);
-			} else if (constructor != null) {
-				constructor.setAccessible(true);
-				returnObject = constructor.newInstance(newArguments);
+
+			if (tempCost != -1) {
+				cost += tempCost;
+				tempCost = -1;
+			} else {
+				cost = -1;
+				break;
 			}
-		} catch (InvocationTargetException ie) {
-			logger.log(Level.WARNING, "Exception occurred in client code.", ie);
-			throw new Py4JJavaException (ie.getCause());
-		} catch (Exception e) {
-			logger
-					.log(
-							Level.WARNING,
-							"Could not invoke method or received an exception while invoking.",
-							e);
-			throw new Py4JException(e);
 		}
-
-		return returnObject;
-	}
-
-	public boolean isVoid() {
-		if (constructor != null) {
-			return false;
-		} else {
-			return method.getReturnType().equals(void.class);
-		}
-	}
-
-	public TypeConverter[] getConverters() {
-		return converters;
+		return cost;
 	}
 
 	public static MethodInvoker buildInvoker(Constructor<?> constructor,
@@ -199,59 +165,91 @@ public class MethodInvoker {
 		return invoker;
 	}
 
-	private static int buildConverters(List<TypeConverter> converters,
-			Class<?>[] parameters, Class<?>[] arguments) {
-		int cost = 0;
-		int tempCost = -1;
-		int size = arguments.length;
-		for (int i = 0; i < size; i++) {
-			if (arguments[i] == null) {
-				if (parameters[i].isPrimitive()) {
-					tempCost = -1;
-				} else {
-					tempCost = 0;
-					converters.add(TypeConverter.NO_CONVERTER);
-				}
-			}
-			else if (parameters[i].isAssignableFrom(arguments[i])) {
-				tempCost = TypeUtil
-						.computeDistance(parameters[i], arguments[i]);
-				converters.add(TypeConverter.NO_CONVERTER);
-			} else if (TypeUtil.isNumeric(parameters[i])
-					&& TypeUtil.isNumeric(arguments[i])) {
-				tempCost = TypeUtil.computeNumericConversion(parameters[i],
-						arguments[i], converters);
-			} else if (TypeUtil.isCharacter(parameters[i])) {
-				tempCost = TypeUtil.computeCharacterConversion(parameters[i],
-						arguments[i], converters);
-			} else if (TypeUtil.isBoolean(parameters[i])
-					&& TypeUtil.isBoolean(arguments[i])) {
-				tempCost = 0;
-				converters.add(TypeConverter.NO_CONVERTER);
-			}
+	private int cost;
 
-			if (tempCost != -1) {
-				cost += tempCost;
-				tempCost = -1;
-			} else {
-				cost = -1;
-				break;
-			}
-		}
+	private TypeConverter[] converters;
+
+	private Method method;
+
+	private Constructor<?> constructor;
+
+	private final Logger logger = Logger.getLogger(MethodInvoker.class
+			.getName());
+
+	public static final MethodInvoker INVALID_INVOKER = new MethodInvoker(
+			(Method) null, null, INVALID_INVOKER_COST);
+
+	public MethodInvoker(Constructor<?> constructor,
+			TypeConverter[] converters, int cost) {
+		super();
+		this.constructor = constructor;
+		this.converters = converters;
+		this.cost = cost;
+	}
+
+	public MethodInvoker(Method method, TypeConverter[] converters, int cost) {
+		super();
+		this.method = method;
+		this.converters = converters;
+		this.cost = cost;
+	}
+
+	public Constructor<?> getConstructor() {
+		return constructor;
+	}
+
+	public TypeConverter[] getConverters() {
+		return converters;
+	}
+
+	public int getCost() {
 		return cost;
 	}
 
-	private static boolean allNoConverter(List<TypeConverter> converters) {
-		boolean allNo = true;
+	public Method getMethod() {
+		return method;
+	}
 
-		for (TypeConverter converter : converters) {
-			if (converter != TypeConverter.NO_CONVERTER) {
-				allNo = false;
-				break;
+	public Object invoke(Object obj, Object[] arguments) {
+		Object returnObject = null;
+
+		try {
+			Object[] newArguments = arguments;
+
+			if (converters != null) {
+				int size = arguments.length;
+				newArguments = new Object[size];
+				for (int i = 0; i < size; i++) {
+					newArguments[i] = converters[i].convert(arguments[i]);
+				}
 			}
+			if (method != null) {
+				method.setAccessible(true);
+				returnObject = method.invoke(obj, newArguments);
+			} else if (constructor != null) {
+				constructor.setAccessible(true);
+				returnObject = constructor.newInstance(newArguments);
+			}
+		} catch (InvocationTargetException ie) {
+			logger.log(Level.WARNING, "Exception occurred in client code.", ie);
+			throw new Py4JJavaException(ie.getCause());
+		} catch (Exception e) {
+			logger.log(
+					Level.WARNING,
+					"Could not invoke method or received an exception while invoking.",
+					e);
+			throw new Py4JException(e);
 		}
 
-		return allNo;
+		return returnObject;
+	}
+
+	public boolean isVoid() {
+		if (constructor != null) {
+			return false;
+		} else {
+			return method.getReturnType().equals(void.class);
+		}
 	}
 
 }

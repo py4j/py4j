@@ -73,104 +73,8 @@ public class ListCommand extends AbstractCommand {
 		super();
 		this.commandName = LIST_COMMAND_NAME;
 	}
-	
-	@Override
-	public void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException {
-		char subCommand = reader.readLine().charAt(0);
-		String returnCommand = null;
-		if (subCommand == LIST_SLICE_SUB_COMMAND_NAME) {
-			returnCommand = slice_list(reader);
-		} else if (subCommand == LIST_CONCAT_SUB_COMMAND_NAME) {
-			returnCommand = concat_list(reader);
-		} else if (subCommand == LIST_MULT_SUB_COMMAND_NAME) {
-			returnCommand = mult_list(reader);
-		} else if (subCommand == LIST_IMULT_SUB_COMMAND_NAME) {
-			returnCommand = imult_list(reader);
-		} else if (subCommand == LIST_COUNT_SUB_COMMAND_NAME) {
-			returnCommand = count_list(reader);
-		} else {
-			returnCommand = call_collections_method(reader, subCommand);
-		}
 
-		logger.finest("Returning command: " + returnCommand);
-		writer.write(returnCommand);
-		writer.flush();
-	}
-
-	@SuppressWarnings({"rawtypes","unchecked"})
-	private String slice_list(BufferedReader reader) throws IOException {
-		List list1 = (List) gateway.getObject(reader.readLine());
-		List<Object> arguments = getArguments(reader);
-		List slice = new ArrayList();
-		for (Object argument : arguments) {
-			slice.add(list1.get((Integer) argument));
-		}
-		ReturnObject returnObject = gateway.getReturnObject(slice);
-		return Protocol.getOutputCommand(returnObject);
-	}
-
-	@SuppressWarnings("rawtypes")
-	private String count_list(BufferedReader reader) throws IOException {
-		List list1 = (List) gateway.getObject(reader.readLine());
-		Object objectToCount = Protocol.getObject(reader.readLine(), gateway);
-
-		// Read end
-		reader.readLine();
-
-		int count = Collections.frequency(list1, objectToCount);
-		ReturnObject returnObject = gateway.getReturnObject(count);
-		return Protocol.getOutputCommand(returnObject);
-	}
-
-	@SuppressWarnings({"rawtypes","unchecked"})
-	private String imult_list(BufferedReader reader) throws IOException {
-		List list1 = (List) gateway.getObject(reader.readLine());
-		List tempList = new ArrayList(list1.subList(0, list1.size()));
-		int n = Protocol.getInteger(reader.readLine());
-		// Read end
-		reader.readLine();
-
-		if (n <= 0) {
-			list1.clear();
-		} else {
-			for (int i = 1; i < n; i++) {
-				list1.addAll(tempList);
-			}
-		}
-
-		return RETURN_VOID;
-	}
-
-	@SuppressWarnings({"rawtypes","unchecked"})
-	private String mult_list(BufferedReader reader) throws IOException {
-		List list1 = (List) gateway.getObject(reader.readLine());
-		int n = Protocol.getInteger(reader.readLine());
-		// Read end
-		reader.readLine();
-
-		List list2 = new ArrayList();
-		for (int i = 0; i < n; i++) {
-			list2.addAll(list1);
-		}
-		ReturnObject returnObject = gateway.getReturnObject(list2);
-		return Protocol.getOutputCommand(returnObject);
-	}
-
-	@SuppressWarnings({"rawtypes","unchecked"})
-	private String concat_list(BufferedReader reader) throws IOException {
-		List list1 = (List) gateway.getObject(reader.readLine());
-		List list2 = (List) gateway.getObject(reader.readLine());
-		// Read end
-		reader.readLine();
-
-		List list3 = new ArrayList(list1);
-		list3.addAll(list2);
-		ReturnObject returnObject = gateway.getReturnObject(list3);
-		return Protocol.getOutputCommand(returnObject);
-	}
-
-	@SuppressWarnings({"rawtypes"})
+	@SuppressWarnings({ "rawtypes" })
 	private String call_collections_method(BufferedReader reader,
 			char listCommand) throws IOException {
 		String returnCommand;
@@ -198,27 +102,123 @@ public class ListCommand extends AbstractCommand {
 		return returnCommand;
 	}
 
-	@SuppressWarnings({"rawtypes","unchecked"})
-	private String min_list(List list) {
-		Object object = Collections.min(list);
-		ReturnObject returnObject = gateway.getReturnObject(object);
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private String concat_list(BufferedReader reader) throws IOException {
+		List list1 = (List) gateway.getObject(reader.readLine());
+		List list2 = (List) gateway.getObject(reader.readLine());
+		// Read end
+		reader.readLine();
+
+		List list3 = new ArrayList(list1);
+		list3.addAll(list2);
+		ReturnObject returnObject = gateway.getReturnObject(list3);
 		return Protocol.getOutputCommand(returnObject);
 	}
 
-	@SuppressWarnings({"rawtypes","unchecked"})
+	@SuppressWarnings("rawtypes")
+	private String count_list(BufferedReader reader) throws IOException {
+		List list1 = (List) gateway.getObject(reader.readLine());
+		Object objectToCount = Protocol.getObject(reader.readLine(), gateway);
+
+		// Read end
+		reader.readLine();
+
+		int count = Collections.frequency(list1, objectToCount);
+		ReturnObject returnObject = gateway.getReturnObject(count);
+		return Protocol.getOutputCommand(returnObject);
+	}
+
+	@Override
+	public void execute(String commandName, BufferedReader reader,
+			BufferedWriter writer) throws Py4JException, IOException {
+		char subCommand = reader.readLine().charAt(0);
+		String returnCommand = null;
+		if (subCommand == LIST_SLICE_SUB_COMMAND_NAME) {
+			returnCommand = slice_list(reader);
+		} else if (subCommand == LIST_CONCAT_SUB_COMMAND_NAME) {
+			returnCommand = concat_list(reader);
+		} else if (subCommand == LIST_MULT_SUB_COMMAND_NAME) {
+			returnCommand = mult_list(reader);
+		} else if (subCommand == LIST_IMULT_SUB_COMMAND_NAME) {
+			returnCommand = imult_list(reader);
+		} else if (subCommand == LIST_COUNT_SUB_COMMAND_NAME) {
+			returnCommand = count_list(reader);
+		} else {
+			returnCommand = call_collections_method(reader, subCommand);
+		}
+
+		logger.finest("Returning command: " + returnCommand);
+		writer.write(returnCommand);
+		writer.flush();
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private String imult_list(BufferedReader reader) throws IOException {
+		List list1 = (List) gateway.getObject(reader.readLine());
+		List tempList = new ArrayList(list1.subList(0, list1.size()));
+		int n = Protocol.getInteger(reader.readLine());
+		// Read end
+		reader.readLine();
+
+		if (n <= 0) {
+			list1.clear();
+		} else {
+			for (int i = 1; i < n; i++) {
+				list1.addAll(tempList);
+			}
+		}
+
+		return RETURN_VOID;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private String max_list(List list) {
 		Object object = Collections.max(list);
 		ReturnObject returnObject = gateway.getReturnObject(object);
 		return Protocol.getOutputCommand(returnObject);
 	}
 
-	@SuppressWarnings({"rawtypes"})
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private String min_list(List list) {
+		Object object = Collections.min(list);
+		ReturnObject returnObject = gateway.getReturnObject(object);
+		return Protocol.getOutputCommand(returnObject);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private String mult_list(BufferedReader reader) throws IOException {
+		List list1 = (List) gateway.getObject(reader.readLine());
+		int n = Protocol.getInteger(reader.readLine());
+		// Read end
+		reader.readLine();
+
+		List list2 = new ArrayList();
+		for (int i = 0; i < n; i++) {
+			list2.addAll(list1);
+		}
+		ReturnObject returnObject = gateway.getReturnObject(list2);
+		return Protocol.getOutputCommand(returnObject);
+	}
+
+	@SuppressWarnings({ "rawtypes" })
 	private String reverse_list(List list) {
 		Collections.reverse(list);
 		return RETURN_VOID;
 	}
 
-	@SuppressWarnings({"rawtypes","unchecked"})
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private String slice_list(BufferedReader reader) throws IOException {
+		List list1 = (List) gateway.getObject(reader.readLine());
+		List<Object> arguments = getArguments(reader);
+		List slice = new ArrayList();
+		for (Object argument : arguments) {
+			slice.add(list1.get((Integer) argument));
+		}
+		ReturnObject returnObject = gateway.getReturnObject(slice);
+		return Protocol.getOutputCommand(returnObject);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private String sort_list(List list) {
 		Collections.sort(list);
 		return RETURN_VOID;

@@ -41,7 +41,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import py4j.Gateway;
-import py4j.commands.FieldCommand;
 import py4j.examples.ExampleClass;
 import py4j.examples.ExampleEntryPoint;
 
@@ -69,7 +68,7 @@ public class FieldCommandTest {
 	public void tearDown() {
 		gateway.shutdown();
 	}
-	
+
 	@Test
 	public void testPrivateMember() {
 		String inputCommand = "g\n" + target + "\nfield1\ne\n";
@@ -82,7 +81,7 @@ public class FieldCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testNoMember() {
 		String inputCommand = "g\n" + target + "\nfield2\ne\n";
@@ -95,7 +94,7 @@ public class FieldCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testPrimitive() {
 		String inputCommand = "g\n" + target + "\nfield10\ne\n";
@@ -108,7 +107,7 @@ public class FieldCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testObject() {
 		String inputCommand = "g\n" + target + "\nfield20\ne\n";
@@ -121,7 +120,7 @@ public class FieldCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testNull() {
 		String inputCommand = "g\n" + target + "\nfield21\ne\n";
@@ -134,7 +133,7 @@ public class FieldCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testSetField() {
 		String inputCommand = "s\n" + target + "\nfield10\ni123\ne\n";
@@ -142,13 +141,14 @@ public class FieldCommandTest {
 			command.execute("f", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("yv\n", sWriter.toString());
-			assertEquals(((ExampleClass)gateway.getObject(target)).field10,123);
+			assertEquals(((ExampleClass) gateway.getObject(target)).field10,
+					123);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testSetNoField() {
 		String inputCommand = "s\n" + target + "\nfield1\ni123\ne\n";
@@ -161,16 +161,18 @@ public class FieldCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testSetFieldObject() {
 		String objectId = gateway.putNewObject(new StringBuffer("Hello"));
-		String inputCommand = "s\n" + target + "\nfield20\nr"+objectId+"\ne\n";
+		String inputCommand = "s\n" + target + "\nfield20\nr" + objectId
+				+ "\ne\n";
 		try {
 			command.execute("f", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("yv\n", sWriter.toString());
-			assertEquals(((ExampleClass)gateway.getObject(target)).field20,gateway.getObject(objectId));
+			assertEquals(((ExampleClass) gateway.getObject(target)).field20,
+					gateway.getObject(objectId));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

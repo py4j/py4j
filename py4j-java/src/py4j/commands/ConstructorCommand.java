@@ -54,8 +54,6 @@ public class ConstructorCommand extends AbstractCommand {
 
 	public final static String CONSTRUCTOR_COMMAND_NAME = "i";
 
-	
-	
 	public ConstructorCommand() {
 		super();
 		this.commandName = CONSTRUCTOR_COMMAND_NAME;

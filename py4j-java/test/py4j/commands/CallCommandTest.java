@@ -43,7 +43,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import py4j.Gateway;
-import py4j.commands.CallCommand;
 import py4j.examples.ExampleClass;
 import py4j.examples.ExampleEntryPoint;
 
@@ -72,7 +71,7 @@ public class CallCommandTest {
 	public void tearDown() {
 		gateway.shutdown();
 	}
-	
+
 	@Test
 	public void testStatic() {
 		String inputCommand = "z:java.lang.String\nvalueOf\ni123\ne\n";
@@ -85,7 +84,7 @@ public class CallCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testReflectionException() {
 		String inputCommand = "z:java.lang.String\nvalueOf2\ni123\ne\n";
@@ -98,7 +97,7 @@ public class CallCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testReflectionException2() {
 		String inputCommand = target + "\nmethod1aa\ne\n";
@@ -111,14 +110,14 @@ public class CallCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testClientCodeException() {
 		String inputCommand = "z:java.lang.Integer\nvalueOf\nsallo\ne\n";
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("xro1\n",sWriter.toString());
+			assertEquals("xro1\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -137,7 +136,7 @@ public class CallCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testVoidMethod() {
 		String inputCommand = target + "\nmethod2\nsThis is a\tString\\n\ne\n";
@@ -150,7 +149,7 @@ public class CallCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testMethodWithNull() {
 		String inputCommand = target + "\nmethod2\nn\ne\n";
@@ -158,13 +157,14 @@ public class CallCommandTest {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("yv\n", sWriter.toString());
-			
+
 			inputCommand = target + "\nmethod4\nn\ne\n";
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("yv\nyro1\n", sWriter.toString());
-			assertEquals(((ExampleClass)gateway.getObject("o1")).getField1(), 3);
-			
+			assertEquals(((ExampleClass) gateway.getObject("o1")).getField1(),
+					3);
+
 			inputCommand = target + "\nmethod7\nn\ne\n";
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
@@ -174,7 +174,7 @@ public class CallCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testMethodWithParams() {
 		String inputCommand = target + "\nmethod3\ni1\nbtrue\ne\n";
@@ -187,7 +187,7 @@ public class CallCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testCharMethod() {
 		String inputCommand = target + "\nmethod4\nsc\ne\n";
@@ -200,7 +200,7 @@ public class CallCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testCharMethod2() {
 		String inputCommand = target + "\nmethod6\nsc\ne\n";
@@ -213,7 +213,7 @@ public class CallCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testStringMethod() {
 		String inputCommand = target + "\nmethod4\nsc\ne\n";
@@ -221,13 +221,14 @@ public class CallCommandTest {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("yro1\n", sWriter.toString());
-			assertEquals(3, ((ExampleClass)gateway.getObject("o1")).getField1());
+			assertEquals(3,
+					((ExampleClass) gateway.getObject("o1")).getField1());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testStringMethodWithNull() {
 		String inputCommand = target + "\nmethod4\nn\ne\n";
@@ -235,13 +236,14 @@ public class CallCommandTest {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("yro1\n", sWriter.toString());
-			assertEquals(3, ((ExampleClass)gateway.getObject("o1")).getField1());
+			assertEquals(3,
+					((ExampleClass) gateway.getObject("o1")).getField1());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testUsingMethodReturn() {
 		String inputCommand = target + "\nmethod4\nsc\ne\n";

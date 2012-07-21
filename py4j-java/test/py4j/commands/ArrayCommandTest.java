@@ -45,7 +45,6 @@ import org.junit.Test;
 import py4j.Gateway;
 import py4j.Protocol;
 import py4j.ReturnObject;
-import py4j.commands.ArrayCommand;
 import py4j.examples.ExampleEntryPoint;
 
 public class ArrayCommandTest {
@@ -158,16 +157,16 @@ public class ArrayCommandTest {
 			assertEquals("yto4\n", sWriter.toString());
 			int[] intarray = (int[]) gateway.getObject("o4");
 			assertEquals(2, intarray.length);
-			assertEquals(6,intarray[1]);
-			
+			assertEquals(6, intarray[1]);
+
 			inputCommand = ArrayCommand.ARRAY_SLICE_SUB_COMMAND_NAME + "\n"
-			+ "o3" + "\ni2\ne\n";
+					+ "o3" + "\ni2\ne\n";
 			command.execute("a", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			assertEquals("yto4\nyto5\n", sWriter.toString());
-			String[][] stringarray = (String[][])gateway.getObject("o5");
+			String[][] stringarray = (String[][]) gateway.getObject("o5");
 			assertEquals(1, stringarray.length);
-			assertEquals("99",stringarray[0][1]);
+			assertEquals("99", stringarray[0][1]);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

@@ -29,11 +29,10 @@
 
 package py4j.examples;
 
-
-public class ExampleEntryPoint  {
+public class ExampleEntryPoint {
 
 	public ExampleClass getNewExample() {
 		return new ExampleClass();
 	}
-	
+
 }

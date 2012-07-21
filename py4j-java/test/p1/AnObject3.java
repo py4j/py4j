@@ -40,7 +40,7 @@ public class AnObject3 implements Runnable, Serializable {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

@@ -41,16 +41,16 @@ public class ExampleApplication {
 	 */
 	public static void main(String[] args) {
 		GatewayServer.turnLoggingOff();
-//		Logger logger = Logger.getLogger("py4j");
-//		logger.setLevel(Level.ALL);
+		// Logger logger = Logger.getLogger("py4j");
+		// logger.setLevel(Level.ALL);
 		GatewayServer server = new GatewayServer(new ExampleEntryPoint());
 		server.start();
-//		try {
-//			Thread.sleep(10000);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		server.stop();
+		// try {
+		// Thread.sleep(10000);
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
+		// server.stop();
 	}
 
 }
