@@ -29,6 +29,8 @@
 
 package py4j.examples;
 
+import java.net.InetAddress;
+
 import py4j.GatewayServer;
 
 //import java.util.logging.Level;

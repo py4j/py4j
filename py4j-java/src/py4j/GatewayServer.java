@@ -78,6 +78,8 @@ import py4j.commands.Command;
  */
 public class GatewayServer extends DefaultGatewayServerListener implements Runnable {
 
+	public static final String DEFAULT_ADDRESS = "127.0.0.1";
+	
 	public static final int DEFAULT_PORT = 25333;
 
 	public static final int DEFAULT_PYTHON_PORT = 25334;
@@ -179,8 +181,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements Runna
 		this.customCommands = customCommands;
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 		try {
-			this.address = InetAddress.getLocalHost();
-			this.pythonAddress = InetAddress.getLocalHost();
+			this.address = InetAddress.getByName(DEFAULT_ADDRESS);
+			this.pythonAddress = InetAddress.getByName(DEFAULT_ADDRESS);
 		} catch (UnknownHostException e) {
 			throw new Py4JNetworkException(e);
 		}
@@ -204,7 +206,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Runna
 		this.customCommands = customCommands;
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 		try {
-			this.address = InetAddress.getLocalHost();
+			this.address = InetAddress.getByName(DEFAULT_ADDRESS);
 		} catch (UnknownHostException e) {
 			throw new Py4JNetworkException(e);
 		}
@@ -250,7 +252,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Runna
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 		this.address = address;
 		this.pythonAddress = pythonAddress;
-		this.cbClient = new CallbackClient(pythonPort);
+		this.cbClient = new CallbackClient(pythonPort, pythonAddress);
 		this.gateway = new Gateway(entryPoint, cbClient);
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 	}
@@ -258,7 +260,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Runna
 	/**
 	 * <p>
 	 * Creates a GatewayServer instance with default port (25333), default
-	 * address (localhost), and default timeout value (no timeout).
+	 * address (127.0.0.1), and default timeout value (no timeout).
 	 * </p>
 	 * 
 	 * @param entryPoint

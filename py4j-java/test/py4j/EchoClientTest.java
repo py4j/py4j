@@ -44,7 +44,7 @@ public class EchoClientTest {
 		try {
 			Thread.sleep(250);
 			EchoServer.main(null);
-			Socket testSocket = new Socket("localhost",EchoServer.TEST_PORT);
+			Socket testSocket = new Socket(GatewayServer.DEFAULT_ADDRESS, EchoServer.TEST_PORT);
 			BufferedWriter testWriter = new BufferedWriter(new OutputStreamWriter(testSocket.getOutputStream()));
 			testWriter.write("yi7\n");
 			testWriter.flush();
