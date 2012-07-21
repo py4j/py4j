@@ -227,7 +227,11 @@ public class TypeUtil {
 
 		if (isLong(parent) && (!isFloat(child) && !isDouble(child))) {
 			cost = getCost(parent, child);
-			converters.add(TypeConverter.NO_CONVERTER);
+			if (isLong(child)) {
+				converters.add(TypeConverter.NO_CONVERTER);
+			} else {
+				converters.add(TypeConverter.LONG_CONVERTER);
+			}
 		} else if (isInteger(parent)
 				&& (isInteger(child) || isShort(child) || isByte(child))) {
 			cost = getCost(parent, child);
@@ -337,7 +341,8 @@ public class TypeUtil {
 		return clazz;
 	}
 
-	public static Class<?> getClass(String simpleName, JVMView view) throws ClassNotFoundException {
+	public static Class<?> getClass(String simpleName, JVMView view)
+			throws ClassNotFoundException {
 		Class<?> clazz = null;
 
 		try {
@@ -345,7 +350,7 @@ public class TypeUtil {
 			clazz = Class.forName(simpleName);
 		} catch (Exception e) {
 			// Then try the single import
-			Map<String,String> singleImportsMap = view.getSingleImportsMap();
+			Map<String, String> singleImportsMap = view.getSingleImportsMap();
 			String newFQN = singleImportsMap.get(simpleName);
 			if (newFQN != null) {
 				clazz = Class.forName(newFQN);
@@ -355,13 +360,13 @@ public class TypeUtil {
 					try {
 						clazz = Class.forName(starImport + "." + simpleName);
 						break;
-					} catch(Exception e2) {
+					} catch (Exception e2) {
 						// Ignore
 					}
 				}
 			}
 		}
-		
+
 		if (clazz == null) {
 			throw new ClassNotFoundException(simpleName + " not found.");
 		}

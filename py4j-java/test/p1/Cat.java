@@ -118,6 +118,10 @@ public class Cat extends Animal {
 		return 10;
 	}
 	
+	public int meow14(Long p1, int p2, short p3, byte p4, double p5, Float p6, boolean p7, String p8, char p9) {
+		return 10;
+	}
+	
 	public static void meow15() {
 		
 	}
