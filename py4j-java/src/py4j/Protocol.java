@@ -33,6 +33,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
 
 import py4j.reflection.PythonProxyHandler;
 
@@ -89,6 +90,7 @@ public class Protocol {
 	public final static char LONG_TYPE = 'L';
 	public final static char BOOLEAN_TYPE = 'b';
 	public final static char DOUBLE_TYPE = 'd';
+	public final static char DECIMAL_TYPE = 'D';
 	public final static char STRING_TYPE = 's';
 	public final static char REFERENCE_TYPE = 'r';
 	public final static char LIST_TYPE = 'l';
@@ -164,6 +166,18 @@ public class Protocol {
 	 */
 	public final static int getInteger(String commandPart) {
 		return Integer.parseInt(commandPart.substring(1, commandPart.length()));
+	}
+	
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return The decimal value corresponding to this command part.
+	 */
+	public final static BigDecimal getDecimal(String commandPart) {
+		return new BigDecimal(commandPart.substring(1, commandPart.length()));
 	}
 
 	/**
@@ -256,6 +270,8 @@ public class Protocol {
 				return getReference(commandPart, gateway);
 			case STRING_TYPE:
 				return getString(commandPart);
+			case DECIMAL_TYPE:
+				return getDecimal(commandPart);
 			case PYTHON_PROXY_TYPE:
 				return getPythonProxy(commandPart, gateway);
 			default:
@@ -463,6 +479,19 @@ public class Protocol {
 	public final static boolean isDouble(String commandPart) {
 		return commandPart.charAt(0) == DOUBLE_TYPE;
 	}
+	
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is a decimal
+	 */
+	public final static boolean isDecimal(String commandPart) {
+		return commandPart.charAt(0) == DECIMAL_TYPE;
+	}
+	
 
 	public final static boolean isEmpty(String commandPart) {
 		return commandPart == null || commandPart.trim().length() == 0;

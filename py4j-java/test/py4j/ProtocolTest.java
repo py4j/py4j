@@ -37,6 +37,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.math.BigDecimal;
+
 import org.junit.Test;
 
 public class ProtocolTest {
@@ -272,6 +274,8 @@ public class ProtocolTest {
 		assertEquals(1.234,(Double)Protocol.getObject("d1.234",null),0.001);
 		assertEquals(obj1,Protocol.getObject("ro123",gateway));
 		assertEquals("Hello\nWorld\t", Protocol.getObject("sHello\\nWorld\t",null));
+		assertEquals(123l, Protocol.getObject("L123", null));
+		assertEquals(new BigDecimal("-14.456"), Protocol.getObject("D-14.456", null));
 		assertNull(Protocol.getObject("n",null));
 		try {
 			Protocol.getObject(null,null);
@@ -317,6 +321,7 @@ public class ProtocolTest {
 		ReturnObject rObject14 = ReturnObject.getSetReturnObject("o125", 3);
 		ReturnObject rObject15 = ReturnObject.getArrayReturnObject("o126", 3);
 		ReturnObject rObject16 = ReturnObject.getIteratorReturnObject("o127");
+		ReturnObject rObject17 = ReturnObject.getDecimalReturnObject(new BigDecimal("-14.532"));
 		
 		assertEquals("x\n", Protocol.getOutputCommand(rObject1));
 		assertEquals("yi2\n", Protocol.getOutputCommand(rObject2));
@@ -334,6 +339,7 @@ public class ProtocolTest {
 		assertEquals("yho125\n", Protocol.getOutputCommand(rObject14));
 		assertEquals("yto126\n", Protocol.getOutputCommand(rObject15));
 		assertEquals("ygo127\n", Protocol.getOutputCommand(rObject16));
+		assertEquals("yD-14.532\n", Protocol.getOutputCommand(rObject17));
 	}
 
 	

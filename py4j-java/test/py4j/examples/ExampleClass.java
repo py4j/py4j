@@ -29,6 +29,8 @@
 
 package py4j.examples;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -140,5 +142,22 @@ public class ExampleClass {
 	
 	public Long method9(Long l) {
 		return l + 1;
+	}
+	
+	public BigDecimal method10(int i, int j) {
+		BigDecimal bd = new BigDecimal(new BigInteger(String.valueOf(i)), j);
+		return bd;
+	}
+	
+	public BigDecimal method10(BigDecimal bd) {
+		return bd.add(new BigDecimal("1"));
+	}
+	
+	public BigInteger method10(int i) {
+		return new BigInteger(String.valueOf(i));
+	}
+	
+	public BigInteger method11(BigInteger bi) {
+		return bi.add(new BigInteger("1"));
 	}
 }

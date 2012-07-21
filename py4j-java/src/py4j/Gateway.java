@@ -30,6 +30,8 @@
 package py4j;
 
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -158,6 +160,8 @@ public class Gateway {
 				returnObject = ReturnObject.getPrimitiveReturnObject(object);
 			} else if (object == ReflectionEngine.RETURN_VOID) {
 				returnObject = ReturnObject.getVoidReturnObject();
+			} else if (isDecimalObject(object)) {
+				returnObject = ReturnObject.getDecimalReturnObject(object);
 			} else if (isList(object)) {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getListReturnObject(objectId,
@@ -280,8 +284,13 @@ public class Gateway {
 
 	protected boolean isPrimitiveObject(Object object) {
 		return object instanceof Boolean || object instanceof String
-				|| object instanceof Number || object instanceof Character
+				|| (object instanceof Number && !(object instanceof BigDecimal || object instanceof BigInteger))
+				|| object instanceof Character
 				|| object instanceof byte[];
+	}
+	
+	protected boolean isDecimalObject(Object object) {
+		return object instanceof BigDecimal;
 	}
 
 	protected boolean isSet(Object object) {

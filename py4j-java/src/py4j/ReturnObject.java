@@ -29,6 +29,8 @@
 
 package py4j;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * A ReturnObject wraps a value returned by a method. If the value is a
@@ -96,6 +98,14 @@ public class ReturnObject {
 		builder.append(name);
 		rObject.commandPart = builder.toString();
 		return rObject;
+	}
+	
+	public static ReturnObject getDecimalReturnObject(Object object) {
+		BigDecimal decimal = (BigDecimal) object;
+		ReturnObject rObject = new ReturnObject();
+		rObject.isDecimal = true;
+		rObject.commandPart = Protocol.DECIMAL_TYPE + decimal.toPlainString();
+		return rObject; 
 	}
 
 	public static ReturnObject getListReturnObject(String name, int size) {
@@ -191,6 +201,8 @@ public class ReturnObject {
 	private boolean isIterator;
 
 	private boolean isSet;
+	
+	private boolean isDecimal;
 
 	private int size;
 
@@ -221,6 +233,10 @@ public class ReturnObject {
 
 	public boolean isError() {
 		return isError;
+	}
+	
+	public boolean isDecimal() {
+		return isDecimal;
 	}
 
 	public boolean isList() {
