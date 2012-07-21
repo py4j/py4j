@@ -51,7 +51,7 @@ public class JVMViewCommandTest {
 	private JVMViewCommand command;
 	private BufferedWriter writer;
 	private StringWriter sWriter;
-	
+
 	@Before
 	public void setUp() {
 		gateway = new Gateway(new ExampleEntryPoint());
@@ -60,81 +60,101 @@ public class JVMViewCommandTest {
 		command.init(gateway);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
-		
+
 	}
 
 	@After
 	public void tearDown() {
 		gateway.shutdown();
 	}
-	
+
 	@Test
 	public void testSubCommands() {
-		String inputCommand1 = JVMViewCommand.CREATE_VIEW_SUB_COMMAND_NAME + "\n" + "custom" + "\ne\n";
-		String inputCommand2 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.util.*" + "\ne\n";
-		String inputCommand3 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.io.File" + "\ne\n";
-		String inputCommand4 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.io.File" + "\ne\n";
-		String inputCommand5 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.lang.*" + "\ne\n";
-		String inputCommand6 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME + "\nrj\n" + "java.util.*" + "\ne\n";
+		String inputCommand1 = JVMViewCommand.CREATE_VIEW_SUB_COMMAND_NAME
+				+ "\n" + "custom" + "\ne\n";
+		String inputCommand2 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME
+				+ "\nro0\n" + "java.util.*" + "\ne\n";
+		String inputCommand3 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME
+				+ "\nro0\n" + "java.io.File" + "\ne\n";
+		String inputCommand4 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME
+				+ "\nro0\n" + "java.io.File" + "\ne\n";
+		String inputCommand5 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME
+				+ "\nro0\n" + "java.lang.*" + "\ne\n";
+		String inputCommand6 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME
+				+ "\nrj\n" + "java.util.*" + "\ne\n";
 		try {
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand1)), writer);
 			assertEquals("yro0\n", sWriter.toString());
-			JVMView view = (JVMView)gateway.getObject("o0");
-			
+			JVMView view = (JVMView) gateway.getObject("o0");
+
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand2)), writer);
 			assertEquals("yro0\nyv\n", sWriter.toString());
-			assertEquals(2,view.getStarImports().size()); // 1 for java.lang, 1 for java.util
+			assertEquals(2, view.getStarImports().size()); // 1 for java.lang, 1
+															// for java.util
 			assertTrue(view.getStarImports().contains("java.util"));
-			
+
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand3)), writer);
 			assertEquals("yro0\nyv\nyv\n", sWriter.toString());
 			assertTrue(view.getSingleImportsMap().containsKey("File"));
-			assertEquals(1,view.getSingleImportsMap().size()); // 1 for java.io.File
-			
+			assertEquals(1, view.getSingleImportsMap().size()); // 1 for
+																// java.io.File
+
 			// Duplicate
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand2)), writer);
 			assertEquals("yro0\nyv\nyv\nyv\n", sWriter.toString());
-			assertEquals(2,view.getStarImports().size());
-			
+			assertEquals(2, view.getStarImports().size());
+
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand3)), writer);
 			assertEquals("yro0\nyv\nyv\nyv\nyv\n", sWriter.toString());
 			assertTrue(view.getSingleImportsMap().containsKey("File"));
-			assertEquals(1,view.getSingleImportsMap().size()); // 1 for java.io.File
-			
+			assertEquals(1, view.getSingleImportsMap().size()); // 1 for
+																// java.io.File
+
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand4)), writer);
 			assertEquals("yro0\nyv\nyv\nyv\nyv\nybtrue\n", sWriter.toString());
 			assertFalse(view.getSingleImportsMap().containsKey("File"));
-			assertEquals(0,view.getSingleImportsMap().size()); // 1 for java.io.File
-			
+			assertEquals(0, view.getSingleImportsMap().size()); // 1 for
+																// java.io.File
+
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand4)), writer);
-			assertEquals("yro0\nyv\nyv\nyv\nyv\nybtrue\nybfalse\n", sWriter.toString());
+			assertEquals("yro0\nyv\nyv\nyv\nyv\nybtrue\nybfalse\n",
+					sWriter.toString());
 			assertFalse(view.getSingleImportsMap().containsKey("File"));
-			assertEquals(0,view.getSingleImportsMap().size()); // 1 for java.io.File
-			
+			assertEquals(0, view.getSingleImportsMap().size()); // 1 for
+																// java.io.File
+
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand5)), writer);
-			assertEquals("yro0\nyv\nyv\nyv\nyv\nybtrue\nybfalse\nybtrue\n", sWriter.toString());
+			assertEquals("yro0\nyv\nyv\nyv\nyv\nybtrue\nybfalse\nybtrue\n",
+					sWriter.toString());
 			assertFalse(view.getStarImports().contains("java.lang.*"));
-			assertEquals(1,view.getStarImports().size()); // 1 for java.io.File
-			
+			assertEquals(1, view.getStarImports().size()); // 1 for java.io.File
+
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand5)), writer);
-			assertEquals("yro0\nyv\nyv\nyv\nyv\nybtrue\nybfalse\nybtrue\nybfalse\n", sWriter.toString());
+			assertEquals(
+					"yro0\nyv\nyv\nyv\nyv\nybtrue\nybfalse\nybtrue\nybfalse\n",
+					sWriter.toString());
 			assertFalse(view.getStarImports().contains("java.lang.*"));
-			assertEquals(1,view.getStarImports().size()); // 1 for java.io.File
-			
+			assertEquals(1, view.getStarImports().size()); // 1 for java.io.File
+
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand6)), writer);
-			assertEquals("yro0\nyv\nyv\nyv\nyv\nybtrue\nybfalse\nybtrue\nybfalse\nyv\n", sWriter.toString());
-			assertFalse(gateway.getDefaultJVMView().getStarImports().contains("java.util.*"));
-			assertEquals(2,gateway.getDefaultJVMView().getStarImports().size()); // 1 for java.io.File
+			assertEquals(
+					"yro0\nyv\nyv\nyv\nyv\nybtrue\nybfalse\nybtrue\nybfalse\nyv\n",
+					sWriter.toString());
+			assertFalse(gateway.getDefaultJVMView().getStarImports()
+					.contains("java.util.*"));
+			assertEquals(2, gateway.getDefaultJVMView().getStarImports().size()); // 1
+																					// for
+																					// java.io.File
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

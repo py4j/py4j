@@ -32,8 +32,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import py4j.reflection.TypeUtil;
-
 public class TypeUtilTest {
 
 	@Test
@@ -56,49 +54,49 @@ public class TypeUtilTest {
 }
 
 class ATest {
-	
+
 }
 
 class BTest extends ATest {
-	
+
 }
 
 class CTest extends BTest {
-	
+
 }
 
 class DTest extends CTest {
-	
+
 }
 
 interface I0Test {
-	
+
 }
 
 interface I1Test extends I0Test {
-	
+
 }
 
 interface I2Test extends I1Test {
-	
+
 }
 
 interface J0Test {
-	
+
 }
 
 class VTest implements I0Test, J0Test {
-	
+
 }
 
 class WTest extends VTest implements I1Test {
-	
+
 }
 
 class XTest extends VTest implements I0Test {
-	
+
 }
 
 class YTest extends XTest implements I2Test {
-	
+
 }

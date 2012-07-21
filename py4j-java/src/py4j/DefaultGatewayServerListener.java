@@ -43,23 +43,7 @@ package py4j;
 public class DefaultGatewayServerListener implements GatewayServerListener {
 
 	@Override
-	public void serverStarted() {
-	}
-
-	@Override
-	public void serverStopped() {
-	}
-
-	@Override
-	public void serverError(Exception e) {
-	}
-
-	@Override
-	public void serverPreShutdown() {
-	}
-
-	@Override
-	public void serverPostShutdown() {
+	public void connectionError(Exception e) {
 	}
 
 	@Override
@@ -71,7 +55,23 @@ public class DefaultGatewayServerListener implements GatewayServerListener {
 	}
 
 	@Override
-	public void connectionError(Exception e) {
+	public void serverError(Exception e) {
+	}
+
+	@Override
+	public void serverPostShutdown() {
+	}
+
+	@Override
+	public void serverPreShutdown() {
+	}
+
+	@Override
+	public void serverStarted() {
+	}
+
+	@Override
+	public void serverStopped() {
 	}
 
 }

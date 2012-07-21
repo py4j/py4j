@@ -51,12 +51,12 @@ public class Py4JNetworkException extends Py4JException {
 		super(message);
 	}
 
-	public Py4JNetworkException(Throwable cause) {
-		super(cause);
-	}
-
 	public Py4JNetworkException(String message, Throwable cause) {
 		super(message, cause);
+	}
+
+	public Py4JNetworkException(Throwable cause) {
+		super(cause);
 	}
 
 }

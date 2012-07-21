@@ -102,8 +102,24 @@ public class GatewayConnection implements Runnable {
 		baseCommands.add(ExceptionCommand.class);
 	}
 
+	/**
+	 * 
+	 * @return The list of base commands that are provided by default. Can be
+	 *         hidden by custom commands with the same command id by passing a
+	 *         list of custom commands to the {@link py4j.GatewayServer
+	 *         GatewayServer}.
+	 */
+	public static List<Class<? extends Command>> getBaseCommands() {
+		return baseCommands;
+	}
+
+	public GatewayConnection(Gateway gateway, Socket socket) throws IOException {
+		this(gateway, socket, null, new ArrayList<GatewayServerListener>());
+	}
+
 	public GatewayConnection(Gateway gateway, Socket socket,
-			List<Class<? extends Command>> customCommands, List<GatewayServerListener> listeners) throws IOException {
+			List<Class<? extends Command>> customCommands,
+			List<GatewayServerListener> listeners) throws IOException {
 		super();
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(
@@ -120,19 +136,24 @@ public class GatewayConnection implements Runnable {
 		t.start();
 	}
 
-	public GatewayConnection(Gateway gateway, Socket socket) throws IOException {
-		this(gateway, socket, null, new ArrayList<GatewayServerListener>());
+	protected void fireConnectionStopped() {
+		logger.info("Connection Stopped");
+
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.connectionStopped(this);
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
 	}
 
 	/**
 	 * 
-	 * @return The list of base commands that are provided by default. Can be
-	 *         hidden by custom commands with the same command id by passing a
-	 *         list of custom commands to the {@link py4j.GatewayServer
-	 *         GatewayServer}.
+	 * @return The socket used by this gateway connection.
 	 */
-	public static List<Class<? extends Command>> getBaseCommands() {
-		return baseCommands;
+	public Socket getSocket() {
+		return socket;
 	}
 
 	/**
@@ -157,6 +178,17 @@ public class GatewayConnection implements Runnable {
 				logger.log(Level.SEVERE,
 						"Could not initialize command " + name, e);
 			}
+		}
+	}
+
+	private void quietSendError(BufferedWriter writer, Throwable exception) {
+		try {
+			String returnCommand = Protocol.getOutputErrorCommand(exception);
+			logger.fine("Trying to return error: " + returnCommand);
+			writer.write(returnCommand);
+			writer.flush();
+		} catch (Exception e) {
+
 		}
 	}
 
@@ -188,37 +220,6 @@ public class GatewayConnection implements Runnable {
 			NetworkUtil.quietlyClose(socket);
 			fireConnectionStopped();
 		}
-	}
-	
-	protected void fireConnectionStopped() {
-		logger.info("Connection Stopped");
-		
-		for (GatewayServerListener listener : listeners) {
-			try {
-				listener.connectionStopped(this);
-			} catch (Exception e) {
-				logger.log(Level.SEVERE, "A listener crashed.", e);
-			}
-		}
-	}
-
-	private void quietSendError(BufferedWriter writer, Throwable exception) {
-		try {
-			String returnCommand = Protocol.getOutputErrorCommand(exception);
-			logger.fine("Trying to return error: " + returnCommand);
-			writer.write(returnCommand);
-			writer.flush();
-		} catch (Exception e) {
-
-		}
-	}
-	
-	/**
-	 * 
-	 * @return The socket used by this gateway connection.
-	 */
-	public Socket getSocket() {
-		return socket;
 	}
 
 }

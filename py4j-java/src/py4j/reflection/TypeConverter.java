@@ -95,7 +95,7 @@ public class TypeConverter {
 
 		return newObject;
 	}
-	
+
 	public int getConversion() {
 		return conversion;
 	}

@@ -69,8 +69,6 @@ public class CallCommand extends AbstractCommand {
 		this.commandName = CALL_COMMAND_NAME;
 	}
 
-
-
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {

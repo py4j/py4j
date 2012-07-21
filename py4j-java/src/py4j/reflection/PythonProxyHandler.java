@@ -75,6 +75,19 @@ public class PythonProxyHandler implements InvocationHandler {
 	}
 
 	@Override
+	protected void finalize() throws Throwable {
+		try {
+			logger.fine("Finalizing python proxy id " + this.id);
+			cbClient.sendCommand(finalizeCommand);
+		} catch (Exception e) {
+			logger.warning("Python Proxy ID could not send a finalize message: "
+					+ this.id);
+		} finally {
+			super.finalize();
+		}
+	}
+
+	@Override
 	public Object invoke(Object proxy, Method method, Object[] args)
 			throws Throwable {
 		logger.fine("Method " + method.getName() + " called on Python object "
@@ -98,20 +111,6 @@ public class PythonProxyHandler implements InvocationHandler {
 		String returnCommand = cbClient.sendCommand(sBuilder.toString());
 
 		return Protocol.getReturnValue(returnCommand, gateway);
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		try {
-			logger.fine("Finalizing python proxy id " + this.id);
-			cbClient.sendCommand(finalizeCommand);
-		} catch (Exception e) {
-			logger
-					.warning("Python Proxy ID could not send a finalize message: "
-							+ this.id);
-		} finally {
-			super.finalize();
-		}
 	}
 
 }

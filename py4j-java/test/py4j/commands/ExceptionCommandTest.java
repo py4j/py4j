@@ -40,16 +40,17 @@ public class ExceptionCommandTest {
 		String id = null;
 		try {
 			throw new RuntimeException("Hello World");
-		} catch(Exception e) {
+		} catch (Exception e) {
 			id = "r" + gateway.putNewObject(e);
 		}
-		
+
 		String inputCommand = id + "\ne\n";
 		try {
 			command.execute("p", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			System.out.println("DEBUG!!!" + sWriter.toString());
-			assertTrue(sWriter.toString().startsWith("ysjava.lang.RuntimeException: Hello World\\n"));
+			assertTrue(sWriter.toString().startsWith(
+					"ysjava.lang.RuntimeException: Hello World\\n"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

@@ -57,14 +57,14 @@ public class ReflectionEngineTest {
 		assertNotNull(rEngine.getMethod(Cat.class, "meow"));
 		assertNotNull(rEngine.getMethod(Cat.class, "meow15"));
 	}
-	
+
 	@Test
 	public void testGetClass() {
-		assertNull(rEngine.getClass(Cat.class,"smallcat"));
-		assertNotNull(rEngine.getClass(Cat.class,"SmallCat"));
-		assertNull(rEngine.getClass(ReflectionEngineTest.class,"smallcat"));
+		assertNull(rEngine.getClass(Cat.class, "smallcat"));
+		assertNotNull(rEngine.getClass(Cat.class, "SmallCat"));
+		assertNull(rEngine.getClass(ReflectionEngineTest.class, "smallcat"));
 	}
-	
+
 	@Test
 	public void testGetField() {
 		Cat cat = new Cat();
@@ -91,26 +91,28 @@ public class ReflectionEngineTest {
 
 	@Test
 	public void testCreateArray() {
-		Object array1 = rEngine.createArray("int", new int[] {2});
-		int[] array1int = (int[])array1;
-		assertEquals(2,array1int.length);
-		
-		array1 = rEngine.createArray("java.lang.String", new int[] {3,4});
-		String[][] array1String = (String[][])array1;
+		Object array1 = rEngine.createArray("int", new int[] { 2 });
+		int[] array1int = (int[]) array1;
+		assertEquals(2, array1int.length);
+
+		array1 = rEngine.createArray("java.lang.String", new int[] { 3, 4 });
+		String[][] array1String = (String[][]) array1;
 		assertEquals(3, array1String.length);
 		assertEquals(4, array1String[0].length);
 	}
-	
+
 	@Test
 	public void testGetFieldValue() {
 		Cat cat = new Cat();
 
 		assertEquals(rEngine.getFieldValue(cat, rEngine.getField(cat, "age2")),
 				2);
-		assertEquals(rEngine.getFieldValue(cat, rEngine.getField(cat,
-				"CONSTANT")), "Salut!");
-		assertEquals(rEngine.getFieldValue(null, rEngine.getField(cat,
-				"CONSTANT")), "Salut!");
+		assertEquals(
+				rEngine.getFieldValue(cat, rEngine.getField(cat, "CONSTANT")),
+				"Salut!");
+		assertEquals(
+				rEngine.getFieldValue(null, rEngine.getField(cat, "CONSTANT")),
+				"Salut!");
 	}
 
 	@Test
@@ -122,45 +124,41 @@ public class ReflectionEngineTest {
 				new Class[] {});
 
 		// Test cache:
-		mInvoker = engine.getConstructor("p1.Cat",
-				new Object[] {});
+		mInvoker = engine.getConstructor("p1.Cat", new Object[] {});
 		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
 				new Class[] {});
 
 		// Test one only
 		mInvoker = engine.getConstructor("p1.Cat",
-				new Object[] {new Integer(2)});
+				new Object[] { new Integer(2) });
 		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] {int.class});
-		
+				new Class[] { int.class });
+
 		// Test cost computation
-		mInvoker = engine.getConstructor("p1.Cat",
-				new Object[] {new ArrayList<String>(), new String()});
+		mInvoker = engine.getConstructor("p1.Cat", new Object[] {
+				new ArrayList<String>(), new String() });
 		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] {Object.class, String.class});
-		
-		mInvoker = engine.getConstructor("p1.Cat",
-				new Object[] {"", new String()});
+				new Class[] { Object.class, String.class });
+
+		mInvoker = engine.getConstructor("p1.Cat", new Object[] { "",
+				new String() });
 		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] {String.class, String.class});
-		
-		mInvoker = engine.getConstructor("p1.Cat",
-				new Object[] {"a", 2});
+				new Class[] { String.class, String.class });
+
+		mInvoker = engine.getConstructor("p1.Cat", new Object[] { "a", 2 });
 		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] {char.class, int.class});
-		
-		mInvoker = engine.getConstructor("p1.Cat",
-				new Object[] {true, 2});
+				new Class[] { char.class, int.class });
+
+		mInvoker = engine.getConstructor("p1.Cat", new Object[] { true, 2 });
 		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] {boolean.class, short.class});
-		
+				new Class[] { boolean.class, short.class });
+
 		// Test invokation
-		mInvoker = engine.getConstructor("p1.Cat",
-				new Object[] {"a", 2});
-		Object obj = mInvoker.invoke(null, new Object[] {"a",2});
+		mInvoker = engine.getConstructor("p1.Cat", new Object[] { "a", 2 });
+		Object obj = mInvoker.invoke(null, new Object[] { "a", 2 });
 		assertTrue(obj instanceof Cat);
 	}
-	
+
 	@Test
 	public void testGetMethod() {
 		try {
@@ -182,10 +180,9 @@ public class ReflectionEngineTest {
 					new Object[] { new Object() });
 			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
 					new Class[] { Object.class });
-			
+
 			// Test no param
-			mInvoker = engine.getMethod(tEngine, "method1",
-					new Object[] {});
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {});
 			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
 					new Class[] {});
 
@@ -218,21 +215,22 @@ public class ReflectionEngineTest {
 					new String(), new ArrayList<String>() });
 			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
 					new Class[] { String.class, Object.class });
-			
+
 			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
 					new String(), new String() });
 			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
 					new Class[] { String.class, char.class });
-			
-			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
-					2, 2.2 });
+
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] { 2,
+					2.2 });
 			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
 					new Class[] { int.class, double.class });
-			
-			// Two methods are equal. Selected method will depend on how methods are given
+
+			// Two methods are equal. Selected method will depend on how methods
+			// are given
 			// during reflection.
-			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
-					"2", true });
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] { "2",
+					true });
 			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
 					new Class[] { Object.class, Boolean.class });
 		} catch (Exception e) {
@@ -260,9 +258,9 @@ class TestEngine {
 	public void method2(Object obj1) {
 
 	}
-	
+
 	public void method1() {
-		
+
 	}
 }
 

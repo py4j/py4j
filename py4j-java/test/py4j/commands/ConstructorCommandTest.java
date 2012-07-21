@@ -42,7 +42,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import py4j.Gateway;
-import py4j.commands.ConstructorCommand;
 import py4j.examples.ExampleEntryPoint;
 import py4j.examples.Stack;
 
@@ -68,7 +67,7 @@ public class ConstructorCommandTest {
 	public void tearDown() {
 		gateway.shutdown();
 	}
-	
+
 	@Test
 	public void testConstructor0Arg() {
 		String inputCommand = "py4j.examples.ExampleClass\ne\n";
@@ -81,7 +80,7 @@ public class ConstructorCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testConstructor1Arg() {
 		String inputCommand = "py4j.examples.ExampleClass\ni5\ne\n";
@@ -94,7 +93,7 @@ public class ConstructorCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testDefaultConstructor() {
 		String inputCommand = "py4j.examples.Stack\ne\n";
@@ -108,7 +107,7 @@ public class ConstructorCommandTest {
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testWrongConstructor() {
 		String inputCommand = "py4j.examples.Stack\ni5\ne\n";

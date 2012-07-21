@@ -132,6 +132,18 @@ public class Protocol {
 
 	/**
 	 * <p>
+	 * Transform the byte array into Base64 characters.
+	 * </p>
+	 * 
+	 * @param primitive
+	 * @return
+	 */
+	public static String encodeBytes(byte[] bytes) {
+		return Base64.encodeToString(bytes, false);
+	}
+
+	/**
+	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
 	 * 
@@ -141,6 +153,30 @@ public class Protocol {
 	public final static boolean getBoolean(String commandPart) {
 		return Boolean.parseBoolean(commandPart.substring(1,
 				commandPart.length()));
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return The byte array corresponding to this command part.
+	 */
+	public final static byte[] getBytes(String commandPart) {
+		return Base64.decode(commandPart.substring(1));
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return The decimal value corresponding to this command part.
+	 */
+	public final static BigDecimal getDecimal(String commandPart) {
+		return new BigDecimal(commandPart.substring(1, commandPart.length()));
 	}
 
 	/**
@@ -166,30 +202,6 @@ public class Protocol {
 	 */
 	public final static int getInteger(String commandPart) {
 		return Integer.parseInt(commandPart.substring(1, commandPart.length()));
-	}
-	
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return The decimal value corresponding to this command part.
-	 */
-	public final static BigDecimal getDecimal(String commandPart) {
-		return new BigDecimal(commandPart.substring(1, commandPart.length()));
-	}
-
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return The byte array corresponding to this command part.
-	 */
-	public final static byte[] getBytes(String commandPart) {
-		return Base64.decode(commandPart.substring(1));
 	}
 
 	/**
@@ -317,34 +329,6 @@ public class Protocol {
 		return builder.toString();
 	}
 
-	public final static Throwable getRootThrowable(Throwable throwable,
-			boolean skipInvocation) {
-		Throwable child = throwable;
-		if (!skipInvocation && child instanceof InvocationTargetException) {
-			child = throwable.getCause();
-			skipInvocation = true;
-		} else if (child instanceof Py4JException
-				|| child instanceof Py4JNetworkException) {
-			child = throwable.getCause();
-		} else {
-			return child;
-		}
-
-		if (child == null) {
-			return throwable;
-		} else {
-			return getRootThrowable(child, skipInvocation);
-		}
-	}
-
-	public final static String getThrowableAsString(Throwable throwable) {
-		Throwable root = getRootThrowable(throwable, false);
-		StringWriter stringWriter = new StringWriter();
-		PrintWriter printWriter = new PrintWriter(stringWriter);
-		root.printStackTrace(printWriter);
-		return stringWriter.toString();
-	}
-
 	public final static String getOutputVoidCommand() {
 		return VOID_COMMAND;
 	}
@@ -439,6 +423,26 @@ public class Protocol {
 		return returnValue;
 	}
 
+	public final static Throwable getRootThrowable(Throwable throwable,
+			boolean skipInvocation) {
+		Throwable child = throwable;
+		if (!skipInvocation && child instanceof InvocationTargetException) {
+			child = throwable.getCause();
+			skipInvocation = true;
+		} else if (child instanceof Py4JException
+				|| child instanceof Py4JNetworkException) {
+			child = throwable.getCause();
+		} else {
+			return child;
+		}
+
+		if (child == null) {
+			return throwable;
+		} else {
+			return getRootThrowable(child, skipInvocation);
+		}
+	}
+
 	/**
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
@@ -454,6 +458,14 @@ public class Protocol {
 					commandPart.length()));
 		}
 		return toReturn;
+	}
+
+	public final static String getThrowableAsString(Throwable throwable) {
+		Throwable root = getRootThrowable(throwable, false);
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(stringWriter);
+		root.printStackTrace(printWriter);
+		return stringWriter.toString();
 	}
 
 	/**
@@ -474,12 +486,12 @@ public class Protocol {
 	 * </p>
 	 * 
 	 * @param commandPart
-	 * @return True if the command part is a double
+	 * @return True if the command part is a byte array
 	 */
-	public final static boolean isDouble(String commandPart) {
-		return commandPart.charAt(0) == DOUBLE_TYPE;
+	public final static boolean isBytes(String commandPart) {
+		return commandPart.charAt(0) == BYTES_TYPE;
 	}
-	
+
 	/**
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
@@ -491,7 +503,18 @@ public class Protocol {
 	public final static boolean isDecimal(String commandPart) {
 		return commandPart.charAt(0) == DECIMAL_TYPE;
 	}
-	
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is a double
+	 */
+	public final static boolean isDouble(String commandPart) {
+		return commandPart.charAt(0) == DOUBLE_TYPE;
+	}
 
 	public final static boolean isEmpty(String commandPart) {
 		return commandPart == null || commandPart.trim().length() == 0;
@@ -532,7 +555,7 @@ public class Protocol {
 	public final static boolean isInteger(String commandPart) {
 		return commandPart.charAt(0) == INTEGER_TYPE;
 	}
-	
+
 	/**
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
@@ -543,18 +566,6 @@ public class Protocol {
 	 */
 	public final static boolean isLong(String commandPart) {
 		return commandPart.charAt(0) == LONG_TYPE;
-	}
-
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return True if the command part is a byte array
-	 */
-	public final static boolean isBytes(String commandPart) {
-		return commandPart.charAt(0) == BYTES_TYPE;
 	}
 
 	/**
@@ -603,17 +614,5 @@ public class Protocol {
 	 */
 	public final static boolean isString(String commandPart) {
 		return commandPart.charAt(0) == STRING_TYPE;
-	}
-
-	/**
-	 * <p>
-	 * Transform the byte array into Base64 characters.
-	 * </p>
-	 * 
-	 * @param primitive
-	 * @return
-	 */
-	public static String encodeBytes(byte[] bytes) {
-		return Base64.encodeToString(bytes, false);
 	}
 }

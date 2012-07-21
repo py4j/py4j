@@ -38,14 +38,16 @@ import java.net.Socket;
 import org.junit.Test;
 
 public class EchoClientTest {
-	
+
 	@Test
 	public void testConnection() {
 		try {
 			Thread.sleep(250);
 			EchoServer.main(null);
-			Socket testSocket = new Socket(GatewayServer.DEFAULT_ADDRESS, EchoServer.TEST_PORT);
-			BufferedWriter testWriter = new BufferedWriter(new OutputStreamWriter(testSocket.getOutputStream()));
+			Socket testSocket = new Socket(GatewayServer.DEFAULT_ADDRESS,
+					EchoServer.TEST_PORT);
+			BufferedWriter testWriter = new BufferedWriter(
+					new OutputStreamWriter(testSocket.getOutputStream()));
 			testWriter.write("yi7\n");
 			testWriter.flush();
 			testWriter.write("x\n");
@@ -60,11 +62,11 @@ public class EchoClientTest {
 			client.write("c\no1\nmethod1\ni1\nbtrue\ne\n");
 			assertEquals(client.getResponse(), "x\n");
 			client.close();
-		} catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		} finally {
-			
+
 		}
 	}
 }

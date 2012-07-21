@@ -35,39 +35,55 @@ package py4j;
  * </p>
  * 
  * @author Barthelemy Dagenais
- *
+ * 
  */
 public interface GatewayServerListener {
 
-	void serverStarted();
-	
+	void connectionError(Exception e);
+
+	void connectionStarted(GatewayConnection gatewayConnection);
+
+	void connectionStopped(GatewayConnection gatewayConnection);
+
 	/**
-	 * <p>This method may be called concurrently with serverPostShutdown().</p>
+	 * <p>
+	 * This method may be called concurrently with serverPostShutdown().
+	 * </p>
 	 * 
-	 * <p>Typically a one thread calls shutdown() and then, the thread running the GatewayServer breaks from the connection accept loop.</p>
-	 */
-	void serverStopped();
-	
-	/**
-	 * <p>This method may be called concurrently with serverPostShutdown().</p>
-	 * 
-	 * <p>Typically a one thread calls shutdown() and then, the thread running the GatewayServer breaks from the connection accept loop.</p>
+	 * <p>
+	 * Typically a one thread calls shutdown() and then, the thread running the
+	 * GatewayServer breaks from the connection accept loop.
+	 * </p>
 	 */
 	void serverError(Exception e);
-	
-	void serverPreShutdown();
-	
+
 	/**
-	 * <p>This method may be called concurrently with serverStopped() and serverError().</p>
+	 * <p>
+	 * This method may be called concurrently with serverStopped() and
+	 * serverError().
+	 * </p>
 	 * 
-	 * <p>Typically a one thread calls shutdown() and then, the thread running the GatewayServer breaks from the connection accept loop.</p>
+	 * <p>
+	 * Typically a one thread calls shutdown() and then, the thread running the
+	 * GatewayServer breaks from the connection accept loop.
+	 * </p>
 	 */
 	void serverPostShutdown();
-	
-	void connectionStarted(GatewayConnection gatewayConnection);
-	
-	void connectionStopped(GatewayConnection gatewayConnection);
-	
-	void connectionError(Exception e);
-	
+
+	void serverPreShutdown();
+
+	void serverStarted();
+
+	/**
+	 * <p>
+	 * This method may be called concurrently with serverPostShutdown().
+	 * </p>
+	 * 
+	 * <p>
+	 * Typically a one thread calls shutdown() and then, the thread running the
+	 * GatewayServer breaks from the connection accept loop.
+	 * </p>
+	 */
+	void serverStopped();
+
 }

@@ -1,20 +1,19 @@
 package py4j.examples;
 
-
 public class UTFExample {
-	
+
 	private Byte[] array = new Byte[] { 0, 1, 10, 127, -1, -128 };
 
 	public int strangeMéthod() {
 		return 2;
 	}
-	
+
 	public Byte[] getSurrogateBytes() {
-		return new Byte[] {(byte) 0xD8, (byte) 0xD9, (byte) 0xDF};
+		return new Byte[] { (byte) 0xD8, (byte) 0xD9, (byte) 0xDF };
 	}
-	
+
 	public byte[] getSurrogatebytes() {
-		return new byte[] {(byte) 0xD8, (byte) 0xD9, (byte) 0xDF};
+		return new byte[] { (byte) 0xD8, (byte) 0xD9, (byte) 0xDF };
 	}
 
 	public int getPositiveByteValue(byte b) {
@@ -50,7 +49,7 @@ public class UTFExample {
 	public byte[] getBytesValue() {
 		return new byte[] { 0, 1, 10, 127, -1, -128 };
 	}
-	
+
 	public Byte[] getBytesArray() {
 		return array;
 	}

@@ -79,58 +79,19 @@ public class TypeUtil {
 		primitiveClasses.put("char", char.class);
 	}
 
-	public static boolean isInteger(Class<?> clazz) {
-		return clazz.equals(Integer.class) || clazz.equals(int.class);
-	}
+	public static int computeCharacterConversion(Class<?> parent,
+			Class<?> child, List<TypeConverter> converters) {
+		int cost = -1;
 
-	public static boolean isLong(Class<?> clazz) {
-		return clazz.equals(Long.class) || clazz.equals(long.class);
-	}
-
-	public static boolean isDouble(Class<?> clazz) {
-		return clazz.equals(Double.class) || clazz.equals(double.class);
-	}
-
-	public static boolean isFloat(Class<?> clazz) {
-		return clazz.equals(Float.class) || clazz.equals(float.class);
-	}
-
-	public static boolean isShort(Class<?> clazz) {
-		return clazz.equals(Short.class) || clazz.equals(short.class);
-	}
-
-	public static boolean isByte(Class<?> clazz) {
-		return clazz.equals(Byte.class) || clazz.equals(byte.class);
-	}
-
-	public static boolean isNumeric(Class<?> clazz) {
-		return primitiveTypes.contains(clazz.getName());
-	}
-
-	public static boolean isCharacter(Class<?> clazz) {
-		return clazz.equals(Character.class) || clazz.equals(char.class);
-	}
-
-	public static boolean isBoolean(Class<?> clazz) {
-		return clazz.equals(Boolean.class) || clazz.equals(boolean.class);
-	}
-
-	public static int getPoint(Class<?> clazz) {
-		int point = -1;
-		if (isByte(clazz)) {
-			point = 0;
-		} else if (isShort(clazz)) {
-			point = 1;
-		} else if (isInteger(clazz)) {
-			point = 2;
-		} else if (isLong(clazz)) {
-			point = 3;
+		if (isCharacter(child)) {
+			cost = 0;
+			converters.add(TypeConverter.NO_CONVERTER);
+		} else if (CharSequence.class.isAssignableFrom(child)) {
+			cost = 1;
+			converters.add(TypeConverter.CHAR_CONVERTER);
 		}
-		return point;
-	}
 
-	public static int getCost(Class<?> parent, Class<?> child) {
-		return getPoint(parent) - getPoint(child);
+		return cost;
 	}
 
 	public static int computeDistance(Class<?> parent, Class<?> child) {
@@ -155,22 +116,6 @@ public class TypeUtil {
 		}
 
 		return distance;
-	}
-
-	private static int computeSuperDistance(Class<?> parent, Class<?> child) {
-		Class<?> superChild = child.getSuperclass();
-		if (superChild == null) {
-			return -1;
-		} else if (superChild.equals(parent)) {
-			return 1;
-		} else {
-			int distance = computeSuperDistance(parent, superChild);
-			if (distance != -1) {
-				return distance + 1;
-			} else {
-				return distance;
-			}
-		}
 	}
 
 	private static int computeInterfaceDistance(Class<?> parent,
@@ -202,17 +147,6 @@ public class TypeUtil {
 		}
 
 		return distance;
-	}
-
-	private static void getNextInterfaces(Class<?> clazz,
-			List<Class<?>> nextInterfaces, Set<String> visitedInterfaces) {
-		if (clazz != null) {
-			for (Class<?> nextClazz : clazz.getInterfaces()) {
-				if (!visitedInterfaces.contains(nextClazz.getName())) {
-					nextInterfaces.add(nextClazz);
-				}
-			}
-		}
 	}
 
 	public static int computeNumericConversion(Class<?> parent, Class<?> child,
@@ -273,51 +207,20 @@ public class TypeUtil {
 		return cost;
 	}
 
-	public static int computeCharacterConversion(Class<?> parent,
-			Class<?> child, List<TypeConverter> converters) {
-		int cost = -1;
-
-		if (isCharacter(child)) {
-			cost = 0;
-			converters.add(TypeConverter.NO_CONVERTER);
-		} else if (CharSequence.class.isAssignableFrom(child)) {
-			cost = 1;
-			converters.add(TypeConverter.CHAR_CONVERTER);
-		}
-
-		return cost;
-	}
-
-	public static String getName(String name, boolean shortName) {
-		if (!shortName) {
-			return name;
+	private static int computeSuperDistance(Class<?> parent, Class<?> child) {
+		Class<?> superChild = child.getSuperclass();
+		if (superChild == null) {
+			return -1;
+		} else if (superChild.equals(parent)) {
+			return 1;
 		} else {
-			int index = name.lastIndexOf(".");
-			if (index >= 0 && index < name.length() + 1) {
-				return name.substring(index + 1);
+			int distance = computeSuperDistance(parent, superChild);
+			if (distance != -1) {
+				return distance + 1;
 			} else {
-				return name;
+				return distance;
 			}
 		}
-	}
-
-	public static String getPackage(String name) {
-		int index = name.lastIndexOf(".");
-		if (index < 0) {
-			return name;
-		} else {
-			return name.substring(0, index);
-		}
-	}
-
-	public static String[] getNames(Class<?>[] classes) {
-		String[] names = new String[classes.length];
-
-		for (int i = 0; i < classes.length; i++) {
-			names[i] = classes[i].getCanonicalName();
-		}
-
-		return names;
 	}
 
 	public static Class<?> forName(String fqn) throws ClassNotFoundException {
@@ -372,6 +275,103 @@ public class TypeUtil {
 		}
 
 		return clazz;
+	}
+
+	public static int getCost(Class<?> parent, Class<?> child) {
+		return getPoint(parent) - getPoint(child);
+	}
+
+	public static String getName(String name, boolean shortName) {
+		if (!shortName) {
+			return name;
+		} else {
+			int index = name.lastIndexOf(".");
+			if (index >= 0 && index < name.length() + 1) {
+				return name.substring(index + 1);
+			} else {
+				return name;
+			}
+		}
+	}
+
+	public static String[] getNames(Class<?>[] classes) {
+		String[] names = new String[classes.length];
+
+		for (int i = 0; i < classes.length; i++) {
+			names[i] = classes[i].getCanonicalName();
+		}
+
+		return names;
+	}
+
+	private static void getNextInterfaces(Class<?> clazz,
+			List<Class<?>> nextInterfaces, Set<String> visitedInterfaces) {
+		if (clazz != null) {
+			for (Class<?> nextClazz : clazz.getInterfaces()) {
+				if (!visitedInterfaces.contains(nextClazz.getName())) {
+					nextInterfaces.add(nextClazz);
+				}
+			}
+		}
+	}
+
+	public static String getPackage(String name) {
+		int index = name.lastIndexOf(".");
+		if (index < 0) {
+			return name;
+		} else {
+			return name.substring(0, index);
+		}
+	}
+
+	public static int getPoint(Class<?> clazz) {
+		int point = -1;
+		if (isByte(clazz)) {
+			point = 0;
+		} else if (isShort(clazz)) {
+			point = 1;
+		} else if (isInteger(clazz)) {
+			point = 2;
+		} else if (isLong(clazz)) {
+			point = 3;
+		}
+		return point;
+	}
+
+	public static boolean isBoolean(Class<?> clazz) {
+		return clazz.equals(Boolean.class) || clazz.equals(boolean.class);
+	}
+
+	public static boolean isByte(Class<?> clazz) {
+		return clazz.equals(Byte.class) || clazz.equals(byte.class);
+	}
+
+	public static boolean isCharacter(Class<?> clazz) {
+		return clazz.equals(Character.class) || clazz.equals(char.class);
+	}
+
+	public static boolean isDouble(Class<?> clazz) {
+		return clazz.equals(Double.class) || clazz.equals(double.class);
+	}
+
+	public static boolean isFloat(Class<?> clazz) {
+		return clazz.equals(Float.class) || clazz.equals(float.class);
+	}
+
+	public static boolean isInteger(Class<?> clazz) {
+		return clazz.equals(Integer.class) || clazz.equals(int.class);
+	}
+
+	public static boolean isLong(Class<?> clazz) {
+		return clazz.equals(Long.class) || clazz.equals(long.class);
+	}
+
+	public static boolean isNumeric(Class<?> clazz) {
+		return primitiveTypes.contains(clazz.getName());
+	}
+
+	public static boolean isShort(Class<?> clazz) {
+		return clazz.equals(Short.class) || clazz.equals(short.class);
 	}
 
 }

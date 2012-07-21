@@ -42,9 +42,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class EchoServer {
 
 	public static final int TEST_PORT = 25332;
-	
+
 	public static final int SERVER_PORT = 25333;
-	
+
 	private int testPort = TEST_PORT;
 
 	private int serverPort = SERVER_PORT;
@@ -78,7 +78,8 @@ public class EchoServer {
 					sSocket = new ServerSocket(testPort);
 					testSocket = sSocket.accept();
 					BufferedReader reader = new BufferedReader(
-							new InputStreamReader(testSocket.getInputStream(), Charset.forName("UTF-8")));
+							new InputStreamReader(testSocket.getInputStream(),
+									Charset.forName("UTF-8")));
 					while (true) {
 						System.out.println("Waiting for echo input.");
 						String command = reader.readLine();
@@ -100,7 +101,7 @@ public class EchoServer {
 
 		t.start();
 	}
-	
+
 	private void setupServer() {
 		Thread t = new Thread(new Runnable() {
 
@@ -112,8 +113,13 @@ public class EchoServer {
 					sSocket = new ServerSocket(serverPort);
 					clientSocket = sSocket.accept();
 					BufferedReader reader = new BufferedReader(
-							new InputStreamReader(clientSocket.getInputStream(), Charset.forName("UTF-8")));
-					BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), Charset.forName("UTF-8")));
+							new InputStreamReader(
+									clientSocket.getInputStream(),
+									Charset.forName("UTF-8")));
+					BufferedWriter writer = new BufferedWriter(
+							new OutputStreamWriter(
+									clientSocket.getOutputStream(),
+									Charset.forName("UTF-8")));
 					while (true) {
 						String command = readCommand(reader);
 						if (command == null) {
@@ -121,7 +127,7 @@ public class EchoServer {
 						}
 						String returnCommand = queue.poll();
 						System.out.println(returnCommand);
-						writer.write(returnCommand+"\n");
+						writer.write(returnCommand + "\n");
 						writer.flush();
 					}
 				} catch (Exception e) {
@@ -132,10 +138,11 @@ public class EchoServer {
 				}
 			}
 
-			private String readCommand(BufferedReader reader) throws IOException {
+			private String readCommand(BufferedReader reader)
+					throws IOException {
 				System.out.println("Reading commands");
 				StringBuilder commandBuilder = new StringBuilder();
-				
+
 				while (true) {
 					String temp = reader.readLine();
 					System.out.println("Received temp: " + temp);
@@ -149,20 +156,20 @@ public class EchoServer {
 						break;
 					}
 				}
-				
+
 				String command = commandBuilder.toString().trim();
 				if (command.length() == 0) {
 					command = null;
 				}
-				
+
 				return command;
 			}
 
 		});
 
-		t.start();		
+		t.start();
 	}
-	
+
 	public static void main(String[] args) {
 		EchoServer echoServer = new EchoServer();
 		echoServer.setupTestServer();
@@ -170,5 +177,4 @@ public class EchoServer {
 		System.out.println("EchoServer started...");
 	}
 
-	
 }

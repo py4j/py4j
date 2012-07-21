@@ -31,106 +31,109 @@ package p1;
 import p1.p2.Animal;
 
 public class Cat extends Animal {
-	
+
 	public int age2 = 2;
-	
+
 	public static final String CONSTANT = "Salut!";
-	
+
 	@SuppressWarnings("unused")
 	private String age3 = "";
-	
+
 	double age4 = 2.2;
-	
+
 	protected char age5 = 'a';
-	
+
 	public static StringBuffer myBuffer = new StringBuffer("Hello");
-	
+
 	public Cat() {
-		
+
 	}
-	
+
 	public Cat(int i) {
-		
+
 	}
-	
+
 	public Cat(String s1, String s2) {
-		
+
 	}
-	
+
 	public Cat(char c1, int i2) {
-		
+
 	}
-	
+
 	public Cat(boolean b1, short s1) {
-		
+
 	}
-	
+
 	public Cat(Object obj, String s2) {
-		
+
 	}
-	
+
 	public static void meowmeow(String s) {
 		System.out.println("meowmoewcat");
 	}
-	
+
 	public void meow(long s) {
 		System.out.println("meowlongcat");
 	}
-	
+
 	public void meow(boolean s) {
 		System.out.println("meowboolcat");
 	}
-	
+
 	public void meow(Object o) {
 		System.out.println("meowobjectcat");
 	}
-	
+
 	@SuppressWarnings("unused")
 	private void meow2(Cat cat) {
 		System.out.println("meowcatcat");
 	}
-	
+
 	protected void meow3(Cat cat) {
 		System.out.println("meowcatcat");
 	}
-	
+
 	void meow4(Cat cat) {
 		System.out.println("meowcatcat");
 	}
-	
+
 	public void meow5(String s1, String s2) {
 		System.out.println("Meowing: " + s1 + s2);
 	}
-	
+
 	public void meow10(float f) {
 		System.out.println("Meowing float " + f);
 	}
-		
+
 	public void meow11() {
 		System.out.println("Meowing");
 	}
-	
+
 	public int meow12() {
 		return 1;
 	}
-	
-	public int meow13(long p1, int p2, short p3, byte p4, double p5, Float p6, boolean p7, String p8, char p9) {
+
+	public int meow13(long p1, int p2, short p3, byte p4, double p5, Float p6,
+			boolean p7, String p8, char p9) {
 		return 10;
 	}
-	
-	public int meow14(Long p1, int p2, short p3, byte p4, double p5, Float p6, boolean p7, String p8, char p9) {
+
+	public int meow14(Long p1, int p2, short p3, byte p4, double p5, Float p6,
+			boolean p7, String p8, char p9) {
 		return 10;
 	}
-	
+
 	public static void meow15() {
-		
+
 	}
-	
+
 	public class SmallCat {
 		public int age = 2;
+
 		public void method1() {
-			
+
 		}
 	}
-	
+
 }

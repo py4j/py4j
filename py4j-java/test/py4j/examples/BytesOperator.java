@@ -29,6 +29,6 @@
 package py4j.examples;
 
 public interface BytesOperator {
-	
+
 	public byte[] returnBytes(byte[] bytes);
 }

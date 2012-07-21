@@ -115,80 +115,101 @@ public class MethodInvokerTest {
 			Method m = Cat.class.getMethod("meow13", long.class, int.class,
 					short.class, byte.class, double.class, Float.class,
 					boolean.class, String.class, char.class);
-			
+
 			Method m2 = Cat.class.getMethod("meow14", Long.class, int.class,
 					short.class, byte.class, double.class, Float.class,
 					boolean.class, String.class, char.class);
-		
-			MethodInvoker invoker = MethodInvoker.buildInvoker(m, new Class[] {long.class, int.class,
-					short.class, byte.class, double.class, float.class,
-					boolean.class, String.class, char.class});
+
+			MethodInvoker invoker = MethodInvoker.buildInvoker(m, new Class[] {
+					long.class, int.class, short.class, byte.class,
+					double.class, float.class, boolean.class, String.class,
+					char.class });
 			assertEquals(0, invoker.getCost());
 			assertNull(invoker.getConverters());
-			
+
 			// Distance greater than 0, but only long conversion required.
-			invoker = MethodInvoker.buildInvoker(m, new Class[] {int.class, byte.class,
-					short.class, byte.class, Float.class, float.class,
-					Boolean.class, String.class, Character.class});
+			invoker = MethodInvoker
+					.buildInvoker(m, new Class[] { int.class, byte.class,
+							short.class, byte.class, Float.class, float.class,
+							Boolean.class, String.class, Character.class });
 			assertEquals(4, invoker.getCost());
 			assertEquals(9, invoker.getConverters().length);
-			assertEquals(TypeConverter.NUM_TO_LONG, invoker.getConverters()[0].getConversion());
-			
+			assertEquals(TypeConverter.NUM_TO_LONG,
+					invoker.getConverters()[0].getConversion());
+
 			// Distance greater than 0, but only long conversion required.
-			invoker = MethodInvoker.buildInvoker(m2, new Class[] {int.class, byte.class,
-					short.class, byte.class, Float.class, float.class,
-					Boolean.class, String.class, Character.class});
+			invoker = MethodInvoker
+					.buildInvoker(m2, new Class[] { int.class, byte.class,
+							short.class, byte.class, Float.class, float.class,
+							Boolean.class, String.class, Character.class });
 			assertEquals(4, invoker.getCost());
 			assertEquals(9, invoker.getConverters().length);
-			assertEquals(TypeConverter.NUM_TO_LONG, invoker.getConverters()[0].getConversion());
-						
-						
+			assertEquals(TypeConverter.NUM_TO_LONG,
+					invoker.getConverters()[0].getConversion());
+
 			// Invalid.
-			invoker = MethodInvoker.buildInvoker(m, new Class[] {double.class, byte.class,
-					short.class, byte.class, Float.class, float.class,
-					Boolean.class, String.class, Character.class});
+			invoker = MethodInvoker
+					.buildInvoker(m, new Class[] { double.class, byte.class,
+							short.class, byte.class, Float.class, float.class,
+							Boolean.class, String.class, Character.class });
 			assertEquals(-1, invoker.getCost());
 			assertNull(invoker.getConverters());
-			
+
 			// Need char conversion
-			invoker = MethodInvoker.buildInvoker(m, new Class[] {long.class, int.class,
-					short.class, byte.class, double.class, float.class,
-					boolean.class, String.class, String.class});
+			invoker = MethodInvoker.buildInvoker(m, new Class[] { long.class,
+					int.class, short.class, byte.class, double.class,
+					float.class, boolean.class, String.class, String.class });
 			assertEquals(1, invoker.getCost());
 			assertEquals(9, invoker.getConverters().length);
-			assertEquals(10, invoker.invoke(cat, new Object[] {1l, 2, (short)3, (byte)4, 1.2, 1.2f, true, "a", "a"}));
-			
+			assertEquals(
+					10,
+					invoker.invoke(cat, new Object[] { 1l, 2, (short) 3,
+							(byte) 4, 1.2, 1.2f, true, "a", "a" }));
+
 			// Need short, byte conversion
-			invoker = MethodInvoker.buildInvoker(m, new Class[] {long.class, int.class,
-					Integer.class, int.class, double.class, float.class,
-					boolean.class, String.class, char.class});
+			invoker = MethodInvoker.buildInvoker(m, new Class[] { long.class,
+					int.class, Integer.class, int.class, double.class,
+					float.class, boolean.class, String.class, char.class });
 			assertEquals(3, invoker.getCost());
 			assertEquals(9, invoker.getConverters().length);
-			assertEquals(10, invoker.invoke(cat, new Object[] {1l, 2, 3, 4, 1.2, 1.2f, true, "a", 'a'}));
+			assertEquals(
+					10,
+					invoker.invoke(cat, new Object[] { 1l, 2, 3, 4, 1.2, 1.2f,
+							true, "a", 'a' }));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		}
 	}
-	
+
 	@Test
 	public void testBuildInvokerObject() {
 		try {
 			TestInvoker tInvoker = new TestInvoker();
-			Method m = TestInvoker.class.getMethod("m1", ATest.class, VTest.class, I0Test.class, J0Test.class);
-		
-			MethodInvoker invoker = MethodInvoker.buildInvoker(m, new Class[] {ATest.class, VTest.class, I0Test.class, J0Test.class});
+			Method m = TestInvoker.class.getMethod("m1", ATest.class,
+					VTest.class, I0Test.class, J0Test.class);
+
+			MethodInvoker invoker = MethodInvoker.buildInvoker(m, new Class[] {
+					ATest.class, VTest.class, I0Test.class, J0Test.class });
 			assertEquals(0, invoker.getCost());
 			assertNull(invoker.getConverters());
-			assertNull(invoker.invoke(tInvoker, new Object[] {new ATest(), new VTest(), new I0Test() {}, new J0Test() {}}));
-			
-			invoker = MethodInvoker.buildInvoker(m, new Class[] {BTest.class, WTest.class, I2Test.class, J0Test.class});
+			assertNull(invoker.invoke(tInvoker, new Object[] { new ATest(),
+					new VTest(), new I0Test() {
+					}, new J0Test() {
+					} }));
+
+			invoker = MethodInvoker.buildInvoker(m, new Class[] { BTest.class,
+					WTest.class, I2Test.class, J0Test.class });
 			assertEquals(400, invoker.getCost());
 			assertNull(invoker.getConverters());
-			assertNull(invoker.invoke(tInvoker, new Object[] {new BTest(), new WTest(), new I2Test() {}, new J0Test() {}}));
-			
+			assertNull(invoker.invoke(tInvoker, new Object[] { new BTest(),
+					new WTest(), new I2Test() {
+					}, new J0Test() {
+					} }));
+
 			m = TestInvoker.class.getMethod("m2", String.class, Object.class);
-			invoker = MethodInvoker.buildInvoker(m, new Class[] {String.class, String.class});
+			invoker = MethodInvoker.buildInvoker(m, new Class[] { String.class,
+					String.class });
 			assertEquals(100, invoker.getCost());
 			assertNull(invoker.getConverters());
 		} catch (Exception e) {
@@ -201,10 +222,10 @@ public class MethodInvokerTest {
 
 class TestInvoker {
 	public void m1(ATest a, VTest v, I0Test i0, J0Test j0) {
-		
+
 	}
-	
+
 	public void m2(String s1, Object o1) {
-		
+
 	}
 }

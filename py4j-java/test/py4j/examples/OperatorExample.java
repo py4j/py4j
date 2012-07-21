@@ -38,13 +38,13 @@ import py4j.GatewayServer;
 public class OperatorExample {
 
 	private final static int MAX = 1000;
-	
+
 	public byte[] callBytesOperator(BytesOperator op) {
-		byte[] input = {1,2,3,4,5};
-		
+		byte[] input = { 1, 2, 3, 4, 5 };
+
 		return op.returnBytes(input);
 	}
-	
+
 	public List<Integer> randomBinaryOperator(Operator op) {
 		Random random = new Random();
 		List<Integer> numbers = new ArrayList<Integer>();
@@ -53,17 +53,18 @@ public class OperatorExample {
 		numbers.add(op.doOperation(numbers.get(0), numbers.get(1)));
 		return numbers;
 	}
-	
+
 	public List<Integer> randomTernaryOperator(Operator op) {
 		Random random = new Random();
 		List<Integer> numbers = new ArrayList<Integer>();
 		numbers.add(random.nextInt(MAX));
 		numbers.add(random.nextInt(MAX));
 		numbers.add(random.nextInt(MAX));
-		numbers.add(op.doOperation(numbers.get(0), numbers.get(1), numbers.get(2)));
+		numbers.add(op.doOperation(numbers.get(0), numbers.get(1),
+				numbers.get(2)));
 		return numbers;
 	}
-	
+
 	public static void main(String[] args) {
 		GatewayServer server = new GatewayServer(new OperatorExample());
 		server.start();

@@ -72,10 +72,30 @@ public class JVMViewCommand extends AbstractCommand {
 		this.commandName = JVMVIEW_COMMAND_NAME;
 	}
 
-	@Override
-	public void init(Gateway gateway) {
-		super.init(gateway);
-		rEngine = gateway.getReflectionEngine();
+	private String createJVMView(BufferedReader reader) throws IOException {
+		String name = StringUtil.unescape(reader.readLine());
+		reader.readLine();
+
+		JVMView newView = new JVMView(name, null);
+		ReturnObject rObject = gateway.getReturnObject(newView);
+		newView.setId(rObject.getName());
+
+		return Protocol.getOutputCommand(rObject);
+	}
+
+	private String doImport(BufferedReader reader) throws IOException {
+		String jvmId = reader.readLine();
+		String importString = StringUtil.unescape(reader.readLine());
+		reader.readLine();
+
+		JVMView view = (JVMView) Protocol.getObject(jvmId, gateway);
+		if (importString.endsWith("*")) {
+			view.addStarImport(importString);
+		} else {
+			view.addSingleImport(importString);
+		}
+
+		return Protocol.getOutputVoidCommand();
 	}
 
 	@Override
@@ -97,7 +117,13 @@ public class JVMViewCommand extends AbstractCommand {
 		writer.write(returnCommand);
 		writer.flush();
 	}
-	
+
+	@Override
+	public void init(Gateway gateway) {
+		super.init(gateway);
+		rEngine = gateway.getReflectionEngine();
+	}
+
 	private String removeImport(BufferedReader reader) throws IOException {
 		String jvmId = reader.readLine();
 		String importString = StringUtil.unescape(reader.readLine());
@@ -112,37 +138,12 @@ public class JVMViewCommand extends AbstractCommand {
 			removed = view.removeSingleImport(importString);
 		}
 
-		return Protocol.getOutputCommand(ReturnObject.getPrimitiveReturnObject(new Boolean(removed)));
+		return Protocol.getOutputCommand(ReturnObject
+				.getPrimitiveReturnObject(new Boolean(removed)));
 	}
 
 	private String search(BufferedReader reader) {
 		return null;
-	}
-
-	private String doImport(BufferedReader reader) throws IOException {
-		String jvmId = reader.readLine();
-		String importString = StringUtil.unescape(reader.readLine());
-		reader.readLine();
-
-		JVMView view = (JVMView) Protocol.getObject(jvmId, gateway);
-		if (importString.endsWith("*")) {
-			view.addStarImport(importString);
-		} else {
-			view.addSingleImport(importString);
-		}
-
-		return Protocol.getOutputVoidCommand();
-	}
-
-	private String createJVMView(BufferedReader reader) throws IOException {
-		String name = StringUtil.unescape(reader.readLine());
-		reader.readLine();
-
-		JVMView newView = new JVMView(name, null);
-		ReturnObject rObject = gateway.getReturnObject(newView);
-		newView.setId(rObject.getName());
-
-		return Protocol.getOutputCommand(rObject);
 	}
 
 }
