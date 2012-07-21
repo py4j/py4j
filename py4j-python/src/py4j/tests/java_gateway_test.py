@@ -4,25 +4,25 @@ Created on Dec 10, 2009
 
 @author: barthelemy
 '''
-from __future__ import unicode_literals
-from decimal import Decimal
-from multiprocessing.process import Process
-from socket import AF_INET, SOCK_STREAM, socket
-from threading import Thread
-from traceback import print_exc
-import gc
-import subprocess
-import time
-import unittest
-import os
+from __future__ import unicode_literals, absolute_import
 
+from decimal import Decimal
+import gc
+from multiprocessing.process import Process
+import os
+from socket import AF_INET, SOCK_STREAM, socket
+import subprocess
+from threading import Thread
+import time
+from traceback import print_exc
+import unittest
+
+from py4j.compat import range, isbytearray, bytearray2, long
 from py4j.finalizer import ThreadSafeFinalizer
-from py4j.protocol import *
 from py4j.java_gateway import JavaGateway, JavaMember, get_field, get_method, \
      GatewayClient, set_field, java_import, JavaObject
+from py4j.protocol import *
 
-from py4j.compat import range, isbytearray, tobytestr
-import py4j.compat
 
 SERVER_PORT = 25333
 TEST_PORT = 25332
@@ -63,7 +63,7 @@ def safe_shutdown(instance):
     try:
         instance.gateway.shutdown()
     except Exception:
-        pass
+        print_exc()
 
 
 class TestConnection(object):
@@ -140,7 +140,7 @@ class ProtocolTest(unittest.TestCase):
             self.assertAlmostEqual(1.25, ex.method3())
             self.assertIsNone(ex.method2())
             self.assertTrue(ex.method4())
-            self.assertEqual(123l, ex.method8())
+            self.assertEqual(long(123), ex.method8())
             self.gateway.shutdown()
 
         except Exception as e:
@@ -272,7 +272,7 @@ class FieldTest(unittest.TestCase):
         self.gateway = JavaGateway(auto_field=True)
         ex = self.gateway.getNewExample()
         self.assertEqual(ex.field10, 10)
-        self.assertEqual(ex.field11, 11l)
+        self.assertEqual(ex.field11, long(11))
         sb = ex.field20
         sb.append('Hello')
         self.assertEqual('Hello', sb.toString())
@@ -389,11 +389,11 @@ class TypeConversionTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         self.assertEqual(1, ex.method7(1234))
         self.assertEqual(4, ex.method7(2147483648))
-        self.assertEqual(4, ex.method7(2147483648l))
-        self.assertEqual(4l, ex.method8(3))
+        self.assertEqual(4, ex.method7(long(2147483648)))
+        self.assertEqual(long(4), ex.method8(3))
         self.assertEqual(4, ex.method8(3))
-        self.assertEqual(4l, ex.method8(3l))
-        self.assertEqual(4l, ex.method9(3l))
+        self.assertEqual(long(4), ex.method8(long(3)))
+        self.assertEqual(long(4), ex.method9(long(3)))
 
     def testBigDecimal(self):
         ex = self.gateway.getNewExample()
@@ -472,7 +472,7 @@ class ByteTest(unittest.TestCase):
         int_list = [0, 1, 10, 127, 128, 255]
         ba1 = bytearray(int_list)
         # Same for Python2, bytes for Python 3
-        ba2 = py4j.compat.bytearray2(int_list)
+        ba2 = bytearray2(int_list)
         a1 = ex.getBytesValue(ba1)
         a2 = ex.getBytesValue(ba2)
         for i1, i2 in zip(a1, int_list):

@@ -3,16 +3,17 @@ Created on Dec 17, 2009
 
 @author: barthelemy
 '''
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
+
 from multiprocessing.process import Process
 import subprocess
 import time
 import unittest
 
-from py4j.java_gateway import JavaGateway
-from py4j.tests.java_gateway_test import PY4J_JAVA_PATH, safe_shutdown
-from py4j.protocol import Py4JJavaError, Py4JError
 from py4j.compat import unicode
+from py4j.java_gateway import JavaGateway
+from py4j.protocol import Py4JJavaError, Py4JError
+from py4j.tests.java_gateway_test import PY4J_JAVA_PATH, safe_shutdown
 
 
 def start_example_server():

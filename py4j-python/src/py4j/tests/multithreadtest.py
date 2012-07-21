@@ -3,15 +3,17 @@ Created on Sep 17, 2010
 
 @author: barthelemy
 '''
+from __future__ import unicode_literals, absolute_import
+
 from multiprocessing.process import Process
-from threading import Thread
 import subprocess
+from threading import Thread
 import time
 import unittest
 
+from py4j.compat import range
 from py4j.java_gateway import JavaGateway
 from py4j.tests.java_gateway_test import PY4J_JAVA_PATH
-from py4j.compat import range
 
 
 def start_example_server():

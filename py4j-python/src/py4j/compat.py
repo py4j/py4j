@@ -4,9 +4,11 @@ Compatibility functions for unified behavior between Python 2.x and 3.x.
 
 :author: Alex Grönholm
 '''
-import sys
-import inspect
+from __future__ import unicode_literals, absolute_import
+
 import base64
+import inspect
+import sys
 
 if sys.version_info[0] < 3:
     items = lambda d: d.items()

@@ -3,7 +3,8 @@ Created on Mar 26, 2010
 
 @author: Barthelemy Dagenais
 '''
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
+
 from multiprocessing.process import Process
 import subprocess
 import time
