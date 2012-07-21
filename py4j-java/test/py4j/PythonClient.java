@@ -78,7 +78,7 @@ public class PythonClient implements Runnable {
 	
 	public void sendMesage(String message) {
 		try {
-			Socket socket = new Socket(InetAddress.getLocalHost(), 25333);
+			Socket socket = new Socket(InetAddress.getByName(GatewayServer.DEFAULT_ADDRESS), 25333);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 			writer.write(message);

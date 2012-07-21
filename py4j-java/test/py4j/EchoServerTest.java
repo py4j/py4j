@@ -47,7 +47,7 @@ public class EchoServerTest {
 			Thread.sleep(250);
 			EchoServer.main(null);
 			Thread.sleep(250);
-			Socket testSocket = new Socket("localhost", EchoServer.TEST_PORT);
+			Socket testSocket = new Socket(GatewayServer.DEFAULT_ADDRESS, EchoServer.TEST_PORT);
 			BufferedWriter testWriter = new BufferedWriter(
 					new OutputStreamWriter(testSocket.getOutputStream()));
 			// EchoServer requires end of line character to delimit commands.
@@ -61,7 +61,7 @@ public class EchoServerTest {
 			testSocket.close();
 
 			char[] buffer = new char[4092];
-			Socket clientSocket = new Socket("localhost",
+			Socket clientSocket = new Socket(GatewayServer.DEFAULT_ADDRESS,
 					EchoServer.SERVER_PORT);
 			Reader clientReader = new InputStreamReader(clientSocket
 					.getInputStream());

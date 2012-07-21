@@ -35,6 +35,7 @@ logging.getLogger("py4j").addHandler(null_handler)
 logger = logging.getLogger("py4j.java_gateway")
 
 BUFFER_SIZE = 4096
+DEFAULT_ADDRESS = '127.0.0.1'
 DEFAULT_PORT = 25333
 DEFAULT_PYTHON_PROXY_PORT = 25334
 PY4J_SKIP_COLLECTIONS = 'PY4J_SKIP_COLLECTIONS'
@@ -182,7 +183,7 @@ class GatewayClient(object):
     both have the same interface, but the client supports multiple threads and
     connections, which is essential when using callbacks.  """
 
-    def __init__(self, address='localhost', port=25333, auto_close=True,
+    def __init__(self, address=DEFAULT_ADDRESS, port=25333, auto_close=True,
             gateway_property=None):
         """
         :param address: the address to which the client will request a
@@ -289,7 +290,7 @@ class GatewayConnection(object):
     """Default gateway connection (socket based) responsible for communicating
        with the Java Virtual Machine."""
 
-    def __init__(self, address='localhost', port=25333, auto_close=True,
+    def __init__(self, address=DEFAULT_ADDRESS, port=25333, auto_close=True,
             gateway_property=None):
         """
         :param address: the address to which the connection will be established
@@ -862,7 +863,8 @@ class CallbackServer(object):
        but there is at least one connection per concurrent thread.
     """
 
-    def __init__(self, pool, gateway_client, port=DEFAULT_PYTHON_PROXY_PORT):
+    def __init__(self, pool, gateway_client, port=DEFAULT_PYTHON_PROXY_PORT,
+            address=DEFAULT_ADDRESS):
         """
         :param pool: the pool responsible of tracking Python objects passed to
          the Java side.
@@ -874,6 +876,7 @@ class CallbackServer(object):
         super(CallbackServer, self).__init__()
         self.gateway_client = gateway_client
         self.port = port
+        self.address = address
         self.pool = pool
         self.connections = []
         # Lock is used to isolate critical region like connection creation.
@@ -888,7 +891,7 @@ class CallbackServer(object):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,
                 1)
-        self.server_socket.bind(('localhost', self.port))
+        self.server_socket.bind((self.address, self.port))
 
         # Maybe thread needs to be cleanup up?
         self.thread = Thread(target=self.run)

@@ -52,6 +52,8 @@ import java.util.logging.Logger;
  * 
  */
 public class CallbackClient {
+	public final static String DEFAULT_ADDRESS = "127.0.0.1";
+	
 	private final int port;
 
 	private final InetAddress address;
@@ -78,10 +80,10 @@ public class CallbackClient {
 		super();
 		this.port = port;
 		try {
-			this.address = InetAddress.getLocalHost();
+			this.address = InetAddress.getByName(DEFAULT_ADDRESS);
 		} catch (Exception e) {
 			throw new Py4JNetworkException(
-					"Local Host could not be determined when creating communication channel.");
+					"Default address could not be determined when creating communication channel.");
 		}
 		this.minConnectionTime = DEFAULT_MIN_CONNECTION_TIME;
 		this.minConnectionTimeUnit = TimeUnit.SECONDS;

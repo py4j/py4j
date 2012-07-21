@@ -55,7 +55,7 @@ def start_example_app_process():
 
 def get_socket():
     testSocket = socket(AF_INET, SOCK_STREAM)
-    testSocket.connect(('localhost', TEST_PORT))
+    testSocket.connect(('127.0.0.1', TEST_PORT))
     return testSocket
 
 
@@ -72,7 +72,7 @@ class TestConnection(object):
     counter = -1
 
     def __init__(self, return_message='yro'):
-        self.address = 'localhost'
+        self.address = '127.0.0.1'
         self.port = 1234
         self.return_message = return_message
         self.is_connected = True
@@ -657,14 +657,14 @@ class HelpTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, short_name=True, display=False)
         print(help_page)
-        self.assertEqual(939, len(help_page))
+        self.assertEqual(1172, len(help_page))
 
     def testHelpObjectWithPattern(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, pattern='m*', short_name=True,
                 display=False)
         print(help_page)
-        self.assertEqual(644, len(help_page))
+        self.assertEqual(855, len(help_page))
 
     def testHelpClass(self):
         String = self.gateway.jvm.java.lang.String

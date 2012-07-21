@@ -67,7 +67,7 @@ public class EchoClient {
 	}
 
 	public void connect() throws IOException {
-		clientSocket = new Socket("localhost", port);
+		clientSocket = new Socket(GatewayServer.DEFAULT_ADDRESS, port);
 		reader = new InputStreamReader(clientSocket.getInputStream(), Charset
 				.forName("UTF-8"));
 		writer = new BufferedWriter(new OutputStreamWriter(clientSocket

@@ -65,7 +65,7 @@ public class OperatorExampleTest {
 		try {
 			CallbackClient cbClient = new CallbackClient(
 					GatewayServer.DEFAULT_PYTHON_PORT,
-					InetAddress.getByName("localhost"), 2, TimeUnit.SECONDS);
+					InetAddress.getByName(CallbackClient.DEFAULT_ADDRESS), 2, TimeUnit.SECONDS);
 			GatewayServer server = new GatewayServer(new OperatorExample(),
 					GatewayServer.DEFAULT_PORT,
 					GatewayServer.DEFAULT_CONNECT_TIMEOUT,
