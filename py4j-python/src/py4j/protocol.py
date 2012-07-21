@@ -17,6 +17,7 @@ Created on Oct 14, 2010
 :author: Barthelemy Dagenais
 '''
 from __future__ import unicode_literals
+from decimal import Decimal
 from py4j.compat import long, basestring, unicode, bytearray2,\
         bytestr, isbytestr, isbytearray, ispython3bytestr, decodeb64,\
         encodeb64, bytetoint, bytetostr, strtobyte
@@ -39,6 +40,7 @@ INTEGER_TYPE = 'i'
 LONG_TYPE = 'L'
 BOOLEAN_TYPE = 'b'
 DOUBLE_TYPE = 'd'
+DECIMAL_TYPE = 'D'
 STRING_TYPE = 's'
 REFERENCE_TYPE = 'r'
 ARRAY_TYPE = 't'
@@ -129,6 +131,7 @@ GARBAGE_COLLECT_PROXY_COMMAND_NAME = 'g'
 OUTPUT_CONVERTER = {NULL_TYPE: (lambda x, y: None),
               BOOLEAN_TYPE: (lambda value, y: value.lower() == 'true'),
               LONG_TYPE: (lambda value, y: long(value)),
+              DECIMAL_TYPE: (lambda value, y: Decimal(value)),
               INTEGER_TYPE: (lambda value, y: int(value)),
               BYTES_TYPE: (lambda value, y: decode_bytearray(value)),
               DOUBLE_TYPE: (lambda value, y: float(value)),
@@ -237,6 +240,8 @@ def get_command_part(parameter, python_proxy_pool=None):
         command_part = NULL_TYPE
     elif isinstance(parameter, bool):
         command_part = BOOLEAN_TYPE + smart_decode(parameter)
+    elif isinstance(parameter, Decimal):
+        command_part = DECIMAL_TYPE + smart_decode(parameter)
     elif isinstance(parameter, long):
         command_part = LONG_TYPE + smart_decode(parameter)
     elif isinstance(parameter, int) or isinstance(parameter, long):

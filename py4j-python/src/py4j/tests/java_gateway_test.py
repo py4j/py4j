@@ -5,6 +5,7 @@ Created on Dec 10, 2009
 @author: barthelemy
 '''
 from __future__ import unicode_literals
+from decimal import Decimal
 from multiprocessing.process import Process
 from socket import AF_INET, SOCK_STREAM, socket
 from threading import Thread
@@ -393,6 +394,11 @@ class TypeConversionTest(unittest.TestCase):
         self.assertEqual(4, ex.method8(3))
         self.assertEqual(4l, ex.method8(3l))
         self.assertEqual(4l, ex.method9(3l))
+
+    def testBigDecimal(self):
+        ex = self.gateway.getNewExample()
+        self.assertEqual(Decimal("2147483.647"), ex.method10(2147483647, 3))
+        self.assertEqual(Decimal("-13.456"), ex.method10(Decimal("-14.456")))
 
 
 class UnicodeTest(unittest.TestCase):
