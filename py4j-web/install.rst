@@ -67,9 +67,10 @@ Briefly, you need:
 1. `Git <http://git-scm.com/>`_ to download the latest source code.
    Execute the command line ``git clone https://github.com/bartdag/py4j.git
    py4j`` to download the source code.
-2. `Apache ant <http://ant.apache.org>`_ to build the Py4J Java library. Just
-   execute the command line ``ant jar`` in the py4j-java project directory to
-   build the code and create a jar file. 
+2. `Apache ant <http://ant.apache.org>`_ to build the Py4J Java library. Set
+   the ``junit.path`` propery in ``py4j-java/ant.properties`` to point to the
+   location of your JUnit 4 jar, then execute the command line ``ant jar`` in
+   the py4j-java project directory to build the code and create a jar file.
 3. `Sphinx <http://sphinx.pocoo.org/>`_ to build the documentation. Just
    execute the command line ``make html``  in the
    py4j-web project.

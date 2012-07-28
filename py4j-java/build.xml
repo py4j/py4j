@@ -117,11 +117,11 @@
     <!-- JAVA - COMPILE -->
     <target depends="init" name="build">
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}" encoding="UTF-8">
             <src path="src"/>
             <classpath refid="py4j.classpath"/>
         </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}">
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}" encoding="UTF-8">
             <src path="test"/>
             <classpath refid="py4j.classpath"/>
         </javac>
