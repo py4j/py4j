@@ -30,6 +30,8 @@
 package py4j;
 
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -582,4 +584,36 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 			throw new Py4JNetworkException(e);
 		}
 	}
+
+    /**
+     * <p>
+     * Main method to start a local GatewayServer on a given port.
+     * The listening port is printed to stdout so that clients can start
+     * servers on ephemeral ports.
+     * </p>
+     */
+    public static void main(String[] args) {
+        int port;
+        if (args.length == 0) {
+            System.err.println("You must specify a port number.");
+            System.exit(1);
+        }
+        port = Integer.parseInt(args[0]);
+        GatewayServer gatewayServer = new GatewayServer(null, port);
+        gatewayServer.start();
+        /* Print out the listening port so that clients can discover it. */
+        int listening_port = gatewayServer.getListeningPort();
+        System.out.println("" + listening_port);
+
+        /* Exit on EOF or broken pipe.  This ensures that the server dies if
+         * its parent program dies. */
+        BufferedReader stdin = new BufferedReader(
+                               new InputStreamReader(System.in));
+        try {
+            stdin.readLine();
+            System.exit(0);
+        } catch (java.io.IOException e) {
+            System.exit(0);
+        }
+    }
 }
