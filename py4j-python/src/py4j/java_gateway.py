@@ -12,17 +12,21 @@ Created on Dec 3, 2009
 """
 from __future__ import unicode_literals, absolute_import
 
+import atexit
 from collections import deque
 import logging
 import os
 from pydoc import ttypager
 import socket
+from subprocess import Popen, PIPE
+import sys
 from threading import Thread, RLock
 import weakref
 
 from py4j.compat import range, hasattr2
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
+from py4j.version import __version__
 
 
 class NullHandler(logging.Handler):
@@ -852,6 +856,46 @@ class JavaGateway(object):
             ttypager(help_page)
         else:
             return help_page
+
+    @classmethod
+    def launch_gateway(cls, port=0, jarpath="", classpath="", javaopts=[]):
+        """Launch a `Gateway` in a new Java process.
+
+        The Java process running the gateway will shut down when the Python
+        process exits.
+
+        :param port: the port to launch the Java Gateway on.  If no port is
+            specified then an ephemeral port is used.
+        :param jarpath: the path to the Py4J jar.  Only necessary if the jar
+            was installed at a non-standard location or if Python is using
+            a different `sys.prefix` than the one that Py4J was installed
+            under.
+        :param classpath: the classpath used to launch the Java Gateway.
+        :param javaopts: an array of extra options to pass to Java (the classpath
+            should be specified using the `classpath` parameter, not `javaopts`.)
+
+        :rtype: a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
+            connected to the `Gateway` server.
+        """
+        jarpath = jarpath or os.path.join(sys.prefix, "share/py4j/py4j" +
+            __version__ + ".jar")
+
+        # Launch the server in a subprocess.
+        classpath = ":".join((jarpath, classpath))
+        command = ["java", "-classpath", classpath] + javaopts + \
+                  ["py4j.GatewayServer", str(port)]
+        proc = Popen(command, stdout=PIPE, stdin=PIPE)
+
+        # Determine which port the server started on (needed to support
+        # ephemeral ports)
+        _port = int(proc.stdout.readline())
+
+        # Configure the subprocess to be killed when the program exits.
+        atexit.register(proc.kill)
+
+        # Create a JavaGateway to connect to the subprocess.
+        gateway = JavaGateway(GatewayClient(port=_port))
+        return gateway
 
 
 # CALLBACK SPECIFIC
