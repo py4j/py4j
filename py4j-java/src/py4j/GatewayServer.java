@@ -594,26 +594,36 @@ public class GatewayServer extends DefaultGatewayServerListener implements
      */
     public static void main(String[] args) {
         int port;
+        boolean dieOnBrokenPipe = false;
+        String usage = "usage: [--die-on-broken-pipe] port";
         if (args.length == 0) {
-            System.err.println("You must specify a port number.");
+            System.err.println(usage);
             System.exit(1);
+        } else if (args.length == 2) {
+            if (!args[0].equals("--die-on-broken-pipe")) {
+                System.err.println(usage);
+                System.exit(1);
+            }
+            dieOnBrokenPipe = true;
         }
-        port = Integer.parseInt(args[0]);
+        port = Integer.parseInt(args[args.length - 1]);
         GatewayServer gatewayServer = new GatewayServer(null, port);
         gatewayServer.start();
         /* Print out the listening port so that clients can discover it. */
         int listening_port = gatewayServer.getListeningPort();
         System.out.println("" + listening_port);
 
-        /* Exit on EOF or broken pipe.  This ensures that the server dies if
-         * its parent program dies. */
-        BufferedReader stdin = new BufferedReader(
-                               new InputStreamReader(System.in));
-        try {
-            stdin.readLine();
-            System.exit(0);
-        } catch (java.io.IOException e) {
-            System.exit(0);
+        if (dieOnBrokenPipe) {
+            /* Exit on EOF or broken pipe.  This ensures that the server dies
+             * if its parent program dies. */
+            BufferedReader stdin = new BufferedReader(
+                                   new InputStreamReader(System.in));
+            try {
+                stdin.readLine();
+                System.exit(0);
+            } catch (java.io.IOException e) {
+                System.exit(1);
+            }
         }
     }
 }
