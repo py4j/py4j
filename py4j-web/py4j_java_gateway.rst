@@ -257,6 +257,8 @@ The following functions get be used to import packages or to get a particular fi
 
 .. autofunction:: py4j.java_gateway.java_import
 
+.. autofunction:: py4j.java_gateway.launch_gateway
+
 .. autofunction:: py4j.java_gateway.get_field
 
 .. autofunction:: py4j.java_gateway.set_field
