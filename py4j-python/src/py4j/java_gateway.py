@@ -12,17 +12,21 @@ Created on Dec 3, 2009
 """
 from __future__ import unicode_literals, absolute_import
 
+import atexit
 from collections import deque
 import logging
 import os
 from pydoc import ttypager
 import socket
+from subprocess import Popen, PIPE
+import sys
 from threading import Thread, RLock
 import weakref
 
 from py4j.compat import range, hasattr2
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
+from py4j.version import __version__
 
 
 class NullHandler(logging.Handler):
@@ -57,6 +61,55 @@ def java_import(jvm_view, import_str):
     answer = gateway_client.send_command(command)
     return_value = get_return_value(answer, gateway_client, None, None)
     return return_value
+
+
+def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
+        die_on_exit=False):
+    """Launch a `Gateway` in a new Java process.
+
+    :param port: the port to launch the Java Gateway on.  If no port is
+        specified then an ephemeral port is used.
+    :param jarpath: the path to the Py4J jar.  Only necessary if the jar
+        was installed at a non-standard location or if Python is using
+        a different `sys.prefix` than the one that Py4J was installed
+        under.
+    :param classpath: the classpath used to launch the Java Gateway.
+    :param javaopts: an array of extra options to pass to Java (the classpath
+        should be specified using the `classpath` parameter, not `javaopts`.)
+    :param die_on_exit: if `True`, the Java gateway process will die when
+        this Python process exits or is killed.
+
+    :rtype: the port number of the `Gateway` server.
+    """
+    if not jarpath:
+        # Try to locate the jar relative to the Py4J source directory, in case
+        # we're testing a source checkout.
+        jarpath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                '../../../py4j-java/py4j' + __version__ + '.jar')
+        try:
+            with open(jarpath) as f: pass
+        except IOError:
+            # Otherwise, try the default location.
+            jarpath = os.path.join(sys.prefix, "share/py4j/py4j" +
+                    __version__ + ".jar")
+
+    # Fail if the jar does not exist.
+    with open(jarpath) as f: pass
+
+    # Launch the server in a subprocess.
+    classpath = ":".join((jarpath, classpath))
+    command = ["java", "-classpath", classpath] + javaopts + \
+              ["py4j.GatewayServer"]
+    if die_on_exit:
+        command.append("--die-on-broken-pipe")
+    command.append(str(port))
+    logger.debug("Lauching gateway with command {0}".format(command))
+    proc = Popen(command, stdout=PIPE, stdin=PIPE)
+
+    # Determine which port the server started on (needed to support
+    # ephemeral ports)
+    _port = int(proc.stdout.readline())
+    return _port
 
 
 def get_field(java_object, field_name):
@@ -852,6 +905,32 @@ class JavaGateway(object):
             ttypager(help_page)
         else:
             return help_page
+
+    @classmethod
+    def launch_gateway(cls, port=0, jarpath="", classpath="", javaopts=[],
+            die_on_exit=False):
+        """Launch a `Gateway` in a new Java process and create a default
+        :class:`JavaGateway <py4j.java_gateway.JavaGateway>` to connect to
+        it.
+
+        :param port: the port to launch the Java Gateway on.  If no port is
+            specified then an ephemeral port is used.
+        :param jarpath: the path to the Py4J jar.  Only necessary if the jar
+            was installed at a non-standard location or if Python is using
+            a different `sys.prefix` than the one that Py4J was installed
+            under.
+        :param classpath: the classpath used to launch the Java Gateway.
+        :param javaopts: an array of extra options to pass to Java (the classpath
+            should be specified using the `classpath` parameter, not `javaopts`.)
+        :param die_on_exit: if `True`, the Java gateway process will die when
+            this Python process exits or is killed.
+
+        :rtype: a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
+            connected to the `Gateway` server.
+        """
+        _port = launch_gateway(port, jarpath, classpath, javaopts, die_on_exit)
+        gateway = JavaGateway(GatewayClient(port=_port))
+        return gateway
 
 
 # CALLBACK SPECIFIC
