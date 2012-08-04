@@ -727,5 +727,18 @@ class ThreadTest(unittest.TestCase):
         self.assertTrue(runner3.ok)
 
 
+class GatewayLauncherTest(unittest.TestCase):
+    def tearDown(self):
+        safe_shutdown(self)
+
+    def testDefaults(self):
+        self.gateway = JavaGateway.launch_gateway()
+        self.assertTrue(self.gateway.jvm)
+
+    def testJavaopts(self):
+        self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
+        self.assertTrue(self.gateway.jvm)
+
+
 if __name__ == "__main__":
     unittest.main()
