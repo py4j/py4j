@@ -63,6 +63,23 @@ def java_import(jvm_view, import_str):
     return return_value
 
 
+def find_jar_path():
+    """Tries to find the path where the py4j jar is located.
+    """
+    paths = []
+    jar_file = "py4j{0}.jar".format(__version__)
+    paths.append(jar_file)
+    paths.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+            "../../../py4j-java/" + jar_file))
+    paths.append("../../../current-release/" + jar_file)
+    paths.append(os.path.join(sys.prefix, "share/py4j/" + jar_file))
+
+    for path in paths:
+        if os.path.exists(path):
+            return path
+    return ""
+
+
 def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         die_on_exit=False):
     """Launch a `Gateway` in a new Java process.
@@ -82,19 +99,11 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     :rtype: the port number of the `Gateway` server.
     """
     if not jarpath:
-        # Try to locate the jar relative to the Py4J source directory, in case
-        # we're testing a source checkout.
-        jarpath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                '../../../py4j-java/py4j' + __version__ + '.jar')
-        try:
-            with open(jarpath) as f: pass
-        except IOError:
-            # Otherwise, try the default location.
-            jarpath = os.path.join(sys.prefix, "share/py4j/py4j" +
-                    __version__ + ".jar")
+        jarpath = find_jar_path()
 
     # Fail if the jar does not exist.
-    with open(jarpath) as f: pass
+    if not os.path.exists(jarpath):
+        raise Py4JError("Could not find py4j jar at {0}".format(jarpath))
 
     # Launch the server in a subprocess.
     classpath = ":".join((jarpath, classpath))
