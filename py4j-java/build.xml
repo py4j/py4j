@@ -52,7 +52,6 @@
     <!-- Py4J JAVA -->
 	<path id="junit4.classpath">
         <pathelement location="${junit.path}"/>
-        <pathelement location="${hamcrest.path}"/>
     </path>
 
     <path id="py4j.classpath">
