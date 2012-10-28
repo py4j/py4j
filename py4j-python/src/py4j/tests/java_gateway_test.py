@@ -493,6 +493,10 @@ class ByteTest(unittest.TestCase):
         for i1, i2 in zip(a1, int_list):
             self.assertEqual(i1, i2)
 
+    def testLargeByteArray(self):
+        # Regression test for #109, an error when passing large byte arrays.
+        self.gateway.jvm.java.nio.ByteBuffer.wrap(bytearray(range(255)))
+
 
 class ExceptionTest(unittest.TestCase):
     def setUp(self):
