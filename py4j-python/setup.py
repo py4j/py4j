@@ -3,7 +3,9 @@ import os
 
 DOC_DIR = 'doc'
 DIST_DIR = 'dist'
-execfile("src/py4j/version.py")
+# For Python 3 compatibility, we can't use execfile; this is 2to3's conversion:
+exec(compile(open("src/py4j/version.py").read(),
+     "src/py4j/version.py", 'exec'))
 VERSION = __version__
 RELEASE = 'py4j-' + VERSION
 JAR_FILE = 'py4j' + VERSION + '.jar'
