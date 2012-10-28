@@ -18,11 +18,13 @@ Created on Oct 14, 2010
 '''
 from __future__ import unicode_literals, absolute_import
 
+from base64 import standard_b64encode, standard_b64decode
+
 from decimal import Decimal
 
 from py4j.compat import long, basestring, unicode, bytearray2,\
-        bytestr, isbytestr, isbytearray, ispython3bytestr, decodeb64,\
-        encodeb64, bytetoint, bytetostr, strtobyte
+        bytestr, isbytestr, isbytearray, ispython3bytestr, \
+        bytetoint, bytetostr, strtobyte
 
 
 JAVA_MAX_INT = 2147483647
@@ -199,20 +201,16 @@ def smart_decode(s):
 
 
 def encode_bytearray(barray):
-    # Because encodestring always add a \n at the end!
-    #return base64.encodestring(barray)[:-1]
     if isbytestr(barray):
-        return bytetostr(encodeb64(barray)[:-1])
-        #return unicode().join((unichr(ord(by) << 8) for by in barray))
+        return bytetostr(standard_b64encode(barray))
     else:
         newbytestr = bytestr(barray)
-        return bytetostr(encodeb64(newbytestr)[:-1])
-        #return unicode().join((unichr(by << 8) for by in barray))
+        return bytetostr(standard_b64encode(newbytestr))
 
 
 def decode_bytearray(encoded):
     new_bytes = strtobyte(encoded)
-    return bytearray2([bytetoint(b) for b in decodeb64(new_bytes)])
+    return bytearray2([bytetoint(b) for b in standard_b64decode(new_bytes)])
 
 
 def is_python_proxy(parameter):
