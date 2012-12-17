@@ -40,6 +40,8 @@ public class DefaultServerPreferencePage
 				"TCP Port (requires Eclipse restart):", getFieldEditorParent()));
 		addField(new IntegerFieldEditor(PreferenceConstants.PREF_DEFAULT_CALLBACK_PORT, 
 				"Callback TCP Port (requires Eclipse restart):", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(PreferenceConstants.PREF_USE_SWT_DISPLAY_TREAD, 
+				"Run calls in SWT Thread (requires Eclipse restart)", getFieldEditorParent()));
 	}
 
 	/* (non-Javadoc)
