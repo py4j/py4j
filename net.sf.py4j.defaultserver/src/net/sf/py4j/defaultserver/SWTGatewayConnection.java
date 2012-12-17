@@ -45,15 +45,19 @@ public class SWTGatewayConnection extends GatewayConnection {
 				final String  cmdLine = commandLine;
 				final List<Throwable> errors = new ArrayList<Throwable>(1);
 				if (command != null) {
-					Display.getDefault().syncExec(new Runnable() {
-						public void run() {
-							try {
-							    command.execute(cmdLine, reader, writer);
-							} catch (Throwable ne) {
-								errors.add(ne);
+					if (Display.getCurrent()!=null) {
+						command.execute(cmdLine, reader, writer);
+					} else {
+						Display.getDefault().syncExec(new Runnable() {
+							public void run() {
+								try {
+								    command.execute(cmdLine, reader, writer);
+								} catch (Throwable ne) {
+									errors.add(ne);
+								}
 							}
-						}
-					});
+						});
+					}
 					if (!errors.isEmpty()) throw errors.get(0);
 					executing = false;
 				} else {
