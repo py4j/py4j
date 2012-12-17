@@ -79,10 +79,10 @@ import py4j.commands.ShutdownGatewayServerCommand;
 public class GatewayConnection implements Runnable {
 
 	private final static List<Class<? extends Command>> baseCommands;
-	private final Socket socket;
-	private final BufferedWriter writer;
-	private final BufferedReader reader;
-	private final Map<String, Command> commands;
+	protected final Socket socket;
+	protected final BufferedWriter writer;
+	protected final BufferedReader reader;
+	protected final Map<String, Command> commands;
 	private final Logger logger = Logger.getLogger(GatewayConnection.class
 			.getName());
 	private final List<GatewayServerListener> listeners;
@@ -202,7 +202,7 @@ public class GatewayConnection implements Runnable {
 		}
 	}
 
-	private void quietSendError(BufferedWriter writer, Throwable exception) {
+	protected void quietSendError(BufferedWriter writer, Throwable exception) {
 		try {
 			String returnCommand = Protocol.getOutputErrorCommand(exception);
 			logger.warning("Trying to return error: " + returnCommand);

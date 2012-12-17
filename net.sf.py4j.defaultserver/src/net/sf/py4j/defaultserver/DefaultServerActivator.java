@@ -36,9 +36,16 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 				PreferenceConstants.PREF_DEFAULT_PORT);
 		int defaultCallBackPort = getPreferenceStore().getInt(
 				PreferenceConstants.PREF_DEFAULT_CALLBACK_PORT);
-		server = new GatewayServer(this, defaultPort, defaultCallBackPort,
-				GatewayServer.DEFAULT_CONNECT_TIMEOUT,
-				GatewayServer.DEFAULT_READ_TIMEOUT, null);
+		if (getPreferenceStore().getBoolean(PreferenceConstants.PREF_USE_SWT_DISPLAY_TREAD)) {
+			server = new SWTGatewayServer(this, defaultPort, defaultCallBackPort,
+					GatewayServer.DEFAULT_CONNECT_TIMEOUT,
+					GatewayServer.DEFAULT_READ_TIMEOUT, null);
+			
+		} else {
+			server = new GatewayServer(this, defaultPort, defaultCallBackPort,
+					GatewayServer.DEFAULT_CONNECT_TIMEOUT,
+					GatewayServer.DEFAULT_READ_TIMEOUT, null);
+		}
 		server.start();
 	}
 
