@@ -2,17 +2,15 @@ package net.sf.py4j.defaultserver;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.eclipse.swt.widgets.Display;
 
 import py4j.Gateway;
 import py4j.GatewayConnection;
 import py4j.GatewayServerListener;
 import py4j.NetworkUtil;
+import py4j.commands.CallCommand;
 import py4j.commands.Command;
 
 public class SWTGatewayConnection extends GatewayConnection {
@@ -30,7 +28,6 @@ public class SWTGatewayConnection extends GatewayConnection {
 		super(gateway, socket);
 	}
 	
-	
 	@Override
 	public void run() {
 		boolean executing = false;
@@ -42,23 +39,15 @@ public class SWTGatewayConnection extends GatewayConnection {
 				executing = true;
 				logger.info("Received command: " + commandLine);
 				final Command command = commands.get(commandLine);
-				final String  cmdLine = commandLine;
-				final List<Throwable> errors = new ArrayList<Throwable>(1);
 				if (command != null) {
-					if (Display.getCurrent()!=null) {
-						command.execute(cmdLine, reader, writer);
+					// TODO Can cause deadlocks 
+					// if this is an API command.
+					if (!(command instanceof CallCommand)) {
+						command.execute(commandLine, reader, writer);
 					} else {
-						Display.getDefault().syncExec(new Runnable() {
-							public void run() {
-								try {
-								    command.execute(cmdLine, reader, writer);
-								} catch (Throwable ne) {
-									errors.add(ne);
-								}
-							}
-						});
+						final SWTCommand swtCommand = new SWTCommand(command);
+						swtCommand.execute(commandLine, reader, writer);
 					}
-					if (!errors.isEmpty()) throw errors.get(0);
 					executing = false;
 				} else {
 					logger.log(Level.WARNING, "Unknown command " + commandLine);
