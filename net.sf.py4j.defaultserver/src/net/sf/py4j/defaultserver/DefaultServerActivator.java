@@ -1,5 +1,9 @@
 package net.sf.py4j.defaultserver;
 
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.ServerSocket;
+
 import net.sf.py4j.defaultserver.preferences.PreferenceConstants;
 
 import org.eclipse.swt.widgets.Display;
@@ -32,12 +36,16 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 		super.start(bundleContext);
 		DefaultServerActivator.context = bundleContext;
 		activator = this;
-		int defaultPort = getPreferenceStore().getInt(
-				PreferenceConstants.PREF_DEFAULT_PORT);
-		int defaultCallBackPort = getPreferenceStore().getInt(
-				PreferenceConstants.PREF_DEFAULT_CALLBACK_PORT);
+		
+		final boolean enabled = getPreferenceStore().getBoolean(PreferenceConstants.PREF_PY4J_ACTIVE);
+		if (!enabled) return;
+		
+		int defaultPort = getPreferenceStore().getInt(PreferenceConstants.PREF_DEFAULT_PORT);
+		int defaultCallBackPort = getPreferenceStore().getInt(PreferenceConstants.PREF_DEFAULT_CALLBACK_PORT);
+		
 		if (getPreferenceStore().getBoolean(PreferenceConstants.PREF_USE_SWT_DISPLAY_TREAD)) {
-			server = new SWTGatewayServer(this, defaultPort, defaultCallBackPort,
+			
+			server = new SWTGatewayServer(this, getFreePort(defaultPort), getFreePort(defaultCallBackPort),
 					GatewayServer.DEFAULT_CONNECT_TIMEOUT,
 					GatewayServer.DEFAULT_READ_TIMEOUT, null);
 			
@@ -47,6 +55,54 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 					GatewayServer.DEFAULT_READ_TIMEOUT, null);
 		}
 		server.start();
+	}
+	/**
+	 * Attempts to get a free port starting at the passed in port and
+	 * working up.
+	 * 
+	 * @param startPort
+	 * @return
+	 */
+	public static int getFreePort(final int startPort) {
+		
+	    int port = startPort;
+	    while(!isPortFree(port)) port++;
+	    	
+	    return port;
+	}
+
+
+	/**
+	 * Checks if a port is free.
+	 * @param port
+	 * @return
+	 */
+	public static boolean isPortFree(int port) {
+
+	    ServerSocket ss = null;
+	    DatagramSocket ds = null;
+	    try {
+	        ss = new ServerSocket(port);
+	        ss.setReuseAddress(true);
+	        ds = new DatagramSocket(port);
+	        ds.setReuseAddress(true);
+	        return true;
+	    } catch (IOException e) {
+	    } finally {
+	        if (ds != null) {
+	            ds.close();
+	        }
+
+	        if (ss != null) {
+	            try {
+	                ss.close();
+	            } catch (IOException e) {
+	                /* should not be thrown */
+	            }
+	        }
+	    }
+
+	    return false;
 	}
 
 	/*
@@ -64,6 +120,10 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 		super.stop(bundleContext);
 	}
 
+	/**
+	 * Might be null
+	 * @return
+	 */
 	public GatewayServer getServer() {
 		return server;
 	}

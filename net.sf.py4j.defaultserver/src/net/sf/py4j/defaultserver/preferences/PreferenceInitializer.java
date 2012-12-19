@@ -19,6 +19,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	 */
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = DefaultServerActivator.getDefault().getPreferenceStore();
+		store.setDefault(PreferenceConstants.PREF_PY4J_ACTIVE, false);
 		store.setDefault(PreferenceConstants.PREF_DEFAULT_PORT, GatewayServer.DEFAULT_PORT);
 		store.setDefault(PreferenceConstants.PREF_DEFAULT_CALLBACK_PORT, GatewayServer.DEFAULT_PYTHON_PORT);
 		// Optional setting to call all API in the SWT thread which allows UI calls to be done.
