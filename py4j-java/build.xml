@@ -128,7 +128,7 @@
     <target depends="build" name="java-test">
         <mkdir dir="${junit.output.dir}"/>
         <junit fork="yes" haltonfailure="true" printsummary="on">
-            <formatter type="xml"/>
+            <formatter type="brief" usefile="false"/>
             <batchtest todir="${junit.output.dir}">
                 <fileset dir="${junit.src.tests}">
                     <include name="**/*Test.java"/>
