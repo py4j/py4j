@@ -138,7 +138,7 @@ class ProtocolTest(unittest.TestCase):
             self.assertEqual('Hello World', ex.method3(1, True))
             self.assertEqual(123, ex.method3())
             self.assertAlmostEqual(1.25, ex.method3())
-            self.assertIsNone(ex.method2())
+            self.assertTrue(ex.method2() is None)
             self.assertTrue(ex.method4())
             self.assertEqual(long(123), ex.method8())
             self.gateway.shutdown()
