@@ -10,4 +10,4 @@ programs to call back Python objects.
 This is the source repository of Py4J projects. Please visit the `Py4J homepage
 <http://py4j.sourceforge.net>`_ for more information.
 
-
+.. image:: https://api.travis-ci.org/bartdag/py4j.png
