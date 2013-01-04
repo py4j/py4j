@@ -363,6 +363,9 @@ class MemoryManagementText(unittest.TestCase):
 
     def testDetach(self):
         self.gateway = JavaGateway()
+        gc.collect()
+        finalizers_size_start = len(ThreadSafeFinalizer.finalizers)
+
         sb = self.gateway.jvm.java.lang.StringBuffer()
         sb.append('Hello World')
         self.gateway.detach(sb)
@@ -370,7 +373,9 @@ class MemoryManagementText(unittest.TestCase):
         sb2.append('Hello World')
         sb2._detach()
         gc.collect()
-        self.assertEqual(len(ThreadSafeFinalizer.finalizers), 1)
+
+        self.assertEqual(len(ThreadSafeFinalizer.finalizers) -
+                finalizers_size_start, 0)
         self.gateway.shutdown()
 
 
