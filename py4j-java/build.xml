@@ -32,8 +32,6 @@
     <property environment="env"/>
 	<property file="ant.properties"/>
     <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.6"/>
-    <property name="source" value="1.6"/>
 	<property name="jar.name" value="py4j${version}.jar"/>
     <property name="release.name" value="py4j-${version}"/>
     <property name="junit.src.tests" value="test"/>
@@ -256,6 +254,9 @@
     </target>
 
     <target depends="build" name="python-test">
+        <exec executable="python" dir="${py4jpy.dir}" failonerror="true">
+            <arg line="--version"/>
+        </exec>
         <exec executable="nosetests" dir="${py4jpy.dir}" failonerror="true">
             <arg line="-w src"/>
             <arg line="-c nose.cfg"/>
