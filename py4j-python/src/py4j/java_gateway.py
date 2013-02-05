@@ -106,11 +106,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         raise Py4JError("Could not find py4j jar at {0}".format(jarpath))
 
     # Launch the server in a subprocess.
-    if sys.platform == "win32":
-        classpath_separator = ";"
-    else:
-        classpath_separator = ":"
-    classpath = classpath_separator.join((jarpath, classpath))
+    classpath = os.pathsep.join((jarpath, classpath))
     command = ["java", "-classpath", classpath] + javaopts + \
               ["py4j.GatewayServer"]
     if die_on_exit:
