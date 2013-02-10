@@ -16,6 +16,7 @@ from collections import deque
 import logging
 import os
 from pydoc import ttypager
+import select
 import socket
 from subprocess import Popen, PIPE
 import sys
@@ -1014,19 +1015,26 @@ class CallbackServer(object):
             logger.info('Socket listening on {0}'.
                     format(smart_decode(self.server_socket.getsockname())))
 
+            read_list = [self.server_socket]
             while not self.is_shutdown:
-                socket_instance, _ = self.server_socket.accept()
-                input = socket_instance.makefile('rb', 0)
-                connection = CallbackConnection(self.pool, input,
-                        socket_instance,
-                        self.gateway_client)
-                with self.lock:
-                    if not self.is_shutdown:
-                        self.connections.append(connection)
-                        connection.start()
-                    else:
-                        quiet_shutdown(connection.socket)
-                        quiet_close(connection.socket)
+                readable, writable, errored = select.select(read_list, [], [])
+
+                if self.is_shutdown:
+                    break
+
+                for s in readable:
+                    socket_instance, _ = self.server_socket.accept()
+                    input = socket_instance.makefile('rb', 0)
+                    connection = CallbackConnection(self.pool, input,
+                            socket_instance,
+                            self.gateway_client)
+                    with self.lock:
+                        if not self.is_shutdown:
+                            self.connections.append(connection)
+                            connection.start()
+                        else:
+                            quiet_shutdown(connection.socket)
+                            quiet_close(connection.socket)
         except Exception:
             if self.is_shutdown:
                 logger.info('Error while waiting for a connection.')
