@@ -41,6 +41,7 @@ BUFFER_SIZE = 4096
 DEFAULT_ADDRESS = '127.0.0.1'
 DEFAULT_PORT = 25333
 DEFAULT_PYTHON_PROXY_PORT = 25334
+DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT = 5
 PY4J_SKIP_COLLECTIONS = 'PY4J_SKIP_COLLECTIONS'
 PY4J_TRUE = set(['yes', 'y', 't', 'true'])
 
@@ -1017,7 +1018,8 @@ class CallbackServer(object):
 
             read_list = [self.server_socket]
             while not self.is_shutdown:
-                readable, writable, errored = select.select(read_list, [], [])
+                readable, writable, errored = select.select(read_list, [], [],
+                        DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT)
 
                 if self.is_shutdown:
                     break
