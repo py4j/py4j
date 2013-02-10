@@ -12,7 +12,6 @@ Created on Dec 3, 2009
 """
 from __future__ import unicode_literals, absolute_import
 
-import atexit
 from collections import deque
 import logging
 import os
@@ -183,6 +182,28 @@ def get_method(java_object, method_name):
             java_object._gateway_client)
 
 
+def quiet_close(closable):
+    """Quietly closes a closable object without throwing an exception.
+
+    :param closable: Object with a ``close`` method.
+    """
+    try:
+        closable.close()
+    except Exception:
+        pass
+
+
+def quiet_shutdown(socket_instance):
+    """Quietly shuts down a socket without throwing an exception.
+
+    :param socket_instance: Socket with ``shutdown`` method.
+    """
+    try:
+        socket_instance.shutdown(socket.SHUT_RDWR)
+    except Exception:
+        pass
+
+
 def _garbage_collect_object(gateway_client, target_id):
 #    print(target_id + ' deleted')
     ThreadSafeFinalizer.remove_finalizer(smart_decode(gateway_client.address) +
@@ -208,11 +229,8 @@ def _garbage_collect_connection(socket_instance):
     """
 #    print('delete connection')
     if socket_instance != None:
-        try:
-            socket_instance.shutdown(socket.SHUT_RDWR)
-            socket_instance.close()
-        except Exception:
-            pass
+        quiet_shutdown(socket_instance)
+        quiet_close(socket_instance)
 
 
 class DummyRLock(object):
@@ -342,7 +360,7 @@ class GatewayClient(object):
         for _ in range(0, size):
             try:
                 connection = self.deque.pop()
-                connection.close()
+                quiet_close(connection)
             except Exception:
                 pass
 
@@ -388,17 +406,12 @@ class GatewayConnection(object):
             logger.exception(msg)
             raise Py4JNetworkError(msg)
 
-    def close(self, throw_exception=False):
+    def close(self):
         """Closes the connection by closing the socket."""
-        try:
-            self.stream.close()
-            self.socket.shutdown(socket.SHUT_RDWR)
-            self.socket.close()
-        except Exception as e:
-            if throw_exception:
-                raise e
-        finally:
-            self.is_connected = False
+        quiet_close(self.stream)
+        quiet_shutdown(self.socket)
+        quiet_close(self.socket)
+        self.is_connected = False
 
     def shutdown_gateway(self):
         """Sends a shutdown command to the gateway. This will close the gateway
@@ -410,9 +423,9 @@ class GatewayConnection(object):
             raise Py4JError('Gateway must be connected to send shutdown cmd.')
 
         try:
-            self.stream.close()
+            quiet_close(self.stream)
             self.socket.sendall(SHUTDOWN_GATEWAY_COMMAND_NAME.encode('utf-8'))
-            self.socket.close()
+            quiet_close(self.socket)
             self.is_connected = False
         except Exception:
             # Do nothing! Exceptions might occur anyway.
@@ -1012,8 +1025,8 @@ class CallbackServer(object):
                         self.connections.append(connection)
                         connection.start()
                     else:
-                        connection.socket.shutdown(socket.SHUT_RDWR)
-                        connection.socket.close()
+                        quiet_shutdown(connection.socket)
+                        quiet_close(connection.socket)
         except Exception:
             if self.is_shutdown:
                 logger.info('Error while waiting for a connection.')
@@ -1029,19 +1042,13 @@ class CallbackServer(object):
         logger.info('Callback Server Shutting Down')
         with self.lock:
             self.is_shutdown = True
-            try:
-                self.server_socket.shutdown(socket.SHUT_RDWR)
-                self.server_socket.close()
-                self.server_socket = None
-            except Exception:
-                pass
+            quiet_shutdown(self.server_socket)
+            quiet_close(self.server_socket)
+            self.server_socket = None
 
             for connection in self.connections:
-                try:
-                    connection.socket.shutdown(socket.SHUT_RDWR)
-                    connection.socket.close()
-                except Exception:
-                    pass
+                quiet_shutdown(connection.socket)
+                quiet_close(connection.socket)
 
             self.pool.clear()
         self.thread.join()
@@ -1082,12 +1089,9 @@ class CallbackConnection(Thread):
             logger.info('Error while callback connection was waiting for'
                 'a message')
 
-        try:
             logger.info('Closing down connection')
-            self.socket.shutdown(socket.SHUT_RDWR)
-            self.socket.close()
-        except Exception:
-            pass
+            quiet_shutdown(self.socket)
+            quiet_close(self.socket)
 
     def _call_proxy(self, obj_id, input):
         return_message = ERROR_RETURN_MESSAGE
