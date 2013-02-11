@@ -143,8 +143,7 @@ class ProtocolTest(unittest.TestCase):
             self.assertEqual(long(123), ex.method8())
             self.gateway.shutdown()
 
-        except Exception as e:
-            print('Error has occurred', e)
+        except Exception:
             print_exc()
             self.fail('Problem occurred')
         p.join()
@@ -182,8 +181,7 @@ class IntegrationTest(unittest.TestCase):
             response = ex2.method3(1, True)
             self.assertEqual('Hello World2', response)
             self.gateway.shutdown()
-        except Exception as e:
-            print('Error has occurred', e)
+        except Exception:
             self.fail('Problem occurred')
 
     def testException(self):
@@ -199,14 +197,9 @@ class IntegrationTest(unittest.TestCase):
             self.gateway = JavaGateway(auto_field=True)
             ex = self.gateway.getNewExample()
 
-            try:
-                ex.method3(1, True)
-                self.fail('Should have failed!')
-            except Py4JError:
-                self.assertTrue(True)
+            self.assertRaises(Py4JError, lambda: ex.method3(1, True))
             self.gateway.shutdown()
-        except Exception as e:
-            print('Error has occurred', e)
+        except Exception:
             self.fail('Problem occurred')
 
 
@@ -291,22 +284,15 @@ class FieldTest(unittest.TestCase):
         self.assertTrue(isinstance(ex.field50, JavaMember))
         self.assertEqual(10, get_field(ex, 'field10'))
 
-        try:
-            get_field(ex, 'field50')
-            self.fail()
-        except Exception:
-            self.assertTrue(True)
+        # This field does not exist
+        self.assertRaises(Exception, get_field, ex, 'field50')
 
+        # With auto field = True
         ex._auto_field = True
         sb = ex.field20
         sb.append('Hello')
         self.assertEqual('Hello', sb.toString())
 
-        try:
-            get_field(ex, 'field20')
-            self.fail()
-        except Exception:
-            self.assertTrue(True)
 
     def testSetField(self):
         self.gateway = JavaGateway(auto_field=False)
@@ -319,11 +305,7 @@ class FieldTest(unittest.TestCase):
         set_field(ex, 'field21', sb)
         self.assertEquals(get_field(ex, 'field21').toString(), 'Hello World!')
 
-        try:
-            set_field(ex, 'field1', 123)
-            self.fail()
-        except Exception:
-            self.assertTrue(True)
+        self.assertRaises(Exception, set_field, ex, 'field1', 123)
 
     def testGetMethod(self):
         # This is necessary if a field hides a method...
@@ -332,7 +314,7 @@ class FieldTest(unittest.TestCase):
         self.assertEqual(1, get_method(ex, 'method1')())
 
 
-class MemoryManagementText(unittest.TestCase):
+class MemoryManagementTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
         # This is to ensure that the server is started before connecting to it!
@@ -349,17 +331,11 @@ class MemoryManagementText(unittest.TestCase):
         sb = self.gateway.jvm.java.lang.StringBuffer()
         sb.append('Hello World')
         self.gateway.shutdown()
-        try:
-            sb.append('Python')
-            self.fail('Should have failed')
-        except Exception:
-            self.assertTrue(True)
-        try:
-            sb2 = gateway2.jvm.java.lang.StringBuffer()
-            sb2.append('Python')
-            self.fail('Should have failed')
-        except Exception:
-            self.assertTrue(True)
+
+        self.assertRaises(Exception, lambda : sb.append('Python'))
+
+        self.assertRaises(Exception,
+                lambda : gateway2.jvm.java.lang.StringBuffer())
 
     def testDetach(self):
         self.gateway = JavaGateway()
@@ -520,7 +496,6 @@ class ExceptionTest(unittest.TestCase):
         except Py4JJavaError as e:
             self.assertEqual('java.lang.NumberFormatException',
                     e.java_exception.getClass().getName())
-            self.assertTrue(True)
         except Exception:
             self.fail()
 
@@ -530,7 +505,6 @@ class ExceptionTest(unittest.TestCase):
         except Py4JJavaError as e:
             self.assertEqual('java.lang.NumberFormatException',
                     e.java_exception.getClass().getName())
-            self.assertTrue(True)
         except Exception:
             self.fail()
 
@@ -597,8 +571,6 @@ class JVMTest(unittest.TestCase):
         self.assertEqual(2, len(l1))
         self.assertEqual('hello world', l1[0])
         l2 = ['hello world', 1]
-        print(l1)
-        print(l2)
         self.assertEqual(str(l2), str(l1))
 
     def testStaticMethods(self):
@@ -633,11 +605,8 @@ class JVMTest(unittest.TestCase):
         java_import(self.gateway.jvm, 'java.io.File')
         self.assertTrue(self.gateway.jvm.ArrayList() is not None)
         self.assertTrue(self.gateway.jvm.File('hello.txt') is not None)
-        try:
-            newView.File('test.txt')
-            self.fail('')
-        except Exception:
-            self.assertTrue(True)
+        self.assertRaises(Exception, lambda : newView.File('test.txt'))
+
         java_import(newView, 'java.util.HashSet')
         self.assertTrue(newView.HashSet() is not None)
 
@@ -665,20 +634,20 @@ class HelpTest(unittest.TestCase):
     def testHelpObject(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, short_name=True, display=False)
-        print(help_page)
+        #print(help_page)
         self.assertEqual(1172, len(help_page))
 
     def testHelpObjectWithPattern(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, pattern='m*', short_name=True,
                 display=False)
-        print(help_page)
+        #print(help_page)
         self.assertEqual(855, len(help_page))
 
     def testHelpClass(self):
         String = self.gateway.jvm.java.lang.String
         help_page = self.gateway.help(String, short_name=False, display=False)
-        print(help_page)
+        #print(help_page)
         self.assertEqual(3439, len(help_page))
 
 
