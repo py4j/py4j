@@ -415,7 +415,8 @@ public class Protocol {
 
 		if (isError(returnMessage)) {
 			throw new Py4JException(
-					"An exception was raised by the Python Proxy.");
+					"An exception was raised by the Python Proxy. Return Message: "
+							+ returnMessage);
 		} else {
 			returnValue = getObject(returnMessage.substring(1), gateway);
 		}
@@ -541,7 +542,8 @@ public class Protocol {
 	 * @return True if the return message is an error
 	 */
 	public final static boolean isError(String returnMessage) {
-		return returnMessage == null || returnMessage.length() == 0 || returnMessage.charAt(0) == ERROR;
+		return returnMessage == null || returnMessage.length() == 0
+				|| returnMessage.charAt(0) == ERROR;
 	}
 
 	/**
