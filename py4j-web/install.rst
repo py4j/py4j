@@ -48,7 +48,7 @@ Using an official release
 
 1. Download the latest official release from `SourceForge
    <https://sourceforge.net/projects/py4j/files/>`_ or from `PyPI
-   <http://pypi.python.org/pypi/Py4J>`_. If you are using a \*NIX OS, download
+   <http://pypi.python.org/pypi/py4j>`_. If you are using a \*NIX OS, download
    the tar.gz file. If you are using Windows, download the zip file.
 2. Untar/Unzip the file and navigate to the newly created directory, e.g., ``cd
    py4j-0.x``.  
