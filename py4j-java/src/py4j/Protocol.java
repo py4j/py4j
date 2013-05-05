@@ -541,7 +541,7 @@ public class Protocol {
 	 * @return True if the return message is an error
 	 */
 	public final static boolean isError(String returnMessage) {
-		return returnMessage.length() == 0 || returnMessage.charAt(0) == ERROR;
+		return returnMessage == null || returnMessage.length() == 0 || returnMessage.charAt(0) == ERROR;
 	}
 
 	/**
