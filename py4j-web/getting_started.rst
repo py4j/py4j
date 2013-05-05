@@ -144,7 +144,16 @@ in your favorite development environment and check that you see the message
 
    .. code-block:: java
      
-     GatewayServer gatewayServer = new GatewayServer(new StackEntryPoint(), 25334);
+     GatewayServer gatewayServer = new GatewayServer(new StackEntryPoint(), 25335);
+
+   Do not forget to also change the Python code:
+
+   .. code-block:: python
+
+     from py4j.java_gateway import JavaGateway, GatewayClient
+
+     gateway = JavaGateway(GatewayClient(port=25335))
+
      
 You are now done. Because your program will wait for connections, it will never
 exit. To terminate your program, you have to kill it (e.g., Ctrl-C). If you
