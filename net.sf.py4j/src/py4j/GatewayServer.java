@@ -101,9 +101,9 @@ public class GatewayServer implements Runnable {
 
 	private final CallbackClient cbClient;
 
-	private final List<Class<? extends Command>> customCommands;
+	protected final List<Class<? extends Command>> customCommands;
 
-	private final List<GatewayServerListener> listeners;
+	protected final List<GatewayServerListener> listeners;
 
 	private ServerSocket sSocket;
 
