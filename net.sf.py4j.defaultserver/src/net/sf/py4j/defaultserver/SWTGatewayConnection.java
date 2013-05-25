@@ -40,8 +40,8 @@ public class SWTGatewayConnection extends GatewayConnection {
 				logger.info("Received command: " + commandLine);
 				final Command command = commands.get(commandLine);
 				if (command != null) {
-					// TODO Can cause deadlocks 
-					// if this is an API command.
+					// TODO Can cause deadlocks if this is an API command.
+					// TODO Check if other commands should be executed as SWTCommand as well.
 					if (!(command instanceof CallCommand)) {
 						command.execute(commandLine, reader, writer);
 					} else {
