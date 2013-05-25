@@ -5,6 +5,7 @@ import java.util.concurrent.CountDownLatch;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
+import py4j.GatewayConnection;
 import py4j.GatewayServer;
 import py4j.GatewayServerListener;
 
@@ -59,12 +60,12 @@ public class HeadlessApplication implements IApplication, GatewayServerListener 
 	}
 
 	@Override
-	public void connectionStarted() {
+	public void connectionStarted(GatewayConnection gatewayConnection) {
 		
 	}
 
 	@Override
-	public void connectionStopped() {
+	public void connectionStopped(GatewayConnection gatewayConnection) {
 		
 	}
 

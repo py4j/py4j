@@ -37,7 +37,7 @@ public class SWTGatewayServer extends GatewayServer {
 		super(entryPoint);
 	}
 	
-	protected Object createConnection(Gateway gateway, Socket socket)
+	protected GatewayConnection createConnection(Gateway gateway, Socket socket)
 			throws IOException {
 		return new SWTGatewayConnection(gateway, socket, customCommands, listeners);
 	}
