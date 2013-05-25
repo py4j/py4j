@@ -181,7 +181,7 @@ public class GatewayConnection implements Runnable {
 		}
 	}
 
-	private void quietSendError(BufferedWriter writer, Throwable exception) {
+	protected void quietSendError(BufferedWriter writer, Throwable exception) {
 		try {
 			String returnCommand = Protocol.getOutputErrorCommand(exception);
 			logger.fine("Trying to return error: " + returnCommand);

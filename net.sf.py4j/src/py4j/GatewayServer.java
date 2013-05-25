@@ -143,9 +143,9 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	private final CallbackClient cbClient;
 
-	private final List<Class<? extends Command>> customCommands;
+	protected final List<Class<? extends Command>> customCommands;
 
-	private final List<GatewayServerListener> listeners;
+	protected final List<GatewayServerListener> listeners;
 
 	private ServerSocket sSocket;
 
