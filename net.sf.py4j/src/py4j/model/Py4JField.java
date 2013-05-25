@@ -42,6 +42,12 @@ import py4j.reflection.TypeUtil;
  */
 public class Py4JField extends Py4JMember {
 
+	public final static Py4JField buildField(Field field) {
+		return new Py4JField(field.getName(), null, field.getType()
+				.getCanonicalName(), field.getDeclaringClass()
+				.getCanonicalName());
+	}
+
 	private final String type;
 
 	private final String container;
@@ -50,16 +56,6 @@ public class Py4JField extends Py4JMember {
 		super(name, javadoc);
 		this.type = type;
 		this.container = container;
-	}
-
-	public final static Py4JField buildField(Field field) {
-		return new Py4JField(field.getName(), null, field.getType()
-				.getCanonicalName(), field.getDeclaringClass()
-				.getCanonicalName());
-	}
-
-	public String getType() {
-		return type;
 	}
 
 	public String getContainer() {
@@ -75,6 +71,10 @@ public class Py4JField extends Py4JMember {
 		builder.append(TypeUtil.getName(type, shortName));
 
 		return builder.toString();
+	}
+
+	public String getType() {
+		return type;
 	}
 
 }

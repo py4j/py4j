@@ -58,15 +58,16 @@ public class ShutdownGatewayServerCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void init(Gateway gateway) {
-		super.init(gateway);
-		this.gatewayServer = (GatewayServer) gateway.getObject(GatewayServer.GATEWAY_SERVER_ID);
-	}
-
-	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
 		this.gatewayServer.shutdown();
+	}
+
+	@Override
+	public void init(Gateway gateway) {
+		super.init(gateway);
+		this.gatewayServer = (GatewayServer) gateway
+				.getObject(GatewayServer.GATEWAY_SERVER_ID);
 	}
 
 }

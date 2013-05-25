@@ -47,31 +47,10 @@ import py4j.reflection.TypeUtil;
  */
 public class Py4JClass extends Py4JMember {
 
-	private final String extendType;
-
-	private final String[] implementTypes;
-
-	private final Py4JMethod[] methods;
-
-	private final Py4JField[] fields;
-
-	private final Py4JClass[] classes;
-
-	public Py4JClass(String name, String javadoc, String extendType,
-			String[] implementTypes, Py4JMethod[] methods, Py4JField[] fields,
-			Py4JClass[] classes) {
-		super(name, javadoc);
-		this.extendType = extendType;
-		this.implementTypes = implementTypes;
-		this.methods = methods;
-		this.fields = fields;
-		this.classes = classes;
-	}
-
 	public final static Py4JClass buildClass(Class<?> clazz) {
 		return buildClass(clazz, true);
 	}
-	
+
 	public final static Py4JClass buildClass(Class<?> clazz, boolean sort) {
 		List<Py4JClass> classes = new ArrayList<Py4JClass>();
 		List<Py4JMethod> methods = new ArrayList<Py4JMethod>();
@@ -117,12 +96,25 @@ public class Py4JClass extends Py4JMember {
 				classes.toArray(new Py4JClass[0]));
 	}
 
-	public Py4JMethod[] getMethods() {
-		return methods;
-	}
+	private final String extendType;
 
-	public Py4JField[] getFields() {
-		return fields;
+	private final String[] implementTypes;
+
+	private final Py4JMethod[] methods;
+
+	private final Py4JField[] fields;
+
+	private final Py4JClass[] classes;
+
+	public Py4JClass(String name, String javadoc, String extendType,
+			String[] implementTypes, Py4JMethod[] methods, Py4JField[] fields,
+			Py4JClass[] classes) {
+		super(name, javadoc);
+		this.extendType = extendType;
+		this.implementTypes = implementTypes;
+		this.methods = methods;
+		this.fields = fields;
+		this.classes = classes;
 	}
 
 	public Py4JClass[] getClasses() {
@@ -133,8 +125,16 @@ public class Py4JClass extends Py4JMember {
 		return extendType;
 	}
 
+	public Py4JField[] getFields() {
+		return fields;
+	}
+
 	public String[] getImplementTypes() {
 		return implementTypes;
+	}
+
+	public Py4JMethod[] getMethods() {
+		return methods;
 	}
 
 	@Override

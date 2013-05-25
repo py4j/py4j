@@ -80,22 +80,6 @@ public class MethodDescriptor {
 		return builder.toString();
 	}
 
-	public String getInternalRepresentation() {
-		return internalRepresentation;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public Class getContainer() {
-		return container;
-	}
-
-	public Class[] getParameters() {
-		return parameters;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null || !(obj instanceof MethodDescriptor)) {
@@ -104,6 +88,22 @@ public class MethodDescriptor {
 
 		return internalRepresentation
 				.equals(((MethodDescriptor) obj).internalRepresentation);
+	}
+
+	public Class getContainer() {
+		return container;
+	}
+
+	public String getInternalRepresentation() {
+		return internalRepresentation;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public Class[] getParameters() {
+		return parameters;
 	}
 
 	@Override

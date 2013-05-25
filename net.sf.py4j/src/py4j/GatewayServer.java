@@ -30,11 +30,17 @@
 package py4j;
 
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -72,7 +78,10 @@ import py4j.commands.Command;
  * @author Barthelemy Dagenais
  * 
  */
-public class GatewayServer implements Runnable {
+public class GatewayServer extends DefaultGatewayServerListener implements
+		Runnable {
+
+	public static final String DEFAULT_ADDRESS = "127.0.0.1";
 
 	public static final int DEFAULT_PORT = 25333;
 
@@ -84,9 +93,42 @@ public class GatewayServer implements Runnable {
 
 	public static final String GATEWAY_SERVER_ID = "GATEWAY_SERVER";
 
+	/**
+	 * <p>
+	 * Utility method to turn logging on. Logging is turned off by default. All
+	 * log messages will be logged.
+	 * </p>
+	 */
+	public static void turnAllLoggingOn() {
+		Logger.getLogger("py4j").setLevel(Level.ALL);
+	}
+
+	/**
+	 * <p>
+	 * Utility method to turn logging off. Logging is turned off by default.
+	 * </p>
+	 */
+	public static void turnLoggingOff() {
+		Logger.getLogger("py4j").setLevel(Level.OFF);
+	}
+
+	/**
+	 * <p>
+	 * Utility method to turn logging on. Logging is turned off by default. Log
+	 * messages up to INFO level will be logged.
+	 * </p>
+	 */
+	public static void turnLoggingOn() {
+		Logger.getLogger("py4j").setLevel(Level.INFO);
+	}
+
+	private final InetAddress address;
+
 	private final int port;
 
 	private final int pythonPort;
+
+	private final InetAddress pythonAddress;
 
 	private final Gateway gateway;
 
@@ -107,8 +149,82 @@ public class GatewayServer implements Runnable {
 
 	private ServerSocket sSocket;
 
+	private boolean isShutdown = false;
+
+	private final Lock lock = new ReentrantLock(true);
+
 	static {
 		GatewayServer.turnLoggingOff();
+	}
+
+	/**
+	 * <p>
+	 * Creates a GatewayServer instance with default port (25333), default
+	 * address (127.0.0.1), and default timeout value (no timeout).
+	 * </p>
+	 * 
+	 * @param entryPoint
+	 *            The entry point of this Gateway. Can be null.
+	 */
+	public GatewayServer(Object entryPoint) {
+		this(entryPoint, DEFAULT_PORT, DEFAULT_CONNECT_TIMEOUT,
+				DEFAULT_READ_TIMEOUT);
+	}
+
+	/**
+	 * 
+	 * @param entryPoint
+	 *            The entry point of this Gateway. Can be null.
+	 * @param port
+	 *            The port the GatewayServer is listening to.
+	 */
+	public GatewayServer(Object entryPoint, int port) {
+		this(entryPoint, port, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
+	}
+
+	/**
+	 * 
+	 * @param entryPoint
+	 *            The entry point of this Gateway. Can be null.
+	 * @param port
+	 *            The port the GatewayServer is listening to.
+	 * @param pythonPort
+	 *            The port used by a PythonProxyHandler to connect to a Python
+	 *            gateway. Essentially the port used for Python callbacks.
+	 * @param address
+	 *            The address the GatewayServer is listening to.
+	 * @param pythonAddress
+	 *            The address used by a PythonProxyHandler to connect to a
+	 *            Python gateway.
+	 * @param connectTimeout
+	 *            Time in milliseconds (0 = infinite). If a GatewayServer does
+	 *            not receive a connection request after this time, it closes
+	 *            the server socket and no other connection is accepted.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once a Python program is
+	 *            connected, if a GatewayServer does not receive a request
+	 *            (e.g., a method call) after this time, the connection with the
+	 *            Python program is closed.
+	 * @param customCommands
+	 *            A list of custom Command classes to augment the Server
+	 *            features. These commands will be accessible from Python
+	 *            programs. Can be null.
+	 */
+	public GatewayServer(Object entryPoint, int port, int pythonPort,
+			InetAddress address, InetAddress pythonAddress, int connectTimeout,
+			int readTimeout, List<Class<? extends Command>> customCommands) {
+		super();
+		this.port = port;
+		this.pythonPort = pythonPort;
+		this.connectTimeout = connectTimeout;
+		this.readTimeout = readTimeout;
+		this.customCommands = customCommands;
+		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
+		this.address = address;
+		this.pythonAddress = pythonAddress;
+		this.cbClient = new CallbackClient(pythonPort, pythonAddress);
+		this.gateway = new Gateway(entryPoint, cbClient);
+		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 	}
 
 	/**
@@ -164,11 +280,17 @@ public class GatewayServer implements Runnable {
 		this.pythonPort = pythonPort;
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;
-		this.cbClient = new CallbackClient(pythonPort);
-		this.gateway = new Gateway(entryPoint, cbClient);
-		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 		this.customCommands = customCommands;
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
+		try {
+			this.address = InetAddress.getByName(DEFAULT_ADDRESS);
+			this.pythonAddress = InetAddress.getByName(DEFAULT_ADDRESS);
+		} catch (UnknownHostException e) {
+			throw new Py4JNetworkException(e);
+		}
+		this.cbClient = new CallbackClient(pythonPort, this.pythonAddress);
+		this.gateway = new Gateway(entryPoint, cbClient);
+		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 	}
 
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
@@ -179,54 +301,196 @@ public class GatewayServer implements Runnable {
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;
 		this.cbClient = cbClient;
-		this.pythonPort = cbClient.getPort();
 		this.gateway = new Gateway(entryPoint, cbClient);
+		this.pythonPort = cbClient.getPort();
+		this.pythonAddress = cbClient.getAddress();
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 		this.customCommands = customCommands;
-		this.listeners = new ArrayList<GatewayServerListener>();
-	}
-
-	/**
-	 * <p>
-	 * Creates a GatewayServer instance with default port (25333), default
-	 * address (localhost), and default timeout value (no timeout).
-	 * </p>
-	 * 
-	 * @param entryPoint
-	 *            The entry point of this Gateway. Can be null.
-	 */
-	public GatewayServer(Object entryPoint) {
-		this(entryPoint, DEFAULT_PORT, DEFAULT_CONNECT_TIMEOUT,
-				DEFAULT_READ_TIMEOUT);
-	}
-
-	/**
-	 * 
-	 * @param entryPoint
-	 *            The entry point of this Gateway. Can be null.
-	 * @param port
-	 *            The port the GatewayServer is listening to.
-	 */
-	public GatewayServer(Object entryPoint, int port) {
-		this(entryPoint, port, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
-	}
-
-	/**
-	 * <p>
-	 * Starts the ServerSocket.
-	 * </p>
-	 * 
-	 * @throws Py4JNetworkException
-	 *             If the port is busy.
-	 */
-	protected void startSocket() throws Py4JNetworkException {
+		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 		try {
-			sSocket = new ServerSocket(port);
-			sSocket.setSoTimeout(connectTimeout);
-			sSocket.setReuseAddress(true);
-		} catch (IOException e) {
+			this.address = InetAddress.getByName(DEFAULT_ADDRESS);
+		} catch (UnknownHostException e) {
 			throw new Py4JNetworkException(e);
 		}
+	}
+
+	public void addListener(GatewayServerListener listener) {
+		if (!listeners.contains(listener)) {
+			listeners.add(listener);
+		}
+	}
+
+	public void connectionStopped(GatewayConnection gatewayConnection) {
+		try {
+			lock.lock();
+			if (!isShutdown) {
+				connections.remove(gatewayConnection.getSocket());
+			}
+		} finally {
+			lock.unlock();
+		}
+
+	}
+
+	protected GatewayConnection createConnection(Gateway gateway, Socket socket)
+			throws IOException {
+		return new GatewayConnection(gateway, socket, customCommands, listeners);
+	}
+
+	protected void fireConnectionError(Exception e) {
+		logger.log(Level.SEVERE, "Connection Server Error", e);
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.connectionError(e);
+			} catch (Exception ex) {
+				logger.log(Level.SEVERE, "A listener crashed.", ex);
+			}
+		}
+	}
+
+	protected void fireConnectionStarted(GatewayConnection gatewayConnection) {
+		logger.info("Connection Started");
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.connectionStarted(gatewayConnection);
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
+	}
+
+	protected void fireServerError(Exception e) {
+		if (e.getMessage().contains("Socket closed")) {
+			logger.log(Level.FINE, "Gateway Server Error", e);
+		} else {
+			logger.log(Level.SEVERE, "Gateway Server Error", e);
+		}
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.serverError(e);
+			} catch (Exception ex) {
+				logger.log(Level.SEVERE, "A listener crashed.", ex);
+			}
+		}
+	}
+
+	protected void fireServerPostShutdown() {
+		logger.fine("Gateway Server Post Shutdown");
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.serverPostShutdown();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
+	}
+
+	protected void fireServerPreShutdown() {
+		logger.fine("Gateway Server Pre Shutdown");
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.serverPreShutdown();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
+	}
+
+	protected void fireServerStarted() {
+		logger.info("Gateway Server Started");
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.serverStarted();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
+	}
+
+	protected void fireServerStopped() {
+		logger.info("Gateway Server Stopped");
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.serverStopped();
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
+	}
+
+	public InetAddress getAddress() {
+		return address;
+	}
+
+	public CallbackClient getCallbackClient() {
+		return cbClient;
+	}
+
+	public int getConnectTimeout() {
+		return connectTimeout;
+	}
+
+	/**
+	 * 
+	 * @return The port the server socket is listening on. It will be different
+	 *         than the specified port if the socket is listening on an
+	 *         ephemeral port (specified port = 0). Returns -1 if the server
+	 *         socket is not listening on anything.
+	 */
+	public int getListeningPort() {
+		int port = -1;
+		try {
+			if (sSocket.isBound()) {
+				port = sSocket.getLocalPort();
+			}
+		} catch (Exception e) {
+			// do nothing
+		}
+		return port;
+	}
+
+	/**
+	 * 
+	 * @return The port specified when the gateway server is initialized. This
+	 *         is the port that is passed to the server socket.
+	 */
+	public int getPort() {
+		return port;
+	}
+
+	public InetAddress getPythonAddress() {
+		return pythonAddress;
+	}
+
+	public int getPythonPort() {
+		return pythonPort;
+	}
+
+	public int getReadTimeout() {
+		return readTimeout;
+	}
+
+	private void processSocket(Socket socket) {
+		try {
+			lock.lock();
+			if (!isShutdown) {
+				connections.add(socket);
+				socket.setSoTimeout(readTimeout);
+				GatewayConnection gatewayConnection = createConnection(gateway,
+						socket);
+				fireConnectionStarted(gatewayConnection);
+			}
+		} catch (Exception e) {
+			// Error while processing a connection should not be prevent the
+			// gateway server from accepting new connections.
+			fireConnectionError(e);
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	public void removeListener(GatewayServerListener listener) {
+		listeners.remove(listener);
 	}
 
 	@Override
@@ -234,7 +498,8 @@ public class GatewayServer implements Runnable {
 		try {
 			gateway.startup();
 			fireServerStarted();
-			while (true) {
+			addListener(this);
+			while (!isShutdown) {
 				Socket socket = sSocket.accept();
 				processSocket(socket);
 			}
@@ -242,24 +507,40 @@ public class GatewayServer implements Runnable {
 			fireServerError(e);
 		}
 		fireServerStopped();
+		removeListener(this);
 	}
 
-	protected Object createConnection(Gateway gateway, Socket socket)
-			throws IOException {
-		return new GatewayConnection(gateway, socket, customCommands, listeners);
-	}
-
-	private void processSocket(Socket socket) {
+	/**
+	 * <p>
+	 * Stops accepting connections, closes all current connections, and calls
+	 * {@link py4j.Gateway#shutdown() Gateway.shutdown()}
+	 * </p>
+	 */
+	public void shutdown() {
+		fireServerPreShutdown();
 		try {
-			fireConnectionStarted();
-			connections.add(socket);
-			socket.setSoTimeout(readTimeout);
-			createConnection(gateway, socket);
-		} catch (Exception e) {
-			// Error while processing a connection should not be prevent the
-			// gateway server from accepting new connections.
-			fireConnectionError(e);
+			lock.lock();
+			isShutdown = true;
+			NetworkUtil.quietlyClose(sSocket);
+			for (Socket socket : connections) {
+				NetworkUtil.quietlyClose(socket);
+			}
+			connections.clear();
+			gateway.shutdown();
+			cbClient.shutdown();
+			fireServerPostShutdown();
+		} finally {
+			lock.unlock();
 		}
+	}
+
+	/**
+	 * <p>
+	 * Starts to accept connections in a second thread (non-blocking call).
+	 * </p>
+	 */
+	public void start() {
+		start(true);
 	}
 
 	/**
@@ -288,178 +569,61 @@ public class GatewayServer implements Runnable {
 
 	/**
 	 * <p>
-	 * Starts to accept connections in a second thread (non-blocking call).
+	 * Starts the ServerSocket.
 	 * </p>
-	 */
-	public void start() {
-		start(true);
-	}
-
-	/**
-	 * <p>
-	 * Stops accepting connections, closes all current connections, and calls
-	 * {@link py4j.Gateway#shutdown() Gateway.shutdown()}
-	 * </p>
-	 */
-	public void shutdown() {
-		fireServerPreShutdown();
-		// TODO Check that all connections are indeed closed!
-		NetworkUtil.quietlyClose(sSocket);
-		for (Socket socket : connections) {
-			NetworkUtil.quietlyClose(socket);
-		}
-		connections.clear();
-		gateway.shutdown();
-		cbClient.shutdown();
-		fireServerPostShutdown();
-	}
-
-	public int getConnectTimeout() {
-		return connectTimeout;
-	}
-
-	public int getReadTimeout() {
-		return readTimeout;
-	}
-
-	public int getPythonPort() {
-		return pythonPort;
-	}
-
-	/**
 	 * 
-	 * @return The port specified when the gateway server is initialized. This
-	 *         is the port that is passed to the server socket.
+	 * @throws Py4JNetworkException
+	 *             If the port is busy.
 	 */
-	public int getPort() {
-		return port;
-	}
-
-	/**
-	 * 
-	 * @return The port the server socket is listening on. It will be different
-	 *         than the specified port if the socket is listening on an
-	 *         ephemeral port (specified port = 0). Returns -1 if the server
-	 *         socket is not listening on anything.
-	 */
-	public int getListeningPort() {
-		int port = -1;
+	protected void startSocket() throws Py4JNetworkException {
 		try {
-			if (sSocket.isBound()) {
-				port = sSocket.getLocalPort();
-			}
-		} catch (Exception e) {
-			// do nothing
-		}
-		return port;
-	}
-
-	public CallbackClient getCallbackClient() {
-		return cbClient;
-	}
-
-	public void addListener(GatewayServerListener listener) {
-		if (!listeners.contains(listener)) {
-			listeners.add(listener);
+			sSocket = new ServerSocket(port, -1, address);
+			sSocket.setSoTimeout(connectTimeout);
+			sSocket.setReuseAddress(true);
+		} catch (IOException e) {
+			throw new Py4JNetworkException(e);
 		}
 	}
 
-	public void removeListener(GatewayServerListener listener) {
-		listeners.remove(listener);
-	}
+    /**
+     * <p>
+     * Main method to start a local GatewayServer on a given port.
+     * The listening port is printed to stdout so that clients can start
+     * servers on ephemeral ports.
+     * </p>
+     */
+    public static void main(String[] args) {
+        int port;
+        boolean dieOnBrokenPipe = false;
+        String usage = "usage: [--die-on-broken-pipe] port";
+        if (args.length == 0) {
+            System.err.println(usage);
+            System.exit(1);
+        } else if (args.length == 2) {
+            if (!args[0].equals("--die-on-broken-pipe")) {
+                System.err.println(usage);
+                System.exit(1);
+            }
+            dieOnBrokenPipe = true;
+        }
+        port = Integer.parseInt(args[args.length - 1]);
+        GatewayServer gatewayServer = new GatewayServer(null, port);
+        gatewayServer.start();
+        /* Print out the listening port so that clients can discover it. */
+        int listening_port = gatewayServer.getListeningPort();
+        System.out.println("" + listening_port);
 
-	protected void fireServerStarted() {
-		logger.info("Gateway Server Started");
-		for (GatewayServerListener listener : listeners) {
-			try {
-				listener.serverStarted();
-			} catch (Exception e) {
-				logger.log(Level.SEVERE, "A listener crashed.", e);
-			}
-		}
-	}
-
-	protected void fireServerStopped() {
-		logger.info("Gateway Server Stopped");
-		for (GatewayServerListener listener : listeners) {
-			try {
-				listener.serverStopped();
-			} catch (Exception e) {
-				logger.log(Level.SEVERE, "A listener crashed.", e);
-			}
-		}
-	}
-
-	protected void fireServerError(Exception e) {
-		logger.log(Level.SEVERE, "Gateway Server Error", e);
-		for (GatewayServerListener listener : listeners) {
-			try {
-				listener.serverError(e);
-			} catch (Exception ex) {
-				logger.log(Level.SEVERE, "A listener crashed.", ex);
-			}
-		}
-	}
-
-	protected void fireServerPreShutdown() {
-		logger.info("Gateway Server Pre Shutdown");
-		for (GatewayServerListener listener : listeners) {
-			try {
-				listener.serverPreShutdown();
-			} catch (Exception e) {
-				logger.log(Level.SEVERE, "A listener crashed.", e);
-			}
-		}
-	}
-
-	protected void fireServerPostShutdown() {
-		logger.info("Gateway Server Post Shutdown");
-		for (GatewayServerListener listener : listeners) {
-			try {
-				listener.serverPostShutdown();
-			} catch (Exception e) {
-				logger.log(Level.SEVERE, "A listener crashed.", e);
-			}
-		}
-	}
-
-	protected void fireConnectionStarted() {
-		logger.info("Connection Started");
-		for (GatewayServerListener listener : listeners) {
-			try {
-				listener.connectionStarted();
-			} catch (Exception e) {
-				logger.log(Level.SEVERE, "A listener crashed.", e);
-			}
-		}
-	}
-
-	protected void fireConnectionError(Exception e) {
-		logger.log(Level.SEVERE, "Connection Server Error", e);
-		for (GatewayServerListener listener : listeners) {
-			try {
-				listener.connectionError(e);
-			} catch (Exception ex) {
-				logger.log(Level.SEVERE, "A listener crashed.", ex);
-			}
-		}
-	}
-
-	/**
-	 * <p>
-	 * Utility method to turn logging off. Logging is turned off by default.
-	 * </p>
-	 */
-	public static void turnLoggingOff() {
-		Logger.getLogger("py4j").setLevel(Level.OFF);
-	}
-
-	/**
-	 * <p>
-	 * Utility method to turn logging on. Logging is turned off by default.
-	 * </p>
-	 */
-	public static void turnLoggingOn() {
-		Logger.getLogger("py4j").setLevel(Level.ALL);
-	}
+        if (dieOnBrokenPipe) {
+            /* Exit on EOF or broken pipe.  This ensures that the server dies
+             * if its parent program dies. */
+            BufferedReader stdin = new BufferedReader(
+                                   new InputStreamReader(System.in));
+            try {
+                stdin.readLine();
+                System.exit(0);
+            } catch (java.io.IOException e) {
+                System.exit(1);
+            }
+        }
+    }
 }

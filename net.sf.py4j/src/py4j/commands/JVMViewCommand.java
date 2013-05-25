@@ -72,51 +72,15 @@ public class JVMViewCommand extends AbstractCommand {
 		this.commandName = JVMVIEW_COMMAND_NAME;
 	}
 
-	@Override
-	public void init(Gateway gateway) {
-		super.init(gateway);
-		rEngine = gateway.getReflectionEngine();
-	}
-
-	@Override
-	public void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException {
-		char subCommand = reader.readLine().charAt(0);
-		String returnCommand = null;
-
-		if (subCommand == CREATE_VIEW_SUB_COMMAND_NAME) {
-			returnCommand = createJVMView(reader);
-		} else if (subCommand == IMPORT_SUB_COMMAND_NAME) {
-			returnCommand = doImport(reader);
-		} else if (subCommand == REMOVE_IMPORT_SUB_COMMAND_NAME) {
-			returnCommand = removeImport(reader);
-		} else {
-			returnCommand = search(reader);
-		}
-		logger.info("Returning command: " + returnCommand);
-		writer.write(returnCommand);
-		writer.flush();
-	}
-	
-	private String removeImport(BufferedReader reader) throws IOException {
-		String jvmId = reader.readLine();
-		String importString = StringUtil.unescape(reader.readLine());
-
+	private String createJVMView(BufferedReader reader) throws IOException {
+		String name = StringUtil.unescape(reader.readLine());
 		reader.readLine();
 
-		JVMView view = (JVMView) Protocol.getObject(jvmId, gateway);
-		boolean removed = false;
-		if (importString.endsWith("*")) {
-			removed = view.removeStarImport(importString);
-		} else {
-			removed = view.removeSingleImport(importString);
-		}
+		JVMView newView = new JVMView(name, null);
+		ReturnObject rObject = gateway.getReturnObject(newView);
+		newView.setId(rObject.getName());
 
-		return Protocol.getOutputCommand(ReturnObject.getPrimitiveReturnObject(new Boolean(removed)));
-	}
-
-	private String search(BufferedReader reader) {
-		return null;
+		return Protocol.getOutputCommand(rObject);
 	}
 
 	private String doImport(BufferedReader reader) throws IOException {
@@ -134,15 +98,52 @@ public class JVMViewCommand extends AbstractCommand {
 		return Protocol.getOutputVoidCommand();
 	}
 
-	private String createJVMView(BufferedReader reader) throws IOException {
-		String name = StringUtil.unescape(reader.readLine());
+	@Override
+	public void execute(String commandName, BufferedReader reader,
+			BufferedWriter writer) throws Py4JException, IOException {
+		char subCommand = reader.readLine().charAt(0);
+		String returnCommand = null;
+
+		if (subCommand == CREATE_VIEW_SUB_COMMAND_NAME) {
+			returnCommand = createJVMView(reader);
+		} else if (subCommand == IMPORT_SUB_COMMAND_NAME) {
+			returnCommand = doImport(reader);
+		} else if (subCommand == REMOVE_IMPORT_SUB_COMMAND_NAME) {
+			returnCommand = removeImport(reader);
+		} else {
+			returnCommand = search(reader);
+		}
+		logger.finest("Returning command: " + returnCommand);
+		writer.write(returnCommand);
+		writer.flush();
+	}
+
+	@Override
+	public void init(Gateway gateway) {
+		super.init(gateway);
+		rEngine = gateway.getReflectionEngine();
+	}
+
+	private String removeImport(BufferedReader reader) throws IOException {
+		String jvmId = reader.readLine();
+		String importString = StringUtil.unescape(reader.readLine());
+
 		reader.readLine();
 
-		JVMView newView = new JVMView(name, null);
-		ReturnObject rObject = gateway.getReturnObject(newView);
-		newView.setId(rObject.getName());
+		JVMView view = (JVMView) Protocol.getObject(jvmId, gateway);
+		boolean removed = false;
+		if (importString.endsWith("*")) {
+			removed = view.removeStarImport(importString);
+		} else {
+			removed = view.removeSingleImport(importString);
+		}
 
-		return Protocol.getOutputCommand(rObject);
+		return Protocol.getOutputCommand(ReturnObject
+				.getPrimitiveReturnObject(new Boolean(removed)));
+	}
+
+	private String search(BufferedReader reader) {
+		return null;
 	}
 
 }
