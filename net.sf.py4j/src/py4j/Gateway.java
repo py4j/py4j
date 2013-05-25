@@ -30,6 +30,8 @@
 package py4j;
 
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -112,12 +114,12 @@ public class Gateway {
 		return cbClient;
 	}
 
-	public Object getEntryPoint() {
-		return this.entryPoint;
-	}
-
 	public JVMView getDefaultJVMView() {
 		return this.defaultJVMView;
+	}
+
+	public Object getEntryPoint() {
+		return this.entryPoint;
 	}
 
 	protected String getNextObjectId() {
@@ -158,6 +160,8 @@ public class Gateway {
 				returnObject = ReturnObject.getPrimitiveReturnObject(object);
 			} else if (object == ReflectionEngine.RETURN_VOID) {
 				returnObject = ReturnObject.getVoidReturnObject();
+			} else if (isDecimalObject(object)) {
+				returnObject = ReturnObject.getDecimalReturnObject(object);
 			} else if (isList(object)) {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getListReturnObject(objectId,
@@ -203,7 +207,7 @@ public class Gateway {
 		}
 		ReturnObject returnObject = null;
 		try {
-			logger.info("Calling constructor: " + fqn);
+			logger.finer("Calling constructor: " + fqn);
 			Object[] parameters = args.toArray();
 
 			MethodInvoker method = rEngine.getConstructor(fqn, parameters);
@@ -239,7 +243,7 @@ public class Gateway {
 		ReturnObject returnObject = null;
 		try {
 			Object targetObject = getObjectFromId(targetObjectId);
-			logger.info("Calling: " + methodName);
+			logger.finer("Calling: " + methodName);
 			Object[] parameters = args.toArray();
 
 			MethodInvoker method = null;
@@ -270,6 +274,14 @@ public class Gateway {
 		return object.getClass().isArray();
 	}
 
+	protected boolean isDecimalObject(Object object) {
+		return object instanceof BigDecimal;
+	}
+
+	private boolean isIterator(Object object) {
+		return object instanceof Iterator;
+	}
+
 	protected boolean isList(Object object) {
 		return object instanceof List;
 	}
@@ -279,17 +291,14 @@ public class Gateway {
 	}
 
 	protected boolean isPrimitiveObject(Object object) {
-		return object instanceof Boolean || object instanceof String
-				|| object instanceof Number || object instanceof Character
-				|| object instanceof byte[];
+		return object instanceof Boolean
+				|| object instanceof String
+				|| (object instanceof Number && !(object instanceof BigDecimal || object instanceof BigInteger))
+				|| object instanceof Character || object instanceof byte[];
 	}
 
 	protected boolean isSet(Object object) {
 		return object instanceof Set;
-	}
-
-	private boolean isIterator(Object object) {
-		return object instanceof Iterator;
 	}
 
 	public boolean isStarted() {

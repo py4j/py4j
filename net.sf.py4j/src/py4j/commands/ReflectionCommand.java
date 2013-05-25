@@ -67,17 +67,9 @@ public class ReflectionCommand extends AbstractCommand {
 
 	protected ReflectionEngine rEngine;
 
-	
-	
 	public ReflectionCommand() {
 		super();
 		this.commandName = REFLECTION_COMMAND_NAME;
-	}
-
-	@Override
-	public void init(Gateway gateway) {
-		super.init(gateway);
-		rEngine = gateway.getReflectionEngine();
 	}
 
 	@Override
@@ -92,7 +84,7 @@ public class ReflectionCommand extends AbstractCommand {
 			returnCommand = getMember(reader);
 		}
 
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}
@@ -127,7 +119,8 @@ public class ReflectionCommand extends AbstractCommand {
 						returnCommand = Protocol
 								.getMemberOutputCommand(Protocol.METHOD_TYPE);
 					} else {
-						returnCommand = Protocol.getOutputErrorCommand("Trying to access a non-static member from a static context.");
+						returnCommand = Protocol
+								.getOutputErrorCommand("Trying to access a non-static member from a static context.");
 					}
 				}
 			}
@@ -151,14 +144,15 @@ public class ReflectionCommand extends AbstractCommand {
 	private String getUnknownMember(BufferedReader reader) throws IOException {
 		String fqn = reader.readLine();
 		String jvmId = reader.readLine();
-		JVMView view = (JVMView)Protocol.getObject(jvmId, this.gateway);
+		JVMView view = (JVMView) Protocol.getObject(jvmId, this.gateway);
 		reader.readLine();
 		String returnCommand = null;
 		try {
-			// TODO APPEND CLASS NAME, because it might not be the fqn, but a new one because of imports!
+			// TODO APPEND CLASS NAME, because it might not be the fqn, but a
+			// new one because of imports!
 			String fullyQualifiedName = TypeUtil.forName(fqn, view).getName();
-			returnCommand = Protocol
-					.getMemberOutputCommand(Protocol.CLASS_TYPE, fullyQualifiedName);
+			returnCommand = Protocol.getMemberOutputCommand(
+					Protocol.CLASS_TYPE, fullyQualifiedName);
 		} catch (ClassNotFoundException e) {
 			returnCommand = Protocol
 					.getMemberOutputCommand(Protocol.PACKAGE_TYPE);
@@ -166,6 +160,12 @@ public class ReflectionCommand extends AbstractCommand {
 			returnCommand = Protocol.getOutputErrorCommand(e);
 		}
 		return returnCommand;
+	}
+
+	@Override
+	public void init(Gateway gateway) {
+		super.init(gateway);
+		rEngine = gateway.getReflectionEngine();
 	}
 
 }

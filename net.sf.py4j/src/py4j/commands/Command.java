@@ -63,16 +63,6 @@ import py4j.Py4JException;
 public interface Command {
 
 	/**
-	 * <p>
-	 * Called when a command instance is created and assigned to a connection.
-	 * Called by {@link GatewayConnection#initCommands(Gateway,List<Class<? extends Command>>)}
-	 * </p>
-	 * 
-	 * @param gateway
-	 */
-	public void init(Gateway gateway);
-
-	/**
 	 * 
 	 * @param commandName
 	 *            The command name that was extracted of the command.
@@ -91,7 +81,18 @@ public interface Command {
 	 */
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException;
-	
+
 	public String getCommandName();
+
+	/**
+	 * <p>
+	 * Called when a command instance is created and assigned to a connection.
+	 * Called by {@link GatewayConnection#initCommands(Gateway,List<Class<?
+	 * extends Command>>)}
+	 * </p>
+	 * 
+	 * @param gateway
+	 */
+	public void init(Gateway gateway);
 
 }

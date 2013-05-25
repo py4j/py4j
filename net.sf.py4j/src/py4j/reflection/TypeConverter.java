@@ -45,6 +45,7 @@ public class TypeConverter {
 	public final static int INT_TO_SHORT = 1;
 	public final static int INT_TO_BYTE = 2;
 	public final static int STRING_TO_CHAR = 3;
+	public final static int NUM_TO_LONG = 4;
 
 	private final int conversion;
 
@@ -57,6 +58,8 @@ public class TypeConverter {
 			INT_TO_BYTE);
 	public final static TypeConverter CHAR_CONVERTER = new TypeConverter(
 			STRING_TO_CHAR);
+	public final static TypeConverter LONG_CONVERTER = new TypeConverter(
+			NUM_TO_LONG);
 
 	public TypeConverter() {
 		this(NO_CONVERSION);
@@ -85,9 +88,16 @@ public class TypeConverter {
 		case STRING_TO_CHAR:
 			newObject = ((CharSequence) obj).charAt(0);
 			break;
+		case NUM_TO_LONG:
+			newObject = Long.parseLong(obj.toString());
+			break;
 		}
 
 		return newObject;
+	}
+
+	public int getConversion() {
+		return conversion;
 	}
 
 }

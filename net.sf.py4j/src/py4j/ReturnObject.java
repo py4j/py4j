@@ -29,6 +29,8 @@
 
 package py4j;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * A ReturnObject wraps a value returned by a method. If the value is a
@@ -67,6 +69,26 @@ public class ReturnObject {
 		return rObject;
 	}
 
+	public static ReturnObject getDecimalReturnObject(Object object) {
+		BigDecimal decimal = (BigDecimal) object;
+		ReturnObject rObject = new ReturnObject();
+		rObject.isDecimal = true;
+		rObject.commandPart = Protocol.DECIMAL_TYPE + decimal.toPlainString();
+		return rObject;
+	}
+
+	public static ReturnObject getErrorReferenceReturnObject(String name) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.name = name;
+		rObject.isError = true;
+		StringBuilder builder = new StringBuilder();
+		builder.append(Protocol.ERROR);
+		builder.append(Protocol.REFERENCE_TYPE);
+		builder.append(name);
+		rObject.commandPart = builder.toString();
+		return rObject;
+	}
+
 	public static ReturnObject getErrorReturnObject() {
 		ReturnObject rObject = new ReturnObject();
 		rObject.isError = true;
@@ -86,15 +108,11 @@ public class ReturnObject {
 		return rObject;
 	}
 
-	public static ReturnObject getErrorReferenceReturnObject(String name) {
+	public static ReturnObject getIteratorReturnObject(String name) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
-		rObject.isError = true;
-		StringBuilder builder = new StringBuilder();
-		builder.append(Protocol.ERROR);
-		builder.append(Protocol.REFERENCE_TYPE);
-		builder.append(name);
-		rObject.commandPart = builder.toString();
+		rObject.isIterator = true;
+		rObject.commandPart = Protocol.ITERATOR_TYPE + name;
 		return rObject;
 	}
 
@@ -107,29 +125,12 @@ public class ReturnObject {
 		return rObject;
 	}
 
-	public static ReturnObject getSetReturnObject(String name, int size) {
-		ReturnObject rObject = new ReturnObject();
-		rObject.name = name;
-		rObject.size = size;
-		rObject.isSet = true;
-		rObject.commandPart = Protocol.SET_TYPE + name;
-		return rObject;
-	}
-
 	public static ReturnObject getMapReturnObject(String name, int size) {
 		ReturnObject rObject = new ReturnObject();
 		rObject.name = name;
 		rObject.size = size;
 		rObject.isMap = true;
 		rObject.commandPart = Protocol.MAP_TYPE + name;
-		return rObject;
-	}
-
-	public static ReturnObject getIteratorReturnObject(String name) {
-		ReturnObject rObject = new ReturnObject();
-		rObject.name = name;
-		rObject.isIterator = true;
-		rObject.commandPart = Protocol.ITERATOR_TYPE + name;
 		return rObject;
 	}
 
@@ -149,7 +150,7 @@ public class ReturnObject {
 					+ StringUtil.escape(primitive.toString());
 		} else if (primitiveType == Protocol.BYTES_TYPE) {
 			rObject.commandPart = primitiveType
-			+ Protocol.encodeBytes((byte[])primitive);
+					+ Protocol.encodeBytes((byte[]) primitive);
 		} else {
 			rObject.commandPart = primitiveType + primitive.toString();
 		}
@@ -161,6 +162,15 @@ public class ReturnObject {
 		rObject.name = name;
 		rObject.isReference = true;
 		rObject.commandPart = Protocol.REFERENCE_TYPE + name;
+		return rObject;
+	}
+
+	public static ReturnObject getSetReturnObject(String name, int size) {
+		ReturnObject rObject = new ReturnObject();
+		rObject.name = name;
+		rObject.size = size;
+		rObject.isSet = true;
+		rObject.commandPart = Protocol.SET_TYPE + name;
 		return rObject;
 	}
 
@@ -192,6 +202,8 @@ public class ReturnObject {
 
 	private boolean isSet;
 
+	private boolean isDecimal;
+
 	private int size;
 
 	private String commandPart;
@@ -219,8 +231,16 @@ public class ReturnObject {
 		return isArray;
 	}
 
+	public boolean isDecimal() {
+		return isDecimal;
+	}
+
 	public boolean isError() {
 		return isError;
+	}
+
+	public boolean isIterator() {
+		return isIterator;
 	}
 
 	public boolean isList() {
@@ -259,6 +279,10 @@ public class ReturnObject {
 		this.isError = isError;
 	}
 
+	public void setIterator(boolean isIterator) {
+		this.isIterator = isIterator;
+	}
+
 	public void setList(boolean isList) {
 		this.isList = isList;
 	}
@@ -293,14 +317,6 @@ public class ReturnObject {
 
 	public void setVoid(boolean isVoid) {
 		this.isVoid = isVoid;
-	}
-
-	public boolean isIterator() {
-		return isIterator;
-	}
-
-	public void setIterator(boolean isIterator) {
-		this.isIterator = isIterator;
 	}
 
 }

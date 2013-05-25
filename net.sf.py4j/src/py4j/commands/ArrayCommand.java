@@ -64,11 +64,23 @@ public class ArrayCommand extends AbstractCommand {
 	public static final String RETURN_VOID = Protocol.SUCCESS + ""
 			+ Protocol.VOID + Protocol.END_OUTPUT;
 
-	
-	
 	public ArrayCommand() {
 		super();
 		this.commandName = ARRAY_COMMAND_NAME;
+	}
+
+	private String createArray(BufferedReader reader) throws IOException {
+		String fqn = (String) Protocol.getObject(reader.readLine(), gateway);
+		List<Object> dimensions = getArguments(reader);
+		int size = dimensions.size();
+		int[] dimensionsInt = new int[size];
+		for (int i = 0; i < size; i++) {
+			dimensionsInt[i] = (Integer) dimensions.get(i);
+		}
+		Object newArray = gateway.getReflectionEngine().createArray(fqn,
+				dimensionsInt);
+		ReturnObject returnObject = gateway.getReturnObject(newArray);
+		return Protocol.getOutputCommand(returnObject);
 	}
 
 	@Override
@@ -87,39 +99,15 @@ public class ArrayCommand extends AbstractCommand {
 		} else if (subCommand == ARRAY_CREATE_SUB_COMMAND_NAME) {
 			returnCommand = createArray(reader);
 		} else {
-			returnCommand = Protocol.getOutputErrorCommand("Unknown Array SubCommand Name: " + subCommand);
+			returnCommand = Protocol
+					.getOutputErrorCommand("Unknown Array SubCommand Name: "
+							+ subCommand);
 		}
 
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 
-	}
-
-	private String createArray(BufferedReader reader) throws IOException {
-		String fqn = (String) Protocol.getObject(reader.readLine(), gateway);
-		List<Object> dimensions = getArguments(reader);
-		int size = dimensions.size();
-		int[] dimensionsInt = new int[size];
-		for (int i = 0; i < size; i++) {
-			dimensionsInt[i] = (Integer) dimensions.get(i);
-		}
-		Object newArray = gateway.getReflectionEngine().createArray(fqn,
-				dimensionsInt);
-		ReturnObject returnObject = gateway.getReturnObject(newArray);
-		return Protocol.getOutputCommand(returnObject);
-	}
-
-	private String setArray(BufferedReader reader) throws IOException {
-		Object arrayObject = gateway.getObject(reader.readLine());
-		int index = (Integer) Protocol.getObject(reader.readLine(), gateway);
-		Object objectToSet = Protocol.getObject(reader.readLine(), gateway);
-
-		// Read end
-		reader.readLine();
-
-		Array.set(arrayObject, index, objectToSet);
-		return RETURN_VOID;
 	}
 
 	private String getArray(BufferedReader reader) throws IOException {
@@ -142,6 +130,18 @@ public class ArrayCommand extends AbstractCommand {
 		int length = Array.getLength(arrayObject);
 		ReturnObject returnObject = gateway.getReturnObject(length);
 		return Protocol.getOutputCommand(returnObject);
+	}
+
+	private String setArray(BufferedReader reader) throws IOException {
+		Object arrayObject = gateway.getObject(reader.readLine());
+		int index = (Integer) Protocol.getObject(reader.readLine(), gateway);
+		Object objectToSet = Protocol.getObject(reader.readLine(), gateway);
+
+		// Read end
+		reader.readLine();
+
+		Array.set(arrayObject, index, objectToSet);
+		return RETURN_VOID;
 	}
 
 	private String sliceArray(BufferedReader reader) throws IOException {

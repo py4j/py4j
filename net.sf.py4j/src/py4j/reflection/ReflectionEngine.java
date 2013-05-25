@@ -168,8 +168,8 @@ public class ReflectionEngine {
 					parameters.length);
 
 			if (acceptableConstructors.size() == 1) {
-				mInvoker = MethodInvoker.buildInvoker(acceptableConstructors
-						.get(0), parameters);
+				mInvoker = MethodInvoker.buildInvoker(
+						acceptableConstructors.get(0), parameters);
 			} else {
 				mInvoker = getBestConstructor(acceptableConstructors,
 						parameters);
@@ -267,7 +267,10 @@ public class ReflectionEngine {
 	}
 
 	/**
-	 * <p>Wrapper around Field.get</p>
+	 * <p>
+	 * Wrapper around Field.get
+	 * </p>
+	 * 
 	 * @param obj
 	 * @param field
 	 * @return
@@ -283,22 +286,6 @@ public class ReflectionEngine {
 			throw new Py4JException(e);
 		}
 		return fieldValue;
-	}
-	
-	/**
-	 * <p>Wrapper around Field.set</p>
-	 * @param obj
-	 * @param field
-	 * @param value
-	 */
-	public void setFieldValue(Object obj, Field field, Object value) {
-		try {
-			field.set(obj, value);
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error while setting field value of "
-					+ field, e);
-			throw new Py4JException(e);
-		}
 	}
 
 	public Method getMethod(Class<?> clazz, String name) {
@@ -395,5 +382,24 @@ public class ReflectionEngine {
 		}
 
 		return returnObject;
+	}
+
+	/**
+	 * <p>
+	 * Wrapper around Field.set
+	 * </p>
+	 * 
+	 * @param obj
+	 * @param field
+	 * @param value
+	 */
+	public void setFieldValue(Object obj, Field field, Object value) {
+		try {
+			field.set(obj, value);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Error while setting field value of "
+					+ field, e);
+			throw new Py4JException(e);
+		}
 	}
 }

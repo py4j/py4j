@@ -42,6 +42,13 @@ import py4j.reflection.TypeUtil;
  */
 public class Py4JMethod extends Py4JMember {
 
+	public final static Py4JMethod buildMethod(Method method) {
+		return new Py4JMethod(method.getName(), null, TypeUtil.getNames(method
+				.getParameterTypes()), null, method.getReturnType()
+				.getCanonicalName(), method.getDeclaringClass()
+				.getCanonicalName());
+	}
+
 	private final String[] parameterTypes;
 
 	// Currently not supported.
@@ -60,27 +67,20 @@ public class Py4JMethod extends Py4JMember {
 		this.container = container;
 	}
 
-	public final static Py4JMethod buildMethod(Method method) {
-		return new Py4JMethod(method.getName(), null, TypeUtil.getNames(method
-				.getParameterTypes()), null, method.getReturnType()
-				.getCanonicalName(), method.getDeclaringClass()
-				.getCanonicalName());
-	}
-
-	public String[] getParameterTypes() {
-		return parameterTypes;
+	public String getContainer() {
+		return container;
 	}
 
 	public String[] getParameterNames() {
 		return parameterNames;
 	}
 
-	public String getReturnType() {
-		return returnType;
+	public String[] getParameterTypes() {
+		return parameterTypes;
 	}
 
-	public String getContainer() {
-		return container;
+	public String getReturnType() {
+		return returnType;
 	}
 
 	@Override

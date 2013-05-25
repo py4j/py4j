@@ -49,6 +49,11 @@ public abstract class Py4JMember implements Comparable<Py4JMember> {
 		this.javadoc = javadoc;
 	}
 
+	@Override
+	public int compareTo(Py4JMember o) {
+		return this.getName().compareTo(o.getName());
+	}
+
 	public String getJavadoc() {
 		return javadoc;
 	}
@@ -59,11 +64,4 @@ public abstract class Py4JMember implements Comparable<Py4JMember> {
 
 	public abstract String getSignature(boolean shortName);
 
-	@Override
-	public int compareTo(Py4JMember o) {
-		return this.getName().compareTo(o.getName());
-	}
-
-	
-	
 }

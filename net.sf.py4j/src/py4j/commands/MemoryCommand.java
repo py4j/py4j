@@ -55,11 +55,19 @@ public class MemoryCommand extends AbstractCommand {
 
 	public final static String MEMORY_DEL_SUB_COMMAND_NAME = "d";
 
-	
-	
 	public MemoryCommand() {
 		super();
 		this.commandName = MEMORY_COMMAND_NAME;
+	}
+
+	private String deleteObject(BufferedReader reader) throws IOException {
+		String objectId = reader.readLine();
+		// EoC
+		reader.readLine();
+
+		gateway.deleteObject(objectId);
+
+		return Protocol.getOutputVoidCommand();
 	}
 
 	@Override
@@ -71,19 +79,9 @@ public class MemoryCommand extends AbstractCommand {
 		if (subCommand.equals(MEMORY_DEL_SUB_COMMAND_NAME)) {
 			returnCommand = deleteObject(reader);
 		}
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
-	}
-
-	private String deleteObject(BufferedReader reader) throws IOException {
-		String objectId = reader.readLine();
-		// EoC
-		reader.readLine();
-
-		gateway.deleteObject(objectId);
-
-		return Protocol.getOutputVoidCommand();
 	}
 
 }

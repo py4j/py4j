@@ -43,15 +43,17 @@ import java.util.logging.Logger;
 
 /**
  * <p>
- * A CallbackClient is responsible for managing communication
- * channels: channels are created as needed (e.g., one per concurrent thread)
- * and are closed after a certain time.
+ * A CallbackClient is responsible for managing communication channels: channels
+ * are created as needed (e.g., one per concurrent thread) and are closed after
+ * a certain time.
  * </p>
  * 
  * @author Barthelemy Dagenais
  * 
  */
 public class CallbackClient {
+	public final static String DEFAULT_ADDRESS = "127.0.0.1";
+
 	private final int port;
 
 	private final InetAddress address;
@@ -60,8 +62,8 @@ public class CallbackClient {
 
 	private final Lock lock = new ReentrantLock(true);
 
-	private final Logger logger = Logger
-			.getLogger(CallbackClient.class.getName());
+	private final Logger logger = Logger.getLogger(CallbackClient.class
+			.getName());
 
 	private boolean isShutdown = false;
 
@@ -78,10 +80,10 @@ public class CallbackClient {
 		super();
 		this.port = port;
 		try {
-			this.address = InetAddress.getByName("localhost");
+			this.address = InetAddress.getByName(DEFAULT_ADDRESS);
 		} catch (Exception e) {
 			throw new Py4JNetworkException(
-					"Local Host could not be determined when creating communication channel.");
+					"Default address could not be determined when creating communication channel.");
 		}
 		this.minConnectionTime = DEFAULT_MIN_CONNECTION_TIME;
 		this.minConnectionTimeUnit = TimeUnit.SECONDS;
@@ -119,70 +121,60 @@ public class CallbackClient {
 		setupCleaner();
 	}
 
-	private void setupCleaner() {
-		executor.scheduleAtFixedRate(new Runnable() {
-			public void run() {
-				periodicCleanup();
-			}
-		}, minConnectionTime, minConnectionTime, minConnectionTimeUnit);
+	public InetAddress getAddress() {
+		return address;
 	}
 
-	/**
-	 * <p>
-	 * Sends a command to the Python side. This method is typically used by
-	 * Python proxies to call Python methods or to request the garbage
-	 * collection of a proxy.
-	 * </p>
-	 * 
-	 * @param command
-	 *            The command to send.
-	 * @return The response.
-	 */
-	public String sendCommand(String command) {
-		String returnCommand = null;
-		CallbackConnection cc = getConnectionLock();
+	private CallbackConnection getConnection() throws IOException {
+		CallbackConnection connection = null;
 
-		if (cc == null) {
-			throw new Py4JException("Cannot obtain a new communication channel");
+		connection = connections.pollLast();
+		if (connection == null) {
+			connection = new CallbackConnection(port, address);
+			connection.start();
 		}
 
+		return connection;
+	}
+
+	private CallbackConnection getConnectionLock() {
+		CallbackConnection cc = null;
 		try {
-			returnCommand = cc.sendCommand(command);
-		} catch (Py4JNetworkException pe) {
-			logger.log(Level.WARNING, "Error while sending a command", pe);
-			// Retry in case the channel was dead.
-			returnCommand = sendCommand(command);
+			logger.log(Level.INFO, "Getting CB Connection");
+			lock.lock();
+			if (!isShutdown) {
+				cc = getConnection();
+				logger.log(Level.INFO, "Acquired CB Connection");
+			} else {
+				logger.log(Level.INFO,
+						"Shuting down, no connection can be created.");
+			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Critical error while sending a command",
 					e);
-			throw new Py4JException("Error while sending a command.");
+			throw new Py4JException(
+					"Error while obtaining a new communication channel", e);
+		} finally {
+			lock.unlock();
 		}
 
-		giveBackConnection(cc);
-
-		return returnCommand;
+		return cc;
 	}
 
-	/**
-	 * <p>
-	 * Closes all active channels, stops the periodic cleanup of channels and
-	 * mark the client as shutting down.
-	 * 
-	 * No more commands can be send after this method has been called,
-	 * <em>except</em> commands that were initiated before the shutdown method
-	 * was called..
-	 * </p>
-	 */
-	public void shutdown() {
-		logger.info("Shutting down Callback Client");
+	public int getPort() {
+		return port;
+	}
+
+	private void giveBackConnection(CallbackConnection cc) {
 		try {
 			lock.lock();
-			isShutdown = true;
-			for (CallbackConnection cc : connections) {
-				cc.shutdown();
+			if (cc != null) {
+				if (!isShutdown) {
+					connections.addLast(cc);
+				} else {
+					cc.shutdown();
+				}
 			}
-			executor.shutdownNow();
-			connections.clear();
 		} finally {
 			lock.unlock();
 		}
@@ -221,55 +213,72 @@ public class CallbackClient {
 		}
 	}
 
-	private CallbackConnection getConnectionLock() {
-		CallbackConnection cc = null;
+	/**
+	 * <p>
+	 * Sends a command to the Python side. This method is typically used by
+	 * Python proxies to call Python methods or to request the garbage
+	 * collection of a proxy.
+	 * </p>
+	 * 
+	 * @param command
+	 *            The command to send.
+	 * @return The response.
+	 */
+	public String sendCommand(String command) {
+		String returnCommand = null;
+		CallbackConnection cc = getConnectionLock();
+
+		if (cc == null) {
+			throw new Py4JException("Cannot obtain a new communication channel");
+		}
+
 		try {
-			logger.log(Level.INFO, "Getting CB Connection");
-			lock.lock();
-			if (!isShutdown) {
-				cc = getConnection();
-			}
-			logger.log(Level.INFO, "Acquired CB Connection");
+			returnCommand = cc.sendCommand(command);
+		} catch (Py4JNetworkException pe) {
+			logger.log(Level.WARNING, "Error while sending a command", pe);
+			// Retry in case the channel was dead.
+			returnCommand = sendCommand(command);
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Critical error while sending a command",
 					e);
-			throw new Py4JException(
-					"Error while obtaining a new communication channel", e);
-		} finally {
-			lock.unlock();
+			throw new Py4JException("Error while sending a command.");
 		}
 
-		return cc;
+		giveBackConnection(cc);
+
+		return returnCommand;
 	}
 
-	private void giveBackConnection(CallbackConnection cc) {
+	private void setupCleaner() {
+		executor.scheduleAtFixedRate(new Runnable() {
+			public void run() {
+				periodicCleanup();
+			}
+		}, minConnectionTime, minConnectionTime, minConnectionTimeUnit);
+	}
+
+	/**
+	 * <p>
+	 * Closes all active channels, stops the periodic cleanup of channels and
+	 * mark the client as shutting down.
+	 * 
+	 * No more commands can be sent after this method has been called,
+	 * <em>except</em> commands that were initiated before the shutdown method
+	 * was called..
+	 * </p>
+	 */
+	public void shutdown() {
+		logger.info("Shutting down Callback Client");
 		try {
 			lock.lock();
-			if (cc != null) {
-				if (!isShutdown) {
-					connections.addLast(cc);
-				} else {
-					cc.shutdown();
-				}
+			isShutdown = true;
+			for (CallbackConnection cc : connections) {
+				cc.shutdown();
 			}
+			executor.shutdownNow();
+			connections.clear();
 		} finally {
 			lock.unlock();
 		}
-	}
-
-	private CallbackConnection getConnection() throws IOException {
-		CallbackConnection connection = null;
-
-		connection = connections.pollLast();
-		if (connection == null) {
-			connection = new CallbackConnection(port, address);
-			connection.start();
-		}
-
-		return connection;
-	}
-	
-	public int getPort() {
-		return port;
 	}
 }

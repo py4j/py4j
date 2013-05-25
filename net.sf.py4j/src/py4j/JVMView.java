@@ -75,40 +75,6 @@ public class JVMView {
 		this.starImports.add(JAVA_LANG_STAR_IMPORT);
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Map<String, String> getSingleImportsMap() {
-		return singleImportsMap;
-	}
-
-	public Set<String> getStarImports() {
-		return starImports;
-	}
-
-	public Set<String> getLastImportSearches() {
-		return lastImportSearches;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public void clearImports() {
-		this.singleImportsMap.clear();
-		this.starImports.clear();
-		this.starImports.add(JAVA_LANG_STAR_IMPORT);
-	}
-
 	/**
 	 * 
 	 * @param singleImport
@@ -132,9 +98,30 @@ public class JVMView {
 		}
 	}
 
-	public boolean removeStarImport(String starImport) {
-		String packageName = TypeUtil.getPackage(starImport);
-		return starImports.remove(packageName);
+	public void clearImports() {
+		this.singleImportsMap.clear();
+		this.starImports.clear();
+		this.starImports.add(JAVA_LANG_STAR_IMPORT);
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public Set<String> getLastImportSearches() {
+		return lastImportSearches;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public Map<String, String> getSingleImportsMap() {
+		return singleImportsMap;
+	}
+
+	public Set<String> getStarImports() {
+		return starImports;
 	}
 
 	public boolean removeSingleImport(String importString) {
@@ -143,5 +130,18 @@ public class JVMView {
 		removed = singleImportsMap.remove(simpleName, importString);
 		return removed;
 	}
-	
+
+	public boolean removeStarImport(String starImport) {
+		String packageName = TypeUtil.getPackage(starImport);
+		return starImports.remove(packageName);
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 }
