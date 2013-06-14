@@ -1149,7 +1149,7 @@ class CallbackConnection(Thread):
                 return_message = 'y' +\
                         get_command_part(return_value, self.pool)
             except Exception:
-                logger.info('There was an exception while executing the '\
+                logger.exception('There was an exception while executing the '\
                                  'Python Proxy on the Python Side.')
         return return_message
 
