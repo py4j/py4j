@@ -3,6 +3,25 @@ Changelog
 
 The changelog describes in plain English the changes that occurred between Py4J releases.
 
+Py4J 0.8
+--------
+
+- Major fix to the Java byte[] support. Thanks to @agronholm for spotting
+  this subtle but major issue and thanks to @fdinto from The Atlantic for
+  providing a patch!
+- Ability to fail early if the py4j.java_gateway.JavaGateway cannot connect to
+  the JVM.
+- Added support for long primitives, BigDecimal, enum types, and inner classes
+  on the Java side.
+- Set saner log levels
+- Many small bug fixes and API enhancements (backward compatible).
+- Wrote a section in the FAQ about security concerns and precautions with Py4J.
+- Added support of `Travis-CI <https://travis-ci.org/bartdag/py4j>`_ and
+  cleaned up the test suite to remove hardcoded paths.
+- Bug fixes in the Python callback server and unicode support.
+- `github 0.8 milestone
+  <https://github.com/bartdag/py4j/issues?milestone=7&page=1&state=closed>`_
+
 Py4J 0.7
 --------
 
