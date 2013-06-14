@@ -2,7 +2,7 @@
 <feature
       id="net.sf.py4j.defaultserver.feature"
       label="Py4J Default Server"
-      version="0.7.0.qualifier"
+      version="0.8.0.qualifier"
       provider-name="Py4J">
 
    <description url="http://py4j.sourceforge.net/">
@@ -62,7 +62,7 @@ POSSIBILITY OF SUCH DAMAGE.
    </url>
 
    <requires>
-      <import feature="net.sf.py4j.feature" version="0.5.0.qualifier"/>
+      <import feature="net.sf.py4j.feature" version="0.8.0.qualifier"/>
    </requires>
 
    <plugin
