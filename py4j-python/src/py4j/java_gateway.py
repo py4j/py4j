@@ -741,7 +741,7 @@ class JavaGateway(object):
 
     def __init__(self, gateway_client=None, auto_field=False,
             python_proxy_port=DEFAULT_PYTHON_PROXY_PORT,
-            start_callback_server=False, auto_convert=False):
+            start_callback_server=False, auto_convert=False, eager_load=False):
         """
         :param gateway_client: gateway client used to connect to the JVM. If
          `None`, a gateway client based on a socket with the default
@@ -763,6 +763,10 @@ class JavaGateway(object):
          objects like sequences and maps to Java Objects. Default value is
          `False` to improve performance and because it is still possible to
          explicitly perform this conversion.
+
+        :param eager_load: if `True`, the gateway tries to connect to the JVM
+         by calling System.currentTimeMillis. If the gateway cannot connect to
+         the JVM, it shuts down itself and raises an exception.
         """
         self.gateway_property = GatewayProperty(auto_field, PythonProxyPool())
         self._python_proxy_port = python_proxy_port
@@ -782,18 +786,31 @@ class JavaGateway(object):
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, gateway_client)
         self.jvm = JVMView(gateway_client, jvm_name=DEFAULT_JVM_NAME,
                 id=DEFAULT_JVM_ID)
+
+        if eager_load:
+            self._eager_load()
         if start_callback_server:
-            self._callback_server = CallbackServer(self.gateway_property.pool,
-                    self._gateway_client, python_proxy_port)
-            try:
-                self._callback_server.start()
-            except Py4JNetworkError:
-                # Clean up ourselves before raising the exception.
-                self.shutdown()
-                raise
+            self._start_callback_server(python_proxy_port)
 
     def __getattr__(self, name):
         return self.entry_point.__getattr__(name)
+
+    def _eager_load(self):
+        try:
+            self.jvm.System.currentTimeMillis()
+        except Exception:
+            self.shutdown()
+            raise
+
+    def _start_callback_server(self, python_proxy_port):
+        self._callback_server = CallbackServer(self.gateway_property.pool,
+                self._gateway_client, python_proxy_port)
+        try:
+            self._callback_server.start()
+        except Py4JNetworkError:
+            # Clean up ourselves before raising the exception.
+            self.shutdown()
+            raise
 
     def new_jvm_view(self, name='custom jvm'):
         """Creates a new JVM view with its own imports. A JVM view ensures
@@ -847,7 +864,7 @@ class JavaGateway(object):
         """Shuts down the :class:`GatewayClient` and the
            :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
 
-        :param raise_exception: If True, raise an exception if an error occurs
+        :param raise_exception: If `True`, raise an exception if an error occurs
          while shutting down (very likely with sockets).
         """
         try:
@@ -861,7 +878,7 @@ class JavaGateway(object):
         """Shuts down the
            :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
 
-        :param raise_exception: If True, raise an exception if an error occurs
+        :param raise_exception: If `True`, raise an exception if an error occurs
          while shutting down (very likely with sockets).
         """
         try:
