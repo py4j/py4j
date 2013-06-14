@@ -756,7 +756,8 @@ class JavaGateway(object):
         :param python_proxy_port: port used to receive callback from the JVM.
 
         :param start_callback_server: if `True`, the callback server is
-         started.
+         started. If the callback server cannot be started, the gateway shuts
+         down itself and raises an exception.
 
         :param auto_convert: if `True`, try to automatically convert Python
          objects like sequences and maps to Java Objects. Default value is
@@ -784,7 +785,12 @@ class JavaGateway(object):
         if start_callback_server:
             self._callback_server = CallbackServer(self.gateway_property.pool,
                     self._gateway_client, python_proxy_port)
-            self._callback_server.start()
+            try:
+                self._callback_server.start()
+            except Py4JNetworkError:
+                # Clean up ourselves before raising the exception.
+                self.shutdown()
+                raise
 
     def __getattr__(self, name):
         return self.entry_point.__getattr__(name)
@@ -837,24 +843,32 @@ class JavaGateway(object):
         answer = self._gateway_client.send_command(command)
         return get_return_value(answer, self._gateway_client)
 
-    def shutdown(self):
+    def shutdown(self, raise_exception=False):
         """Shuts down the :class:`GatewayClient` and the
            :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
+
+        :param raise_exception: If True, raise an exception if an error occurs
+         while shutting down (very likely with sockets).
         """
         try:
             self._gateway_client.shutdown_gateway()
         except Exception:
-            pass
+            if raise_exception:
+                raise
         self._shutdown_callback_server()
 
-    def _shutdown_callback_server(self):
+    def _shutdown_callback_server(self, raise_exception=False):
         """Shuts down the
            :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
+
+        :param raise_exception: If True, raise an exception if an error occurs
+         while shutting down (very likely with sockets).
         """
         try:
             self._callback_server.shutdown()
         except Exception:
-            pass
+            if raise_exception:
+                raise
 
     def restart_callback_server(self):
         """Shuts down the callback server (if started) and restarts a new one.
@@ -994,7 +1008,12 @@ class CallbackServer(object):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,
                 1)
-        self.server_socket.bind((self.address, self.port))
+        try:
+            self.server_socket.bind((self.address, self.port))
+        except Exception:
+            msg = 'An error occurred while trying to start the callback server'
+            logger.exception(msg)
+            raise Py4JNetworkError(msg)
 
         # Maybe thread needs to be cleanup up?
         self.thread = Thread(target=self.run)
