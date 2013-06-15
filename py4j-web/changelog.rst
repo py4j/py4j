@@ -18,7 +18,6 @@ Py4J 0.8
 - Wrote a section in the FAQ about security concerns and precautions with Py4J.
 - Added support of `Travis-CI <https://travis-ci.org/bartdag/py4j>`_ and
   cleaned up the test suite to remove hardcoded paths.
-- Bug fixes in the Python callback server and unicode support.
 - `github 0.8 milestone
   <https://github.com/bartdag/py4j/issues?milestone=7&page=1&state=closed>`_
 
