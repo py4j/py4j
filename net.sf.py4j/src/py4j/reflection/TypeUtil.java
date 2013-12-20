@@ -176,28 +176,33 @@ public class TypeUtil {
 	private static int computeInterfaceDistance(Class<?> parent,
 			Class<?> child, Set<String> visitedInterfaces,
 			List<Class<?>> interfacesToVisit) {
-		int distance = -1;
 		List<Class<?>> nextInterfaces = new ArrayList<Class<?>>();
 		for (Class<?> clazz : interfacesToVisit) {
 			if (parent.equals(clazz)) {
-				distance = 1;
-				break;
+				return 1;
 			} else {
 				visitedInterfaces.add(clazz.getName());
 				getNextInterfaces(clazz, nextInterfaces, visitedInterfaces);
 			}
 		}
 
-		if (distance == -1) {
-			if (child != null) {
-				getNextInterfaces(child.getSuperclass(), nextInterfaces,
-						visitedInterfaces);
-				int newDistance = computeInterfaceDistance(parent,
-						child.getSuperclass(), visitedInterfaces,
-						nextInterfaces);
-				if (newDistance != -1) {
-					distance = newDistance + 1;
-				}
+		int distance = -1;
+		if (child != null) {
+			Class<?> grandChild = child.getSuperclass();
+			getNextInterfaces(grandChild, nextInterfaces,
+					visitedInterfaces);
+			int newDistance = computeInterfaceDistance(parent,
+					grandChild, visitedInterfaces,
+					nextInterfaces);
+			if (newDistance != -1) {
+				distance = newDistance + 1;
+			}
+		} else if (nextInterfaces.size() > 0) {
+			int newDistance = computeInterfaceDistance(parent,
+					child, visitedInterfaces,
+					nextInterfaces);
+			if (newDistance != -1) {
+				distance = newDistance + 1;
 			}
 		}
 
