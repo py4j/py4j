@@ -59,8 +59,10 @@ public class TypeUtilTest {
 	public void testIsInstance() {
 		Object object = new ZTest();
 		assertTrue(TypeUtil.isInstanceOf(I0Test.class, object));
+		assertTrue(TypeUtil.isInstanceOf("py4j.reflection.I0Test", object));
 		object = new ATest();
 		assertFalse(TypeUtil.isInstanceOf(I0Test.class, object));
+		assertFalse(TypeUtil.isInstanceOf("py4j.reflection.I0Test", object));
 	}
 }
 

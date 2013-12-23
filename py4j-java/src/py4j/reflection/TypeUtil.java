@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 import py4j.JVMView;
+import py4j.Py4JException;
 
 /**
  * <p>
@@ -380,13 +381,39 @@ public class TypeUtil {
 	}
 
 	/**
-	 * <p>Checks if an object is an instance of a given class.</p>
-	 * @param clazz The class to check
-	 * @param object The object
+	 * <p>
+	 * Checks if an object is an instance of a given class.
+	 * </p>
+	 *
+	 * @param clazz
+	 *            The class to check
+	 * @param object
+	 *            The object
 	 * @return True if object is an instance of clazz.
 	 */
 	public static boolean isInstanceOf(Class<?> clazz, Object object) {
 		return clazz.isInstance(object);
+	}
+
+	/**
+	 * <p>
+	 * Checks if an object is an instance of a given class.
+	 * </p>
+	 *
+	 * @param classFQN
+	 *            The fully qualified name of a class to check
+	 * @param object
+	 *            The object
+	 * @return True if object is an instance of the class.
+	 */
+	public static boolean isInstanceOf(String classFQN, Object object) {
+		Class<?> clazz = null;
+		try {
+			clazz = Class.forName(classFQN);
+		} catch (Exception e) {
+			throw new Py4JException(e);
+		}
+		return isInstanceOf(clazz, object);
 	}
 
 }
