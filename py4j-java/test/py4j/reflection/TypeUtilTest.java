@@ -29,6 +29,8 @@
 package py4j.reflection;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
@@ -51,6 +53,14 @@ public class TypeUtilTest {
 		assertEquals(200, TypeUtil.computeDistance(I0Test.class, YTest.class));
 		assertEquals(300, TypeUtil.computeDistance(J0Test.class, YTest.class));
 		assertEquals(400, TypeUtil.computeDistance(I0Test.class, ZTest.class));
+	}
+
+	@Test
+	public void testIsInstance() {
+		Object object = new ZTest();
+		assertTrue(TypeUtil.isInstanceOf(I0Test.class, object));
+		object = new ATest();
+		assertFalse(TypeUtil.isInstanceOf(I0Test.class, object));
 	}
 }
 
@@ -107,5 +117,5 @@ class YTest extends XTest implements I2Test {
 }
 
 class ZTest implements I3Test {
-	
+
 }

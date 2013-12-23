@@ -379,4 +379,14 @@ public class TypeUtil {
 		return clazz.equals(Short.class) || clazz.equals(short.class);
 	}
 
+	/**
+	 * <p>Checks if an object is an instance of a given class.</p>
+	 * @param clazz The class to check
+	 * @param object The object
+	 * @return True if object is an instance of clazz.
+	 */
+	public static boolean isInstanceOf(Class<?> clazz, Object object) {
+		return clazz.isInstance(object);
+	}
+
 }
