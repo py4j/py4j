@@ -23,7 +23,7 @@ import sys
 from threading import Thread, RLock
 import weakref
 
-from py4j.compat import range, hasattr2
+from py4j.compat import range, hasattr2, basestring
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
 from py4j.version import __version__
@@ -182,6 +182,28 @@ def get_method(java_object, method_name):
     """
     return JavaMember(method_name, java_object, java_object._target_id,
             java_object._gateway_client)
+
+
+def is_instance_of(gateway, java_object, java_class):
+    """Indicates whether a java object is an instance of the provided
+    java_class.
+
+    :param gateway: the JavaGateway instance
+    :param java_object: the JavaObject instance
+    :param java_class: can be a string (fully qualified name), a JavaClass
+            instance, or a JavaObject instance)
+    """
+    if isinstance(java_class, basestring):
+        param = java_class
+    elif isinstance(java_class, JavaClass):
+        param = java_class._fqn
+    elif isinstance(java_class, JavaObject):
+        param = java_class.getClass()
+    else:
+        raise Py4JError("java_class must be a string, a JavaClass, or a JavaObject")
+
+    return gateway.jvm.py4j.reflection.TypeUtil.isInstanceOf(param,
+            java_object)
 
 
 def quiet_close(closable):

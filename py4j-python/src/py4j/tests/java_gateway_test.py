@@ -20,7 +20,7 @@ import unittest
 from py4j.compat import range, isbytearray, bytearray2, long
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_gateway import JavaGateway, JavaMember, get_field, get_method, \
-     GatewayClient, set_field, java_import, JavaObject
+     GatewayClient, set_field, java_import, JavaObject, is_instance_of
 from py4j.protocol import *
 
 
@@ -312,6 +312,36 @@ class FieldTest(unittest.TestCase):
         self.gateway = JavaGateway()
         ex = self.gateway.getNewExample()
         self.assertEqual(1, get_method(ex, 'method1')())
+
+
+class UtilityTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        # This is to ensure that the server is started before connecting to it!
+        time.sleep(1)
+        self.gateway = JavaGateway()
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+
+    def testIsInstance(self):
+        a_list = self.gateway.jvm.java.util.ArrayList()
+        a_map = self.gateway.jvm.java.util.HashMap()
+
+        # FQN
+        self.assertTrue(is_instance_of(self.gateway, a_list, "java.util.List"))
+        self.assertFalse(is_instance_of(self.gateway, a_list, "java.lang.String"))
+
+        # JavaClass
+        self.assertTrue(is_instance_of(self.gateway, a_list,
+            self.gateway.jvm.java.util.List))
+        self.assertFalse(is_instance_of(self.gateway, a_list,
+            self.gateway.jvm.java.lang.String))
+
+        # JavaObject
+        self.assertTrue(is_instance_of(self.gateway, a_list, a_list))
+        self.assertFalse(is_instance_of(self.gateway, a_list, a_map))
 
 
 class MemoryManagementTest(unittest.TestCase):
