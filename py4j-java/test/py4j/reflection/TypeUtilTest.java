@@ -50,6 +50,7 @@ public class TypeUtilTest {
 		assertEquals(100, TypeUtil.computeDistance(I0Test.class, XTest.class));
 		assertEquals(200, TypeUtil.computeDistance(I0Test.class, YTest.class));
 		assertEquals(300, TypeUtil.computeDistance(J0Test.class, YTest.class));
+		assertEquals(400, TypeUtil.computeDistance(I0Test.class, ZTest.class));
 	}
 }
 
@@ -81,6 +82,10 @@ interface I2Test extends I1Test {
 
 }
 
+interface I3Test extends I2Test {
+
+}
+
 interface J0Test {
 
 }
@@ -99,4 +104,8 @@ class XTest extends VTest implements I0Test {
 
 class YTest extends XTest implements I2Test {
 
+}
+
+class ZTest implements I3Test {
+	
 }
