@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * 
+ *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -37,6 +37,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
@@ -52,21 +53,21 @@ import py4j.commands.Command;
  * GatewayServer instance is started, Python programs can connect to the JVM by
  * calling:
  * </p>
- * 
+ *
  * <p>
  * <code>gateway = JavaGateway()</code>
  * </p>
- * 
+ *
  * <p>
  * The
  * <code>entryPoint</entry> passed to a GatewayServer can be accessed with the <code>entry_point</code>
  * member:
  * </p>
- * 
+ *
  * <p>
  * <code>gateway.entry_point</code>
  * </p>
- * 
+ *
  * <p>
  * Technically, a GatewayServer is only responsible for accepting connection.
  * Each connection is then handled by a {@link py4j.GatewayConnection
@@ -74,9 +75,9 @@ import py4j.commands.Command;
  * reference to returned objects) are managed by a {@link py4j.Gateway Gateway}
  * instance.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class GatewayServer extends DefaultGatewayServerListener implements
 		Runnable {
@@ -143,9 +144,9 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	private final CallbackClient cbClient;
 
-	protected final List<Class<? extends Command>> customCommands;
+	private final List<Class<? extends Command>> customCommands;
 
-	protected final List<GatewayServerListener> listeners;
+	private final List<GatewayServerListener> listeners;
 
 	private ServerSocket sSocket;
 
@@ -162,7 +163,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 * Creates a GatewayServer instance with default port (25333), default
 	 * address (127.0.0.1), and default timeout value (no timeout).
 	 * </p>
-	 * 
+	 *
 	 * @param entryPoint
 	 *            The entry point of this Gateway. Can be null.
 	 */
@@ -172,7 +173,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	}
 
 	/**
-	 * 
+	 *
 	 * @param entryPoint
 	 *            The entry point of this Gateway. Can be null.
 	 * @param port
@@ -183,7 +184,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	}
 
 	/**
-	 * 
+	 *
 	 * @param entryPoint
 	 *            The entry point of this Gateway. Can be null.
 	 * @param port
@@ -228,7 +229,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	}
 
 	/**
-	 * 
+	 *
 	 * @param entryPoint
 	 *            The entry point of this Gateway. Can be null.
 	 * @param port
@@ -250,7 +251,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	}
 
 	/**
-	 * 
+	 *
 	 * @param entryPoint
 	 *            The entry point of this Gateway. Can be null.
 	 * @param port
@@ -431,7 +432,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The port the server socket is listening on. It will be different
 	 *         than the specified port if the socket is listening on an
 	 *         ephemeral port (specified port = 0). Returns -1 if the server
@@ -450,7 +451,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The port specified when the gateway server is initialized. This
 	 *         is the port that is passed to the server socket.
 	 */
@@ -547,7 +548,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 * <p>
 	 * Starts to accept connections.
 	 * </p>
-	 * 
+	 *
 	 * @param fork
 	 *            If true, the GatewayServer accepts connection in another
 	 *            thread and this call is non-blocking. If False, the
@@ -571,7 +572,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 * <p>
 	 * Starts the ServerSocket.
 	 * </p>
-	 * 
+	 *
 	 * @throws Py4JNetworkException
 	 *             If the port is busy.
 	 */
@@ -626,4 +627,20 @@ public class GatewayServer extends DefaultGatewayServerListener implements
             }
         }
     }
+
+    /**
+     *
+     * @return An unmodifiable list of custom commands
+     */
+	public List<Class<? extends Command>> getCustomCommands() {
+		return Collections.unmodifiableList(customCommands);
+	}
+
+	/**
+	 *
+	 * @return An unmodifiable list of listeners
+	 */
+	public List<GatewayServerListener> getListeners() {
+		return Collections.unmodifiableList(listeners);
+	}
 }
