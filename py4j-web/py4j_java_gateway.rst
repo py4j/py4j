@@ -23,7 +23,7 @@ JavaGateway
    :members:
    :undoc-members:
 
-   
+
 .. _api_java_gateway_examples:
 
 Examples
@@ -44,7 +44,7 @@ Using the ``jvm`` property:
   >>> l.sort()
   >>> l
   [1, 5, 10]
-  
+
 Using ``auto_field``:
 
 First we declare a class that has a field AND a method called `member`:
@@ -75,7 +75,7 @@ Then we play with the class using the two possible values of auto_field:
   1
   >>> get_method(example2,'member')()
   u'Hello World'
-  
+
 .. _api_gatewayclient:
 
 GatewayClient
@@ -264,5 +264,7 @@ The following functions get be used to import packages or to get a particular fi
 .. autofunction:: py4j.java_gateway.set_field
 
 .. autofunction:: py4j.java_gateway.get_method
+
+.. autofunction:: py4j.java_gateway.is_instance_of
 
 
