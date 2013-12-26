@@ -44,14 +44,14 @@ JVM.
     public int addition(int first, int second) {
       return first + second;
     }
-          
+
     public static void main(String[] args) {
       AdditionApplication app = new AdditionApplication();
       // app is now the gateway.entry_point
       GatewayServer server = new GatewayServer(app);
       server.start();
     }
-  } 
+  }
 
 
 Resources
@@ -64,6 +64,9 @@ Resources
 
 News
 ====
+
+* **December 26th 2013** - Py4J 0.8.1 has been released. See the
+  :doc:`changelog` for more details about the new features.
 
 * **June 14th 2013** - Py4J 0.8 has been released. See the :doc:`changelog` for
   more details about the new features.
@@ -89,6 +92,6 @@ News
 
 * **December 23rd 2009** - Py4J 0.1 has been released. Rejoice!
 
-* **December 11th 2009** - Py4J is still in the planning phase, but the 
+* **December 11th 2009** - Py4J is still in the planning phase, but the
   code currently works for basic scenarios. A release and a tutorial should
   be available in the following weeks.

@@ -6,3 +6,5 @@ dist/
 junit/
 py4j*.jar
 target/
+*.asc
+bundle.jar
