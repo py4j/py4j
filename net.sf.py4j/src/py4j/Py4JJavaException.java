@@ -51,13 +51,12 @@ public class Py4JJavaException extends Py4JException {
 		super(message);
 	}
 
-	public Py4JJavaException(Throwable cause) {
-		super(cause);
-	}
-
 	public Py4JJavaException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
+	public Py4JJavaException(Throwable cause) {
+		super(cause);
+	}
 
 }

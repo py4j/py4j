@@ -1,0 +1,8 @@
+language: python
+python:
+  - "2.7"
+  - "3.3" 
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq openjdk-7-jre-headless ant
+script: cd py4j-java && ant jar && ant java-test && python --version && cd ../py4j-python && nosetests -w src -c nose.cfg

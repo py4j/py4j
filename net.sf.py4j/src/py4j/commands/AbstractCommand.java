@@ -54,7 +54,7 @@ import py4j.ReturnObject;
 public abstract class AbstractCommand implements Command {
 
 	protected Gateway gateway;
-	
+
 	protected String commandName;
 
 	private final Logger logger = Logger.getLogger(AbstractCommand.class
@@ -63,32 +63,6 @@ public abstract class AbstractCommand implements Command {
 	@Override
 	public abstract void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException;
-
-	@Override
-	public void init(Gateway gateway) {
-		this.gateway = gateway;
-	}
-
-	/**
-	 * 
-	 * @param reader
-	 * @return A list of the remaining arguments (as strings) in the reader.
-	 *         Consumes the end of command part.
-	 * @throws IOException
-	 */
-	protected List<String> getStringArguments(BufferedReader reader)
-			throws IOException {
-		List<String> arguments = new ArrayList<String>();
-		String line = reader.readLine();
-
-		while (!Protocol.isEmpty(line) && !Protocol.isEnd(line)) {
-			logger.info("Raw String Argument: " + line);
-			arguments.add(line);
-			line = reader.readLine();
-		}
-
-		return arguments;
-	}
 
 	/**
 	 * 
@@ -110,8 +84,42 @@ public abstract class AbstractCommand implements Command {
 		return arguments;
 	}
 
+	@Override
+	public String getCommandName() {
+		return commandName;
+	}
+
 	/**
-	 * <p>Convenient shortcut to invoke a method dynamically.</p>
+	 * 
+	 * @param reader
+	 * @return A list of the remaining arguments (as strings) in the reader.
+	 *         Consumes the end of command part.
+	 * @throws IOException
+	 */
+	protected List<String> getStringArguments(BufferedReader reader)
+			throws IOException {
+		List<String> arguments = new ArrayList<String>();
+		String line = reader.readLine();
+
+		while (!Protocol.isEmpty(line) && !Protocol.isEnd(line)) {
+			logger.finest("Raw String Argument: " + line);
+			arguments.add(line);
+			line = reader.readLine();
+		}
+
+		return arguments;
+	}
+
+	@Override
+	public void init(Gateway gateway) {
+		this.gateway = gateway;
+	}
+
+	/**
+	 * <p>
+	 * Convenient shortcut to invoke a method dynamically.
+	 * </p>
+	 * 
 	 * @param methodName
 	 * @param targetObjectId
 	 * @param arguments
@@ -124,7 +132,7 @@ public abstract class AbstractCommand implements Command {
 			returnObject = gateway
 					.invoke(methodName, targetObjectId, arguments);
 		} catch (Exception e) {
-			logger.log(Level.INFO,
+			logger.log(Level.FINE,
 					"Received exception while executing this command: "
 							+ methodName, e);
 			returnObject = ReturnObject.getErrorReturnObject(e);
@@ -132,11 +140,4 @@ public abstract class AbstractCommand implements Command {
 		return returnObject;
 	}
 
-	@Override
-	public String getCommandName() {
-		return commandName;
-	}
-
-	
-	
 }

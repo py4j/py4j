@@ -198,7 +198,7 @@ public class CallbackClient {
 			if (!isShutdown) {
 				int size = connections.size();
 				for (int i = 0; i < size; i++) {
-					CallbackConnection cc = connections.getLast();
+					CallbackConnection cc = connections.pollLast();
 					if (cc.wasUsed()) {
 						cc.setUsed(false);
 						connections.addFirst(cc);

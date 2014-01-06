@@ -37,15 +37,16 @@ import java.util.Map;
 import java.util.Set;
 
 import py4j.JVMView;
+import py4j.Py4JException;
 
 /**
  * <p>
  * This class is responsible for the type conversion between Python types and
  * Java types.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class TypeUtil {
 	private static Set<String> primitiveTypes;
@@ -80,7 +81,7 @@ public class TypeUtil {
 	}
 
 	public static int computeCharacterConversion(Class<?> parent,
-			Class<?> child, List<TypeConverter> converters) {
+		Class<?> child, List<TypeConverter> converters) {
 		int cost = -1;
 
 		if (isCharacter(child)) {
@@ -108,7 +109,7 @@ public class TypeUtil {
 		// Search through interfaces (costly)
 		if (distance == -1) {
 			distance = computeInterfaceDistance(parent, child,
-					new HashSet<String>(), Arrays.asList(child.getInterfaces()));
+				new HashSet<String>(), Arrays.asList(child.getInterfaces()));
 		}
 
 		if (distance != -1) {
@@ -119,8 +120,8 @@ public class TypeUtil {
 	}
 
 	private static int computeInterfaceDistance(Class<?> parent,
-			Class<?> child, Set<String> visitedInterfaces,
-			List<Class<?>> interfacesToVisit) {
+		Class<?> child, Set<String> visitedInterfaces,
+		List<Class<?>> interfacesToVisit) {
 		int distance = -1;
 		List<Class<?>> nextInterfaces = new ArrayList<Class<?>>();
 		for (Class<?> clazz : interfacesToVisit) {
@@ -134,12 +135,17 @@ public class TypeUtil {
 		}
 
 		if (distance == -1) {
+			Class<?> grandChild = null;
+
 			if (child != null) {
-				getNextInterfaces(child.getSuperclass(), nextInterfaces,
-						visitedInterfaces);
-				int newDistance = computeInterfaceDistance(parent,
-						child.getSuperclass(), visitedInterfaces,
-						nextInterfaces);
+				// We still have a superclass, so add its interfaces.
+				grandChild = child.getSuperclass();
+				getNextInterfaces(grandChild, nextInterfaces, visitedInterfaces);
+			}
+
+			if (nextInterfaces.size() > 0) {
+				int newDistance = computeInterfaceDistance(parent, grandChild,
+					visitedInterfaces, nextInterfaces);
 				if (newDistance != -1) {
 					distance = newDistance + 1;
 				}
@@ -150,7 +156,7 @@ public class TypeUtil {
 	}
 
 	public static int computeNumericConversion(Class<?> parent, Class<?> child,
-			List<TypeConverter> converters) {
+		List<TypeConverter> converters) {
 		int cost = -1;
 
 		// XXX This is not complete. Certain cases are not considered like from
@@ -232,7 +238,7 @@ public class TypeUtil {
 	}
 
 	public static Class<?> forName(String fqn, JVMView view)
-			throws ClassNotFoundException {
+		throws ClassNotFoundException {
 		Class<?> clazz = primitiveClasses.get(fqn);
 		if (clazz == null) {
 			if (fqn.indexOf('.') < 0) {
@@ -245,7 +251,7 @@ public class TypeUtil {
 	}
 
 	public static Class<?> getClass(String simpleName, JVMView view)
-			throws ClassNotFoundException {
+		throws ClassNotFoundException {
 		Class<?> clazz = null;
 
 		try {
@@ -305,7 +311,7 @@ public class TypeUtil {
 	}
 
 	private static void getNextInterfaces(Class<?> clazz,
-			List<Class<?>> nextInterfaces, Set<String> visitedInterfaces) {
+		List<Class<?>> nextInterfaces, Set<String> visitedInterfaces) {
 		if (clazz != null) {
 			for (Class<?> nextClazz : clazz.getInterfaces()) {
 				if (!visitedInterfaces.contains(nextClazz.getName())) {
@@ -372,6 +378,42 @@ public class TypeUtil {
 
 	public static boolean isShort(Class<?> clazz) {
 		return clazz.equals(Short.class) || clazz.equals(short.class);
+	}
+
+	/**
+	 * <p>
+	 * Checks if an object is an instance of a given class.
+	 * </p>
+	 *
+	 * @param clazz
+	 *            The class to check
+	 * @param object
+	 *            The object
+	 * @return True if object is an instance of clazz.
+	 */
+	public static boolean isInstanceOf(Class<?> clazz, Object object) {
+		return clazz.isInstance(object);
+	}
+
+	/**
+	 * <p>
+	 * Checks if an object is an instance of a given class.
+	 * </p>
+	 *
+	 * @param classFQN
+	 *            The fully qualified name of a class to check
+	 * @param object
+	 *            The object
+	 * @return True if object is an instance of the class.
+	 */
+	public static boolean isInstanceOf(String classFQN, Object object) {
+		Class<?> clazz = null;
+		try {
+			clazz = Class.forName(classFQN);
+		} catch (Exception e) {
+			throw new Py4JException(e);
+		}
+		return isInstanceOf(clazz, object);
 	}
 
 }

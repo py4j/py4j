@@ -59,6 +59,8 @@ import py4j.Py4JJavaException;
 public class MethodInvoker {
 
 	public final static int INVALID_INVOKER_COST = -1;
+	
+	public final static int MAX_DISTANCE = 100000000;
 
 	private static boolean allNoConverter(List<TypeConverter> converters) {
 		boolean allNo = true;
@@ -83,7 +85,8 @@ public class MethodInvoker {
 				if (parameters[i].isPrimitive()) {
 					tempCost = -1;
 				} else {
-					tempCost = 0;
+					int distance = TypeUtil.computeDistance(new Object().getClass(), parameters[i]);
+					tempCost = Math.abs(MAX_DISTANCE - distance);
 					converters.add(TypeConverter.NO_CONVERTER);
 				}
 			} else if (parameters[i].isAssignableFrom(arguments[i])) {

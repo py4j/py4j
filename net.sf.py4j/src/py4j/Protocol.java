@@ -33,6 +33,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
 
 import py4j.reflection.PythonProxyHandler;
 
@@ -86,8 +87,10 @@ public class Protocol {
 	// TYPES
 	public final static char BYTES_TYPE = 'j';
 	public final static char INTEGER_TYPE = 'i';
+	public final static char LONG_TYPE = 'L';
 	public final static char BOOLEAN_TYPE = 'b';
 	public final static char DOUBLE_TYPE = 'd';
+	public final static char DECIMAL_TYPE = 'D';
 	public final static char STRING_TYPE = 's';
 	public final static char REFERENCE_TYPE = 'r';
 	public final static char LIST_TYPE = 'l';
@@ -129,6 +132,18 @@ public class Protocol {
 
 	/**
 	 * <p>
+	 * Transform the byte array into Base64 characters.
+	 * </p>
+	 * 
+	 * @param primitive
+	 * @return
+	 */
+	public static String encodeBytes(byte[] bytes) {
+		return Base64.encodeToString(bytes, false);
+	}
+
+	/**
+	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
 	 * 
@@ -138,6 +153,30 @@ public class Protocol {
 	public final static boolean getBoolean(String commandPart) {
 		return Boolean.parseBoolean(commandPart.substring(1,
 				commandPart.length()));
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return The byte array corresponding to this command part.
+	 */
+	public final static byte[] getBytes(String commandPart) {
+		return Base64.decode(commandPart.substring(1));
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return The decimal value corresponding to this command part.
+	 */
+	public final static BigDecimal getDecimal(String commandPart) {
+		return new BigDecimal(commandPart.substring(1, commandPart.length()));
 	}
 
 	/**
@@ -163,25 +202,6 @@ public class Protocol {
 	 */
 	public final static int getInteger(String commandPart) {
 		return Integer.parseInt(commandPart.substring(1, commandPart.length()));
-	}
-
-	/**
-	 * <p>
-	 * Assumes that commandPart is <b>not</b> empty.
-	 * </p>
-	 * 
-	 * @param commandPart
-	 * @return The byte array corresponding to this command part.
-	 */
-	public final static byte[] getBytes(String commandPart) {
-		int size = commandPart.length() - 1;
-		byte[] bytes = new byte[size];
-
-		for (int i = 0; i < size; i++) {
-			bytes[i] = (byte) (commandPart.charAt(i + 1) >> 8);
-		}
-
-		return bytes;
 	}
 
 	/**
@@ -244,6 +264,8 @@ public class Protocol {
 				return getBoolean(commandPart);
 			case DOUBLE_TYPE:
 				return getDouble(commandPart);
+			case LONG_TYPE:
+				return getLong(commandPart);
 			case INTEGER_TYPE:
 				try {
 					return getInteger(commandPart);
@@ -260,6 +282,8 @@ public class Protocol {
 				return getReference(commandPart, gateway);
 			case STRING_TYPE:
 				return getString(commandPart);
+			case DECIMAL_TYPE:
+				return getDecimal(commandPart);
 			case PYTHON_PROXY_TYPE:
 				return getPythonProxy(commandPart, gateway);
 			default:
@@ -305,34 +329,6 @@ public class Protocol {
 		return builder.toString();
 	}
 
-	public final static Throwable getRootThrowable(Throwable throwable,
-			boolean skipInvocation) {
-		Throwable child = throwable;
-		if (!skipInvocation && child instanceof InvocationTargetException) {
-			child = throwable.getCause();
-			skipInvocation = true;
-		} else if (child instanceof Py4JException
-				|| child instanceof Py4JNetworkException) {
-			child = throwable.getCause();
-		} else {
-			return child;
-		}
-
-		if (child == null) {
-			return throwable;
-		} else {
-			return getRootThrowable(child, skipInvocation);
-		}
-	}
-
-	public final static String getThrowableAsString(Throwable throwable) {
-		Throwable root = getRootThrowable(throwable, false);
-		StringWriter stringWriter = new StringWriter();
-		PrintWriter printWriter = new PrintWriter(stringWriter);
-		root.printStackTrace(printWriter);
-		return stringWriter.toString();
-	}
-
 	public final static String getOutputVoidCommand() {
 		return VOID_COMMAND;
 	}
@@ -343,6 +339,8 @@ public class Protocol {
 		if (primitiveObject instanceof String
 				|| primitiveObject instanceof Character) {
 			c = STRING_TYPE;
+		} else if (primitiveObject instanceof Long) {
+			c = LONG_TYPE;
 		} else if (primitiveObject instanceof Double
 				|| primitiveObject instanceof Float) {
 			c = DOUBLE_TYPE;
@@ -417,12 +415,33 @@ public class Protocol {
 
 		if (isError(returnMessage)) {
 			throw new Py4JException(
-					"An exception was raised by the Python Proxy.");
+					"An exception was raised by the Python Proxy. Return Message: "
+							+ returnMessage);
 		} else {
 			returnValue = getObject(returnMessage.substring(1), gateway);
 		}
 
 		return returnValue;
+	}
+
+	public final static Throwable getRootThrowable(Throwable throwable,
+			boolean skipInvocation) {
+		Throwable child = throwable;
+		if (!skipInvocation && child instanceof InvocationTargetException) {
+			child = throwable.getCause();
+			skipInvocation = true;
+		} else if (child instanceof Py4JException
+				|| child instanceof Py4JNetworkException) {
+			child = throwable.getCause();
+		} else {
+			return child;
+		}
+
+		if (child == null) {
+			return throwable;
+		} else {
+			return getRootThrowable(child, skipInvocation);
+		}
 	}
 
 	/**
@@ -442,6 +461,14 @@ public class Protocol {
 		return toReturn;
 	}
 
+	public final static String getThrowableAsString(Throwable throwable) {
+		Throwable root = getRootThrowable(throwable, false);
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(stringWriter);
+		root.printStackTrace(printWriter);
+		return stringWriter.toString();
+	}
+
 	/**
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
@@ -452,6 +479,30 @@ public class Protocol {
 	 */
 	public final static boolean isBoolean(String commandPart) {
 		return commandPart.charAt(0) == BOOLEAN_TYPE;
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is a byte array
+	 */
+	public final static boolean isBytes(String commandPart) {
+		return commandPart.charAt(0) == BYTES_TYPE;
+	}
+
+	/**
+	 * <p>
+	 * Assumes that commandPart is <b>not</b> empty.
+	 * </p>
+	 * 
+	 * @param commandPart
+	 * @return True if the command part is a decimal
+	 */
+	public final static boolean isDecimal(String commandPart) {
+		return commandPart.charAt(0) == DECIMAL_TYPE;
 	}
 
 	/**
@@ -491,7 +542,8 @@ public class Protocol {
 	 * @return True if the return message is an error
 	 */
 	public final static boolean isError(String returnMessage) {
-		return returnMessage.length() == 0 || returnMessage.charAt(0) == ERROR;
+		return returnMessage == null || returnMessage.length() == 0
+				|| returnMessage.charAt(0) == ERROR;
 	}
 
 	/**
@@ -512,10 +564,10 @@ public class Protocol {
 	 * </p>
 	 * 
 	 * @param commandPart
-	 * @return True if the command part is a byte array
+	 * @return True if the command part is a long
 	 */
-	public final static boolean isBytes(String commandPart) {
-		return commandPart.charAt(0) == BYTES_TYPE;
+	public final static boolean isLong(String commandPart) {
+		return commandPart.charAt(0) == LONG_TYPE;
 	}
 
 	/**
@@ -564,17 +616,5 @@ public class Protocol {
 	 */
 	public final static boolean isString(String commandPart) {
 		return commandPart.charAt(0) == STRING_TYPE;
-	}
-
-	/**
-	 * <p>
-	 * Transform the byte array into Base64 characters.
-	 * </p>
-	 * 
-	 * @param primitive
-	 * @return
-	 */
-	public static String encodeBytes(byte[] bytes) {
-		return Base64.encodeToString(bytes, false);
 	}
 }

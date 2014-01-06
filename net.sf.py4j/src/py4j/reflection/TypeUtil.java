@@ -37,15 +37,16 @@ import java.util.Map;
 import java.util.Set;
 
 import py4j.JVMView;
+import py4j.Py4JException;
 
 /**
  * <p>
  * This class is responsible for the type conversion between Python types and
  * Java types.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class TypeUtil {
 	private static Set<String> primitiveTypes;
@@ -79,58 +80,19 @@ public class TypeUtil {
 		primitiveClasses.put("char", char.class);
 	}
 
-	public static boolean isInteger(Class<?> clazz) {
-		return clazz.equals(Integer.class) || clazz.equals(int.class);
-	}
+	public static int computeCharacterConversion(Class<?> parent,
+		Class<?> child, List<TypeConverter> converters) {
+		int cost = -1;
 
-	public static boolean isLong(Class<?> clazz) {
-		return clazz.equals(Long.class) || clazz.equals(long.class);
-	}
-
-	public static boolean isDouble(Class<?> clazz) {
-		return clazz.equals(Double.class) || clazz.equals(double.class);
-	}
-
-	public static boolean isFloat(Class<?> clazz) {
-		return clazz.equals(Float.class) || clazz.equals(float.class);
-	}
-
-	public static boolean isShort(Class<?> clazz) {
-		return clazz.equals(Short.class) || clazz.equals(short.class);
-	}
-
-	public static boolean isByte(Class<?> clazz) {
-		return clazz.equals(Byte.class) || clazz.equals(byte.class);
-	}
-
-	public static boolean isNumeric(Class<?> clazz) {
-		return primitiveTypes.contains(clazz.getName());
-	}
-
-	public static boolean isCharacter(Class<?> clazz) {
-		return clazz.equals(Character.class) || clazz.equals(char.class);
-	}
-
-	public static boolean isBoolean(Class<?> clazz) {
-		return clazz.equals(Boolean.class) || clazz.equals(boolean.class);
-	}
-
-	public static int getPoint(Class<?> clazz) {
-		int point = -1;
-		if (isByte(clazz)) {
-			point = 0;
-		} else if (isShort(clazz)) {
-			point = 1;
-		} else if (isInteger(clazz)) {
-			point = 2;
-		} else if (isLong(clazz)) {
-			point = 3;
+		if (isCharacter(child)) {
+			cost = 0;
+			converters.add(TypeConverter.NO_CONVERTER);
+		} else if (CharSequence.class.isAssignableFrom(child)) {
+			cost = 1;
+			converters.add(TypeConverter.CHAR_CONVERTER);
 		}
-		return point;
-	}
 
-	public static int getCost(Class<?> parent, Class<?> child) {
-		return getPoint(parent) - getPoint(child);
+		return cost;
 	}
 
 	public static int computeDistance(Class<?> parent, Class<?> child) {
@@ -147,7 +109,7 @@ public class TypeUtil {
 		// Search through interfaces (costly)
 		if (distance == -1) {
 			distance = computeInterfaceDistance(parent, child,
-					new HashSet<String>(), Arrays.asList(child.getInterfaces()));
+				new HashSet<String>(), Arrays.asList(child.getInterfaces()));
 		}
 
 		if (distance != -1) {
@@ -157,71 +119,44 @@ public class TypeUtil {
 		return distance;
 	}
 
-	private static int computeSuperDistance(Class<?> parent, Class<?> child) {
-		Class<?> superChild = child.getSuperclass();
-		if (superChild == null) {
-			return -1;
-		} else if (superChild.equals(parent)) {
-			return 1;
-		} else {
-			int distance = computeSuperDistance(parent, superChild);
-			if (distance != -1) {
-				return distance + 1;
-			} else {
-				return distance;
-			}
-		}
-	}
-
 	private static int computeInterfaceDistance(Class<?> parent,
-			Class<?> child, Set<String> visitedInterfaces,
-			List<Class<?>> interfacesToVisit) {
+		Class<?> child, Set<String> visitedInterfaces,
+		List<Class<?>> interfacesToVisit) {
+		int distance = -1;
 		List<Class<?>> nextInterfaces = new ArrayList<Class<?>>();
 		for (Class<?> clazz : interfacesToVisit) {
 			if (parent.equals(clazz)) {
-				return 1;
+				distance = 1;
+				break;
 			} else {
 				visitedInterfaces.add(clazz.getName());
 				getNextInterfaces(clazz, nextInterfaces, visitedInterfaces);
 			}
 		}
 
-		int distance = -1;
-		if (child != null) {
-			Class<?> grandChild = child.getSuperclass();
-			getNextInterfaces(grandChild, nextInterfaces,
-					visitedInterfaces);
-			int newDistance = computeInterfaceDistance(parent,
-					grandChild, visitedInterfaces,
-					nextInterfaces);
-			if (newDistance != -1) {
-				distance = newDistance + 1;
+		if (distance == -1) {
+			Class<?> grandChild = null;
+
+			if (child != null) {
+				// We still have a superclass, so add its interfaces.
+				grandChild = child.getSuperclass();
+				getNextInterfaces(grandChild, nextInterfaces, visitedInterfaces);
 			}
-		} else if (nextInterfaces.size() > 0) {
-			int newDistance = computeInterfaceDistance(parent,
-					child, visitedInterfaces,
-					nextInterfaces);
-			if (newDistance != -1) {
-				distance = newDistance + 1;
+
+			if (nextInterfaces.size() > 0) {
+				int newDistance = computeInterfaceDistance(parent, grandChild,
+					visitedInterfaces, nextInterfaces);
+				if (newDistance != -1) {
+					distance = newDistance + 1;
+				}
 			}
 		}
 
 		return distance;
 	}
 
-	private static void getNextInterfaces(Class<?> clazz,
-			List<Class<?>> nextInterfaces, Set<String> visitedInterfaces) {
-		if (clazz != null) {
-			for (Class<?> nextClazz : clazz.getInterfaces()) {
-				if (!visitedInterfaces.contains(nextClazz.getName())) {
-					nextInterfaces.add(nextClazz);
-				}
-			}
-		}
-	}
-
 	public static int computeNumericConversion(Class<?> parent, Class<?> child,
-			List<TypeConverter> converters) {
+		List<TypeConverter> converters) {
 		int cost = -1;
 
 		// XXX This is not complete. Certain cases are not considered like from
@@ -232,7 +167,11 @@ public class TypeUtil {
 
 		if (isLong(parent) && (!isFloat(child) && !isDouble(child))) {
 			cost = getCost(parent, child);
-			converters.add(TypeConverter.NO_CONVERTER);
+			if (isLong(child)) {
+				converters.add(TypeConverter.NO_CONVERTER);
+			} else {
+				converters.add(TypeConverter.LONG_CONVERTER);
+			}
 		} else if (isInteger(parent)
 				&& (isInteger(child) || isShort(child) || isByte(child))) {
 			cost = getCost(parent, child);
@@ -274,19 +213,78 @@ public class TypeUtil {
 		return cost;
 	}
 
-	public static int computeCharacterConversion(Class<?> parent,
-			Class<?> child, List<TypeConverter> converters) {
-		int cost = -1;
+	private static int computeSuperDistance(Class<?> parent, Class<?> child) {
+		Class<?> superChild = child.getSuperclass();
+		if (superChild == null) {
+			return -1;
+		} else if (superChild.equals(parent)) {
+			return 1;
+		} else {
+			int distance = computeSuperDistance(parent, superChild);
+			if (distance != -1) {
+				return distance + 1;
+			} else {
+				return distance;
+			}
+		}
+	}
 
-		if (isCharacter(child)) {
-			cost = 0;
-			converters.add(TypeConverter.NO_CONVERTER);
-		} else if (CharSequence.class.isAssignableFrom(child)) {
-			cost = 1;
-			converters.add(TypeConverter.CHAR_CONVERTER);
+	public static Class<?> forName(String fqn) throws ClassNotFoundException {
+		Class<?> clazz = primitiveClasses.get(fqn);
+		if (clazz == null) {
+			clazz = Class.forName(fqn);
+		}
+		return clazz;
+	}
+
+	public static Class<?> forName(String fqn, JVMView view)
+		throws ClassNotFoundException {
+		Class<?> clazz = primitiveClasses.get(fqn);
+		if (clazz == null) {
+			if (fqn.indexOf('.') < 0) {
+				clazz = getClass(fqn, view);
+			} else {
+				clazz = Class.forName(fqn);
+			}
+		}
+		return clazz;
+	}
+
+	public static Class<?> getClass(String simpleName, JVMView view)
+		throws ClassNotFoundException {
+		Class<?> clazz = null;
+
+		try {
+			// First, try the fqn
+			clazz = Class.forName(simpleName);
+		} catch (Exception e) {
+			// Then try the single import
+			Map<String, String> singleImportsMap = view.getSingleImportsMap();
+			String newFQN = singleImportsMap.get(simpleName);
+			if (newFQN != null) {
+				clazz = Class.forName(newFQN);
+			} else {
+				// Or try star imports
+				for (String starImport : view.getStarImports()) {
+					try {
+						clazz = Class.forName(starImport + "." + simpleName);
+						break;
+					} catch (Exception e2) {
+						// Ignore
+					}
+				}
+			}
 		}
 
-		return cost;
+		if (clazz == null) {
+			throw new ClassNotFoundException(simpleName + " not found.");
+		}
+
+		return clazz;
+	}
+
+	public static int getCost(Class<?> parent, Class<?> child) {
+		return getPoint(parent) - getPoint(child);
 	}
 
 	public static String getName(String name, boolean shortName) {
@@ -302,15 +300,6 @@ public class TypeUtil {
 		}
 	}
 
-	public static String getPackage(String name) {
-		int index = name.lastIndexOf(".");
-		if (index < 0) {
-			return name;
-		} else {
-			return name.substring(0, index);
-		}
-	}
-
 	public static String[] getNames(Class<?>[] classes) {
 		String[] names = new String[classes.length];
 
@@ -321,57 +310,110 @@ public class TypeUtil {
 		return names;
 	}
 
-	public static Class<?> forName(String fqn) throws ClassNotFoundException {
-		Class<?> clazz = primitiveClasses.get(fqn);
-		if (clazz == null) {
-			clazz = Class.forName(fqn);
-		}
-		return clazz;
-	}
-
-	public static Class<?> forName(String fqn, JVMView view)
-			throws ClassNotFoundException {
-		Class<?> clazz = primitiveClasses.get(fqn);
-		if (clazz == null) {
-			if (fqn.indexOf('.') < 0) {
-				clazz = getClass(fqn, view);
-			} else {
-				clazz = Class.forName(fqn);
-			}
-		}
-		return clazz;
-	}
-
-	public static Class<?> getClass(String simpleName, JVMView view) throws ClassNotFoundException {
-		Class<?> clazz = null;
-
-		try {
-			// First, try the fqn
-			clazz = Class.forName(simpleName);
-		} catch (Exception e) {
-			// Then try the single import
-			Map<String,String> singleImportsMap = view.getSingleImportsMap();
-			String newFQN = singleImportsMap.get(simpleName);
-			if (newFQN != null) {
-				clazz = Class.forName(newFQN);
-			} else {
-				// Or try star imports
-				for (String starImport : view.getStarImports()) {
-					try {
-						clazz = Class.forName(starImport + "." + simpleName);
-						break;
-					} catch(Exception e2) {
-						// Ignore
-					}
+	private static void getNextInterfaces(Class<?> clazz,
+		List<Class<?>> nextInterfaces, Set<String> visitedInterfaces) {
+		if (clazz != null) {
+			for (Class<?> nextClazz : clazz.getInterfaces()) {
+				if (!visitedInterfaces.contains(nextClazz.getName())) {
+					nextInterfaces.add(nextClazz);
 				}
 			}
 		}
-		
-		if (clazz == null) {
-			throw new ClassNotFoundException(simpleName + " not found.");
-		}
+	}
 
-		return clazz;
+	public static String getPackage(String name) {
+		int index = name.lastIndexOf(".");
+		if (index < 0) {
+			return name;
+		} else {
+			return name.substring(0, index);
+		}
+	}
+
+	public static int getPoint(Class<?> clazz) {
+		int point = -1;
+		if (isByte(clazz)) {
+			point = 0;
+		} else if (isShort(clazz)) {
+			point = 1;
+		} else if (isInteger(clazz)) {
+			point = 2;
+		} else if (isLong(clazz)) {
+			point = 3;
+		}
+		return point;
+	}
+
+	public static boolean isBoolean(Class<?> clazz) {
+		return clazz.equals(Boolean.class) || clazz.equals(boolean.class);
+	}
+
+	public static boolean isByte(Class<?> clazz) {
+		return clazz.equals(Byte.class) || clazz.equals(byte.class);
+	}
+
+	public static boolean isCharacter(Class<?> clazz) {
+		return clazz.equals(Character.class) || clazz.equals(char.class);
+	}
+
+	public static boolean isDouble(Class<?> clazz) {
+		return clazz.equals(Double.class) || clazz.equals(double.class);
+	}
+
+	public static boolean isFloat(Class<?> clazz) {
+		return clazz.equals(Float.class) || clazz.equals(float.class);
+	}
+
+	public static boolean isInteger(Class<?> clazz) {
+		return clazz.equals(Integer.class) || clazz.equals(int.class);
+	}
+
+	public static boolean isLong(Class<?> clazz) {
+		return clazz.equals(Long.class) || clazz.equals(long.class);
+	}
+
+	public static boolean isNumeric(Class<?> clazz) {
+		return primitiveTypes.contains(clazz.getName());
+	}
+
+	public static boolean isShort(Class<?> clazz) {
+		return clazz.equals(Short.class) || clazz.equals(short.class);
+	}
+
+	/**
+	 * <p>
+	 * Checks if an object is an instance of a given class.
+	 * </p>
+	 *
+	 * @param clazz
+	 *            The class to check
+	 * @param object
+	 *            The object
+	 * @return True if object is an instance of clazz.
+	 */
+	public static boolean isInstanceOf(Class<?> clazz, Object object) {
+		return clazz.isInstance(object);
+	}
+
+	/**
+	 * <p>
+	 * Checks if an object is an instance of a given class.
+	 * </p>
+	 *
+	 * @param classFQN
+	 *            The fully qualified name of a class to check
+	 * @param object
+	 *            The object
+	 * @return True if object is an instance of the class.
+	 */
+	public static boolean isInstanceOf(String classFQN, Object object) {
+		Class<?> clazz = null;
+		try {
+			clazz = Class.forName(classFQN);
+		} catch (Exception e) {
+			throw new Py4JException(e);
+		}
+		return isInstanceOf(clazz, object);
 	}
 
 }

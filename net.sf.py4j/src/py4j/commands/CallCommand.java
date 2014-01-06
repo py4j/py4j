@@ -69,8 +69,6 @@ public class CallCommand extends AbstractCommand {
 		this.commandName = CALL_COMMAND_NAME;
 	}
 
-
-
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
@@ -82,7 +80,7 @@ public class CallCommand extends AbstractCommand {
 				arguments);
 
 		String returnCommand = Protocol.getOutputCommand(returnObject);
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}

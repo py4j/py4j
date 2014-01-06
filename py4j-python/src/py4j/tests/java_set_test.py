@@ -77,21 +77,22 @@ class Test(unittest.TestCase):
         self.assertEqual(len(set1), len(set2))
         self.assertEqual('a' in set1, 'a' in set2)
         self.assertEqual('b' in set1, 'b' in set2)
-        self.assertEqual(repr(set1), repr(set2))
+        # not a good assumption with Python 3.3. Oh dear.
+        #self.assertEqual(repr(set1), repr(set2))
 
         set1.remove('a')
         set2.remove('a')
         self.assertEqual(len(set1), len(set2))
         self.assertEqual('a' in set1, 'a' in set2)
         self.assertEqual('b' in set1, 'b' in set2)
-        self.assertEqual(repr(set1), repr(set2))
+        #self.assertEqual(repr(set1), repr(set2))
 
         set1.clear()
         set2.clear()
         self.assertEqual(len(set1), len(set2))
         self.assertEqual('a' in set1, 'a' in set2)
         self.assertEqual('b' in set1, 'b' in set2)
-        self.assertEqual(repr(set1), repr(set2))
+        #self.assertEqual(repr(set1), repr(set2))
 
     def testHashSet(self):
         set1 = set()

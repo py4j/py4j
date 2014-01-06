@@ -41,9 +41,12 @@ import py4j.ReturnObject;
 import py4j.reflection.ReflectionEngine;
 
 /**
- * <p>A FieldCommand is responsible for accessing and setting fields of objects. </p>
+ * <p>
+ * A FieldCommand is responsible for accessing and setting fields of objects.
+ * </p>
+ * 
  * @author Barthelemy Dagenais
- *
+ * 
  */
 public class FieldCommand extends AbstractCommand {
 
@@ -58,17 +61,9 @@ public class FieldCommand extends AbstractCommand {
 
 	private ReflectionEngine reflectionEngine;
 
-	
-	
 	public FieldCommand() {
 		super();
 		this.commandName = FIELD_COMMAND_NAME;
-	}
-
-	@Override
-	public void init(Gateway gateway) {
-		super.init(gateway);
-		reflectionEngine = gateway.getReflectionEngine();
 	}
 
 	@Override
@@ -82,7 +77,7 @@ public class FieldCommand extends AbstractCommand {
 		} else {
 			returnCommand = setField(reader);
 		}
-		logger.info("Returning command: " + returnCommand);
+		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
 	}
@@ -94,7 +89,7 @@ public class FieldCommand extends AbstractCommand {
 
 		Object object = gateway.getObject(targetObjectId);
 		Field field = reflectionEngine.getField(object, fieldName);
-		logger.info("Getting field " + fieldName);
+		logger.finer("Getting field " + fieldName);
 		String returnCommand = null;
 		if (field == null) {
 			returnCommand = Protocol.getNoSuchFieldOutputCommand();
@@ -106,17 +101,23 @@ public class FieldCommand extends AbstractCommand {
 		return returnCommand;
 	}
 
+	@Override
+	public void init(Gateway gateway) {
+		super.init(gateway);
+		reflectionEngine = gateway.getReflectionEngine();
+	}
+
 	private String setField(BufferedReader reader) throws IOException {
 		String targetObjectId = reader.readLine();
 		String fieldName = reader.readLine();
 		String value = reader.readLine();
-		
+
 		reader.readLine(); // read EndOfCommand;
-		
+
 		Object valueObject = Protocol.getObject(value, this.gateway);
 		Object object = gateway.getObject(targetObjectId);
 		Field field = reflectionEngine.getField(object, fieldName);
-		logger.info("Setting field " + fieldName);
+		logger.finer("Setting field " + fieldName);
 		String returnCommand = null;
 		if (field == null) {
 			returnCommand = Protocol.getNoSuchFieldOutputCommand();

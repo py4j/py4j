@@ -78,14 +78,14 @@ import py4j.commands.ShutdownGatewayServerCommand;
  */
 public class GatewayConnection implements Runnable {
 
-	private final static List<Class<? extends Command>> baseCommands;
+	protected final static List<Class<? extends Command>> baseCommands;
 	protected final Socket socket;
 	protected final BufferedWriter writer;
 	protected final BufferedReader reader;
 	protected final Map<String, Command> commands;
-	private final Logger logger = Logger.getLogger(GatewayConnection.class
+	protected final Logger logger = Logger.getLogger(GatewayConnection.class
 			.getName());
-	private final List<GatewayServerListener> listeners;
+	protected final List<GatewayServerListener> listeners;
 
 	static {
 		baseCommands = new ArrayList<Class<? extends Command>>();
@@ -102,8 +102,24 @@ public class GatewayConnection implements Runnable {
 		baseCommands.add(ExceptionCommand.class);
 	}
 
+	/**
+	 * 
+	 * @return The list of base commands that are provided by default. Can be
+	 *         hidden by custom commands with the same command id by passing a
+	 *         list of custom commands to the {@link py4j.GatewayServer
+	 *         GatewayServer}.
+	 */
+	public static List<Class<? extends Command>> getBaseCommands() {
+		return baseCommands;
+	}
+
+	public GatewayConnection(Gateway gateway, Socket socket) throws IOException {
+		this(gateway, socket, null, new ArrayList<GatewayServerListener>());
+	}
+
 	public GatewayConnection(Gateway gateway, Socket socket,
-			List<Class<? extends Command>> customCommands, List<GatewayServerListener> listeners) throws IOException {
+			List<Class<? extends Command>> customCommands,
+			List<GatewayServerListener> listeners) throws IOException {
 		super();
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(
@@ -120,19 +136,24 @@ public class GatewayConnection implements Runnable {
 		t.start();
 	}
 
-	public GatewayConnection(Gateway gateway, Socket socket) throws IOException {
-		this(gateway, socket, null, new ArrayList<GatewayServerListener>());
+	protected void fireConnectionStopped() {
+		logger.info("Connection Stopped");
+
+		for (GatewayServerListener listener : listeners) {
+			try {
+				listener.connectionStopped(this);
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, "A listener crashed.", e);
+			}
+		}
 	}
 
 	/**
 	 * 
-	 * @return The list of base commands that are provided by default. Can be
-	 *         hidden by custom commands with the same command id by passing a
-	 *         list of custom commands to the {@link py4j.GatewayServer
-	 *         GatewayServer}.
+	 * @return The socket used by this gateway connection.
 	 */
-	public static List<Class<? extends Command>> getBaseCommands() {
-		return baseCommands;
+	public Socket getSocket() {
+		return socket;
 	}
 
 	/**
@@ -160,6 +181,17 @@ public class GatewayConnection implements Runnable {
 		}
 	}
 
+	protected void quietSendError(BufferedWriter writer, Throwable exception) {
+		try {
+			String returnCommand = Protocol.getOutputErrorCommand(exception);
+			logger.fine("Trying to return error: " + returnCommand);
+			writer.write(returnCommand);
+			writer.flush();
+		} catch (Exception e) {
+
+		}
+	}
+
 	@Override
 	public void run() {
 		boolean executing = false;
@@ -169,7 +201,7 @@ public class GatewayConnection implements Runnable {
 			do {
 				commandLine = reader.readLine();
 				executing = true;
-				logger.info("Received command: " + commandLine);
+				logger.fine("Received command: " + commandLine);
 				Command command = commands.get(commandLine);
 				if (command != null) {
 					command.execute(commandLine, reader, writer);
@@ -187,29 +219,6 @@ public class GatewayConnection implements Runnable {
 		} finally {
 			NetworkUtil.quietlyClose(socket);
 			fireConnectionStopped();
-		}
-	}
-	
-	protected void fireConnectionStopped() {
-		logger.info("Connection Stopped");
-		
-		for (GatewayServerListener listener : listeners) {
-			try {
-				listener.connectionStopped();
-			} catch (Exception e) {
-				logger.log(Level.SEVERE, "A listener crashed.", e);
-			}
-		}
-	}
-
-	protected void quietSendError(BufferedWriter writer, Throwable exception) {
-		try {
-			String returnCommand = Protocol.getOutputErrorCommand(exception);
-			logger.warning("Trying to return error: " + returnCommand);
-			writer.write(returnCommand);
-			writer.flush();
-		} catch (Exception e) {
-
 		}
 	}
 

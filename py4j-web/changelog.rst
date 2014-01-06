@@ -3,6 +3,36 @@ Changelog
 
 The changelog describes in plain English the changes that occurred between Py4J releases.
 
+Py4J 0.8.1
+--------
+
+- Fixed a bug in type inference when interface hierarchy is deeper than
+  abstract class hierarchy.
+- Added a utility method ``is_instance_of`` in py4j.java_gateway to determine
+  if a JavaObject is an instance of a class.
+- Released Py4J in central Maven repository.
+- `github 0.8.1 milestone
+  <https://github.com/bartdag/py4j/issues?milestone=8&page=1&state=closed>`_
+
+
+Py4J 0.8
+--------
+
+- Major fix to the Java byte[] support. Thanks to @agronholm for spotting
+  this subtle but major issue and thanks to @fdinto from The Atlantic for
+  providing a patch!
+- Ability to fail early if the py4j.java_gateway.JavaGateway cannot connect to
+  the JVM.
+- Added support for long primitives, BigDecimal, enum types, and inner classes
+  on the Java side.
+- Set saner log levels
+- Many small bug fixes and API enhancements (backward compatible).
+- Wrote a section in the FAQ about security concerns and precautions with Py4J.
+- Added support of `Travis-CI <https://travis-ci.org/bartdag/py4j>`_ and
+  cleaned up the test suite to remove hardcoded paths.
+- `github 0.8 milestone
+  <https://github.com/bartdag/py4j/issues?milestone=7&page=1&state=closed>`_
+
 Py4J 0.7
 --------
 
@@ -35,12 +65,12 @@ Py4J 0.5
 - Added support for pattern filtering in ``JavaGateway.help()`` (e.g., ``gateway.help(obj,'get*Foo*Bar')``)
 - Added support for automatic conversion of Python collections (list, set,
   dictionary) to Java collections. User ``JavaGateway(auto_convert=True)`` or
-  an explicit convertor.  
+  an explicit convertor.
 - Created two Eclipse features: one embeds the Py4J
   Java library. The other
   provides a default GatewayServer that is started when Eclipse starts. Both
   features are available on the new Py4J Eclipse update site:
-  ``http://py4j.sourceforge.net/py4j_eclipse`` 
+  ``http://py4j.sourceforge.net/py4j_eclipse``
 - Redesigned the module decomposition of Py4J: there are no more mandatory circular dependencies among modules.
 - `github 0.5 milestone
   <https://github.com/bartdag/py4j/issues/labels/v0.5>`_

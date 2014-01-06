@@ -2,7 +2,7 @@
 <feature
       id="net.sf.py4j.feature"
       label="Py4J Library (required)"
-      version="0.7.0.qualifier"
+      version="0.8.1.qualifier"
       provider-name="Py4J">
 
    <description url="http://py4j.sourceforge.net/">

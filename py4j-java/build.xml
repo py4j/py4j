@@ -32,8 +32,6 @@
     <property environment="env"/>
 	<property file="ant.properties"/>
     <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.6"/>
-    <property name="source" value="1.6"/>
 	<property name="jar.name" value="py4j${version}.jar"/>
     <property name="release.name" value="py4j-${version}"/>
     <property name="junit.src.tests" value="test"/>
@@ -116,11 +114,11 @@
     <!-- JAVA - COMPILE -->
     <target depends="init" name="build">
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}" encoding="UTF-8">
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" encoding="UTF-8">
             <src path="src"/>
             <classpath refid="py4j.classpath"/>
         </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" source="${source}" target="${target}" encoding="UTF-8">
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" encoding="UTF-8">
             <src path="test"/>
             <classpath refid="py4j.classpath"/>
         </javac>
@@ -130,7 +128,7 @@
     <target depends="build" name="java-test">
         <mkdir dir="${junit.output.dir}"/>
         <junit fork="yes" haltonfailure="true" printsummary="on">
-            <formatter type="xml"/>
+            <formatter type="brief" usefile="false"/>
             <batchtest todir="${junit.output.dir}">
                 <fileset dir="${junit.src.tests}">
                     <include name="**/*Test.java"/>
@@ -256,6 +254,9 @@
     </target>
 
     <target depends="build" name="python-test">
+        <exec executable="python" dir="${py4jpy.dir}" failonerror="true">
+            <arg line="--version"/>
+        </exec>
         <exec executable="nosetests" dir="${py4jpy.dir}" failonerror="true">
             <arg line="-w src"/>
             <arg line="-c nose.cfg"/>

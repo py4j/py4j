@@ -12,18 +12,18 @@ Created on Dec 3, 2009
 """
 from __future__ import unicode_literals, absolute_import
 
-import atexit
 from collections import deque
 import logging
 import os
 from pydoc import ttypager
+import select
 import socket
 from subprocess import Popen, PIPE
 import sys
 from threading import Thread, RLock
 import weakref
 
-from py4j.compat import range, hasattr2
+from py4j.compat import range, hasattr2, basestring
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
 from py4j.version import __version__
@@ -41,6 +41,7 @@ BUFFER_SIZE = 4096
 DEFAULT_ADDRESS = '127.0.0.1'
 DEFAULT_PORT = 25333
 DEFAULT_PYTHON_PROXY_PORT = 25334
+DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT = 5
 PY4J_SKIP_COLLECTIONS = 'PY4J_SKIP_COLLECTIONS'
 PY4J_TRUE = set(['yes', 'y', 't', 'true'])
 
@@ -106,7 +107,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         raise Py4JError("Could not find py4j jar at {0}".format(jarpath))
 
     # Launch the server in a subprocess.
-    classpath = ":".join((jarpath, classpath))
+    classpath = os.pathsep.join((jarpath, classpath))
     command = ["java", "-classpath", classpath] + javaopts + \
               ["py4j.GatewayServer"]
     if die_on_exit:
@@ -183,6 +184,50 @@ def get_method(java_object, method_name):
             java_object._gateway_client)
 
 
+def is_instance_of(gateway, java_object, java_class):
+    """Indicates whether a java object is an instance of the provided
+    java_class.
+
+    :param gateway: the JavaGateway instance
+    :param java_object: the JavaObject instance
+    :param java_class: can be a string (fully qualified name), a JavaClass
+            instance, or a JavaObject instance)
+    """
+    if isinstance(java_class, basestring):
+        param = java_class
+    elif isinstance(java_class, JavaClass):
+        param = java_class._fqn
+    elif isinstance(java_class, JavaObject):
+        param = java_class.getClass()
+    else:
+        raise Py4JError("java_class must be a string, a JavaClass, or a JavaObject")
+
+    return gateway.jvm.py4j.reflection.TypeUtil.isInstanceOf(param,
+            java_object)
+
+
+def quiet_close(closable):
+    """Quietly closes a closable object without throwing an exception.
+
+    :param closable: Object with a ``close`` method.
+    """
+    try:
+        closable.close()
+    except Exception:
+        pass
+
+
+def quiet_shutdown(socket_instance):
+    """Quietly shuts down a socket without throwing an exception.
+
+    :param socket_instance: Socket with ``shutdown`` method.
+    """
+    try:
+        socket_instance.shutdown(socket.SHUT_RDWR)
+    except Exception:
+        pass
+
+
 def _garbage_collect_object(gateway_client, target_id):
 #    print(target_id + ' deleted')
     ThreadSafeFinalizer.remove_finalizer(smart_decode(gateway_client.address) +
@@ -208,11 +253,8 @@ def _garbage_collect_connection(socket_instance):
     """
 #    print('delete connection')
     if socket_instance != None:
-        try:
-            socket_instance.shutdown(socket.SHUT_RDWR)
-            socket_instance.close()
-        except Exception:
-            pass
+        quiet_shutdown(socket_instance)
+        quiet_close(socket_instance)
 
 
 class DummyRLock(object):
@@ -342,7 +384,7 @@ class GatewayClient(object):
         for _ in range(0, size):
             try:
                 connection = self.deque.pop()
-                connection.close()
+                quiet_close(connection)
             except Exception:
                 pass
 
@@ -388,17 +430,12 @@ class GatewayConnection(object):
             logger.exception(msg)
             raise Py4JNetworkError(msg)
 
-    def close(self, throw_exception=False):
+    def close(self):
         """Closes the connection by closing the socket."""
-        try:
-            self.stream.close()
-            self.socket.shutdown(socket.SHUT_RDWR)
-            self.socket.close()
-        except Exception as e:
-            if throw_exception:
-                raise e
-        finally:
-            self.is_connected = False
+        quiet_close(self.stream)
+        quiet_shutdown(self.socket)
+        quiet_close(self.socket)
+        self.is_connected = False
 
     def shutdown_gateway(self):
         """Sends a shutdown command to the gateway. This will close the gateway
@@ -410,9 +447,9 @@ class GatewayConnection(object):
             raise Py4JError('Gateway must be connected to send shutdown cmd.')
 
         try:
-            self.stream.close()
+            quiet_close(self.stream)
             self.socket.sendall(SHUTDOWN_GATEWAY_COMMAND_NAME.encode('utf-8'))
-            self.socket.close()
+            quiet_close(self.socket)
             self.is_connected = False
         except Exception:
             # Do nothing! Exceptions might occur anyway.
@@ -726,7 +763,7 @@ class JavaGateway(object):
 
     def __init__(self, gateway_client=None, auto_field=False,
             python_proxy_port=DEFAULT_PYTHON_PROXY_PORT,
-            start_callback_server=False, auto_convert=False):
+            start_callback_server=False, auto_convert=False, eager_load=False):
         """
         :param gateway_client: gateway client used to connect to the JVM. If
          `None`, a gateway client based on a socket with the default
@@ -741,12 +778,17 @@ class JavaGateway(object):
         :param python_proxy_port: port used to receive callback from the JVM.
 
         :param start_callback_server: if `True`, the callback server is
-         started.
+         started. If the callback server cannot be started, the gateway shuts
+         down itself and raises an exception.
 
         :param auto_convert: if `True`, try to automatically convert Python
          objects like sequences and maps to Java Objects. Default value is
          `False` to improve performance and because it is still possible to
          explicitly perform this conversion.
+
+        :param eager_load: if `True`, the gateway tries to connect to the JVM
+         by calling System.currentTimeMillis. If the gateway cannot connect to
+         the JVM, it shuts down itself and raises an exception.
         """
         self.gateway_property = GatewayProperty(auto_field, PythonProxyPool())
         self._python_proxy_port = python_proxy_port
@@ -766,13 +808,31 @@ class JavaGateway(object):
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, gateway_client)
         self.jvm = JVMView(gateway_client, jvm_name=DEFAULT_JVM_NAME,
                 id=DEFAULT_JVM_ID)
+
+        if eager_load:
+            self._eager_load()
         if start_callback_server:
-            self._callback_server = CallbackServer(self.gateway_property.pool,
-                    self._gateway_client, python_proxy_port)
-            self._callback_server.start()
+            self._start_callback_server(python_proxy_port)
 
     def __getattr__(self, name):
         return self.entry_point.__getattr__(name)
+
+    def _eager_load(self):
+        try:
+            self.jvm.System.currentTimeMillis()
+        except Exception:
+            self.shutdown()
+            raise
+
+    def _start_callback_server(self, python_proxy_port):
+        self._callback_server = CallbackServer(self.gateway_property.pool,
+                self._gateway_client, python_proxy_port)
+        try:
+            self._callback_server.start()
+        except Py4JNetworkError:
+            # Clean up ourselves before raising the exception.
+            self.shutdown()
+            raise
 
     def new_jvm_view(self, name='custom jvm'):
         """Creates a new JVM view with its own imports. A JVM view ensures
@@ -822,24 +882,32 @@ class JavaGateway(object):
         answer = self._gateway_client.send_command(command)
         return get_return_value(answer, self._gateway_client)
 
-    def shutdown(self):
+    def shutdown(self, raise_exception=False):
         """Shuts down the :class:`GatewayClient` and the
            :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
+
+        :param raise_exception: If `True`, raise an exception if an error occurs
+         while shutting down (very likely with sockets).
         """
         try:
             self._gateway_client.shutdown_gateway()
         except Exception:
-            pass
+            if raise_exception:
+                raise
         self._shutdown_callback_server()
 
-    def _shutdown_callback_server(self):
+    def _shutdown_callback_server(self, raise_exception=False):
         """Shuts down the
            :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
+
+        :param raise_exception: If `True`, raise an exception if an error occurs
+         while shutting down (very likely with sockets).
         """
         try:
             self._callback_server.shutdown()
         except Exception:
-            pass
+            if raise_exception:
+                raise
 
     def restart_callback_server(self):
         """Shuts down the callback server (if started) and restarts a new one.
@@ -979,7 +1047,12 @@ class CallbackServer(object):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,
                 1)
-        self.server_socket.bind((self.address, self.port))
+        try:
+            self.server_socket.bind((self.address, self.port))
+        except Exception:
+            msg = 'An error occurred while trying to start the callback server'
+            logger.exception(msg)
+            raise Py4JNetworkError(msg)
 
         # Maybe thread needs to be cleanup up?
         self.thread = Thread(target=self.run)
@@ -1001,19 +1074,27 @@ class CallbackServer(object):
             logger.info('Socket listening on {0}'.
                     format(smart_decode(self.server_socket.getsockname())))
 
+            read_list = [self.server_socket]
             while not self.is_shutdown:
-                socket_instance, _ = self.server_socket.accept()
-                input = socket_instance.makefile('rb', 0)
-                connection = CallbackConnection(self.pool, input,
-                        socket_instance,
-                        self.gateway_client)
-                with self.lock:
-                    if not self.is_shutdown:
-                        self.connections.append(connection)
-                        connection.start()
-                    else:
-                        connection.socket.shutdown(socket.SHUT_RDWR)
-                        connection.socket.close()
+                readable, writable, errored = select.select(read_list, [], [],
+                        DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT)
+
+                if self.is_shutdown:
+                    break
+
+                for s in readable:
+                    socket_instance, _ = self.server_socket.accept()
+                    input = socket_instance.makefile('rb', 0)
+                    connection = CallbackConnection(self.pool, input,
+                            socket_instance,
+                            self.gateway_client)
+                    with self.lock:
+                        if not self.is_shutdown:
+                            self.connections.append(connection)
+                            connection.start()
+                        else:
+                            quiet_shutdown(connection.socket)
+                            quiet_close(connection.socket)
         except Exception:
             if self.is_shutdown:
                 logger.info('Error while waiting for a connection.')
@@ -1029,19 +1110,13 @@ class CallbackServer(object):
         logger.info('Callback Server Shutting Down')
         with self.lock:
             self.is_shutdown = True
-            try:
-                self.server_socket.shutdown(socket.SHUT_RDWR)
-                self.server_socket.close()
-                self.server_socket = None
-            except Exception:
-                pass
+            quiet_shutdown(self.server_socket)
+            quiet_close(self.server_socket)
+            self.server_socket = None
 
             for connection in self.connections:
-                try:
-                    connection.socket.shutdown(socket.SHUT_RDWR)
-                    connection.socket.close()
-                except Exception:
-                    pass
+                quiet_shutdown(connection.socket)
+                quiet_close(connection.socket)
 
             self.pool.clear()
         self.thread.join()
@@ -1082,12 +1157,9 @@ class CallbackConnection(Thread):
             logger.info('Error while callback connection was waiting for'
                 'a message')
 
-        try:
             logger.info('Closing down connection')
-            self.socket.shutdown(socket.SHUT_RDWR)
-            self.socket.close()
-        except Exception:
-            pass
+            quiet_shutdown(self.socket)
+            quiet_close(self.socket)
 
     def _call_proxy(self, obj_id, input):
         return_message = ERROR_RETURN_MESSAGE
@@ -1099,7 +1171,7 @@ class CallbackConnection(Thread):
                 return_message = 'y' +\
                         get_command_part(return_value, self.pool)
             except Exception:
-                logger.info('There was an exception while executing the '\
+                logger.exception('There was an exception while executing the '\
                                  'Python Proxy on the Python Side.')
         return return_message
 

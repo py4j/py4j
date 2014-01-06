@@ -42,7 +42,8 @@ public class StringUtil {
 	public final static char ESCAPE_CHAR = '\\';
 
 	public static String escape(String original) {
-		return original.replace("\\", "\\\\").replace("\r","\\r").replace("\n", "\\n");
+		return original.replace("\\", "\\\\").replace("\r", "\\r")
+				.replace("\n", "\\n");
 	}
 
 	public static String unescape(String escaped) {

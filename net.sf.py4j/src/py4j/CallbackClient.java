@@ -43,15 +43,17 @@ import java.util.logging.Logger;
 
 /**
  * <p>
- * A CallbackClient is responsible for managing communication
- * channels: channels are created as needed (e.g., one per concurrent thread)
- * and are closed after a certain time.
+ * A CallbackClient is responsible for managing communication channels: channels
+ * are created as needed (e.g., one per concurrent thread) and are closed after
+ * a certain time.
  * </p>
  * 
  * @author Barthelemy Dagenais
  * 
  */
 public class CallbackClient {
+	public final static String DEFAULT_ADDRESS = "127.0.0.1";
+
 	private final int port;
 
 	private final InetAddress address;
@@ -60,8 +62,8 @@ public class CallbackClient {
 
 	private final Lock lock = new ReentrantLock(true);
 
-	private final Logger logger = Logger
-			.getLogger(CallbackClient.class.getName());
+	private final Logger logger = Logger.getLogger(CallbackClient.class
+			.getName());
 
 	private boolean isShutdown = false;
 
@@ -78,10 +80,10 @@ public class CallbackClient {
 		super();
 		this.port = port;
 		try {
-			this.address = InetAddress.getByName("localhost");
+			this.address = InetAddress.getByName(DEFAULT_ADDRESS);
 		} catch (Exception e) {
 			throw new Py4JNetworkException(
-					"Local Host could not be determined when creating communication channel.");
+					"Default address could not be determined when creating communication channel.");
 		}
 		this.minConnectionTime = DEFAULT_MIN_CONNECTION_TIME;
 		this.minConnectionTimeUnit = TimeUnit.SECONDS;
@@ -119,12 +121,96 @@ public class CallbackClient {
 		setupCleaner();
 	}
 
-	private void setupCleaner() {
-		executor.scheduleAtFixedRate(new Runnable() {
-			public void run() {
-				periodicCleanup();
+	public InetAddress getAddress() {
+		return address;
+	}
+
+	private CallbackConnection getConnection() throws IOException {
+		CallbackConnection connection = null;
+
+		connection = connections.pollLast();
+		if (connection == null) {
+			connection = new CallbackConnection(port, address);
+			connection.start();
+		}
+
+		return connection;
+	}
+
+	private CallbackConnection getConnectionLock() {
+		CallbackConnection cc = null;
+		try {
+			logger.log(Level.INFO, "Getting CB Connection");
+			lock.lock();
+			if (!isShutdown) {
+				cc = getConnection();
+				logger.log(Level.INFO, "Acquired CB Connection");
+			} else {
+				logger.log(Level.INFO,
+						"Shuting down, no connection can be created.");
 			}
-		}, minConnectionTime, minConnectionTime, minConnectionTimeUnit);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Critical error while sending a command",
+					e);
+			throw new Py4JException(
+					"Error while obtaining a new communication channel", e);
+		} finally {
+			lock.unlock();
+		}
+
+		return cc;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	private void giveBackConnection(CallbackConnection cc) {
+		try {
+			lock.lock();
+			if (cc != null) {
+				if (!isShutdown) {
+					connections.addLast(cc);
+				} else {
+					cc.shutdown();
+				}
+			}
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	/**
+	 * <p>
+	 * Closes communication channels that have not been used for a time
+	 * specified at the creation of the callback client.
+	 * </p>
+	 * 
+	 * <p>
+	 * Clients should not directly call this method: it is called by a periodic
+	 * cleaner thread.
+	 * </p>
+	 * 
+	 */
+	public void periodicCleanup() {
+		try {
+			lock.lock();
+			if (!isShutdown) {
+				int size = connections.size();
+				for (int i = 0; i < size; i++) {
+					CallbackConnection cc = connections.pollLast();
+					if (cc.wasUsed()) {
+						cc.setUsed(false);
+						connections.addFirst(cc);
+					} else {
+						cc.shutdown();
+					}
+				}
+
+			}
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	/**
@@ -163,12 +249,20 @@ public class CallbackClient {
 		return returnCommand;
 	}
 
+	private void setupCleaner() {
+		executor.scheduleAtFixedRate(new Runnable() {
+			public void run() {
+				periodicCleanup();
+			}
+		}, minConnectionTime, minConnectionTime, minConnectionTimeUnit);
+	}
+
 	/**
 	 * <p>
 	 * Closes all active channels, stops the periodic cleanup of channels and
 	 * mark the client as shutting down.
 	 * 
-	 * No more commands can be send after this method has been called,
+	 * No more commands can be sent after this method has been called,
 	 * <em>except</em> commands that were initiated before the shutdown method
 	 * was called..
 	 * </p>
@@ -186,90 +280,5 @@ public class CallbackClient {
 		} finally {
 			lock.unlock();
 		}
-	}
-
-	/**
-	 * <p>
-	 * Closes communication channels that have not been used for a time
-	 * specified at the creation of the callback client.
-	 * </p>
-	 * 
-	 * <p>
-	 * Clients should not directly call this method: it is called by a periodic
-	 * cleaner thread.
-	 * </p>
-	 * 
-	 */
-	public void periodicCleanup() {
-		try {
-			lock.lock();
-			if (!isShutdown) {
-				int size = connections.size();
-				for (int i = 0; i < size; i++) {
-					CallbackConnection cc = connections.getLast();
-					if (cc.wasUsed()) {
-						cc.setUsed(false);
-						connections.addFirst(cc);
-					} else {
-						cc.shutdown();
-					}
-				}
-
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	private CallbackConnection getConnectionLock() {
-		CallbackConnection cc = null;
-		try {
-			logger.log(Level.INFO, "Getting CB Connection");
-			lock.lock();
-			if (!isShutdown) {
-				cc = getConnection();
-			}
-			logger.log(Level.INFO, "Acquired CB Connection");
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Critical error while sending a command",
-					e);
-			throw new Py4JException(
-					"Error while obtaining a new communication channel", e);
-		} finally {
-			lock.unlock();
-		}
-
-		return cc;
-	}
-
-	private void giveBackConnection(CallbackConnection cc) {
-		try {
-			lock.lock();
-			if (cc != null) {
-				if (!isShutdown) {
-					connections.addLast(cc);
-				} else {
-					cc.shutdown();
-				}
-			}
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	private CallbackConnection getConnection() throws IOException {
-		CallbackConnection connection = null;
-
-		connection = connections.pollLast();
-		if (connection == null) {
-			connection = new CallbackConnection(port, address);
-			connection.start();
-		}
-
-		return connection;
-	}
-	
-	public int getPort() {
-		return port;
 	}
 }

@@ -63,23 +63,13 @@ public class CallbackConnection {
 
 	private BufferedWriter writer;
 
-	private final Logger logger = Logger
-			.getLogger(CallbackConnection.class.getName());
+	private final Logger logger = Logger.getLogger(CallbackConnection.class
+			.getName());
 
 	public CallbackConnection(int port, InetAddress address) {
 		super();
 		this.port = port;
 		this.address = address;
-	}
-
-	public void start() throws IOException {
-		logger.info("Starting Communication Channel on " + address + " at "
-				+ port);
-		socket = new Socket(address, port);
-		reader = new BufferedReader(new InputStreamReader(socket
-				.getInputStream(), Charset.forName("UTF-8")));
-		writer = new BufferedWriter(new OutputStreamWriter(socket
-				.getOutputStream(), Charset.forName("UTF-8")));
 	}
 
 	public String sendCommand(String command) {
@@ -106,6 +96,16 @@ public class CallbackConnection {
 		NetworkUtil.quietlyClose(reader);
 		NetworkUtil.quietlyClose(writer);
 		NetworkUtil.quietlyClose(socket);
+	}
+
+	public void start() throws IOException {
+		logger.info("Starting Communication Channel on " + address + " at "
+				+ port);
+		socket = new Socket(address, port);
+		reader = new BufferedReader(new InputStreamReader(
+				socket.getInputStream(), Charset.forName("UTF-8")));
+		writer = new BufferedWriter(new OutputStreamWriter(
+				socket.getOutputStream(), Charset.forName("UTF-8")));
 	}
 
 	public boolean wasUsed() {
