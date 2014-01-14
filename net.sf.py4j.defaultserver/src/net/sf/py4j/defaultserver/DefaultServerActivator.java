@@ -48,7 +48,7 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 				PreferenceConstants.PREF_DEFAULT_CALLBACK_PORT);
 
 		if (getPreferenceStore().getBoolean(
-				PreferenceConstants.PREF_USE_SWT_DISPLAY_TREAD)) {
+				PreferenceConstants.PREF_USE_SWT_DISPLAY_THREAD)) {
 
 			server = new SWTGatewayServer(this, getFreePort(defaultPort),
 					getFreePort(defaultCallBackPort),

@@ -77,7 +77,7 @@ public class DefaultServerPreferencePage extends FieldEditorPreferencePage
 		addField(callPort);
 
 		this.swt = new BooleanFieldEditor(
-				PreferenceConstants.PREF_USE_SWT_DISPLAY_TREAD,
+				PreferenceConstants.PREF_USE_SWT_DISPLAY_THREAD,
 				"Run calls in SWT Thread", getFieldEditorParent());
 		addField(swt);
 
