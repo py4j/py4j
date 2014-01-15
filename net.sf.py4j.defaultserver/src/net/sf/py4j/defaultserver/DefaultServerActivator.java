@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
 import py4j.GatewayServer;
 
@@ -59,6 +60,17 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 			server = new GatewayServer(this, defaultPort, defaultCallBackPort,
 					GatewayServer.DEFAULT_CONNECT_TIMEOUT,
 					GatewayServer.DEFAULT_READ_TIMEOUT, null);
+		}
+
+		if (getPreferenceStore().getBoolean(PreferenceConstants.PREF_USE_EXTERNAL_CLASS_LOADER_SERVICE)) {
+			try {
+				ServiceReference<?> r = context.getServiceReference(ClassLoaderService.SERVICE_NAME);
+				if (r != null) {
+					ClassLoaderService s = (ClassLoaderService) context.getService(r);
+					server.setClassLoader(s.getClassLoader());
+				}
+			} catch (Exception e) {
+			}
 		}
 		server.start();
 	}
