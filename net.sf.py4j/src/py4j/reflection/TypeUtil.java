@@ -230,33 +230,45 @@ public class TypeUtil {
 	}
 
 	public static Class<?> forName(String fqn) throws ClassNotFoundException {
+		return forName(fqn, (ClassLoader) null);
+	}
+
+	public static Class<?> forName(String fqn, ClassLoader loader) throws ClassNotFoundException {
 		Class<?> clazz = primitiveClasses.get(fqn);
 		if (clazz == null) {
-			clazz = Class.forName(fqn);
+			clazz = loader == null ? Class.forName(fqn) : loader.loadClass(fqn);
 		}
 		return clazz;
 	}
 
-	public static Class<?> forName(String fqn, JVMView view)
+	public static Class<?> forName(String fqn, JVMView view) throws ClassNotFoundException {
+		return forName(fqn, view, null);
+	}
+
+	public static Class<?> forName(String fqn, JVMView view, ClassLoader loader)
 		throws ClassNotFoundException {
 		Class<?> clazz = primitiveClasses.get(fqn);
 		if (clazz == null) {
 			if (fqn.indexOf('.') < 0) {
-				clazz = getClass(fqn, view);
+				clazz = getClass(fqn, view, loader);
 			} else {
-				clazz = Class.forName(fqn);
+				clazz = loader == null ? Class.forName(fqn) : loader.loadClass(fqn);
 			}
 		}
 		return clazz;
 	}
 
-	public static Class<?> getClass(String simpleName, JVMView view)
-		throws ClassNotFoundException {
+	public static Class<?> getClass(String simpleName, JVMView view) throws ClassNotFoundException {
+		return getClass(simpleName, view, null);
+	}
+
+	public static Class<?> getClass(String simpleName, JVMView view, ClassLoader loader)
+			throws ClassNotFoundException {
 		Class<?> clazz = null;
 
 		try {
 			// First, try the fqn
-			clazz = Class.forName(simpleName);
+			clazz = loader == null ? Class.forName(simpleName) : loader.loadClass(simpleName);
 		} catch (Exception e) {
 			// Then try the single import
 			Map<String, String> singleImportsMap = view.getSingleImportsMap();
