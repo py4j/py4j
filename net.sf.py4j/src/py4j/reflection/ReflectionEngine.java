@@ -57,6 +57,8 @@ public class ReflectionEngine {
 	private final Logger logger = Logger.getLogger(ReflectionEngine.class
 			.getName());
 
+	private ClassLoader loader;
+
 	public final static Object RETURN_VOID = new Object();
 
 	private static ThreadLocal<LRUCache<MethodDescriptor, MethodInvoker>> cacheHolder = new ThreadLocal<LRUCache<MethodDescriptor, MethodInvoker>>() {
@@ -68,17 +70,22 @@ public class ReflectionEngine {
 
 	};
 
-	public Object createArray(String fqn, int[] dimensions) {
-		Class<?> clazz = null;
-		Object returnObject = null;
+	public void setClassLoader(ClassLoader loader) {
+		this.loader = loader;
+	}
+
+	private Class<?> getClass(String classFQN) {
 		try {
-			clazz = TypeUtil.forName(fqn);
-			returnObject = Array.newInstance(clazz, dimensions);
+			return loader != null ? loader.loadClass(classFQN) : Class.forName(classFQN);
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + fqn, e);
+			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
+					e);
 			throw new Py4JException(e);
 		}
-		return returnObject;
+	}
+
+	public Object createArray(String fqn, int[] dimensions) {
+		return Array.newInstance(getClass(fqn), dimensions);
 	}
 
 	private MethodInvoker getBestConstructor(
@@ -189,17 +196,7 @@ public class ReflectionEngine {
 	}
 
 	public MethodInvoker getConstructor(String classFQN, Object[] parameters) {
-		Class<?> clazz = null;
-
-		try {
-			clazz = Class.forName(classFQN);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
-					e);
-			throw new Py4JException(e);
-		}
-
-		return getConstructor(clazz, getClassParameters(parameters));
+		return getConstructor(getClass(classFQN), getClassParameters(parameters));
 	}
 
 	private List<Constructor<?>> getConstructorsByLength(Class<?> clazz,
@@ -252,18 +249,7 @@ public class ReflectionEngine {
 	}
 
 	public Field getField(String classFQN, String name) {
-		Class<?> clazz = null;
-
-		try {
-			clazz = Class.forName(classFQN);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
-					e);
-			throw new Py4JException(e);
-		}
-
-		return getField(clazz, name);
-
+		return getField(getClass(classFQN), name);
 	}
 
 	/**
@@ -345,17 +331,7 @@ public class ReflectionEngine {
 
 	public MethodInvoker getMethod(String classFQN, String name,
 			Object[] parameters) {
-		Class<?> clazz = null;
-
-		try {
-			clazz = Class.forName(classFQN);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
-					e);
-			throw new Py4JException(e);
-		}
-
-		return getMethod(clazz, name, getClassParameters(parameters));
+		return getMethod(getClass(classFQN), name, getClassParameters(parameters));
 	}
 
 	private List<Method> getMethodsByNameAndLength(Class<?> clazz, String name,
