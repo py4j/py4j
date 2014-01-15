@@ -12,5 +12,6 @@ public class PreferenceConstants {
 	public static final String PREF_DEFAULT_CALLBACK_PORT = "PREF_DEFAULT_CALLBACK_PORT";
 
 	public static final String PREF_USE_SWT_DISPLAY_THREAD = "PREF_USE_SWT_DISPLAY_THREAD";
-	
+
+	public static final String PREF_USE_EXTERNAL_CLASS_LOADER_SERVICE = "PREF_USE_EXTERNAL_CLASS_LOADER_SERVICE";
 }
