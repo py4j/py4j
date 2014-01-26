@@ -72,6 +72,8 @@ def find_jar_path():
     paths.append(jar_file)
     paths.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
             "../../../py4j-java/" + jar_file))
+    paths.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+            "../share/py4j/" + jar_file))
     paths.append("../../../current-release/" + jar_file)
     paths.append(os.path.join(sys.prefix, "share/py4j/" + jar_file))
 
