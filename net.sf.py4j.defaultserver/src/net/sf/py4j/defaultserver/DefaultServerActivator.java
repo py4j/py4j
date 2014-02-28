@@ -12,6 +12,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
+import py4j.ClassLoaderService;
 import py4j.GatewayServer;
 
 public class DefaultServerActivator extends AbstractUIPlugin {

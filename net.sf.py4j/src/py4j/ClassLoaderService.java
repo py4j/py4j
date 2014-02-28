@@ -1,4 +1,4 @@
-package net.sf.py4j.defaultserver;
+package py4j;
 
 /**
  * This defines an interface to service that provides a class loader 
