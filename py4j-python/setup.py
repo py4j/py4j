@@ -9,7 +9,7 @@ exec(compile(open("src/py4j/version.py").read(),
 VERSION = __version__
 RELEASE = 'py4j-' + VERSION
 JAR_FILE = 'py4j' + VERSION + '.jar'
-JAR_FILE_PATH = os.path.join('py4j-java',JAR_FILE)
+JAR_FILE_PATH = os.path.join('..','py4j-java',JAR_FILE)
 
 setup(
     name="py4j",
