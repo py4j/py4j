@@ -9,6 +9,8 @@ exec(compile(open("src/py4j/version.py").read(),
 VERSION = __version__
 RELEASE = 'py4j-' + VERSION
 JAR_FILE = 'py4j' + VERSION + '.jar'
+# Note: please do "ant python-light-release" before doing setup.py sdist.
+# Otherwise the jar files won't be created
 JAR_FILE_PATH = os.path.join('py4j-java',JAR_FILE)
 
 setup(
