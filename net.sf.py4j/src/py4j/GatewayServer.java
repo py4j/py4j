@@ -640,6 +640,9 @@ public class GatewayServer extends DefaultGatewayServerListener implements
      * @return An unmodifiable list of custom commands
      */
 	public List<Class<? extends Command>> getCustomCommands() {
+		if (customCommands == null)
+			return null;
+
 		return Collections.unmodifiableList(customCommands);
 	}
 
