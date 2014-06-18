@@ -121,6 +121,10 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     # Determine which port the server started on (needed to support
     # ephemeral ports)
     _port = int(proc.stdout.readline())
+    # Having read the port number, we need to redirect the standard
+    # output of the process to prevent buffer overruns and deadlock. 
+    # See https://docs.python.org/2/library/subprocess.html
+    Popen("cat", stdin=proc.stdout)
     return _port
 
 
