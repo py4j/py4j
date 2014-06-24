@@ -8,7 +8,7 @@ from __future__ import unicode_literals, absolute_import
 
 from decimal import Decimal
 import gc
-from multiprocessing.process import Process
+from multiprocessing import Process
 import os
 from socket import AF_INET, SOCK_STREAM, socket
 import subprocess
