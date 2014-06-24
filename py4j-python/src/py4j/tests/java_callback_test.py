@@ -5,7 +5,7 @@ Created on Apr 5, 2010
 '''
 from __future__ import unicode_literals, absolute_import
 
-from multiprocessing.process import Process
+from multiprocessing import Process
 import subprocess
 from threading import Thread
 import time
