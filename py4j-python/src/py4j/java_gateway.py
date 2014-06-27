@@ -57,7 +57,6 @@ def java_import(jvm_view, import_str):
     gateway_client = jvm_view._gateway_client
     command = JVMVIEW_COMMAND_NAME + JVM_IMPORT_SUB_COMMAND_NAME +\
             jvm_view._id + '\n' + escape_new_line(import_str) + '\n' +\
-            END_COMMAND_PART + '\n' + escape_new_line(import_str) + '\n' +\
             END_COMMAND_PART
     answer = gateway_client.send_command(command)
     return_value = get_return_value(answer, gateway_client, None, None)
