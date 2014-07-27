@@ -167,8 +167,8 @@ def set_field(java_object, field_name, value):
     if answer == NO_MEMBER_COMMAND or is_error(answer)[0]:
         raise Py4JError('no field {0} in object {1}'.format(
             field_name, java_object._target_id))
-        return get_return_value(answer, java_object._gateway_client,
-            java_object._target_id, field_name)
+    return get_return_value(answer, java_object._gateway_client,
+        java_object._target_id, field_name)
 
 
 def get_method(java_object, method_name):
