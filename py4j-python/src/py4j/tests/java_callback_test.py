@@ -187,8 +187,7 @@ class TestIntegration(unittest.TestCase):
         self.assertTrue(len(self.gateway.gateway_property.pool) < 2)
 
     def testDoubleCallbackServer(self):
-        with self.assertRaises(Exception):
-            self.gateway2 = JavaGateway(start_callback_server=True)
+        self.assertRaises(Exception, JavaGateway, start_callback_server=True)
 
     def testMethodConstructor(self):
         time.sleep(1)
@@ -218,12 +217,14 @@ class TestPeriodicCleanup(unittest.TestCase):
 
     def testPeriodicCleanup(self):
         operator = FalseAddition()
-        with self.assertRaises(Exception):
-            self.gateway.entry_point.randomTernaryOperator(operator)
+        self.assertRaises(
+            Exception, self.gateway.entry_point.randomTernaryOperator,
+            operator)
         # Time for periodic cleanup
         time.sleep(5)
-        with self.assertRaises(Exception):
-            self.gateway.entry_point.randomTernaryOperator(operator)
+        self.assertRaises(
+            Exception, self.gateway.entry_point.randomTernaryOperator,
+            operator)
 
     def testBytes(self):
         time.sleep(1)
