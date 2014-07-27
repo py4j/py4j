@@ -65,6 +65,14 @@ class FalseAddition(object):
         implements = ['py4j.examples.Operator']
 
 
+class GoodAddition(object):
+    def doOperation(self, i, j):
+        return i + j
+
+    class Java:
+        implements = ['py4j.examples.Operator']
+
+
 class CustomBytesOperator(object):
     def returnBytes(self, byte_array):
         try:
@@ -179,11 +187,18 @@ class TestIntegration(unittest.TestCase):
         self.assertTrue(len(self.gateway.gateway_property.pool) < 2)
 
     def testDoubleCallbackServer(self):
-        try:
+        with self.assertRaises(Exception):
             self.gateway2 = JavaGateway(start_callback_server=True)
-            self.fail()
-        except Exception:
-            self.assertTrue(True)
+
+    def testMethodConstructor(self):
+        time.sleep(1)
+        goodAddition = GoodAddition()
+        oe1 = self.gateway.jvm.py4j.examples.OperatorExample();
+        # Test method
+        oe1.randomBinaryOperator(goodAddition);
+        # Test constructor
+        oe2 = self.gateway.jvm.py4j.examples.OperatorExample(goodAddition);
+        self.assertIsNotNone(oe2);
 
 
 class TestPeriodicCleanup(unittest.TestCase):
@@ -203,18 +218,12 @@ class TestPeriodicCleanup(unittest.TestCase):
 
     def testPeriodicCleanup(self):
         operator = FalseAddition()
-        try:
+        with self.assertRaises(Exception):
             self.gateway.entry_point.randomTernaryOperator(operator)
-            self.assertTrue(False)
-        except Exception:
-            self.assertTrue(True)
         # Time for periodic cleanup
         time.sleep(5)
-        try:
+        with self.assertRaises(Exception):
             self.gateway.entry_point.randomTernaryOperator(operator)
-            self.assertTrue(False)
-        except Exception:
-            self.assertTrue(True)
 
     def testBytes(self):
         time.sleep(1)

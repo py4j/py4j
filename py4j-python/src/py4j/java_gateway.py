@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """Module to interact with objects in a Java Virtual Machine from a
-Pyton Virtual Machine.
+Python Virtual Machine.
 
 Variables that might clash with the JVM start with an underscore
 (Java Naming Convention do not recommend to start with an underscore
@@ -114,7 +114,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     if die_on_exit:
         command.append("--die-on-broken-pipe")
     command.append(str(port))
-    logger.debug("Lauching gateway with command {0}".format(command))
+    logger.debug("Launching gateway with command {0}".format(command))
     proc = Popen(command, stdout=PIPE, stdin=PIPE)
 
     # Determine which port the server started on (needed to support
@@ -635,7 +635,9 @@ class JavaClass():
     def __init__(self, fqn, gateway_client):
         self._fqn = fqn
         self._gateway_client = gateway_client
+        self._pool = self._gateway_client.gateway_property.pool
         self._command_header = fqn + '\n'
+        self._converters = self._gateway_client.converters
 
     def __getattr__(self, name):
         command = REFLECTION_COMMAND_NAME +\
@@ -659,15 +661,48 @@ class JavaClass():
             raise Py4JError('{0} does not exist in the JVM'.
                     format(self._fqn + name))
 
+    def _get_args(self, args):
+        temp_args = []
+        new_args = []
+        for arg in args:
+            if not isinstance(arg, JavaObject) and \
+               not isinstance(arg, basestring):
+                for converter in self._converters:
+                    if converter.can_convert(arg):
+                        temp_arg = converter.convert(arg, self.gateway_client)
+                        temp_args.append(temp_arg)
+                        new_args.append(temp_arg)
+                        break
+                else:
+                    new_args.append(arg)
+            else:
+                new_args.append(arg)
+
+        return (new_args, temp_args)
+
     def __call__(self, *args):
-        args_command = ''.join([get_command_part(arg) for arg in args])
+        # TODO Refactor to use a mixin shared by JavaMember and JavaClass
+        if self._converters is not None and len(self._converters) > 0:
+            (new_args, temp_args) = self._get_args(args)
+        else:
+            new_args = args
+            temp_args = []
+
+        args_command = ''.join(
+                [get_command_part(arg, self._pool) for arg in new_args])
+
         command = CONSTRUCTOR_COMMAND_NAME +\
             self._command_header +\
             args_command +\
             END_COMMAND_PART
+
         answer = self._gateway_client.send_command(command)
         return_value = get_return_value(answer, self._gateway_client, None,
                 self._fqn)
+
+        for temp_arg in temp_args:
+            temp_arg._detach()
+
         return return_value
 
 
