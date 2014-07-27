@@ -3,6 +3,11 @@ Changelog
 
 The changelog describes in plain English the changes that occurred between Py4J releases.
 
+Py4J 0.8.2.1
+------------
+
+- Fixed a test that used an assert method that does not exist in Python 2.6
+
 Py4J 0.8.2
 ----------
 
