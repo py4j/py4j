@@ -54,8 +54,8 @@ JVM.
   }
 
 
-Resources
-=========
+Support & Resources
+===================
 
 * Take a look at the tutorial :doc:`getting_started`.
 * Browse the :doc:`contents` or the :doc:`faq`.
@@ -64,6 +64,9 @@ Resources
 
 News
 ====
+
+* **July 27th 2014** - Py4J 0.8.2 has been released. See the :doc:`changelog`
+  for more details about the bug fixes.
 
 * **December 26th 2013** - Py4J 0.8.1 has been released. See the
   :doc:`changelog` for more details about the new features.
