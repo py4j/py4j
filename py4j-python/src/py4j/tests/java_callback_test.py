@@ -187,7 +187,11 @@ class TestIntegration(unittest.TestCase):
         self.assertTrue(len(self.gateway.gateway_property.pool) < 2)
 
     def testDoubleCallbackServer(self):
-        self.assertRaises(Exception, JavaGateway, start_callback_server=True)
+        try:
+            self.gateway2 = JavaGateway(start_callback_server=True)
+            self.fail()
+        except Exception:
+            self.assertTrue(True)
 
     def testMethodConstructor(self):
         time.sleep(1)
