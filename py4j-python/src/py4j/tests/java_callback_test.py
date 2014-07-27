@@ -196,12 +196,12 @@ class TestIntegration(unittest.TestCase):
     def testMethodConstructor(self):
         time.sleep(1)
         goodAddition = GoodAddition()
-        oe1 = self.gateway.jvm.py4j.examples.OperatorExample();
+        oe1 = self.gateway.jvm.py4j.examples.OperatorExample()
         # Test method
-        oe1.randomBinaryOperator(goodAddition);
+        oe1.randomBinaryOperator(goodAddition)
         # Test constructor
-        oe2 = self.gateway.jvm.py4j.examples.OperatorExample(goodAddition);
-        self.assertIsNotNone(oe2);
+        oe2 = self.gateway.jvm.py4j.examples.OperatorExample(goodAddition)
+        self.assertTrue(oe2 is not None)
 
 
 class TestPeriodicCleanup(unittest.TestCase):
