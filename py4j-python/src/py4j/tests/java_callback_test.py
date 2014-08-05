@@ -5,7 +5,7 @@ Created on Apr 5, 2010
 '''
 from __future__ import unicode_literals, absolute_import
 
-from multiprocessing.process import Process
+from multiprocessing import Process
 import subprocess
 from threading import Thread
 import time
@@ -60,6 +60,14 @@ class FalseAddition(object):
             return 3722507311
         else:
             return 3722507311
+
+    class Java:
+        implements = ['py4j.examples.Operator']
+
+
+class GoodAddition(object):
+    def doOperation(self, i, j):
+        return i + j
 
     class Java:
         implements = ['py4j.examples.Operator']
@@ -185,6 +193,16 @@ class TestIntegration(unittest.TestCase):
         except Exception:
             self.assertTrue(True)
 
+    def testMethodConstructor(self):
+        time.sleep(1)
+        goodAddition = GoodAddition()
+        oe1 = self.gateway.jvm.py4j.examples.OperatorExample()
+        # Test method
+        oe1.randomBinaryOperator(goodAddition)
+        # Test constructor
+        oe2 = self.gateway.jvm.py4j.examples.OperatorExample(goodAddition)
+        self.assertTrue(oe2 is not None)
+
 
 class TestPeriodicCleanup(unittest.TestCase):
     def setUp(self):
@@ -203,18 +221,14 @@ class TestPeriodicCleanup(unittest.TestCase):
 
     def testPeriodicCleanup(self):
         operator = FalseAddition()
-        try:
-            self.gateway.entry_point.randomTernaryOperator(operator)
-            self.assertTrue(False)
-        except Exception:
-            self.assertTrue(True)
+        self.assertRaises(
+            Exception, self.gateway.entry_point.randomTernaryOperator,
+            operator)
         # Time for periodic cleanup
         time.sleep(5)
-        try:
-            self.gateway.entry_point.randomTernaryOperator(operator)
-            self.assertTrue(False)
-        except Exception:
-            self.assertTrue(True)
+        self.assertRaises(
+            Exception, self.gateway.entry_point.randomTernaryOperator,
+            operator)
 
     def testBytes(self):
         time.sleep(1)

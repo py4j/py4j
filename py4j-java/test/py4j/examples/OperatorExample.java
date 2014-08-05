@@ -39,6 +39,14 @@ public class OperatorExample {
 
 	private final static int MAX = 1000;
 
+    public OperatorExample() {
+
+    }
+
+    public OperatorExample(Operator op) {
+        this.randomBinaryOperator(op);
+    }
+
 	public byte[] callBytesOperator(BytesOperator op) {
 		byte[] input = { 1, 2, 3, 4, 5 };
 

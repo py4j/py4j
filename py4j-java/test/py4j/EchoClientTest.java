@@ -42,7 +42,7 @@ public class EchoClientTest {
 	@Test
 	public void testConnection() {
 		try {
-			Thread.sleep(250);
+			Thread.sleep(500);
 			EchoServer.main(null);
 			Socket testSocket = new Socket(GatewayServer.DEFAULT_ADDRESS,
 					EchoServer.TEST_PORT);

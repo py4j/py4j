@@ -135,7 +135,7 @@ public class Protocol {
 	 * Transform the byte array into Base64 characters.
 	 * </p>
 	 * 
-	 * @param primitive
+	 * @param bytes
 	 * @return
 	 */
 	public static String encodeBytes(byte[] bytes) {
