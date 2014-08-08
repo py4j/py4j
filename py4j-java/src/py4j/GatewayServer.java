@@ -32,6 +32,7 @@ package py4j;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -592,28 +593,43 @@ public class GatewayServer extends DefaultGatewayServerListener implements
      * The listening port is printed to stdout so that clients can start
      * servers on ephemeral ports.
      * </p>
+     * @throws IOException 
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         int port;
+        int argind = 0;
         boolean dieOnBrokenPipe = false;
-        String usage = "usage: [--die-on-broken-pipe] port";
+        String portfilename = "";
+        String usage = "usage: [--die-on-broken-pipe] port [tmpfile]";
         if (args.length == 0) {
             System.err.println(usage);
             System.exit(1);
-        } else if (args.length == 2) {
-            if (!args[0].equals("--die-on-broken-pipe")) {
-                System.err.println(usage);
-                System.exit(1);
-            }
-            dieOnBrokenPipe = true;
+        } 
+        if (args[argind].equals("--die-on-broken-pipe")) {
+        	dieOnBrokenPipe = true;
+        	argind++;
         }
-        port = Integer.parseInt(args[args.length - 1]);
+        if (argind == args.length) {
+        	System.err.println(usage);
+            System.exit(1);
+        }
+    	port = Integer.parseInt(args[argind]);
+    	argind++;
+    	if (argind < args.length) {
+    		portfilename = args[argind];
+    	}
         GatewayServer gatewayServer = new GatewayServer(null, port);
         gatewayServer.start();
-        /* Print out the listening port so that clients can discover it. */
-        int listening_port = gatewayServer.getListeningPort();
-        System.out.println("" + listening_port);
-
+        /* Print out the listening port to file so that clients can discover it. */
+        int listening_port = gatewayServer.getListeningPort();        
+        PrintStream portfile;
+        if (portfilename.length() > 0) {
+        	portfile = new PrintStream(portfilename);
+	        portfile.println("" + listening_port);
+	        portfile.close();
+        }
+        
+        
         if (dieOnBrokenPipe) {
             /* Exit on EOF or broken pipe.  This ensures that the server dies
              * if its parent program dies. */

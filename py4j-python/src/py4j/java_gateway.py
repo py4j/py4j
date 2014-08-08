@@ -27,7 +27,8 @@ from py4j.compat import range, hasattr2, basestring
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.protocol import *
 from py4j.version import __version__
-
+import tempfile
+import time
 
 class NullHandler(logging.Handler):
     def emit(self, record):
@@ -73,6 +74,8 @@ def find_jar_path():
             "../../../py4j-java/" + jar_file))
     paths.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
             "../share/py4j/" + jar_file))
+    paths.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+            "../../../../share/py4j/" + jar_file))
     paths.append("../../../current-release/" + jar_file)
     paths.append(os.path.join(sys.prefix, "share/py4j/" + jar_file))
 
@@ -114,16 +117,31 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     if die_on_exit:
         command.append("--die-on-broken-pipe")
     command.append(str(port))
-    logger.debug("Launching gateway with command {0}".format(command))
-    proc = Popen(command, stdout=PIPE, stdin=PIPE)
+    # If Java is setting the port number, we need to read this from
+    # the Java process. One option would be by reading the standard
+    # output of the java process, but if the standard output is left
+    # being fed into python this can lead to buffer overruns and
+    # deadlock.  See https://docs.python.org/2/library/subprocess.html
+    # We could either try redirecting it (which seems to be messy) or
+    # use an alternative method, such as communicating the port number
+    # via a temporary file.
 
+    portfile, portfilename = tempfile.mkstemp()
+    command.append(portfilename)
+    logger.debug("Launching gateway with command {0}".format(command))
+    proc = Popen(command)
+    
     # Determine which port the server started on (needed to support
     # ephemeral ports)
-    _port = int(proc.stdout.readline())
-    # Having read the port number, we need to redirect the standard
-    # output of the process to prevent buffer overruns and deadlock. 
-    # See https://docs.python.org/2/library/subprocess.html
-    Popen("cat", stdin=proc.stdout)
+    while True:
+        time.sleep(0.2)
+        portfile = open(portfilename)
+        portstring = portfile.readline()
+        portfile.close()
+        if (len(portstring) > 0): break
+    os.unlink(portfilename)
+    _port = int(portstring)
+
     return _port
 
 
