@@ -14,7 +14,7 @@ import py4j.commands.Command;
 /**
  * Delegates execution of command to swt thread if needed.
  * 
- * @author fcp94556
+ * @author Matthew Gerring
  * 
  */
 public final class SWTCommand extends CallCommand {
