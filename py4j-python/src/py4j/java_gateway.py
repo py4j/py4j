@@ -341,6 +341,7 @@ class CallbackServerParameters(object):
         self.address = address
         self.port = port
         self.daemonize = daemonize
+        self.daemonize_connections = daemonize_connections
         self.eager_load = eager_load
 
 
