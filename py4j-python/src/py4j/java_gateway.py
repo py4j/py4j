@@ -46,6 +46,19 @@ PY4J_SKIP_COLLECTIONS = 'PY4J_SKIP_COLLECTIONS'
 PY4J_TRUE = set(['yes', 'y', 't', 'true'])
 
 
+def deprecated(name, last_version, use_instead="", raise_exc=False):
+    if not use_instead:
+        msg = "{0} is deprecated and will be removed in version {1}"\
+            .format(name, last_version)
+    else:
+        msg = "{0} is deprecated and will be removed in version {1}. "\
+            "Use {2} instead."\
+            .format(name, last_version, use_instead)
+    logger.warning(msg)
+    if raise_exc:
+        raise DeprecationWarning(msg)
+
+
 def java_import(jvm_view, import_str):
     """Imports the package or class specified by `import_str` in the
     jvm view namespace.
@@ -256,6 +269,79 @@ def _garbage_collect_connection(socket_instance):
     if socket_instance != None:
         quiet_shutdown(socket_instance)
         quiet_close(socket_instance)
+
+
+class GatewayParameters(object):
+    """Wrapper class that contains all parameters that can be passed to
+    configure a `JavaGateway`
+    """
+
+    def __init__(
+            self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
+            auto_close=True, auto_convert=False, eager_load=False):
+        """
+        :param address: the address to which the client will request a
+         connection
+
+        :param port: the port to which the client will request a connection.
+         Default is 25333.
+
+        :param auto_field: if `False`, each object accessed through this
+         gateway won't try to lookup fields (they will be accessible only by
+         calling get_field). If `True`, fields will be automatically looked
+         up, possibly hiding methods of the same name and making method calls
+         less efficient.
+
+        :param auto_close: if `True`, the connections created by the client
+         close the socket when they are garbage collected.
+
+        :param auto_convert: if `True`, try to automatically convert Python
+         objects like sequences and maps to Java Objects. Default value is
+         `False` to improve performance and because it is still possible to
+         explicitly perform this conversion.
+
+        :param eager_load: if `True`, the gateway tries to connect to the JVM
+         by calling System.currentTimeMillis. If the gateway cannot connect to
+         the JVM, it shuts down itself and raises an exception.
+        """
+        self.address = address
+        self.port = port
+        self.auto_field = auto_field
+        self.auto_close = auto_close
+        self.auto_convert = auto_convert
+        self.eager_load = eager_load
+
+
+class CallbackServerParameters(object):
+    """Wrapper class that contains all parameters that can be passed to
+    configure a `CallbackServer`
+    """
+
+    def __init__(
+            self, address=DEFAULT_ADDRESS, port=DEFAULT_PYTHON_PROXY_PORT,
+            daemonize=False, daemonize_connections=False, eager_load=True):
+        """
+        :param address: the address to which the client will request a
+         connection
+
+        :param port: the port to which the client will request a connection.
+         Default is 25333.
+
+        :param daemonize: If `True`, will set the daemon property of the server
+        thread to True. The callback server will exit automatically if all the
+        other threads exit.
+
+        :param daemonize_connections: If `True`, callback server connections
+        are executed in daemonized threads and will not block the exit of a
+        program if non daemonized threads are finished.
+
+        :param eager_load: If `True`, the callback server is automatically
+        started when the JavaGateway is created.
+        """
+        self.address = address
+        self.port = port
+        self.daemonize = daemonize
+        self.eager_load = eager_load
 
 
 class DummyRLock(object):
@@ -797,58 +883,80 @@ class JavaGateway(object):
     and potential confusion.
     """
 
-    def __init__(self, gateway_client=None, auto_field=False,
+    def __init__(
+            self, gateway_client=None, auto_field=False,
             python_proxy_port=DEFAULT_PYTHON_PROXY_PORT,
-            start_callback_server=False, auto_convert=False, eager_load=False):
+            start_callback_server=False, auto_convert=False, eager_load=False,
+            gateway_parameters=None, callback_server_parameters=None):
         """
-        :param gateway_client: gateway client used to connect to the JVM. If
-         `None`, a gateway client based on a socket with the default
-         parameters is created.
+        :param gateway_parameters: An instance of `GatewayParameters` used to
+        configure the various options of the gateway.
 
-        :param auto_field: if `False`, each object accessed through this
-         gateway won't try to lookup fields (they will be accessible only by
-         calling get_field). If `True`, fields will be automatically looked
-         up, possibly hiding methods of the same name and making method calls
-         less efficient.
-
-        :param python_proxy_port: port used to receive callback from the JVM.
-
-        :param start_callback_server: if `True`, the callback server is
-         started. If the callback server cannot be started, the gateway shuts
-         down itself and raises an exception.
-
-        :param auto_convert: if `True`, try to automatically convert Python
-         objects like sequences and maps to Java Objects. Default value is
-         `False` to improve performance and because it is still possible to
-         explicitly perform this conversion.
-
-        :param eager_load: if `True`, the gateway tries to connect to the JVM
-         by calling System.currentTimeMillis. If the gateway cannot connect to
-         the JVM, it shuts down itself and raises an exception.
+        :param callback_server_parameters: An instance of
+        `CallbackServerParameters` used to configure various options of the
+        gateway server. Must be provided to start a gateway server. Otherwise,
+        callbacks won't be available.
         """
+
+        self.gateway_parameters = gateway_parameters
+        if not gateway_parameters:
+            self.gateway_parameters = GatewayParameters(
+                auto_field=auto_field, auto_convert=auto_convert,
+                eager_load=eager_load)
+
+        self.callback_server_parameters = callback_server_parameters
+        if not callback_server_parameters:
+            self.callback_server_parameters = CallbackServerParameters(
+                port=python_proxy_port)
+
+        # Check for deprecation warnings
+        if auto_field:
+            deprecated("JavaGateway.auto_field", "1.0", "GatewayParameters")
+
+        if auto_convert:
+            deprecated("JavaGateway.auto_convert", "1.0", "GatewayParameters")
+
+        if eager_load:
+            deprecated("JavaGateway.eager_load", "1.0", "GatewayParameters")
+
+        if callback_server_parameters:
+            start_callback_server = True
+        else:
+            deprecated(
+                "JavaGateway.start_callback_server and python_proxy_port",
+                "1.0", "CallbackServerParameters")
+
+        if gateway_client:
+            deprecated("JavaGateway.gateway_client", "1.0",
+                       "GatewayParameters")
+        else:
+            gateway_client = GatewayClient(
+                address=self.gateway_parameters.address,
+                port=self.gateway_parameters.port,
+                auto_close=self.gateway_parameters.auto_close)
+
         self.gateway_property = GatewayProperty(auto_field, PythonProxyPool())
         self._python_proxy_port = python_proxy_port
 
-        if gateway_client == None:
-            gateway_client = GatewayClient()
-
-        if auto_convert:
+        # Setup gateway client
+        if self.gateway_parameters.auto_convert:
             gateway_client.converters = INPUT_CONVERTER
         else:
             gateway_client.converters = None
-
         gateway_client.gateway_property = self.gateway_property
 
         self._gateway_client = gateway_client
 
         self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, gateway_client)
-        self.jvm = JVMView(gateway_client, jvm_name=DEFAULT_JVM_NAME,
-                id=DEFAULT_JVM_ID)
 
-        if eager_load:
+        self.jvm = JVMView(
+            gateway_client, jvm_name=DEFAULT_JVM_NAME,
+            id=DEFAULT_JVM_ID)
+
+        if self.gateway_parameters.eager_load:
             self._eager_load()
         if start_callback_server:
-            self._start_callback_server(python_proxy_port)
+            self._start_callback_server(self.callback_server_parameters)
 
     def __getattr__(self, name):
         return self.entry_point.__getattr__(name)
@@ -860,9 +968,10 @@ class JavaGateway(object):
             self.shutdown()
             raise
 
-    def _start_callback_server(self, python_proxy_port):
-        self._callback_server = CallbackServer(self.gateway_property.pool,
-                self._gateway_client, python_proxy_port)
+    def _start_callback_server(self, callback_server_parameters):
+        self._callback_server = CallbackServer(
+            self.gateway_property.pool, self._gateway_client,
+            callback_server_parameters=callback_server_parameters)
         try:
             self._callback_server.start()
         except Py4JNetworkError:
@@ -1048,27 +1157,38 @@ class JavaGateway(object):
 
 # CALLBACK SPECIFIC
 
-
 class CallbackServer(object):
     """The CallbackServer is responsible for receiving call back connection
        requests from the JVM. Usually connections are reused on the Java side,
        but there is at least one connection per concurrent thread.
     """
 
-    def __init__(self, pool, gateway_client, port=DEFAULT_PYTHON_PROXY_PORT,
-            address=DEFAULT_ADDRESS):
+    def __init__(
+            self, pool, gateway_client, port=DEFAULT_PYTHON_PROXY_PORT,
+            address=DEFAULT_ADDRESS, callback_server_parameters=None):
         """
         :param pool: the pool responsible of tracking Python objects passed to
          the Java side.
 
         :param gateway_client: the gateway client used to call Java objects.
 
-        :param port: the port the CallbackServer is listening to.
+        :param callback_server_parameters: An instance of
+        `CallbackServerParameters` used to configure various options of the
+        callback server.
+
         """
-        super(CallbackServer, self).__init__()
         self.gateway_client = gateway_client
-        self.port = port
-        self.address = address
+
+        self.callback_server_parameters = callback_server_parameters
+        if not callback_server_parameters:
+            deprecated(
+                "CallbackServer.port and address", "1.0",
+                "CallbackServerParameters")
+            self.callback_server_parameters = CallbackServerParameters(
+                address=address, port=port)
+
+        self.port = self.callback_server_parameters.port
+        self.address = self.callback_server_parameters.address
         self.pool = pool
         self.connections = []
         # Lock is used to isolate critical region like connection creation.
@@ -1092,6 +1212,9 @@ class CallbackServer(object):
 
         # Maybe thread needs to be cleanup up?
         self.thread = Thread(target=self.run)
+
+        # Default is False
+        self.thread.daemon = self.callback_server_parameters.daemonize
         self.thread.start()
 
     def run(self):
@@ -1121,9 +1244,9 @@ class CallbackServer(object):
                 for s in readable:
                     socket_instance, _ = self.server_socket.accept()
                     input = socket_instance.makefile('rb', 0)
-                    connection = CallbackConnection(self.pool, input,
-                            socket_instance,
-                            self.gateway_client)
+                    connection = CallbackConnection(
+                        self.pool, input, socket_instance, self.gateway_client,
+                        self.callback_server_parameters)
                     with self.lock:
                         if not self.is_shutdown:
                             self.connections.append(connection)
@@ -1163,12 +1286,20 @@ class CallbackConnection(Thread):
     """A `CallbackConnection` receives callbacks and garbage collection
        requests from the Java side.
     """
-    def __init__(self, pool, input, socket_instance, gateway_client):
+    def __init__(
+            self, pool, input, socket_instance, gateway_client,
+            callback_server_parameters):
         super(CallbackConnection, self).__init__()
         self.pool = pool
         self.input = input
         self.socket = socket_instance
         self.gateway_client = gateway_client
+
+        self.callback_server_parameters = callback_server_parameters
+        if not callback_server_parameters:
+            self.callback_server_parameters = CallbackServerParameters()
+
+        self.daemon = self.callback_server_parameters.daemonize_connections
 
     def run(self):
         logger.info('Callback Connection ready to receive messages')
