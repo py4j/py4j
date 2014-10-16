@@ -31,7 +31,7 @@ PY4J_JAVA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
     '../../../../py4j-java/bin')
 
 
-def sleep(sleep_time=0.250):
+def sleep(sleep_time=1.250):
     """Default sleep time to enable the OS to reuse address and port.
     """
     time.sleep(sleep_time)
