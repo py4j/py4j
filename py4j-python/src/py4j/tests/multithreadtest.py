@@ -8,12 +8,11 @@ from __future__ import unicode_literals, absolute_import
 from multiprocessing import Process
 import subprocess
 from threading import Thread
-import time
 import unittest
 
 from py4j.compat import range
 from py4j.java_gateway import JavaGateway
-from py4j.tests.java_gateway_test import PY4J_JAVA_PATH
+from py4j.tests.java_gateway_test import PY4J_JAVA_PATH, sleep
 
 
 def start_example_server():
@@ -22,8 +21,10 @@ def start_example_server():
 
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    sleep()
     p = Process(target=start_example_server)
     p.start()
+    sleep()
     return p
 
 
@@ -35,7 +36,7 @@ class TestJVM1(Thread):
     def run(self):
         for i in range(3):
             print(self.gateway.jvm.java.lang.System.currentTimeMillis())
-            time.sleep(0.5)
+            sleep()
 
 
 class TestJVM2(Thread):
@@ -46,7 +47,7 @@ class TestJVM2(Thread):
     def run(self):
         for i in range(3):
             print(self.System.currentTimeMillis())
-            time.sleep(0.5)
+            sleep()
 
 
 class TestJVM3(Thread):
@@ -57,7 +58,7 @@ class TestJVM3(Thread):
     def run(self):
         for i in range(3):
             print(self.jvm.java.lang.System.currentTimeMillis())
-            time.sleep(0.5)
+            sleep()
 
 
 class TestJVM4(Thread):
@@ -80,13 +81,12 @@ class JVMMultiProcessTest(unittest.TestCase):
 #        logger.setLevel(logging.DEBUG)
 #        logger.addHandler(logging.StreamHandler())
         self.p = start_example_app_process()
-        time.sleep(0.5)
         self.gateway = JavaGateway()
 
     def tearDown(self):
         self.p.terminate()
         self.gateway.shutdown()
-        time.sleep(0.5)
+        sleep()
 
     def testMultiProcessJVMAccess(self):
         workers = [TestJVM1(self.gateway) for _ in range(8)]

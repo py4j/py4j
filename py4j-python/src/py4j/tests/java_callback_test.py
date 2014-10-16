@@ -8,13 +8,13 @@ from __future__ import unicode_literals, absolute_import
 from multiprocessing import Process
 import subprocess
 from threading import Thread
-import time
 from traceback import print_exc
 import unittest
 
 from py4j.compat import range
-from py4j.java_gateway import JavaGateway, PythonProxyPool
-from py4j.tests.java_gateway_test import PY4J_JAVA_PATH, safe_shutdown
+from py4j.java_gateway import (
+    JavaGateway, PythonProxyPool, CallbackServerParameters)
+from py4j.tests.java_gateway_test import PY4J_JAVA_PATH, safe_shutdown, sleep
 
 
 def start_example_server():
@@ -34,22 +34,28 @@ def start_example_server3():
 
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    sleep()
     p = Process(target=start_example_server)
     p.start()
+    sleep()
     return p
 
 
 def start_example_app_process2():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    sleep()
     p = Process(target=start_example_server2)
     p.start()
+    sleep()
     return p
 
 
 def start_example_app_process3():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    sleep()
     p = Process(target=start_example_server3)
     p.start()
+    sleep()
     return p
 
 
@@ -144,15 +150,14 @@ class TestIntegration(unittest.TestCase):
 #        logger = logging.getLogger("py4j")
 #        logger.setLevel(logging.DEBUG)
 #        logger.addHandler(logging.StreamHandler())
-        time.sleep(1)
         self.p = start_example_app_process()
-        time.sleep(1)
-        self.gateway = JavaGateway(start_callback_server=True)
+        self.gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters())
 
     def tearDown(self):
         safe_shutdown(self)
         self.p.join()
-        time.sleep(1)
+        sleep()
 
 #    Does not work when combined with other tests... because of TCP_WAIT
     def testShutdown(self):
@@ -166,7 +171,7 @@ class TestIntegration(unittest.TestCase):
 
     def testProxy(self):
 #        self.gateway.jvm.py4j.GatewayServer.turnLoggingOn()
-        time.sleep(1)
+        sleep()
         example = self.gateway.entry_point.getNewExample()
         impl = IHelloImpl()
         self.assertEqual('This is Hello!', example.callHello(impl))
@@ -175,7 +180,7 @@ class TestIntegration(unittest.TestCase):
 
     def testGC(self):
         # This will only work with some JVM.
-        time.sleep(1)
+        sleep()
         example = self.gateway.entry_point.getNewExample()
         impl = IHelloImpl()
         self.assertEqual('This is Hello!', example.callHello(impl))
@@ -183,18 +188,19 @@ class TestIntegration(unittest.TestCase):
                 example.callHello2(impl))
         self.assertEqual(2, len(self.gateway.gateway_property.pool))
         self.gateway.jvm.java.lang.System.gc()
-        time.sleep(2)
+        sleep(1)
         self.assertTrue(len(self.gateway.gateway_property.pool) < 2)
 
     def testDoubleCallbackServer(self):
         try:
-            self.gateway2 = JavaGateway(start_callback_server=True)
+            self.gateway2 = JavaGateway(
+                callback_server_parameters=CallbackServerParameters())
             self.fail()
         except Exception:
             self.assertTrue(True)
 
     def testMethodConstructor(self):
-        time.sleep(1)
+        sleep()
         goodAddition = GoodAddition()
         oe1 = self.gateway.jvm.py4j.examples.OperatorExample()
         # Test method
@@ -206,18 +212,14 @@ class TestIntegration(unittest.TestCase):
 
 class TestPeriodicCleanup(unittest.TestCase):
     def setUp(self):
-#        logger = logging.getLogger("py4j")
-#        logger.setLevel(logging.DEBUG)
-#        logger.addHandler(logging.StreamHandler())
-        time.sleep(1)
         self.p = start_example_app_process2()
-        time.sleep(1)
-        self.gateway = JavaGateway(start_callback_server=True)
+        self.gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters())
 
     def tearDown(self):
         safe_shutdown(self)
         self.p.join()
-        time.sleep(1)
+        sleep()
 
     def testPeriodicCleanup(self):
         operator = FalseAddition()
@@ -225,18 +227,18 @@ class TestPeriodicCleanup(unittest.TestCase):
             Exception, self.gateway.entry_point.randomTernaryOperator,
             operator)
         # Time for periodic cleanup
-        time.sleep(5)
+        sleep(2)
         self.assertRaises(
             Exception, self.gateway.entry_point.randomTernaryOperator,
             operator)
 
     def testBytes(self):
-        time.sleep(1)
+        sleep()
         operator = CustomBytesOperator()
         returnbytes = self.gateway.entry_point.callBytesOperator(operator)
         self.assertEqual(2, returnbytes[0])
         self.assertEqual(6, returnbytes[-1])
-        time.sleep(2)
+        sleep()
 
 
 class A(object):
@@ -256,8 +258,9 @@ class InterfaceTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process3()
         # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
-        self.gateway = JavaGateway(start_callback_server=True)
+        sleep()
+        self.gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters())
 
     def tearDown(self):
         safe_shutdown(self)
