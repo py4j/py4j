@@ -3,7 +3,7 @@ Created on Apr 27, 2010
 
 @author: barthelemy
 '''
-from py4j.java_gateway import JavaGateway
+from py4j.java_gateway import JavaGateway, CallbackServerParameters
 
 
 class Addition(object):
@@ -18,7 +18,7 @@ class Addition(object):
         implements = ['py4j.examples.Operator']
 
 if __name__ == '__main__':
-    gateway = JavaGateway(start_callback_server=True)
+    gateway = JavaGateway(CallbackServerParameters())
     operator = Addition()
     numbers = gateway.entry_point.randomBinaryOperator(operator)
     print(numbers)

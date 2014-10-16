@@ -860,6 +860,8 @@ class JVMView(object):
 
 
 class GatewayProperty(object):
+    """Object shared by callbackserver, gateway, and connections.
+    """
     def __init__(self, auto_field, pool):
         self.auto_field = auto_field
         self.pool = pool
@@ -907,8 +909,9 @@ class JavaGateway(object):
 
         self.callback_server_parameters = callback_server_parameters
         if not callback_server_parameters:
+            # No parameters were provided so do not autostart callback server.
             self.callback_server_parameters = CallbackServerParameters(
-                port=python_proxy_port)
+                port=python_proxy_port, eager_load=False)
 
         # Check for deprecation warnings
         if auto_field:
@@ -920,12 +923,11 @@ class JavaGateway(object):
         if eager_load:
             deprecated("JavaGateway.eager_load", "1.0", "GatewayParameters")
 
-        if callback_server_parameters:
-            start_callback_server = True
-        else:
+        if start_callback_server:
             deprecated(
                 "JavaGateway.start_callback_server and python_proxy_port",
                 "1.0", "CallbackServerParameters")
+            self.callback_server_parameters.eager_load = True
 
         if gateway_client:
             deprecated("JavaGateway.gateway_client", "1.0",
@@ -936,28 +938,38 @@ class JavaGateway(object):
                 port=self.gateway_parameters.port,
                 auto_close=self.gateway_parameters.auto_close)
 
-        self.gateway_property = GatewayProperty(auto_field, PythonProxyPool())
+        self.gateway_property = GatewayProperty(
+            self.gateway_parameters.auto_field, PythonProxyPool())
         self._python_proxy_port = python_proxy_port
 
         # Setup gateway client
+        self.set_gateway_client(gateway_client)
+
+        if self.gateway_parameters.eager_load:
+            self._eager_load()
+        if self.callback_server_parameters.eager_load:
+            self._start_callback_server(self.callback_server_parameters)
+
+    def set_gateway_client(self, gateway_client):
+        """Sets the gateway client for this JavaGateway. This sets the
+        appropriate gateway_property and resets the main jvm view (self.jvm).
+
+        This is for advanced usage only. And should only be set before the
+        gateway is loaded.
+        """
         if self.gateway_parameters.auto_convert:
             gateway_client.converters = INPUT_CONVERTER
         else:
             gateway_client.converters = None
         gateway_client.gateway_property = self.gateway_property
-
         self._gateway_client = gateway_client
 
-        self.entry_point = JavaObject(ENTRY_POINT_OBJECT_ID, gateway_client)
+        self.entry_point = JavaObject(
+            ENTRY_POINT_OBJECT_ID, self._gateway_client)
 
         self.jvm = JVMView(
-            gateway_client, jvm_name=DEFAULT_JVM_NAME,
+            self._gateway_client, jvm_name=DEFAULT_JVM_NAME,
             id=DEFAULT_JVM_ID)
-
-        if self.gateway_parameters.eager_load:
-            self._eager_load()
-        if start_callback_server:
-            self._start_callback_server(self.callback_server_parameters)
 
     def __getattr__(self, name):
         return self.entry_point.__getattr__(name)
