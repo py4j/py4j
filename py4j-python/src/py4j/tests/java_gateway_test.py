@@ -31,7 +31,7 @@ PY4J_JAVA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
     '../../../../py4j-java/bin')
 
 
-def sleep(sleep_time=1.250):
+def sleep(sleep_time=0.250):
     """Default sleep time to enable the OS to reuse address and port.
     """
     time.sleep(sleep_time)
@@ -46,7 +46,7 @@ def start_echo_server_process():
     sleep()
     p = Process(target=start_echo_server)
     p.start()
-    sleep()
+    sleep(1.5)
     return p
 
 
@@ -61,7 +61,21 @@ def start_example_app_process():
     p = Process(target=start_example_server)
     p.start()
     sleep()
+    test_gateway_connection()
     return p
+
+
+def test_gateway_connection():
+    test_gateway = JavaGateway()
+    try:
+        # Call a dummy method just to make sure we can connect to the JVM
+        test_gateway.jvm.System.lineSeparator()
+    except Py4JNetworkError:
+        # We could not connect. Let's wait a long time.
+        # If it fails after that, there is a bug with our code!
+        sleep(2)
+    finally:
+        test_gateway.close()
 
 
 def get_socket():
