@@ -14,7 +14,8 @@ import unittest
 from py4j.compat import range
 from py4j.java_gateway import (
     JavaGateway, PythonProxyPool, CallbackServerParameters)
-from py4j.tests.java_gateway_test import PY4J_JAVA_PATH, safe_shutdown, sleep
+from py4j.tests.java_gateway_test import (
+    PY4J_JAVA_PATH, safe_shutdown, sleep, test_gateway_connection)
 
 
 def start_example_server():
@@ -34,28 +35,28 @@ def start_example_server3():
 
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    sleep()
     p = Process(target=start_example_server)
     p.start()
     sleep()
+    test_gateway_connection()
     return p
 
 
 def start_example_app_process2():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    sleep()
     p = Process(target=start_example_server2)
     p.start()
     sleep()
+    test_gateway_connection()
     return p
 
 
 def start_example_app_process3():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    sleep()
     p = Process(target=start_example_server3)
     p.start()
     sleep()
+    test_gateway_connection()
     return p
 
 
@@ -257,8 +258,6 @@ class B(object):
 class InterfaceTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process3()
-        # This is to ensure that the server is started before connecting to it!
-        sleep()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters())
 
@@ -268,6 +267,29 @@ class InterfaceTest(unittest.TestCase):
 
     def testByteString(self):
         try:
+            self.gateway.entry_point.test(B())
+        except Exception:
+            print_exc()
+            self.fail()
+
+
+class LazyStart(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process3()
+        self.gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters(
+                eager_load=False))
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+
+    def testByteString(self):
+        try:
+            self.gateway.start_callback_server()
+            self.gateway.entry_point.test(B())
+            self.gateway.start_callback_server()
+            self.gateway.start_callback_server()
             self.gateway.entry_point.test(B())
         except Exception:
             print_exc()

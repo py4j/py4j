@@ -5,26 +5,11 @@ Created on Mar 26, 2010
 '''
 from __future__ import unicode_literals, absolute_import
 
-from multiprocessing import Process
-import subprocess
 import unittest
 
 from py4j.java_gateway import JavaGateway, GatewayParameters
-from py4j.tests.java_gateway_test import PY4J_JAVA_PATH, safe_shutdown, sleep
-
-
-def start_example_server():
-    subprocess.call(["java", "-cp", PY4J_JAVA_PATH,
-        "py4j.examples.ExampleApplication"])
-
-
-def start_example_app_process():
-    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    sleep()
-    p = Process(target=start_example_server)
-    p.start()
-    sleep()
-    return p
+from py4j.tests.java_gateway_test import (
+    start_example_app_process, safe_shutdown, sleep)
 
 
 class AutoConvertTest(unittest.TestCase):
