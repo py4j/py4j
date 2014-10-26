@@ -46,7 +46,8 @@ PY4J_SKIP_COLLECTIONS = 'PY4J_SKIP_COLLECTIONS'
 PY4J_TRUE = set(['yes', 'y', 't', 'true'])
 
 
-def deprecated(name, last_version, use_instead="", raise_exc=False):
+def deprecated(name, last_version, use_instead="", level=logging.DEBUG,
+               raise_exc=False):
     if not use_instead:
         msg = "{0} is deprecated and will be removed in version {1}"\
             .format(name, last_version)
@@ -54,7 +55,7 @@ def deprecated(name, last_version, use_instead="", raise_exc=False):
         msg = "{0} is deprecated and will be removed in version {1}. "\
             "Use {2} instead."\
             .format(name, last_version, use_instead)
-    logger.warning(msg)
+    logger.log(level, msg)
     if raise_exc:
         raise DeprecationWarning(msg)
 
