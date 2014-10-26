@@ -69,12 +69,34 @@ Then we play with the class using the two possible values of auto_field:
   u'Hello World'
   >>> get_field(example,'member')
   1
-  >>> java_gateway2 = JavaGateway(auto_field=True)
+  >>> java_gateway2 = JavaGateway(GatewayParameters(auto_field=True))
   >>> example2 = java_gateway2.jvm.py4j.examples.ExampleWithField()
   >>> example2.member
   1
   >>> get_method(example2,'member')()
   u'Hello World'
+
+
+.. _api_gatewayparameters:
+
+GatewayParameters
+-----------------
+
+.. autoclass:: py4j.java_gateway.GatewayParameters
+   :members:
+   :undoc-members:
+
+
+
+.. _api_callbackserverparameters
+
+CallbackServerParameters
+-----------------
+
+.. autoclass:: py4j.java_gateway.CallbackServerParameters
+   :members:
+   :undoc-members:
+
 
 .. _api_gatewayclient:
 

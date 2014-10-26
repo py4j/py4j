@@ -20,7 +20,8 @@ import unittest
 from py4j.compat import range, isbytearray, bytearray2, long
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_gateway import JavaGateway, JavaMember, get_field, get_method, \
-     GatewayClient, set_field, java_import, JavaObject, is_instance_of
+     GatewayClient, set_field, java_import, JavaObject, is_instance_of,\
+     GatewayParameters, CallbackServerParameters
 from py4j.protocol import *
 
 
@@ -30,14 +31,22 @@ PY4J_JAVA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
     '../../../../py4j-java/bin')
 
 
+def sleep(sleep_time=0.250):
+    """Default sleep time to enable the OS to reuse address and port.
+    """
+    time.sleep(sleep_time)
+
+
 def start_echo_server():
     subprocess.call(["java", "-cp", PY4J_JAVA_PATH, "py4j.EchoServer"])
 
 
 def start_echo_server_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    sleep()
     p = Process(target=start_echo_server)
     p.start()
+    sleep(1.5)
     return p
 
 
@@ -50,7 +59,22 @@ def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_example_server)
     p.start()
+    sleep()
+    test_gateway_connection()
     return p
+
+
+def test_gateway_connection():
+    test_gateway = JavaGateway()
+    try:
+        # Call a dummy method just to make sure we can connect to the JVM
+        test_gateway.jvm.System.lineSeparator()
+    except Py4JNetworkError:
+        # We could not connect. Let's wait a long time.
+        # If it fails after that, there is a bug with our code!
+        sleep(2)
+    finally:
+        test_gateway.close()
 
 
 def get_socket():
@@ -103,7 +127,11 @@ class ProtocolTest(unittest.TestCase):
 
     def testProtocolSend(self):
         testConnection = TestConnection()
-        self.gateway = JavaGateway(testConnection, False)
+        self.gateway = JavaGateway()
+
+        # Replace gateway client by test connection
+        self.gateway.set_gateway_client(testConnection)
+
         e = self.gateway.getExample()
         self.assertEqual('c\nt\ngetExample\ne\n', testConnection.last_message)
         e.method1(1, True, 'Hello\nWorld', e, None, 1.5)
@@ -114,7 +142,6 @@ class ProtocolTest(unittest.TestCase):
 
     def testProtocolReceive(self):
         p = start_echo_server_process()
-        time.sleep(1)
         try:
             testSocket = get_socket()
             testSocket.sendall('yo\n'.encode('utf-8'))
@@ -131,9 +158,10 @@ class ProtocolTest(unittest.TestCase):
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yL123\n'.encode('utf-8'))
             testSocket.close()
-            time.sleep(1)
+            sleep()
 
-            self.gateway = JavaGateway(auto_field=True)
+            self.gateway = JavaGateway(
+                gateway_parameters=GatewayParameters(auto_field=True))
             ex = self.gateway.getNewExample()
             self.assertEqual('Hello World', ex.method3(1, True))
             self.assertEqual(123, ex.method3())
@@ -153,7 +181,6 @@ class IntegrationTest(unittest.TestCase):
     def setUp(self):
         self.p = start_echo_server_process()
         # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
 
     def tearDown(self):
         # Safety check in case there was an exception...
@@ -171,9 +198,10 @@ class IntegrationTest(unittest.TestCase):
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('ysHello World2\n'.encode('utf-8'))
             testSocket.close()
-            time.sleep(1)
+            sleep()
 
-            self.gateway = JavaGateway(auto_field=True)
+            self.gateway = JavaGateway(
+                gateway_parameters=GatewayParameters(auto_field=True))
             ex = self.gateway.getNewExample()
             response = ex.method3(1, True)
             self.assertEqual('Hello World', response)
@@ -192,9 +220,10 @@ class IntegrationTest(unittest.TestCase):
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall(b'x\n')
             testSocket.close()
-            time.sleep(1)
+            sleep()
 
-            self.gateway = JavaGateway(auto_field=True)
+            self.gateway = JavaGateway(
+                gateway_parameters=GatewayParameters(auto_field=True))
             ex = self.gateway.getNewExample()
 
             self.assertRaises(Py4JError, lambda: ex.method3(1, True))
@@ -212,17 +241,17 @@ class CloseTest(unittest.TestCase):
 
     def testCallbackServer(self):
         # A close is required to stop the thread.
-        gateway = JavaGateway(start_callback_server=True)
+        gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters())
         gateway.close()
         self.assertTrue(True)
-        time.sleep(1)
+        sleep()
 
 
 class MethodTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
         # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
         self.gateway = JavaGateway()
 
     def tearDown(self):
@@ -254,15 +283,14 @@ class MethodTest(unittest.TestCase):
 class FieldTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
-        # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
 
     def tearDown(self):
         safe_shutdown(self)
         self.p.join()
 
     def testAutoField(self):
-        self.gateway = JavaGateway(auto_field=True)
+        self.gateway = JavaGateway(
+            gateway_parameters=GatewayParameters(auto_field=True))
         ex = self.gateway.getNewExample()
         self.assertEqual(ex.field10, 10)
         self.assertEqual(ex.field11, long(11))
@@ -272,13 +300,15 @@ class FieldTest(unittest.TestCase):
         self.assertTrue(ex.field21 == None)
 
     def testNoField(self):
-        self.gateway = JavaGateway(auto_field=True)
+        self.gateway = JavaGateway(
+            gateway_parameters=GatewayParameters(auto_field=True))
         ex = self.gateway.getNewExample()
         member = ex.field50
         self.assertTrue(isinstance(member, JavaMember))
 
     def testNoAutoField(self):
-        self.gateway = JavaGateway(auto_field=False)
+        self.gateway = JavaGateway(
+            gateway_parameters=GatewayParameters(auto_field=False))
         ex = self.gateway.getNewExample()
         self.assertTrue(isinstance(ex.field10, JavaMember))
         self.assertTrue(isinstance(ex.field50, JavaMember))
@@ -293,9 +323,9 @@ class FieldTest(unittest.TestCase):
         sb.append('Hello')
         self.assertEqual('Hello', sb.toString())
 
-
     def testSetField(self):
-        self.gateway = JavaGateway(auto_field=False)
+        self.gateway = JavaGateway(
+            gateway_parameters=GatewayParameters(auto_field=False))
         ex = self.gateway.getNewExample()
 
         set_field(ex, 'field10', 2334)
@@ -317,8 +347,6 @@ class FieldTest(unittest.TestCase):
 class UtilityTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
-        # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
         self.gateway = JavaGateway()
 
     def tearDown(self):
@@ -347,8 +375,6 @@ class UtilityTest(unittest.TestCase):
 class MemoryManagementTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
-        # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
 
     def tearDown(self):
         safe_shutdown(self)
@@ -388,8 +414,6 @@ class MemoryManagementTest(unittest.TestCase):
 class TypeConversionTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
-        # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
         self.gateway = JavaGateway()
 
     def tearDown(self):
@@ -415,8 +439,6 @@ class TypeConversionTest(unittest.TestCase):
 class UnicodeTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
-        # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
         self.gateway = JavaGateway()
 
     def tearDown(self):
@@ -445,8 +467,6 @@ class UnicodeTest(unittest.TestCase):
 class ByteTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
-        # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
         self.gateway = JavaGateway()
 
     def tearDown(self):
@@ -512,8 +532,6 @@ class ByteTest(unittest.TestCase):
 class ExceptionTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
-        # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
         self.gateway = JavaGateway()
 
     def tearDown(self):
@@ -580,8 +598,6 @@ class ExceptionTest(unittest.TestCase):
 class JVMTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
-        # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
         self.gateway = JavaGateway()
 
     def tearDown(self):
@@ -653,8 +669,6 @@ class JVMTest(unittest.TestCase):
 class HelpTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
-        # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
         self.gateway = JavaGateway()
 
     def tearDown(self):
@@ -707,10 +721,9 @@ class Runner(Thread):
 class ThreadTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
-        # This is to ensure that the server is started before connecting to it!
-        time.sleep(1)
         gateway_client = GatewayClient()
-        self.gateway = JavaGateway(gateway_client=gateway_client)
+        self.gateway = JavaGateway()
+        self.gateway.set_gateway_client(gateway_client)
 
     def tearDown(self):
         safe_shutdown(self)
