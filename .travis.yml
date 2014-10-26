@@ -9,6 +9,6 @@ python:
 before_install:
   - sudo apt-get update -qq
   - if [ "$JAVA_VERSION" == "java7" ]; then sudo apt-get install -qq openjdk-7-jre-headless; fi
-  - if [ "$JAVA_VERSION" == "java8" ]; then sudo add-apt-repository ppa:rethinkdb/ppa -y; sudo apt-get update -qq; echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections; sudo apt-get install oracle-java8-installer -qq fi
+  - if [ "$JAVA_VERSION" == "java8" ]; then sudo add-apt-repository ppa:webupd8team/java -y; sudo apt-get update -qq; echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections; sudo apt-get install oracle-java8-installer -qq fi
   - sudo apt-get install -qq ant
 script: cd py4j-java && ant jar && ant java-test && python --version && cd ../py4j-python && nosetests -w src -c nose.cfg
