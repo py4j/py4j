@@ -57,7 +57,6 @@ def start_example_server():
 
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    sleep()
     p = Process(target=start_example_server)
     p.start()
     sleep()

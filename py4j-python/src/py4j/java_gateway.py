@@ -945,10 +945,13 @@ class JavaGateway(object):
         # Setup gateway client
         self.set_gateway_client(gateway_client)
 
+        # Setup callback server property
+        self._callback_server = None
+
         if self.gateway_parameters.eager_load:
             self._eager_load()
         if self.callback_server_parameters.eager_load:
-            self._start_callback_server(self.callback_server_parameters)
+            self.start_callback_server(self.callback_server_parameters)
 
     def set_gateway_client(self, gateway_client):
         """Sets the gateway client for this JavaGateway. This sets the
@@ -981,7 +984,23 @@ class JavaGateway(object):
             self.shutdown()
             raise
 
-    def _start_callback_server(self, callback_server_parameters):
+    def start_callback_server(self, callback_server_parameters=None):
+        """Starts the callback server.
+
+        :param callback_server_parameters: parameters to use to start the
+        server. If not provided, it will use the gateway callback server
+        parameters.
+
+        :rtype: Returns True if the server was started by this call or False if
+        it was already started (you cannot have more than one started callback
+        server).
+        """
+        if self._callback_server:
+            return False
+
+        if not callback_server_parameters:
+            callback_server_parameters = self.callback_server_parameters
+
         self._callback_server = CallbackServer(
             self.gateway_property.pool, self._gateway_client,
             callback_server_parameters=callback_server_parameters)
@@ -990,7 +1009,10 @@ class JavaGateway(object):
         except Py4JNetworkError:
             # Clean up ourselves before raising the exception.
             self.shutdown()
+            self._callback_server = None
             raise
+
+        return True
 
     def new_jvm_view(self, name='custom jvm'):
         """Creates a new JVM view with its own imports. A JVM view ensures
@@ -1052,9 +1074,9 @@ class JavaGateway(object):
         except Exception:
             if raise_exception:
                 raise
-        self._shutdown_callback_server()
+        self.shutdown_callback_server()
 
-    def _shutdown_callback_server(self, raise_exception=False):
+    def shutdown_callback_server(self, raise_exception=False):
         """Shuts down the
            :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
 
@@ -1070,10 +1092,9 @@ class JavaGateway(object):
     def restart_callback_server(self):
         """Shuts down the callback server (if started) and restarts a new one.
         """
-        self._shutdown_callback_server()
-        self._callback_server = CallbackServer(self.gateway_property.pool,
-                self._gateway_client, self._python_proxy_port)
-        self._callback_server.start()
+        self.shutdown_callback_server()
+        self._callback_server = None
+        self.start_callback_server(self.callback_server_parameters)
 
     def close(self, keep_callback_server=False):
         """Closes all gateway connections. A connection will be reopened if
@@ -1084,7 +1105,7 @@ class JavaGateway(object):
         """
         self._gateway_client.close()
         if not keep_callback_server:
-            self._shutdown_callback_server()
+            self.shutdown_callback_server()
 
     def detach(self, java_object):
         """Makes the Java Gateway dereference this object.
