@@ -245,7 +245,7 @@ class CloseTest(unittest.TestCase):
             callback_server_parameters=CallbackServerParameters())
         gateway.close()
         self.assertTrue(True)
-        sleep()
+        sleep(2)
 
 
 class MethodTest(unittest.TestCase):
@@ -298,6 +298,11 @@ class FieldTest(unittest.TestCase):
         sb.append('Hello')
         self.assertEqual('Hello', sb.toString())
         self.assertTrue(ex.field21 == None)
+
+    def testAutoFieldDeprecated(self):
+        self.gateway = JavaGateway(auto_field=True)
+        ex = self.gateway.getNewExample()
+        self.assertEqual(ex.field10, 10)
 
     def testNoField(self):
         self.gateway = JavaGateway(

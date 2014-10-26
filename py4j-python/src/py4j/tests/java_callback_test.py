@@ -273,6 +273,23 @@ class InterfaceTest(unittest.TestCase):
             self.fail()
 
 
+class InterfaceDeprecatedTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process3()
+        self.gateway = JavaGateway(start_callback_server=True)
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+
+    def testByteString(self):
+        try:
+            self.gateway.entry_point.test(B())
+        except Exception:
+            print_exc()
+            self.fail()
+
+
 class LazyStart(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process3()
