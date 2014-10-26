@@ -29,20 +29,20 @@ Here is the code of the stack:
   import java.util.List;
 
   public class Stack {
-      private List<String> internalList = new LinkedList<String>(); 
-      
+      private List<String> internalList = new LinkedList<String>();
+
       public void push(String element) {
           internalList.add(0, element);
       }
-      
+
       public String pop() {
           return internalList.remove(0);
       }
-      
+
       public List<String> getInternalList() {
           return internalList;
       }
-      
+
       public void pushAll(List<String> elements) {
           for (String element : elements) {
               this.push(element);
@@ -60,7 +60,7 @@ These features are provided by two objects. The first object is a
 `GatewayServer <_static/javadoc/index.html?py4j/GatewayServer.html>`_ instance:
 it allows Python programs to communicate with the JVM through a local network
 socket. The second object is called an *entry point* and it can be any object
-(e.g., a Facade, a singleton, a list, etc.). 
+(e.g., a Facade, a singleton, a list, etc.).
 
 The `GatewayServer <_static/javadoc/index.html?py4j/GatewayServer.html>`_
 provided by Py4J can be used as is but you can also configure it and specify a
@@ -89,13 +89,13 @@ program to access a pre-configured stack:
       public Stack getStack() {
           return stack;
       }
-      
+
       public static void main(String[] args) {
           GatewayServer gatewayServer = new GatewayServer(new StackEntryPoint());
           gatewayServer.start();
           System.out.println("Gateway Server Started");
       }
-      
+
   }
 
 There are a few important lines in this code. First, you declare a class that
@@ -128,8 +128,8 @@ You are now ready to try your Java program. Just execute the StackGateway class
 in your favorite development environment and check that you see the message
 ``Gateway Server Started``
 
-.. warning:: 
-   
+.. warning::
+
    When running your application, you may get a ``java.net.BindException:
    Address already in use`` exception. There are two common causes: either you
    are already running another instance of your program or another program on
@@ -143,18 +143,18 @@ in your favorite development environment and check that you see the message
    by this line (use any port number):
 
    .. code-block:: java
-     
+
      GatewayServer gatewayServer = new GatewayServer(new StackEntryPoint(), 25335);
 
    Do not forget to also change the Python code:
 
    .. code-block:: python
 
-     from py4j.java_gateway import JavaGateway, GatewayClient
+     from py4j.java_gateway import JavaGateway, GatewayParameters
 
-     gateway = JavaGateway(GatewayClient(port=25335))
+     gateway = JavaGateway(GatewayParameters(port=25335))
 
-     
+
 You are now done. Because your program will wait for connections, it will never
 exit. To terminate your program, you have to kill it (e.g., Ctrl-C). If you
 initialize the GatewayServer in another method, you can also call
@@ -168,7 +168,7 @@ a Python interpreter and make sure that Py4J is in your PYTHONPATH.
 
 The first step is to import the necessary Py4J class:
 
-:: 
+::
 
   >>> from py4j.java_gateway import JavaGateway
 
@@ -177,7 +177,7 @@ are usually sufficient for common cases.  When you create a :ref:`JavaGateway
 <api_javagateway>`, Python tries to connect to a JVM with a gateway (localhost
 on port 25333).
 
-:: 
+::
 
   >>> gateway = JavaGateway()
 
@@ -191,36 +191,36 @@ on port 25333).
 From the gateway object, we can access the entry point by referring to its
 ``entry_point`` member:
 
-:: 
+::
 
   >>> stack = gateway.entry_point.getStack()
 
 The stack variable now contains a stack. Try to push and pop a few elements:
 
-:: 
+::
 
   >>> stack.push("First %s" % ('item'))
-  >>> stack.push("Second item")        
-  >>> stack.pop()                                        
-  u'Second item'                                         
-  >>> stack.pop()                                        
-  u'First item'    
+  >>> stack.push("Second item")
   >>> stack.pop()
-  u'Initial Item'   
+  u'Second item'
+  >>> stack.pop()
+  u'First item'
+  >>> stack.pop()
+  u'Initial Item'
 
 Now the stack is supposed to be empty. Here is what happens if you try to pop
 it again.
 
-:: 
-                                   
-  >>> stack.pop()                                        
-  Traceback (most recent call last):                     
-    File "<stdin>", line 1, in <module>                  
-    File "py4j/java_gateway.py", line 346, in __call__   
+::
+
+  >>> stack.pop()
+  Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "py4j/java_gateway.py", line 346, in __call__
       return_value = get_return_value(answer, self.gateway_client, self.target_id, self.name)
-    File "py4j/java_gateway.py", line 228, in get_return_value                              
-      raise Py4JJavaError('An error occurred while calling %s%s%s' % (target_id, '.', name))   
-  py4j.java_gateway.Py4JJavaError: An error occurred while calling o0.pop. 
+    File "py4j/java_gateway.py", line 228, in get_return_value
+      raise Py4JJavaError('An error occurred while calling %s%s%s' % (target_id, '.', name))
+  py4j.java_gateway.Py4JJavaError: An error occurred while calling o0.pop.
   java.lang.IndexOutOfBoundsException: Index: 0, Size: 0
       at java.util.LinkedList.entry(LinkedList.java:382)
       at java.util.LinkedList.remove(LinkedList.java:374)
@@ -237,7 +237,7 @@ it again.
       at py4j.GatewayConnection.run(GatewayConnection.java:175)
       at java.lang.Thread.run(Thread.java:636)
 
-                   
+
 
 You get a :class:`Py4JJavaError <py4j.protocol.Py4JJavaError>` because there
 was an exception on the JVM side. In addition, you can see the type of
@@ -254,9 +254,9 @@ list of the stack:
 
 ::
 
-  >>> stack.push('First item')                                                             
+  >>> stack.push('First item')
   >>> internal_list = stack.getInternalList()
-  >>> len(internal_list)                     
+  >>> len(internal_list)
   1
   >>> internal_list[0]
   u'First item'
@@ -291,7 +291,7 @@ more, no less. This is why the original list is not modified when you modify
 the slice. When you create a slice, Py4J first creates the slice on the JVM
 side so you are really accessing a Java list contained in the JVM.
 
-.. note:: 
+.. note::
   For the keen Java programmers among you, note that the slice operation is
   **NOT** implemented with the ``subList`` method in Java, because ``subList``
   returns a view, not a copy, of the list: when the original list changes, the
@@ -325,32 +325,32 @@ Python has powerful introspection abilities that are slowly being replicated by
 Py4J. For example, a JavaGateway allows you to list all the members available
 in an object:
 
-:: 
+::
 
   >>> gateway.help(stack)
   Help on class Stack in package py4j.examples:
 
   Stack {
-  |  
+  |
   |  Methods defined here:
-  |  
+  |
   |  getInternalList() : List
-  |  
+  |
   |  pop() : String
-  |  
+  |
   |  push(String) : void
-  |  
+  |
   |  pushAll(List) : void
-  |  
+  |
   |  ------------------------------------------------------------
   |  Fields defined here:
-  |  
+  |
   |  ------------------------------------------------------------
   |  Internal classes defined here:
-  |  
+  |
   }
 
-  
+
 Finally, you do not need an entry point to create and access objects. You can
 use the ``jvm`` member to call constructors and static members:
 
@@ -376,4 +376,4 @@ Where to go from here
 * Look at the :doc:`FAQ <faq>`.
 
 
- 
+

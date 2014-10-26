@@ -19,7 +19,7 @@ for more information on this framework.
 For example, in Java, you can do:
 
 .. code-block:: java
-  
+
   GatewayServer.turnLoggingOn();
   logger = Logger.getLogger("py4j");
   logger.setLevel(Level.ALL);
@@ -73,14 +73,14 @@ Use the :func:`get_field <py4j.java_gateway.get_field>` function:
 ::
 
   >>> field_value = py4j.java_gateway.get_field(object,'public_field')
-  
-  
+
+
 Or you can also set the :ref:`auto_field <api_javagateway>` parameter to `True`
 when you create the gateway:
 
 ::
 
-  >>> gateway = JavaGateway(auto_field=True)
+  >>> gateway = JavaGateway(GatewayParameters(auto_field=True))
   >>> object = gateway.entry_point.getObject()
   >>> field_value = object.public_field
 
@@ -155,7 +155,7 @@ In the following example, two threads are accessing the same entry point. If
 be accessed concurrently.
 
 ::
-  
+
   # ... in Thread One
   gateway1 = JavaGateway() # Thread One is accessing the JVM.
   gateway1.entry_point.method1() # Thread One is calling method1
@@ -181,13 +181,13 @@ How can I use Py4J with Eclipse?
 Because each Eclipse plug-in has its own class loader, a `GatewayServer`
 instance started in one plug-in won't have access to the other plug-ins **by
 default**. You can work around this limitation by adding this line to the
-manifest of the plug-in where the GatewayServer resides: 
+manifest of the plug-in where the GatewayServer resides:
 
-``Eclipse-BuddyPolicy:global`` 
+``Eclipse-BuddyPolicy:global``
 
 You can also use the Py4J Eclipse features that starts a default
 `GatewayServer` and that allows Python clients to refer to any classes declared
-in any plug-in. 
+in any plug-in.
 
 See :ref:`Py4J and Eclipse <eclipse_features>` for more details.
 
@@ -196,7 +196,7 @@ Can I use Py4J with Python 3?
 
 Yes, thanks to a `generous contributor
 <https://github.com/bartdag/py4j/commit/36a145671501ed47bc4002af7cab49b490eb6e0b>`_,
-Py4J now works with Python 3. 
+Py4J now works with Python 3.
 
 Are there any security concerns with Py4J?
 ------------------------------------------
@@ -232,11 +232,11 @@ There are many ways to contribute to Py4J:
 * **Found a bug or have a feature request?** Fill a detailed `issue report
   <https://github.com/bartdag/py4j/issues>`_.
 * **Found a typo or have a better way to clarify the documentation?** Write a comment at the bottom of documentation
-  the 
-  page, send a patch on the `mailing list <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_, or 
-  fill a `bug report <https://github.com/bartdag/py4j/issues>`_. The source of each documentation page is 
+  the
+  page, send a patch on the `mailing list <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_, or
+  fill a `bug report <https://github.com/bartdag/py4j/issues>`_. The source of each documentation page is
   accessible in the sidebar. We use `ReStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`_
-* **Good at writing Python or Java?** Good news, we could use some help, especially in the Python department! 
+* **Good at writing Python or Java?** Good news, we could use some help, especially in the Python department!
   You can either contribute a code patch through the `mailing list
   <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_ by adding a feature or just addressing an
   `open issue <https://github.com/bartdag/py4j/issues>`_.
