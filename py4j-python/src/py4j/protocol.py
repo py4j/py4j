@@ -166,11 +166,17 @@ def unescape_new_line(escaped):
 
     For example, double backslashes are replaced by a single backslash.
 
+    The behavior for improperly formatted strings is undefined and can change.
+
     :param escaped: the escaped string
 
     :rtype: the original string
     """
-    return ESCAPE_CHAR.join( '\n'.join(('\r'.join(p.split(ESCAPE_CHAR + 'r'))).split(ESCAPE_CHAR + 'n')) for p in escaped.split(ESCAPE_CHAR + ESCAPE_CHAR) )
+    return ESCAPE_CHAR.join(
+        '\n'.join(
+            ('\r'.join(p.split(ESCAPE_CHAR + 'r')))
+            .split(ESCAPE_CHAR + 'n'))
+        for p in escaped.split(ESCAPE_CHAR + ESCAPE_CHAR))
 
 
 def smart_decode(s):
