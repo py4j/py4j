@@ -1,9 +1,14 @@
 language: python
+env:
+  - JAVA_VERSION=java7
+  - JAVA_VERSION=java8
 python:
   - "2.6"
   - "2.7"
   - "3.4"
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq openjdk-7-jre-headless ant
+  - if [ "$JAVA_VERSION" == "java7" ]; then sudo apt-get install -qq openjdk-7-jre-headless; fi
+  - if [ "$JAVA_VERSION" == "java8" ]; then sudo add-apt-repository ppa:rethinkdb/ppa -y; sudo apt-get update -qq; echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections; sudo apt-get install oracle-java8-installer -qq fi
+  - sudo apt-get install -qq ant
 script: cd py4j-java && ant jar && ant java-test && python --version && cd ../py4j-python && nosetests -w src -c nose.cfg
