@@ -1,7 +1,7 @@
 Download Py4J
 =============
 
-You can download Py4J by using easy_install: ``easy_install py4j``
+You can download Py4J by using pip, ``pip install py4j``, or easy_install, ``easy_install py4j``.
 
 Alternatively, you can download the latest version of Py4J from `PyPI <http://pypi.python.org/pypi/py4j>`_ or
 `SourceForge <https://sourceforge.net/projects/py4j/files/>`_.
