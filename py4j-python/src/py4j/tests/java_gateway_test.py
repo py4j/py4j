@@ -8,6 +8,7 @@ from __future__ import unicode_literals, absolute_import
 
 from decimal import Decimal
 import gc
+import math
 from multiprocessing import Process
 import os
 from socket import AF_INET, SOCK_STREAM, socket
@@ -157,6 +158,7 @@ class ProtocolTest(unittest.TestCase):
             testSocket.sendall('ybTrue\n'.encode('utf-8'))
             testSocket.sendall('yo\n'.encode('utf-8'))
             testSocket.sendall('yL123\n'.encode('utf-8'))
+            testSocket.sendall('ydinf\n'.encode('utf-8'))
             testSocket.close()
             sleep()
 
@@ -169,6 +171,7 @@ class ProtocolTest(unittest.TestCase):
             self.assertTrue(ex.method2() is None)
             self.assertTrue(ex.method4())
             self.assertEqual(long(123), ex.method8())
+            self.assertEqual(float("inf"), ex.method8())
             self.gateway.shutdown()
 
         except Exception:
@@ -439,6 +442,17 @@ class TypeConversionTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         self.assertEqual(Decimal("2147483.647"), ex.method10(2147483647, 3))
         self.assertEqual(Decimal("-13.456"), ex.method10(Decimal("-14.456")))
+
+    def testFloatConversion(self):
+        java_inf = self.gateway.jvm.java.lang.Double.parseDouble("Infinity")
+        self.assertEqual(float("inf"), java_inf)
+        java_inf = self.gateway.jvm.java.lang.Double.parseDouble("+Infinity")
+        self.assertEqual(float("inf"), java_inf)
+        java_neg_inf = self.gateway.jvm.java.lang.Double.parseDouble(
+            "-Infinity")
+        self.assertEqual(float("-inf"), java_neg_inf)
+        java_nan = self.gateway.jvm.java.lang.Double.parseDouble("NaN")
+        self.assertTrue(math.isnan(java_nan))
 
 
 class UnicodeTest(unittest.TestCase):
