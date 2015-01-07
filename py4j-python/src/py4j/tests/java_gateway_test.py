@@ -780,6 +780,15 @@ class GatewayLauncherTest(unittest.TestCase):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
         self.assertTrue(self.gateway.jvm)
 
+    def testAdditionalArgumentsArePassedToTheGateway(self):
+        class MyCoolGateway(JavaGateway):
+            def __init__(self, *args, **kwargs):
+                self.stuff = kwargs.pop("stuff")
+                super(MyCoolGateway, self).__init__(*args, **kwargs)
+
+        self.gateway = MyCoolGateway.launch_gateway(stuff=12)
+        self.assertEqual(self.gateway.stuff, 12)
+
 
 if __name__ == "__main__":
     unittest.main()
