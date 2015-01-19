@@ -104,6 +104,10 @@ public class MethodInvoker {
 					&& TypeUtil.isBoolean(arguments[i])) {
 				tempCost = 0;
 				converters.add(TypeConverter.NO_CONVERTER);
+				
+			} else if (parameters[i].isEnum() && arguments[i].isAssignableFrom(String.class)) {
+				tempCost = 0;
+				converters.add(new TypeConverter((Class<Enum>)parameters[i]));
 			}
 
 			if (tempCost != -1) {
