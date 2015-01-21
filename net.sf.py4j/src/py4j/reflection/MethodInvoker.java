@@ -146,14 +146,6 @@ public class MethodInvoker {
 		return cost;
 	}
 
-	private static boolean isVarArgs(AccessibleObject exec) {
-		return exec instanceof Method ? ((Method)exec).isVarArgs() : ((Constructor)exec).isVarArgs();
-	}
-
-	private static Class<?>[] getParameterTypes(AccessibleObject exec) {
-		return exec instanceof Method ? ((Method)exec).getParameterTypes() : ((Constructor)exec).getParameterTypes();
-	}
-
 	public static MethodInvoker buildInvoker(Constructor<?> constructor,
 			Class<?>[] arguments) {
 		MethodInvoker invoker = null;
@@ -280,8 +272,17 @@ public class MethodInvoker {
 		return returnObject;
 	}
 
+
+	private static boolean isVarArgs(AccessibleObject exec) {
+		return exec instanceof Method ? ((Method)exec).isVarArgs() : ((Constructor)exec).isVarArgs();
+	}
+
+	private static Class<?>[] getParameterTypes(AccessibleObject exec) {
+		return exec instanceof Method ? ((Method)exec).getParameterTypes() : ((Constructor)exec).getParameterTypes();
+	}
+
 	private int getParameterCount(AccessibleObject exec) {
-		return exec instanceof Method ? ((Method)exec).getParameterTypes().length : ((Constructor)exec).getParameterCount();
+		return getParameterTypes(exec).length;
 	}
 
 	public boolean isVoid() {
