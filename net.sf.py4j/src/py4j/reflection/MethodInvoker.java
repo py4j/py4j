@@ -281,7 +281,7 @@ public class MethodInvoker {
 	}
 
 	private int getParameterCount(AccessibleObject exec) {
-		return exec instanceof Method ? ((Method)exec).getParameterCount() : ((Constructor)exec).getParameterCount();
+		return exec instanceof Method ? ((Method)exec).getParameterTypes().length : ((Constructor)exec).getParameterCount();
 	}
 
 	public boolean isVoid() {
