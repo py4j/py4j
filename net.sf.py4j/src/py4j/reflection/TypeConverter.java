@@ -28,6 +28,10 @@
  *******************************************************************************/
 package py4j.reflection;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * <p>
  * A TypeConverter converts a Python type into a Java Type. For example, a
@@ -47,6 +51,7 @@ public class TypeConverter {
 	public final static int STRING_TO_CHAR = 3;
 	public final static int NUM_TO_LONG = 4;
 	public final static int STRING_TO_ENUM = 5;
+	public final static int VAR_ARGS = 6;
 
 	private final int conversion;
 	private Class enumClazz;
@@ -62,6 +67,8 @@ public class TypeConverter {
 			STRING_TO_CHAR);
 	public final static TypeConverter LONG_CONVERTER = new TypeConverter(
 			NUM_TO_LONG);
+	public final static TypeConverter VARARGS_CONVERTER = new TypeConverter(
+			VAR_ARGS);
 
 	
 	public TypeConverter() {
@@ -108,9 +115,41 @@ public class TypeConverter {
 
 		return newObject;
 	}
+	
+    /**
+     * Used to convert remaining varargs into an array
+     * @param i
+     * @param newArguments
+     * @return
+     */
+	public Object[] convert(int index, Object[] newArguments) {
+		
+        final Class<?> argClass    = newArguments[index].getClass();
+        
+        Object[] lastArg = (Object[])Array.newInstance(argClass, newArguments.length-index);
+		int count = 0;
+        for (int i = index; i < newArguments.length; i++) {
+			lastArg[count] = newArguments[i];
+			++count;
+		}
+		if (index==0) {
+			return new Object[]{lastArg}; // must be array with array in or will not work.
+		} else {
+			Object[] ret = new Object[]{index+1};
+			for (int i = 0; i < index; i++) ret[i] = newArguments[i];
+			ret[index] = lastArg;
+			return ret;
+		}
+	}
+
 
 	public int getConversion() {
 		return conversion;
 	}
 
+	public boolean isVarArgs() {
+		return conversion==VAR_ARGS;
+	}
+
+	
 }

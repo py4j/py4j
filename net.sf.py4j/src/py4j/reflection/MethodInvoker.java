@@ -29,9 +29,11 @@
 package py4j.reflection;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +78,9 @@ public class MethodInvoker {
 	}
 
 	private static int buildConverters(List<TypeConverter> converters,
-			Class<?>[] parameters, Class<?>[] arguments) {
+			                           Executable exec, Class<?>[] arguments) {
+		
+		Class<?>[] parameters = exec.getParameterTypes();
 		int cost = 0;
 		int tempCost = -1;
 		int size = arguments.length;
@@ -105,9 +109,29 @@ public class MethodInvoker {
 				tempCost = 0;
 				converters.add(TypeConverter.NO_CONVERTER);
 				
+			// Deal with converting enums
 			} else if (parameters[i].isEnum() && arguments[i].isAssignableFrom(String.class)) {
 				tempCost = 0;
 				converters.add(new TypeConverter((Class<Enum>)parameters[i]));
+			
+			// Deal with varargs if we are 
+			} else if (exec.isVarArgs() && i == size-1) { // If we are the last argument and varargs, it can be an array
+				// Maybe the rest of the arguments are varargs?
+				Class arrayClass = parameters[i].getComponentType();
+				boolean varArgsOk = false;
+				for (int j = i; j<arguments.length;++j) {
+					if (arrayClass.isAssignableFrom(arguments[j])) {
+						varArgsOk = true;
+						continue;
+					}
+					varArgsOk = false;
+					break;
+				}
+
+				if (varArgsOk) {
+					tempCost = 0;
+					converters.add(TypeConverter.VARARGS_CONVERTER);
+				}
 			}
 
 			if (tempCost != -1) {
@@ -131,7 +155,7 @@ public class MethodInvoker {
 		if (arguments == null || size == 0) {
 			invoker = new MethodInvoker(constructor, null, 0);
 		} else {
-			cost = buildConverters(converters, constructor.getParameterTypes(),
+			cost = buildConverters(converters, constructor,
 					arguments);
 		}
 		if (cost == -1) {
@@ -156,8 +180,7 @@ public class MethodInvoker {
 		if (arguments == null || size == 0) {
 			invoker = new MethodInvoker(method, null, 0);
 		} else {
-			cost = buildConverters(converters, method.getParameterTypes(),
-					arguments);
+			cost = buildConverters(converters, method, arguments);
 		}
 		if (cost == -1) {
 			invoker = INVALID_INVOKER;
@@ -225,9 +248,16 @@ public class MethodInvoker {
 
 			if (converters != null) {
 				int size = arguments.length;
-				newArguments = new Object[size];
+				newArguments = Arrays.copyOf(newArguments, newArguments.length);
 				for (int i = 0; i < size; i++) {
-					newArguments[i] = converters[i].convert(arguments[i]);
+					// For VarArgs method where this is the last converter
+					// transform all remaining arguments
+					if( i == size-1 && converters[i].isVarArgs()) { // last converter
+						newArguments = converters[i].convert(i, newArguments);
+						break;
+					} else {
+					    newArguments[i] = converters[i].convert(arguments[i]);
+					}
 				}
 			}
 			if (method != null) {

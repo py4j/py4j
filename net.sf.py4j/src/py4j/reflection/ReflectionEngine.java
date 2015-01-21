@@ -339,8 +339,8 @@ public class ReflectionEngine {
 		List<Method> methods = new ArrayList<Method>();
 
 		for (Method method : clazz.getMethods()) {
-			if (method.getName().equals(name)
-					&& method.getParameterTypes().length == length) {
+			if (method.getName().equals(name) && 
+					(method.getParameterTypes().length == length || method.isVarArgs())) {
 				methods.add(method);
 			}
 		}
