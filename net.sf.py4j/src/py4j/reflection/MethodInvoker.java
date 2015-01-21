@@ -115,7 +115,7 @@ public class MethodInvoker {
 				converters.add(new TypeConverter((Class<Enum>)parameters[i]));
 			
 			// Deal with varargs if we are 
-			} else if (exec.isVarArgs() && i == size-1) { // If we are the last argument and varargs, it can be an array
+			} else if (exec.isVarArgs() && i == parameters.length-1) { // If we are the last argument and varargs, it can be an array
 				// Maybe the rest of the arguments are varargs?
 				Class arrayClass = parameters[i].getComponentType();
 				boolean varArgsOk = false;
@@ -131,6 +131,7 @@ public class MethodInvoker {
 				if (varArgsOk) {
 					tempCost = 0;
 					converters.add(TypeConverter.VARARGS_CONVERTER);
+					break;
 				}
 			}
 
@@ -199,9 +200,7 @@ public class MethodInvoker {
 
 	private TypeConverter[] converters;
 
-	private Method method;
-
-	private Constructor<?> constructor;
+	private Executable executable;
 
 	private final Logger logger = Logger.getLogger(MethodInvoker.class
 			.getName());
@@ -212,20 +211,16 @@ public class MethodInvoker {
 	public MethodInvoker(Constructor<?> constructor,
 			TypeConverter[] converters, int cost) {
 		super();
-		this.constructor = constructor;
+		this.executable = constructor;
 		this.converters = converters;
 		this.cost = cost;
 	}
 
 	public MethodInvoker(Method method, TypeConverter[] converters, int cost) {
 		super();
-		this.method = method;
+		this.executable = method;
 		this.converters = converters;
 		this.cost = cost;
-	}
-
-	public Constructor<?> getConstructor() {
-		return constructor;
 	}
 
 	public TypeConverter[] getConverters() {
@@ -236,13 +231,9 @@ public class MethodInvoker {
 		return cost;
 	}
 
-	public Method getMethod() {
-		return method;
-	}
-
 	public Object invoke(Object obj, Object[] arguments) {
+		
 		Object returnObject = null;
-
 		try {
 			Object[] newArguments = arguments;
 
@@ -252,7 +243,7 @@ public class MethodInvoker {
 				for (int i = 0; i < size; i++) {
 					// For VarArgs method where this is the last converter
 					// transform all remaining arguments
-					if( i == size-1 && converters[i].isVarArgs()) { // last converter
+					if( i == executable.getParameterCount()-1 && converters[i].isVarArgs()) { // last converter
 						newArguments = converters[i].convert(i, newArguments);
 						break;
 					} else {
@@ -260,12 +251,12 @@ public class MethodInvoker {
 					}
 				}
 			}
-			if (method != null) {
-				method.setAccessible(true);
-				returnObject = method.invoke(obj, newArguments);
-			} else if (constructor != null) {
-				constructor.setAccessible(true);
-				returnObject = constructor.newInstance(newArguments);
+			
+			executable.setAccessible(true);
+			if (executable instanceof Method) {
+				returnObject = ((Method)executable).invoke(obj, newArguments);
+			} else if (executable instanceof Constructor) {
+				returnObject = ((Constructor)executable).newInstance(newArguments);
 			}
 		} catch (InvocationTargetException ie) {
 			logger.log(Level.WARNING, "Exception occurred in client code.", ie);
@@ -282,10 +273,10 @@ public class MethodInvoker {
 	}
 
 	public boolean isVoid() {
-		if (constructor != null) {
+		if (executable instanceof Constructor) {
 			return false;
 		} else {
-			return method.getReturnType().equals(void.class);
+			return ((Method)executable).getReturnType().equals(void.class);
 		}
 	}
 
