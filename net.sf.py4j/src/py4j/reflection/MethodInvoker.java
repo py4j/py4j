@@ -28,8 +28,8 @@
  *******************************************************************************/
 package py4j.reflection;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -78,9 +78,9 @@ public class MethodInvoker {
 	}
 
 	private static int buildConverters(List<TypeConverter> converters,
-			                           Executable exec, Class<?>[] arguments) {
+			                           AccessibleObject exec, Class<?>[] arguments) {
 		
-		Class<?>[] parameters = exec.getParameterTypes();
+		Class<?>[] parameters = getParameterTypes(exec);
 		int cost = 0;
 		int tempCost = -1;
 		int size = arguments.length;
@@ -115,7 +115,7 @@ public class MethodInvoker {
 				converters.add(new TypeConverter((Class<Enum>)parameters[i]));
 			
 			// Deal with varargs if we are 
-			} else if (exec.isVarArgs() && i == parameters.length-1) { // If we are the last argument and varargs, it can be an array
+			} else if (isVarArgs(exec) && i == parameters.length-1) { // If we are the last argument and varargs, it can be an array
 				// Maybe the rest of the arguments are varargs?
 				Class arrayClass = parameters[i].getComponentType();
 				boolean varArgsOk = false;
@@ -144,6 +144,14 @@ public class MethodInvoker {
 			}
 		}
 		return cost;
+	}
+
+	private static boolean isVarArgs(AccessibleObject exec) {
+		return exec instanceof Method ? ((Method)exec).isVarArgs() : ((Constructor)exec).isVarArgs();
+	}
+
+	private static Class<?>[] getParameterTypes(AccessibleObject exec) {
+		return exec instanceof Method ? ((Method)exec).getParameterTypes() : ((Constructor)exec).getParameterTypes();
 	}
 
 	public static MethodInvoker buildInvoker(Constructor<?> constructor,
@@ -200,7 +208,7 @@ public class MethodInvoker {
 
 	private TypeConverter[] converters;
 
-	private Executable executable;
+	private AccessibleObject executable;
 
 	private final Logger logger = Logger.getLogger(MethodInvoker.class
 			.getName());
@@ -243,7 +251,7 @@ public class MethodInvoker {
 				for (int i = 0; i < size; i++) {
 					// For VarArgs method where this is the last converter
 					// transform all remaining arguments
-					if( i == executable.getParameterCount()-1 && converters[i].isVarArgs()) { // last converter
+					if( i == getParameterCount(executable)-1 && converters[i].isVarArgs()) { // last converter
 						newArguments = converters[i].convert(i, newArguments);
 						break;
 					} else {
@@ -270,6 +278,10 @@ public class MethodInvoker {
 		}
 
 		return returnObject;
+	}
+
+	private int getParameterCount(AccessibleObject exec) {
+		return exec instanceof Method ? ((Method)exec).getParameterCount() : ((Constructor)exec).getParameterCount();
 	}
 
 	public boolean isVoid() {
