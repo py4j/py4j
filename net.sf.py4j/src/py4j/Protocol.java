@@ -34,6 +34,8 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import py4j.reflection.PythonProxyHandler;
 
@@ -286,11 +288,23 @@ public class Protocol {
 				return getDecimal(commandPart);
 			case PYTHON_PROXY_TYPE:
 				return getPythonProxy(commandPart, gateway);
+			case LIST_TYPE:
+				return getList(commandPart, gateway);
 			default:
 				throw new Py4JException("Command Part is unknown: "
 						+ commandPart);
 			}
 		}
+	}
+
+	private static Object getList(String commandPart, Gateway gateway) {
+		
+		String[] ret = commandPart.substring(1, commandPart.length()).split("\\#\\$_LISTSEP_\\$\\#");
+		final List<Object> list = new ArrayList<Object>(ret.length);
+		for (String cmdP : ret) {
+			list.add(getObject(cmdP, gateway));
+		}
+		return list;
 	}
 
 	public final static String getOutputCommand(ReturnObject rObject) {
