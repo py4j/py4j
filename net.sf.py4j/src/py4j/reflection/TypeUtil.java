@@ -274,12 +274,13 @@ public class TypeUtil {
 			Map<String, String> singleImportsMap = view.getSingleImportsMap();
 			String newFQN = singleImportsMap.get(simpleName);
 			if (newFQN != null) {
-				clazz = Class.forName(newFQN);
+				clazz = loader == null ? Class.forName(newFQN) : loader.loadClass(newFQN);
 			} else {
 				// Or try star imports
 				for (String starImport : view.getStarImports()) {
 					try {
-						clazz = Class.forName(starImport + "." + simpleName);
+						String fullId = starImport + "." + simpleName;
+						clazz = loader == null ? Class.forName(fullId) : loader.loadClass(fullId);
 						break;
 					} catch (Exception e2) {
 						// Ignore
