@@ -15,7 +15,7 @@ from __future__ import unicode_literals, absolute_import
 from collections import deque
 import logging
 import os
-from pydoc import ttypager
+from pydoc import pager
 import select
 import socket
 from subprocess import Popen, PIPE
@@ -1159,7 +1159,7 @@ class JavaGateway(object):
 
         help_page = get_return_value(answer, self._gateway_client, None, None)
         if (display):
-            ttypager(help_page)
+            pager(help_page)
         else:
             return help_page
 
