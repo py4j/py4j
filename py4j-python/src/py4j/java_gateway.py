@@ -248,8 +248,8 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True, display=Tru
 
     :param gateway_client: The gatway client
 
-    :param var: JavaObject or JavaClass for which a help page will be
-     generated.
+    :param var: JavaObject, JavaClass or JavaMember for which a help page
+     will be generated.
 
     :param pattern: Star-pattern used to filter the members. For example
      'get*Foo' may return getMyFoo, getFoo, getFooBar, but not bargetFoo.
@@ -280,8 +280,14 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True, display=Tru
                   get_command_part(short_name) +\
                   END_COMMAND_PART
         answer = gateway_client.send_command(command)
+    elif hasattr2(var, 'container') and hasattr2(var, 'name'):
+        if pattern is not None:
+            raise Py4JError('pattern should be None with var is a JavaMember')
+        pattern = var.name + "(*"
+        var = var.container
+        return gateway_help(gateway_client, var, pattern, short_name=short_name, display=display)
     else:
-        raise Py4JError('var is neither a Java Object nor a Java Class')
+        raise Py4JError('var is none of Java Object, Java Class or Java Member')
 
     help_page = get_return_value(answer, gateway_client, None, None)
     if (display):
@@ -632,6 +638,15 @@ class JavaMember(object):
         self.command_header = self.target_id + '\n' + self.name + '\n'
         self.pool = self.gateway_client.gateway_property.pool
         self.converters = self.gateway_client.converters
+        self._gateway_doc = None
+
+    @property
+    def __doc__(self):
+        # The __doc__ string is used by IPython/PyDev/etc to generate help string,
+        # therefore provide useful help
+        if self._gateway_doc is None:
+            self._gateway_doc = gateway_help(self.gateway_client, self, display=False)
+        return self._gateway_doc
 
     def _get_args(self, args):
         temp_args = []
@@ -1227,8 +1242,8 @@ class JavaGateway(object):
     def help(self, var, pattern=None, short_name=True, display=True):
         """Displays a help page about a class or an object.
 
-        :param var: JavaObject or JavaClass for which a help page will be
-         generated.
+        :param var: JavaObject, JavaClass or JavaMember for which a help page
+         will be generated.
 
         :param pattern: Star-pattern used to filter the members. For example
          'get*Foo' may return getMyFoo, getFoo, getFooBar, but not bargetFoo.
