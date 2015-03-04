@@ -746,8 +746,8 @@ class JavaClass():
                 return get_return_value(answer, self._gateway_client,
                         self._fqn, name)
         else:
-            raise Py4JError('{0} does not exist in the JVM'.
-                    format(self._fqn + name))
+            raise Py4JError('{0}.{1} does not exist in the JVM'.
+                    format(self._fqn, name))
 
     def _get_args(self, args):
         temp_args = []
