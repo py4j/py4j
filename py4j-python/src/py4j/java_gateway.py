@@ -728,6 +728,9 @@ class JavaClass():
         self._converters = self._gateway_client.converters
 
     def __getattr__(self, name):
+        if name in ['__str__', '__repr__']:
+            raise AttributeError
+
         command = REFLECTION_COMMAND_NAME +\
             REFL_GET_MEMBER_SUB_COMMAND_NAME +\
             self._fqn + '\n' +\
