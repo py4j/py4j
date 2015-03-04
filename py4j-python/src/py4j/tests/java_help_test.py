@@ -92,3 +92,22 @@ def test_doc_method():
             assert_in('method7(int)', doc)
             assert_in('method7(Object)', doc)
             assert_not_in('method1', doc)
+
+def test_help_class():
+    with example_app_process():
+        with gateway() as g:
+            clazz = g.jvm.py4j.examples.ExampleClass
+            doc = g.help(clazz, display=False)
+            assert_in('Help on class ExampleClass in package py4j.examples', doc)
+            assert_in('method1', doc)
+            assert_in('method2', doc)
+
+def test_doc_class():
+    with example_app_process():
+        with gateway() as g:
+            clazz = g.jvm.py4j.examples.ExampleClass
+            doc = clazz.__doc__
+            # Make sure multiple method7s appear (overloaded method)
+            assert_in('Help on class ExampleClass in package py4j.examples', doc)
+            assert_in('method1', doc)
+            assert_in('method2', doc)

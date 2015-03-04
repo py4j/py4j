@@ -841,6 +841,15 @@ class JavaClass():
         self._pool = self._gateway_client.gateway_property.pool
         self._command_header = fqn + '\n'
         self._converters = self._gateway_client.converters
+        self._gateway_doc = None
+
+    @property
+    def __doc__(self):
+        # The __doc__ string is used by IPython/PyDev/etc to generate help string,
+        # therefore provide useful help
+        if self._gateway_doc is None:
+            self._gateway_doc = gateway_help(self._gateway_client, self, display=False)
+        return self._gateway_doc
 
     def __getattr__(self, name):
         if name in ['__str__', '__repr__']:
