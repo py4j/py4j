@@ -92,6 +92,7 @@ HELP_COMMAND_NAME = 'h\n'
 ARRAY_COMMAND_NAME = "a\n"
 JVMVIEW_COMMAND_NAME = "j\n"
 EXCEPTION_COMMAND_NAME = "p\n"
+DIR_COMMAND_NAME = "d\n"
 
 # Array subcommands
 ARRAY_GET_SUB_COMMAND_NAME = 'g\n'
@@ -138,6 +139,10 @@ ERROR_RETURN_MESSAGE = ERROR + '\n'
 
 CALL_PROXY_COMMAND_NAME = 'c'
 GARBAGE_COLLECT_PROXY_COMMAND_NAME = 'g'
+
+# Dir subcommands
+DIR_FIELDS_SUBCOMMAND_NAME = 'f\n'
+DIR_METHODS_SUBCOMMAND_NAME = 'm\n'
 
 OUTPUT_CONVERTER = {NULL_TYPE: (lambda x, y: None),
               BOOLEAN_TYPE: (lambda value, y: value.lower() == 'true'),

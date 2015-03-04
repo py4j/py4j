@@ -648,6 +648,8 @@ class JavaObject(object):
         self._gateway_client = gateway_client
         self._auto_field = gateway_client.gateway_property.auto_field
         self._methods = {}
+        self._field_names = set()
+        self._fully_populated = False
 
         key = smart_decode(self._gateway_client.address) +\
               smart_decode(self._gateway_client.port) +\
@@ -669,6 +671,7 @@ class JavaObject(object):
             if (self._auto_field):
                 (is_field, return_value) = self._get_field(name)
                 if (is_field):
+                    self._field_names.add(name)
                     return return_value
             # Theoretically, not thread safe, but the worst case scenario is
             # cache miss or double overwrite of the same method...
@@ -677,6 +680,39 @@ class JavaObject(object):
 
         # The name is a method
         return self._methods[name]
+
+    def __dir__(self):
+        self._populate_fields()
+        return list(set(self._methods.keys()) | self._field_names)
+
+    def _populate_fields(self):
+        if not self._fully_populated:
+            if self._auto_field:
+                command = DIR_COMMAND_NAME +\
+                    DIR_FIELDS_SUBCOMMAND_NAME +\
+                    self._target_id + '\n' +\
+                    END_COMMAND_PART
+
+                answer = self._gateway_client.send_command(command)
+                return_value = get_return_value(answer, self._gateway_client,
+                        self._target_id, "__dir__")
+                self._field_names.update(return_value.split('\n'))
+
+            command = DIR_COMMAND_NAME +\
+                DIR_METHODS_SUBCOMMAND_NAME +\
+                self._target_id + '\n' +\
+                END_COMMAND_PART
+
+            answer = self._gateway_client.send_command(command)
+            return_value = get_return_value(answer, self._gateway_client,
+                    self._target_id, "__dir__")
+            names = return_value.split('\n')
+            for name in names:
+                if name not in self._methods:
+                    self._methods[name] = JavaMember(name, self, self._target_id,
+                            self._gateway_client)
+
+            self._fully_populated = True
 
     def _get_field(self, name):
         command = FIELD_COMMAND_NAME +\
