@@ -243,6 +243,50 @@ def quiet_shutdown(socket_instance):
         pass
 
 
+def gateway_help(gateway_client, var, pattern=None, short_name=True, display=True):
+    """Displays a help page about a class or an object.
+
+    :param gateway_client: The gatway client
+
+    :param var: JavaObject or JavaClass for which a help page will be
+     generated.
+
+    :param pattern: Star-pattern used to filter the members. For example
+     'get*Foo' may return getMyFoo, getFoo, getFooBar, but not bargetFoo.
+
+    :param short_name: If True, only the simple name of the parameter
+     types and return types will be displayed. If False, the fully
+     qualified name of the types will be displayed.
+
+    :param display: If True, the help page is displayed in an interactive
+     page similar to the `help` command in Python. If False, the page is
+     returned as a string.
+    """
+    if hasattr2(var, '_get_object_id'):
+        command = HELP_COMMAND_NAME +\
+                  HELP_OBJECT_SUBCOMMAND_NAME +\
+                  var._get_object_id() + '\n' +\
+                  get_command_part(pattern) +\
+                  get_command_part(short_name) +\
+                  END_COMMAND_PART
+        answer = gateway_client.send_command(command)
+    elif hasattr2(var, '_fqn'):
+        command = HELP_COMMAND_NAME +\
+                  HELP_CLASS_SUBCOMMAND_NAME +\
+                  var._fqn + '\n' +\
+                  get_command_part(pattern) +\
+                  get_command_part(short_name) +\
+                  END_COMMAND_PART
+        answer = gateway_client.send_command(command)
+    else:
+        raise Py4JError('var is neither a Java Object nor a Java Class')
+
+    help_page = get_return_value(answer, gateway_client, None, None)
+    if (display):
+        pager(help_page)
+    else:
+        return help_page
+
 def _garbage_collect_object(gateway_client, target_id):
 #    print(target_id + ' deleted')
     ThreadSafeFinalizer.remove_finalizer(smart_decode(gateway_client.address) +
@@ -650,6 +694,7 @@ class JavaObject(object):
         self._methods = {}
         self._field_names = set()
         self._fully_populated = False
+        self._gateway_doc = None
 
         key = smart_decode(self._gateway_client.address) +\
               smart_decode(self._gateway_client.port) +\
@@ -666,7 +711,24 @@ class JavaObject(object):
     def _get_object_id(self):
         return self._target_id
 
+    @property
+    def __doc__(self):
+        # The __doc__ string is used by IPython/PyDev/etc to generate help string,
+        # therefore provide useful help
+        if self._gateway_doc is None:
+            self._gateway_doc = gateway_help(self._gateway_client, self, display=False)
+        return self._gateway_doc
+
     def __getattr__(self, name):
+        if name == '__call__':
+            # Provide an explicit definition for __call__ so that a JavaMember does
+            # not get created for it. This serves two purposes:
+            # 1) IPython (and others?) stop showing incorrect help indicating that
+            #    this is callable
+            # 2) A TypeError(object not callable) is raised if someone does try
+            #    to call here
+            raise AttributeError
+
         if name not in self._methods:
             if (self._auto_field):
                 (is_field, return_value) = self._get_field(name)
@@ -1177,30 +1239,7 @@ class JavaGateway(object):
          page similar to the `help` command in Python. If False, the page is
          returned as a string.
         """
-        if hasattr2(var, '_get_object_id'):
-            command = HELP_COMMAND_NAME +\
-                      HELP_OBJECT_SUBCOMMAND_NAME +\
-                      var._get_object_id() + '\n' +\
-                      get_command_part(pattern) +\
-                      get_command_part(short_name) +\
-                      END_COMMAND_PART
-            answer = self._gateway_client.send_command(command)
-        elif hasattr2(var, '_fqn'):
-            command = HELP_COMMAND_NAME +\
-                      HELP_CLASS_SUBCOMMAND_NAME +\
-                      var._fqn + '\n' +\
-                      get_command_part(pattern) +\
-                      get_command_part(short_name) +\
-                      END_COMMAND_PART
-            answer = self._gateway_client.send_command(command)
-        else:
-            raise Py4JError('var is neither a Java Object nor a Java Class')
-
-        help_page = get_return_value(answer, self._gateway_client, None, None)
-        if (display):
-            pager(help_page)
-        else:
-            return help_page
+        return gateway_help(self._gateway_client, var, pattern, short_name, display)
 
     @classmethod
     def launch_gateway(cls, port=0, jarpath="", classpath="", javaopts=[],
