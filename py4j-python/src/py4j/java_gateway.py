@@ -827,7 +827,7 @@ class JavaObject(object):
         return 'JavaObject id=' + self._target_id
 
 
-class JavaClass():
+class JavaClass(object):
     """A `JavaClass` represents a Java Class from which static members can be
        retrieved. `JavaClass` instances are also needed to initialize an array.
 
@@ -961,7 +961,7 @@ class UserHelpAutoCompletion(object):
     KEY = "<package or class name>"
 
 
-class JavaPackage():
+class JavaPackage(object):
     """A `JavaPackage` represents part of a Java package from which Java
        classes can be accessed.
 

@@ -5,7 +5,17 @@ from py4j.java_gateway import JavaGateway, GatewayParameters
 from py4j.tests.java_gateway_test import (
     start_example_app_process)
 from contextlib import contextmanager
-from nose.tools import eq_, assert_in, assert_not_in
+from nose.tools import eq_
+try:
+    from nose.tools import assert_in, assert_not_in
+except:
+    # Python 2.6 does not have assert_in/not_in
+    def assert_in(val, container):
+        if val not in container:
+            raise AssertionError
+    def assert_not_in(val, container):
+        if val in container:
+            raise AssertionError
 
 @contextmanager
 def example_app_process():
@@ -52,7 +62,7 @@ def test_not_callable():
             try:
                 ex()
                 raise AssertionError
-            except TypeError, e:
+            except TypeError as e:
                 assert_in('object is not callable', str(e))
 
 def test_help_pattern_1():
