@@ -227,6 +227,20 @@ public class MethodInvoker {
 		return converters;
 	}
 
+	public Constructor<?> getConstructor() {
+		if (executable instanceof Constructor) {
+			return (Constructor<?>)executable;
+		}
+		return null;
+	}
+
+	public Method getMethod() {
+		if (executable instanceof Method) {
+			return (Method)executable;
+		}
+		return null;
+	}
+
 	public int getCost() {
 		return cost;
 	}
