@@ -143,6 +143,7 @@ GARBAGE_COLLECT_PROXY_COMMAND_NAME = 'g'
 # Dir subcommands
 DIR_FIELDS_SUBCOMMAND_NAME = 'f\n'
 DIR_METHODS_SUBCOMMAND_NAME = 'm\n'
+DIR_STATIC_SUBCOMMAND_NAME = 's\n'
 
 OUTPUT_CONVERTER = {NULL_TYPE: (lambda x, y: None),
               BOOLEAN_TYPE: (lambda value, y: value.lower() == 'true'),

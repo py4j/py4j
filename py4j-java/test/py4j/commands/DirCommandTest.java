@@ -45,6 +45,7 @@ import org.junit.Test;
 
 import py4j.Gateway;
 import py4j.Protocol;
+import py4j.examples.ExampleClass;
 import py4j.examples.ExampleEntryPoint;
 
 public class DirCommandTest {
@@ -72,6 +73,11 @@ public class DirCommandTest {
 		ExampleClassMethods.addAll(Arrays
 				.asList(new String[] { "getClass", "hashCode", "equals",
 						"toString", "notify", "notifyAll", "wait" }));
+	}
+	private static Set<String> ExampleClassStatics = new HashSet<String>();
+	{
+		ExampleClassStatics.addAll(Arrays.asList(new String[] { "StaticClass",
+				"static_method", "static_field" }));
 	}
 
 	@Before
@@ -111,6 +117,17 @@ public class DirCommandTest {
 				new BufferedReader(new StringReader(inputCommand)), writer);
 		Set<String> methods = convertResponse(sWriter.toString());
 		assertEquals(ExampleClassMethods, methods);
+	}
+
+	@Test
+	public void testDirStatics() throws Exception {
+		String inputCommand = "s\n" + ExampleClass.class.getName() + "\ne\n";
+
+		assertTrue(gateway.getBindings().containsKey(target));
+		command.execute("d",
+				new BufferedReader(new StringReader(inputCommand)), writer);
+		Set<String> methods = convertResponse(sWriter.toString());
+		assertEquals(ExampleClassStatics, methods);
 	}
 
 	private Set<String> convertResponse(String protocolReturn) {
