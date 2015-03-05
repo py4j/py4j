@@ -95,4 +95,5 @@ public interface Command {
 	 */
 	public void init(Gateway gateway);
 
+	public void setClassLoader(ClassLoader loader);
 }

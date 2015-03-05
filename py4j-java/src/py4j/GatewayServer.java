@@ -152,6 +152,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	private boolean isShutdown = false;
 
+	private ClassLoader loader = null;
+
 	private final Lock lock = new ReentrantLock(true);
 
 	static {
@@ -335,7 +337,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	protected GatewayConnection createConnection(Gateway gateway, Socket socket)
 			throws IOException {
-		return new GatewayConnection(gateway, socket, customCommands, listeners);
+		return new GatewayConnection(gateway, socket, customCommands, listeners, loader);
 	}
 
 	protected void fireConnectionError(Exception e) {
@@ -511,6 +513,11 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		removeListener(this);
 	}
 
+	public void setClassLoader(ClassLoader loader) {
+		this.loader = loader;
+		gateway.getReflectionEngine().setClassLoader(loader);
+	}
+
 	/**
 	 * <p>
 	 * Stops accepting connections, closes all current connections, and calls
@@ -633,6 +640,9 @@ public class GatewayServer extends DefaultGatewayServerListener implements
      * @return An unmodifiable list of custom commands
      */
 	public List<Class<? extends Command>> getCustomCommands() {
+		if (customCommands == null)
+			return null;
+
 		return Collections.unmodifiableList(customCommands);
 	}
 
