@@ -1,10 +1,11 @@
-bin/
-javadoc/
+/bin/
+/javadoc/
 *.swp
 .ant-targets-build.xml
-dist/
-junit/
+/dist/
+/junit/
 py4j*.jar
 target/
 *.asc
 bundle.jar
+/out/

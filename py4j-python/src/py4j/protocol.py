@@ -29,6 +29,10 @@ from py4j.compat import long, basestring, unicode, bytearray2,\
 
 JAVA_MAX_INT = 2147483647
 
+JAVA_INFINITY = "Infinity"
+JAVA_NEGATIVE_INFINITY = "-Infinity"
+JAVA_NAN = "NaN"
+
 
 ESCAPE_CHAR = "\\"
 
@@ -168,28 +172,17 @@ def unescape_new_line(escaped):
 
     For example, double backslashes are replaced by a single backslash.
 
+    The behavior for improperly formatted strings is undefined and can change.
+
     :param escaped: the escaped string
 
     :rtype: the original string
     """
-    escaping = False
-    original = ''
-    for c in escaped:
-        if not escaping:
-            if c == ESCAPE_CHAR:
-                escaping = True
-            else:
-                original += c
-        else:
-            if c == 'n':
-                original += '\n'
-            elif c == 'r':
-                original += '\r'
-            else:
-                original += c
-            escaping = False
-
-    return original
+    return ESCAPE_CHAR.join(
+        '\n'.join(
+            ('\r'.join(p.split(ESCAPE_CHAR + 'r')))
+            .split(ESCAPE_CHAR + 'n'))
+        for p in escaped.split(ESCAPE_CHAR + ESCAPE_CHAR))
 
 
 def smart_decode(s):
@@ -200,6 +193,17 @@ def smart_decode(s):
         return unicode(s, 'utf-8')
     else:
         return unicode(s)
+
+
+def encode_float(float_value):
+    float_str = smart_decode(float_value)
+    if float_str == "-inf":
+        float_str = JAVA_NEGATIVE_INFINITY
+    elif float_str == "inf":
+        float_str = JAVA_INFINITY
+    elif float_str == "nan":
+        float_str = JAVA_NAN
+    return float_str
 
 
 def encode_bytearray(barray):
@@ -294,7 +298,7 @@ def get_command_part(parameter, python_proxy_pool=None, appendNewLine=True):
     elif isinstance(parameter, long) or isinstance(parameter, int):
         command_part = LONG_TYPE + smart_decode(parameter)
     elif isinstance(parameter, float):
-        command_part = DOUBLE_TYPE + smart_decode(parameter)
+        command_part = DOUBLE_TYPE + encode_float(parameter)
     elif isbytearray(parameter):
         command_part = BYTES_TYPE + encode_bytearray(parameter)
     elif ispython3bytestr(parameter):
