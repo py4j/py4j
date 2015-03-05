@@ -936,6 +936,31 @@ class JavaClass():
         return return_value
 
 
+class UserHelpAutoCompletion(object):
+    """
+    Type a package name or a class name.
+
+    For example with a JVMView called view:
+    >>> o = view.Object() # create a java.lang.Object
+    >>> random = view.jvm.java.util.Random() # create a java.util.Random instance
+
+    The default JVMView is in the gateway and is called:
+    >>> gateway.jvm
+
+    By default, java.lang.* is available in the view. To
+    add additional Classes/Packages, do:
+    >>> from py4j.java_gateway import java_import
+    >>> java_import(gateway.jvm, 'com.example.Class1')
+    >>> instance = gateway.jvm.Class1()
+
+    Package and class completions are only available for
+    explicitly imported Java classes. For example, if you
+    java_import(gateway.jvm, 'com.example.Class1')
+    then Class1 will appear in the completions.
+    """
+    KEY = "<package or class name>"
+
+
 class JavaPackage():
     """A `JavaPackage` represents part of a Java package from which Java
        classes can be accessed.
@@ -990,7 +1015,30 @@ class JVMView(object):
             # for regular Py4J classes.
             self._jvm_object = jvm_object
 
+        self._dir_sequence = None
+        self._dir_cache = []
+
+    def __dir__(self):
+        command = DIR_COMMAND_NAME +\
+            DIR_JVMVIEW_SUBCOMMAND_NAME +\
+            self._id + '\n' +\
+            get_command_part(self._dir_sequence) + '\n' +\
+            END_COMMAND_PART
+
+        answer = self._gateway_client.send_command(command)
+        return_value = get_return_value(answer, self._gateway_client,
+                self._fqn, "__dir__")
+        if return_value is not None:
+            result = return_value.split('\n')
+            self._dir_sequence = result[0]
+            self._dir_cache = result[1:] + [UserHelpAutoCompletion.KEY]
+        return self._dir_cache[:]
+
     def __getattr__(self, name):
+        if name == UserHelpAutoCompletion.KEY:
+            return UserHelpAutoCompletion()
+
+
         answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME +\
                 REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + self._id +\
                 '\n' + END_COMMAND_PART)

@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import py4j.Gateway;
+import py4j.JVMView;
 import py4j.Protocol;
 import py4j.Py4JException;
 import py4j.ReturnObject;
@@ -51,7 +52,7 @@ public class DirCommand extends AbstractCommand {
 	public static final String DIR_FIELDS_SUBCOMMAND_NAME = "f";
 	public static final String DIR_METHODS_SUBCOMMAND_NAME = "m";
 	public static final String DIR_STATIC_SUBCOMMAND_NAME = "s";
-
+	public static final String DIR_JVMVIEW_SUBCOMMAND_NAME = "v";
 
 	public DirCommand() {
 		this.commandName = DIR_COMMAND_NAME;
@@ -72,29 +73,37 @@ public class DirCommand extends AbstractCommand {
 			} else if (subCommand.equals(DIR_METHODS_SUBCOMMAND_NAME)) {
 				Object targetObject = gateway.getObject(param);
 				names = reflectionEngine.getPublicMethodNames(targetObject);
-			} else { // if (subCommand.equals(DIR_STATIC_SUBCOMMAND_NAME)) {
+			} else if (subCommand.equals(DIR_STATIC_SUBCOMMAND_NAME)) {
 				Class<?> clazz = TypeUtil.forName(param);
 				names = reflectionEngine.getPublicStaticNames(clazz);
+			} else { // if (subCommand.equals(DIR_JVMVIEW_SUBCOMMAND_NAME)) {
+				names = getJvmViewNames(param, reader);
 			}
 
 			// Read and discard end of command
 			reader.readLine();
 
-			StringBuilder namesJoinedBuilder = new StringBuilder();
-			for (String name : names) {
-				namesJoinedBuilder.append(name);
-				namesJoinedBuilder.append("\n");
-			}
-			final String namesJoined;
-			if (namesJoinedBuilder.length() > 0) {
-				namesJoined = namesJoinedBuilder.substring(0,
-						namesJoinedBuilder.length() - 1);
+			if (names == null) {
+				ReturnObject returnObject = gateway.getReturnObject(null);
+				returnCommand = Protocol.getOutputCommand(returnObject);
 			} else {
-				namesJoined = "";
-			}
+				StringBuilder namesJoinedBuilder = new StringBuilder();
+				for (String name : names) {
+					namesJoinedBuilder.append(name);
+					namesJoinedBuilder.append("\n");
+				}
+				final String namesJoined;
+				if (namesJoinedBuilder.length() > 0) {
+					namesJoined = namesJoinedBuilder.substring(0,
+							namesJoinedBuilder.length() - 1);
+				} else {
+					namesJoined = "";
+				}
 
-			ReturnObject returnObject = gateway.getReturnObject(namesJoined);
-			returnCommand = Protocol.getOutputCommand(returnObject);
+				ReturnObject returnObject = gateway
+						.getReturnObject(namesJoined);
+				returnCommand = Protocol.getOutputCommand(returnObject);
+			}
 		} catch (Exception e) {
 			returnCommand = Protocol.getOutputErrorCommand();
 		}
@@ -102,6 +111,30 @@ public class DirCommand extends AbstractCommand {
 		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
+	}
+
+	private String[] getJvmViewNames(String jvmId, BufferedReader reader)
+			throws IOException {
+		String lastSequenceIdString = (String) Protocol.getObject(
+				reader.readLine(), gateway);
+		final int lastSequenceId;
+		if (lastSequenceIdString == null) {
+			lastSequenceId = 0;
+		} else {
+			lastSequenceId = Integer.parseInt(lastSequenceIdString);
+		}
+
+		JVMView view = (JVMView) Protocol.getObject(jvmId, gateway);
+		int sequenceId = view.getSequenceId();
+		if (lastSequenceId == sequenceId) {
+			return null;
+		}
+
+		String[] importedNames = view.getImportedNames();
+		String[] returnValue = new String[importedNames.length + 1];
+		returnValue[0] = Integer.toString(sequenceId);
+		System.arraycopy(importedNames, 0, returnValue, 1, importedNames.length);
+		return returnValue;
 	}
 
 	@Override

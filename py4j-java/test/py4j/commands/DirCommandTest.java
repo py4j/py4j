@@ -29,6 +29,7 @@
 package py4j.commands;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -37,6 +38,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.After;
@@ -130,10 +132,80 @@ public class DirCommandTest {
 		assertEquals(ExampleClassStatics, methods);
 	}
 
+	private String createDirJvmViewCommand(String sequenceId) {
+		if (sequenceId == null) {
+			return "v\nr" + Protocol.DEFAULT_JVM_OBJECT_ID + "\nn\ne\n";
+		} else {
+			return "v\nr" + Protocol.DEFAULT_JVM_OBJECT_ID + "\ns" + sequenceId
+					+ "\ne\n";
+		}
+	}
+
+	@Test
+	public void testDirJvmView() throws Exception {
+		assertTrue(gateway.getBindings().containsKey(target));
+
+		// Initial case, empty contents
+		command.execute("d", new BufferedReader(new StringReader(
+				createDirJvmViewCommand(null))), writer);
+		JvmViewRet result = convertResponseJvmView(sWriter.toString());
+		sWriter.getBuffer().setLength(0);
+		assertEquals(new HashSet<String>(), result.names);
+
+		// Initial case, non-empty contents
+		gateway.getDefaultJVMView().addSingleImport("com.example.Class1");
+		gateway.getDefaultJVMView().addSingleImport("com.another.Class2");
+		command.execute("d", new BufferedReader(new StringReader(
+				createDirJvmViewCommand(null))), writer);
+		result = convertResponseJvmView(sWriter.toString());
+		sWriter.getBuffer().setLength(0);
+		String sequenceID = result.sequenceId;
+		assertEquals(new HashSet<String>(Arrays.asList("Class1", "Class2")),
+				result.names);
+
+		// Read again with sequence # we just received
+		command.execute("d", new BufferedReader(new StringReader(
+				createDirJvmViewCommand(sequenceID))), writer);
+		result = convertResponseJvmView(sWriter.toString());
+		sWriter.getBuffer().setLength(0);
+		assertNull(result);
+
+		// Add another with sequence # we received
+		gateway.getDefaultJVMView().addSingleImport("com.third.Class3");
+		command.execute("d", new BufferedReader(new StringReader(
+				createDirJvmViewCommand(sequenceID))), writer);
+		result = convertResponseJvmView(sWriter.toString());
+		sWriter.getBuffer().setLength(0);
+		assertEquals(
+				new HashSet<String>(Arrays.asList("Class1", "Class2", "Class3")),
+				result.names);
+	}
+
 	private Set<String> convertResponse(String protocolReturn) {
 		assertTrue(protocolReturn.startsWith("y"));
 		String fieldsJoined = (String) Protocol.getObject(
 				protocolReturn.substring(1), gateway);
 		return new HashSet<String>(Arrays.asList(fieldsJoined.split("\n")));
+	}
+
+	class JvmViewRet {
+		String sequenceId;
+		Set<String> names;
+	}
+
+	private JvmViewRet convertResponseJvmView(String protocolReturn) {
+		assertTrue(protocolReturn.startsWith("y"));
+		String fieldsJoined = (String) Protocol.getObject(
+				protocolReturn.substring(1), gateway);
+		if (fieldsJoined == null) {
+			return null;
+		}
+		List<String> list = Arrays.asList(fieldsJoined.split("\n"));
+		assertTrue(list.size() >= 1);
+		JvmViewRet ret = new JvmViewRet();
+		ret.sequenceId = list.get(0);
+		ret.names = new HashSet<String>();
+		ret.names.addAll(list.subList(1, list.size()));
+		return ret;
 	}
 }
