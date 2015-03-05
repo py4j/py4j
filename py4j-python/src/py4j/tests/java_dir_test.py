@@ -153,3 +153,10 @@ def test_dir_jvmview_two():
 
             eq_(sorted(dir(view1)), [UserHelpAutoCompletion.KEY, "Class1", "Class2", "Class3", "Class4"])
             eq_(sorted(dir(view2)), [UserHelpAutoCompletion.KEY, "Class1", "Class2", "Class3", "Class5"])
+
+def test_dir_package():
+    with example_app_process():
+        with gateway() as g:
+            eq_(sorted(dir(g.jvm)), [UserHelpAutoCompletion.KEY])
+            eq_(sorted(dir(g.jvm.java)), [UserHelpAutoCompletion.KEY])
+            eq_(sorted(dir(g.jvm.java.util)), [UserHelpAutoCompletion.KEY])
