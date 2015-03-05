@@ -983,6 +983,9 @@ class JavaPackage(object):
         if name == UserHelpAutoCompletion.KEY:
             return UserHelpAutoCompletion
 
+        if name in ['__str__', '__repr__']:
+            raise AttributeError
+
         if name == '__call__':
             raise Py4JError('Trying to call a package.')
         new_fqn = self._fqn + '.' + name
