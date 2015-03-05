@@ -976,7 +976,13 @@ class JavaPackage():
             self._jvm_id = DEFAULT_JVM_ID
         self._jvm_id = jvm_id
 
+    def __dir__(self):
+        return [UserHelpAutoCompletion.KEY]
+
     def __getattr__(self, name):
+        if name == UserHelpAutoCompletion.KEY:
+            return UserHelpAutoCompletion
+
         if name == '__call__':
             raise Py4JError('Trying to call a package.')
         new_fqn = self._fqn + '.' + name
