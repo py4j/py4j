@@ -1,4 +1,4 @@
-from py4j.java_gateway import JavaGateway
+from py4j.java_gateway import JavaGateway, CallbackServerParameters
 
 
 class FalseAddition(object):
@@ -14,7 +14,7 @@ class FalseAddition(object):
 
 
 if __name__ == "__main__":
-    java_gateway = JavaGateway(start_callback_server=True)
+    java_gateway = JavaGateway(CallbackServerParameters())
     operator = FalseAddition()
     print('Before the call')
     try:

@@ -1,7 +1,7 @@
 Download Py4J
 =============
 
-You can download Py4J by using easy_install: ``easy_install py4j``
+You can download Py4J by using pip, ``pip install py4j``, or easy_install, ``easy_install py4j``.
 
 Alternatively, you can download the latest version of Py4J from `PyPI <http://pypi.python.org/pypi/py4j>`_ or
 `SourceForge <https://sourceforge.net/projects/py4j/files/>`_.
@@ -21,13 +21,13 @@ Requirements
 
 Py4J requires:
 
-* A Python interpreter. Py4J has been tested with CPython 2.6, CPython 2.7, and
-  CPython 3.3.
-* Java 6.0.
+* A Python interpreter. Py4J has been tested with CPython 2.6, 2.7, and
+  CPython 3.4.
+* Java 6.0+.
 
 Py4J for Eclipse requires:
 
 * Eclipse 3.6 (Eclipse 3.4 and 3.5 should probably work)
-* Java 6.0
+* Java 6.0+
 
 If you would like a particular version of Python or Java to be supported, fill an `enhancement request <https://sourceforge.net/apps/trac/py4j/newticket>`_.

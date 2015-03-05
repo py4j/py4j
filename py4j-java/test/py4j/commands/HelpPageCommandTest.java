@@ -28,7 +28,6 @@
  *******************************************************************************/
 package py4j.commands;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -42,6 +41,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import py4j.Gateway;
+import py4j.examples.ExampleClass;
 import py4j.examples.ExampleEntryPoint;
 
 public class HelpPageCommandTest {
@@ -78,7 +78,9 @@ public class HelpPageCommandTest {
 					inputCommand)), writer);
 			String page = sWriter.toString();
 			System.out.println(page);
-			assertEquals(1531, page.length());
+			assertTrue(page.length() > 1);
+			assertTrue(page.contains("method1"));
+			assertTrue(page.contains("getField1"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -94,7 +96,27 @@ public class HelpPageCommandTest {
 					inputCommand)), writer);
 			String page = sWriter.toString();
 			System.out.println(page);
-			assertEquals(1104, page.length());
+			assertTrue(page.length() > 1);
+			assertTrue(page.contains("method1"));
+			assertTrue(!page.contains("getField1"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
+	public void testHelpObjectWithPattern2() {
+		String inputCommand = "o\n" + target + "\nsgetField1(*\ntrue\ne\n";
+		try {
+			assertTrue(gateway.getBindings().containsKey(target));
+			command.execute("h", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			String page = sWriter.toString();
+			System.out.println(page);
+			assertTrue(page.length() > 1);
+			assertTrue(!page.contains("method1"));
+			assertTrue(page.contains("getField1"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -103,17 +125,38 @@ public class HelpPageCommandTest {
 
 	@Test
 	public void testHelpClass() {
-		String inputCommand = "c\njava.lang.String\nn\ntrue\ne\n";
+		String inputCommand = "c\n" + ExampleClass.class.getName() + "\nn\ntrue\ne\n";
 		try {
 			assertTrue(gateway.getBindings().containsKey(target));
 			command.execute("h", new BufferedReader(new StringReader(
 					inputCommand)), writer);
 			String page = sWriter.toString();
 			System.out.println(page);
-			assertEquals(3588, page.length());
+			assertTrue(page.length() > 1);
+			assertTrue(page.contains("method1"));
+			assertTrue(page.contains("getField1"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
 		}
 	}
+
+	@Test
+	public void testHelpClassPattern() {
+		String inputCommand = "c\n" + ExampleClass.class.getName() + "\nsm*\ntrue\ne\n";
+		try {
+			assertTrue(gateway.getBindings().containsKey(target));
+			command.execute("h", new BufferedReader(new StringReader(
+					inputCommand)), writer);
+			String page = sWriter.toString();
+			System.out.println(page);
+			assertTrue(page.length() > 1);
+			assertTrue(page.contains("method1"));
+			assertTrue(!page.contains("getField1"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
 }

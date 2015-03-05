@@ -16,9 +16,9 @@ scp Py4J-0.4.zip barthe,py4j@frs.sourceforge.net:/home/frs/project/p/py/py4j/0.4
 9. upload to PyPI
 10. ant deploy-website
 11. mvn package javadoc:jar source:jar
-12. create signature
+12. create signature for the three jar files and the pom (gpg -b --armor py4j-....jar)
 13. jar -cvf bundle.jar pom.xml ... (all files)
-14. create staging release in central
+14. create staging release in central (https://oss.sonatype.org Staging Upload, Upload Bundle)
 15. close release
 16. publish release
 17. close all bugs on github

@@ -3,8 +3,25 @@ Changelog
 
 The changelog describes in plain English the changes that occurred between Py4J releases.
 
+Py4J 0.8.2.1
+------------
+
+- Fixed a test that used an assert method that does not exist in Python 2.6
+
+Py4J 0.8.2
+----------
+
+- Fixed constructors not being able to pass proxy (python classes implementing
+  Java interfaces)
+- Java 6 compatibility was restored in compiled jar file.
+- Fixed unit tests for JDK 8
+- Added a few extra paths to find_jar_path
+- `github 0.8.2 milestone
+  <https://github.com/bartdag/py4j/issues?milestone=11&state=closed>`_
+
+
 Py4J 0.8.1
---------
+----------
 
 - Fixed a bug in type inference when interface hierarchy is deeper than
   abstract class hierarchy.

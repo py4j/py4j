@@ -3,12 +3,12 @@
 Installing Py4J
 ===============
 
-Installing Python 2.6+ or 3.3+
-------------------------------
+Installing Python 2.6+ or 3.4
+-----------------------------
 
 Py4J is a library written in Python and Java. Currently, Py4J has been tested
-with Python 2.6, 2.7, and 3.3, but it should also be compatible with Python 3.1
-and 3.2. You can install Python by going to the `official Python download page
+with Python 2.6, 2.7, and 3.4, but it should also be compatible with Python 3.3.
+You can install Python by going to the `official Python download page
 <http://www.python.org/download/>`_.
 
 
@@ -28,11 +28,12 @@ Installing Py4J
 
 There are three ways to install Py4J:
 
-Using easy_install
-^^^^^^^^^^^^^^^^^^
+Using easy_install or pip
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. Run ``easy_install py4j`` (don't forget to prefix with sudo if you install
-   Py4J system-wide on a \*NIX operating system).
+1. Run ``pip install py4j`` or ``easy_install py4j`` (don't forget
+   to prefix with sudo if you install Py4J system-wide on a
+   \*NIX operating system).
 2. Py4J should now be in your PYTHONPATH.
 3. The Py4J Java library is located in ``share/py4j/py4j0.x.jar``. The exact
    location depends on the platform and the installation type. Some likely
@@ -62,8 +63,10 @@ Using an official release
 Using the latest development source code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We will provide detailed instructions to build Py4J in future releases.
-Briefly, you need:
+You can install the latest version with pip and git:
+``pip install git+https://github.com/bartdag/py4j.git``
+
+Otherwise, to build the Java and Python libraries, you need:
 
 1. `Git <http://git-scm.com/>`_ to download the latest source code.
    Execute the command line ``git clone https://github.com/bartdag/py4j.git

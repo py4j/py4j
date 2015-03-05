@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import py4j.reflection.TypeUtil;
 
@@ -63,6 +64,15 @@ public class JVMView {
 
 	private String id;
 
+	/**
+	 * Running count of changes to the view so that we know whether we need to
+	 * rebuild info.
+	 *
+	 * The sequenceId should be incremented for every change made that is
+	 * visible in getImportedNames.
+	 */
+	private AtomicInteger sequenceId = new AtomicInteger(1);
+
 	public final static String JAVA_LANG_STAR_IMPORT = "java.lang";
 
 	public JVMView(String name, String id) {
@@ -84,6 +94,7 @@ public class JVMView {
 	public void addSingleImport(String singleImport) {
 		String simpleName = TypeUtil.getName(singleImport, true);
 		singleImportsMap.putIfAbsent(simpleName, singleImport);
+		sequenceId.incrementAndGet();
 	}
 
 	/**
@@ -102,6 +113,7 @@ public class JVMView {
 		this.singleImportsMap.clear();
 		this.starImports.clear();
 		this.starImports.add(JAVA_LANG_STAR_IMPORT);
+		sequenceId.incrementAndGet();
 	}
 
 	public String getId() {
@@ -128,12 +140,14 @@ public class JVMView {
 		boolean removed = false;
 		String simpleName = TypeUtil.getName(importString, true);
 		removed = singleImportsMap.remove(simpleName, importString);
+		sequenceId.incrementAndGet();
 		return removed;
 	}
 
 	public boolean removeStarImport(String starImport) {
 		String packageName = TypeUtil.getPackage(starImport);
-		return starImports.remove(packageName);
+		boolean result = starImports.remove(packageName);
+		return result;
 	}
 
 	public void setId(String id) {
@@ -142,6 +156,27 @@ public class JVMView {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/**
+	 * Return the current list of imports known to this view.
+	 * @return list of class simple names.
+	 */
+	public String[] getImportedNames() {
+		Set<String> namesSet = singleImportsMap.keySet();
+		return (String[]) namesSet.toArray(new String[namesSet.size()]);
+	}
+
+	/**
+	 * Sequence ID for getImportedNames(). The sequence ID can be compared to a
+	 * previous call to determine if getImportedNames() will return a different
+	 * value. The sequence ID is changed after the contents of
+	 * getImportedNames() changes.
+	 *
+	 * @return sequence ID
+	 */
+	public int getSequenceId() {
+		return sequenceId.get();
 	}
 
 }

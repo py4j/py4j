@@ -1,22 +1,22 @@
 from distutils.core import setup
 import os
 
-DOC_DIR = 'doc'
-DIST_DIR = 'dist'
+DOC_DIR = 'py4j-python/doc'
+DIST_DIR = 'py4j-python/dist'
 # For Python 3 compatibility, we can't use execfile; this is 2to3's conversion:
-exec(compile(open("src/py4j/version.py").read(),
-     "src/py4j/version.py", 'exec'))
+exec(compile(open("py4j-python/src/py4j/version.py").read(),
+     "py4j-python/src/py4j/version.py", 'exec'))
 VERSION = __version__
 RELEASE = 'py4j-' + VERSION
 JAR_FILE = 'py4j' + VERSION + '.jar'
 # Note: please do "ant python-light-release" before doing setup.py sdist.
 # Otherwise the jar files won't be created
-JAR_FILE_PATH = os.path.join('py4j-java', JAR_FILE)
+JAR_FILE_PATH = os.path.join('current-release', JAR_FILE)
 
 setup(
     name="py4j",
     packages=['py4j', 'py4j.tests'],
-    package_dir={'': 'src'},
+    package_dir={'': 'py4j-python/src'},
     data_files=[('share/py4j', [JAR_FILE_PATH])],
     version=VERSION,
     description='Enables Python programs to dynamically access arbitrary '
@@ -48,4 +48,5 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Object Brokering',
     ],
+
 )

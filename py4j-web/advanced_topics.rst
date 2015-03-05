@@ -18,7 +18,7 @@ java.util.Map       MutableMapping         :class:`JavaMap <py4j.java_collection
 java.util.Iterator  *Iterator Protocol*    :class:`JavaIterator <py4j.java_collections.JavaIterator>`
 =================== ====================== ==========================================================
 
-.. [#arraynote] Py4J allows elements to be modified (like a real Java array), which is not the case of true 
+.. [#arraynote] Py4J allows elements to be modified (like a real Java array), which is not the case of true
    immutable sequences like tuples.
 
 Java methods are still accessible when using the Python version of a Java
@@ -42,8 +42,8 @@ Array
   ...
   IndexError: list index out of range
   >>> for i in int_array:
-  ...     print(i) 
-  ... 
+  ...     print(i)
+  ...
   1
   2
   >>> sarray = gateway.new_array(gateway.jvm.java.lang.String,2,3)
@@ -67,8 +67,8 @@ List
   >>> l.append(1) # calling Python interface
   >>> l.add('hello') # calling Java interface
   >>> for elem in l:
-  ...     print elem 
-  ... 
+  ...     print elem
+  ...
   1
   hello
   >>> l[0] = 2
@@ -106,7 +106,7 @@ Set
 Map
 ^^^
 
-:: 
+::
 
   >>> m = gateway.jvm.java.util.HashMap()
   >>> m["a"] = 0
@@ -121,7 +121,7 @@ Map
   >>> m["c"] = 2
   >>> for key in m:
   ...     print("%s:%i" % (key,m[key]))
-  ... 
+  ...
   b:1
   c:2
 
@@ -142,7 +142,7 @@ access to a byte required a call between the Python and the Java interpreter
 In summary:
 
 * If from Java, you return a byte[], Py4J will convert the byte[] to a
-  bytearray (Python 2.x) or bytes (Python 3.x) variable in Python. 
+  bytearray (Python 2.x) or bytes (Python 3.x) variable in Python.
 
 * If from Python, you pass a bytearray or bytes variable to the Java side,
   Py4J will convert it to a byte[].
@@ -191,7 +191,7 @@ Here is the code of the main Java program:
 		  numbers.add(op.doOperation(numbers.get(0), numbers.get(1)));
 		  return numbers;
 	  }
-	  
+
 	  public List<Integer> randomTernaryOperator(Operator op) {
 		  Random random = new Random();
 		  List<Integer> numbers = new ArrayList<Integer>();
@@ -201,7 +201,7 @@ Here is the code of the main Java program:
 		  numbers.add(op.doOperation(numbers.get(0), numbers.get(1), numbers.get(2)));
 		  return numbers;
 	  }
-	  
+
 	  public static void main(String[] args) {
 		  GatewayServer server = new GatewayServer(new OperatorExample());
 		  server.start();
@@ -224,9 +224,9 @@ declaration of `Operator`:
   public interface Operator {
 
 	  public int doOperation(int i, int j);
-	  
+
 	  public int doOperation(int i, int j, int k);
-	  
+
   }
 
 
@@ -243,12 +243,14 @@ Operator in Python. Here is his little Python program:
 	      return i + j
 	  else:
 	      return i + j + k
-	  
+
       class Java:
 	  implements = ['py4j.examples.Operator']
 
   if __name__ == '__main__':
-      gateway = JavaGateway(start_callback_server=True)
+      # The callback server parameters is optional, but it tells to start the
+      # callback server automatically.
+      gateway = JavaGateway(CallbackServerParameters())
       operator = Addition()
       numbers = gateway.entry_point.randomBinaryOperator(operator)
       print(numbers)
@@ -282,8 +284,8 @@ callback server must be started manually by calling
 :func:`restart_callback_server
 <py4j.java_gateway.JavaGateway.restart_callback_server>`
 
-.. warning:: 
-   
+.. warning::
+
    Python classes can only implement Java interfaces. Abstract or concrete
    classes are not supported because Java does not natively support dynamic
    proxies for classes. Extending classes may be supported in future releases
@@ -296,8 +298,8 @@ callback server must be started manually by calling
 
 .. warning::
 
-   If you want to implement an interface declared in a class (i.e., an 
-   internal class), you need to prefix the name of the interface with 
+   If you want to implement an interface declared in a class (i.e., an
+   internal class), you need to prefix the name of the interface with
    a dollar sign. For example, if the interface `Operator` is declared
    in the class `package1.MyClass`, you will have to write:
 
@@ -346,7 +348,7 @@ collections to Java Collections when calling a Java method: just set
 
 ::
 
-  >>> gateway = JavaGateway(auto_convert=True)
+  >>> gateway = JavaGateway(GatewayParameters(auto_convert=True))
   >>> my_list
   [3, 2, 1]
   >>> gateway.jvm.java.util.Collections.sort(my_list)
@@ -358,7 +360,7 @@ collections to Java Collections when calling a Java method: just set
 Again, note that my_list is not sorted because when calling
 `Collections.sort()`, Py4J only makes a copy of the Python list. Still, a copy
 can be useful if you do not expect the list to be modified by the Java method
-like in the call to ``frequency()``. 
+like in the call to ``frequency()``.
 
 **Order of Automatic Conversion**
 
@@ -442,8 +444,8 @@ The recommended way to use import statements is to use one :class:`JVMView
 <py4j.java_gateway.JVMView>` instance per Python module. Here is an example on
 how to create and use a `JVMView`:
 
-::  
-  
+::
+
   >>> module1_view = gateway.new_jvm_view()
   >>> module2_view = gateway.new_jvm_view()
   >>> jList2 = module1_view.ArrayList()
@@ -471,12 +473,12 @@ Using Py4J with Eclipse
 Py4J can be used with Eclipse like any normal Java program. A plug-in needs to
 instantiate and start a GatewayServer. By default, the GatewayServer will only
 be able to access the classes declared in the plug-in or one of its
-dependencies. 
+dependencies.
 
 Unless they have specific needs, users are encouraged to use the Eclipse
 plug-ins provided by Py4J available on the following update site:
 
-``http://py4j.sourceforge.net/py4j_eclipse`` 
+``http://py4j.sourceforge.net/py4j_eclipse``
 
 The first plug-in, `net.sf.py4j`, provides all the Py4J Java classes such as
 `GatewayServer`. The plug-in comes with the source and the javadoc. The plug-in
@@ -511,19 +513,19 @@ Here is a short example of what you could do with Py4J and Eclipse:
   Help on class WorkspaceRoot in package org.eclipse.core.internal.resources:
 
   WorkspaceRoot extends org.eclipse.core.internal.resources.Container implements org.eclipse.core.resources.IWorkspaceRoot {
-  |  
+  |
   |  Methods defined here:
-  |  
+  |
   |  getProjects() : IProject[]
-  |  
+  |
   |  getProjects(int) : IProject[]
-  |  
+  |
   |  ------------------------------------------------------------
   |  Fields defined here:
-  |  
+  |
   |  ------------------------------------------------------------
   |  Internal classes defined here:
-  |  
+  |
   }
   >>> project_names = [project.getName() for project in workspace_root.getProjects()]
   >>> print(project_names)

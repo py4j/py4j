@@ -152,7 +152,7 @@
     var _gaq = _gaq || [];
     _gaq.push(['_setAccount', 'UA-18626179-1']);
     _gaq.push(['_trackPageview']);
-  
+
     (function() {
       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
       ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
@@ -189,25 +189,6 @@
 						<li>If you notice errors with this documentation, <a href="https://github.com/bartdag/py4j/issues">open a ticket</a> and let us know. Please, only open a ticket for feedback or improvements on the docs. To get help, use the links above!</li>
 					</ul>
 				</div>
-				<script type="text/javascript">  var disqus_developer = 0; </script> 
-                                  <div id="disqus_thread"></div>
-                                      <script type="text/javascript">
-                                          /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-                                          var disqus_shortname = 'py4j'; // required: replace example with your forum shortname
-
-                                          // The following are highly recommended additional parameters. Remove the slashes in front to use.
-                                          var disqus_identifier = '{{ pagename }}';
-                                          //var disqus_url = '{{ pathto(pagename) }}'
-
-                                          /* * * DON'T EDIT BELOW THIS LINE * * */
-                                          (function() {
-                                              var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-                                              dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
-                                              (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-                                          })();
-                                      </script>
-                                      <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-                                      <a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a> 
 				{% endif %}
 		  {%- endblock %}
       {%- if not embedded %}{% if not theme_nosidebar|tobool %}
@@ -240,24 +221,7 @@
     </div>
 {%- endblock %}
   </div>
-  
-  {% if pagename not in ['index','download','about'] %}
-  <script type="text/javascript">
-      //<![CDATA[
-      (function(){
-          var links = document.getElementsByTagName('a');
-          var query = '?';
-          for (var i = 0; i < links.length; i++) {
-              if (links[i].href.indexOf('#disqus_thread') >= 0) {
-                  query += 'url' + i + '=' + encodeURIComponent(links[i].href) + '&';
-              }
-          }
-          document.write('<script charset="utf-8" type="text/javascript" src="http://disqus.com/forums/py4j/get_num_replies.js' + query + '"></' + 'script>');
-      })();
-      //]]>
-  </script>
-  {% endif %}
   </body>
-  
+
 
 </html>

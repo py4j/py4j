@@ -112,12 +112,14 @@ public class MethodInvoker {
 			// Deal with converting enums
 			} else if (parameters[i].isEnum() && arguments[i].isAssignableFrom(String.class)) {
 				tempCost = 0;
-				converters.add(new TypeConverter((Class<Enum>)parameters[i]));
-			
-			// Deal with varargs if we are 
+				@SuppressWarnings("unchecked")
+				Class<? extends Enum<?>> enumClazz = (Class<? extends Enum<?>>)parameters[i];
+				converters.add(new TypeConverter(enumClazz));
+
+			// Deal with varargs if we are
 			} else if (isVarArgs(exec) && i == parameters.length-1) { // If we are the last argument and varargs, it can be an array
 				// Maybe the rest of the arguments are varargs?
-				Class arrayClass = parameters[i].getComponentType();
+				Class<?> arrayClass = parameters[i].getComponentType();
 				boolean varArgsOk = false;
 				for (int j = i; j<arguments.length;++j) {
 					if (arrayClass.isAssignableFrom(arguments[j])) {
@@ -227,6 +229,20 @@ public class MethodInvoker {
 		return converters;
 	}
 
+	public Constructor<?> getConstructor() {
+		if (executable instanceof Constructor) {
+			return (Constructor<?>)executable;
+		}
+		return null;
+	}
+
+	public Method getMethod() {
+		if (executable instanceof Method) {
+			return (Method)executable;
+		}
+		return null;
+	}
+
 	public int getCost() {
 		return cost;
 	}
@@ -256,7 +272,7 @@ public class MethodInvoker {
 			if (executable instanceof Method) {
 				returnObject = ((Method)executable).invoke(obj, newArguments);
 			} else if (executable instanceof Constructor) {
-				returnObject = ((Constructor)executable).newInstance(newArguments);
+				returnObject = ((Constructor<?>)executable).newInstance(newArguments);
 			}
 		} catch (InvocationTargetException ie) {
 			logger.log(Level.WARNING, "Exception occurred in client code.", ie);
@@ -274,11 +290,11 @@ public class MethodInvoker {
 
 
 	private static boolean isVarArgs(AccessibleObject exec) {
-		return exec instanceof Method ? ((Method)exec).isVarArgs() : ((Constructor)exec).isVarArgs();
+		return exec instanceof Method ? ((Method)exec).isVarArgs() : ((Constructor<?>)exec).isVarArgs();
 	}
 
 	private static Class<?>[] getParameterTypes(AccessibleObject exec) {
-		return exec instanceof Method ? ((Method)exec).getParameterTypes() : ((Constructor)exec).getParameterTypes();
+		return exec instanceof Method ? ((Method)exec).getParameterTypes() : ((Constructor<?>)exec).getParameterTypes();
 	}
 
 	private int getParameterCount(AccessibleObject exec) {

@@ -229,6 +229,9 @@ public class TypeUtil {
 		}
 	}
 
+	/**
+	 * @deprecated Always use an explicit class loader
+	 */
 	public static Class<?> forName(String fqn) throws ClassNotFoundException {
 		return forName(fqn, (ClassLoader) null);
 	}
@@ -241,6 +244,9 @@ public class TypeUtil {
 		return clazz;
 	}
 
+	/**
+	 * @deprecated Always use an explicit class loader
+	 */
 	public static Class<?> forName(String fqn, JVMView view) throws ClassNotFoundException {
 		return forName(fqn, view, null);
 	}
@@ -258,6 +264,9 @@ public class TypeUtil {
 		return clazz;
 	}
 
+	/**
+	 * @deprecated Always use an explicit class loader
+	 */
 	public static Class<?> getClass(String simpleName, JVMView view) throws ClassNotFoundException {
 		return getClass(simpleName, view, null);
 	}

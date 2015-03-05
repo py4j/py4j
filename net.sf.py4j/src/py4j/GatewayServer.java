@@ -60,7 +60,7 @@ import py4j.commands.Command;
  *
  * <p>
  * The
- * <code>entryPoint</entry> passed to a GatewayServer can be accessed with the <code>entry_point</code>
+ * <code>entryPoint</code> passed to a GatewayServer can be accessed with the <code>entry_point</code>
  * member:
  * </p>
  *
