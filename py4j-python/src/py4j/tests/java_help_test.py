@@ -54,3 +54,21 @@ def test_not_callable():
                 raise AssertionError
             except TypeError, e:
                 assert_in('object is not callable', str(e))
+
+def test_help_pattern_1():
+    with example_app_process():
+        with gateway() as g:
+            ex = g.getNewExample()
+            doc = g.help(ex, display=False, pattern="m*")
+            assert_in('Help on class ExampleClass in package py4j.examples', doc)
+            assert_in('method1', doc)
+            assert_not_in('getField1', doc)
+
+def test_help_pattern_2():
+    with example_app_process():
+        with gateway() as g:
+            ex = g.getNewExample()
+            doc = g.help(ex, display=False, pattern="getField1(*")
+            assert_in('Help on class ExampleClass in package py4j.examples', doc)
+            assert_not_in('method1', doc)
+            assert_in('getField1', doc)
