@@ -60,6 +60,13 @@ public abstract class AbstractCommand implements Command {
 	private final Logger logger = Logger.getLogger(AbstractCommand.class
 			.getName());
 
+	protected ClassLoader loader = null;
+
+	@Override
+	public void setClassLoader(ClassLoader loader) {
+		this.loader  = loader;
+	}
+
 	@Override
 	public abstract void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException;

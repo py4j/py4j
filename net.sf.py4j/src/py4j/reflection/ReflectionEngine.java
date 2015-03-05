@@ -76,7 +76,7 @@ public class ReflectionEngine {
 
 	private Class<?> getClass(String classFQN) {
 		try {
-			return loader != null ? loader.loadClass(classFQN) : Class.forName(classFQN);
+			return TypeUtil.forName(classFQN, loader);
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
 					e);

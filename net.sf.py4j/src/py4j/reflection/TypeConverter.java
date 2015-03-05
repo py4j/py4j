@@ -29,8 +29,6 @@
 package py4j.reflection;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <p>
@@ -54,7 +52,8 @@ public class TypeConverter {
 	public final static int VAR_ARGS = 6;
 
 	private final int conversion;
-	private Class enumClazz;
+
+	private Class<? extends Enum<?>> enumClazz;
 
 	public final static TypeConverter NO_CONVERTER = new TypeConverter();
 	public final static TypeConverter FLOAT_CONVERTER = new TypeConverter(
@@ -78,7 +77,7 @@ public class TypeConverter {
 	public TypeConverter(int conversion) {
 		this.conversion = conversion;
 	}
-	public TypeConverter(Class<?> enumClazz) {
+	public TypeConverter(Class<? extends Enum<?>> enumClazz) {
 		this.enumClazz = enumClazz;
 		this.conversion = STRING_TO_ENUM;
 	}
@@ -108,7 +107,15 @@ public class TypeConverter {
 			break;
 			
 		case STRING_TO_ENUM:
-			newObject = Enum.valueOf(enumClazz, (String)obj);
+			// enumClazz has two wildcards that we know are the same, but
+			// the compiler doesn't. So break down the assignement in steps
+			// to first remove the second wild card (rawtypes), then to
+			// assign it back in (unchecked)
+			@SuppressWarnings("rawtypes")
+			Class<? extends Enum> c = enumClazz;
+			@SuppressWarnings("unchecked")
+			Enum<?> e = Enum.valueOf(c, (String)obj);
+			newObject = e;
 			break;
 
 		}

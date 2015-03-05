@@ -120,6 +120,12 @@ public class GatewayConnection implements Runnable {
 	public GatewayConnection(Gateway gateway, Socket socket,
 			List<Class<? extends Command>> customCommands,
 			List<GatewayServerListener> listeners) throws IOException {
+		this(gateway, socket, customCommands, listeners, null);
+	}
+
+	public GatewayConnection(Gateway gateway, Socket socket,
+			List<Class<? extends Command>> customCommands,
+			List<GatewayServerListener> listeners, final ClassLoader loader) throws IOException {
 		super();
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(
@@ -127,9 +133,9 @@ public class GatewayConnection implements Runnable {
 		this.writer = new BufferedWriter(new OutputStreamWriter(
 				socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String, Command>();
-		initCommands(gateway, baseCommands);
+		initCommands(gateway, baseCommands, loader);
 		if (customCommands != null) {
-			initCommands(gateway, customCommands);
+			initCommands(gateway, customCommands, loader);
 		}
 		this.listeners = listeners;
 		Thread t = new Thread(this);
@@ -164,11 +170,12 @@ public class GatewayConnection implements Runnable {
 	 * @param gateway
 	 */
 	protected void initCommands(Gateway gateway,
-			List<Class<? extends Command>> commandsClazz) {
+			List<Class<? extends Command>> commandsClazz, ClassLoader loader) {
 		for (Class<? extends Command> clazz : commandsClazz) {
 			try {
 				Command cmd = clazz.newInstance();
 				cmd.init(gateway);
+				cmd.setClassLoader(loader);
 				commands.put(cmd.getCommandName(), cmd);
 			} catch (Exception e) {
 				String name = "null";
