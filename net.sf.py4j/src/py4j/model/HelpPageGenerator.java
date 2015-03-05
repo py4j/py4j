@@ -110,6 +110,7 @@ public class HelpPageGenerator {
 			builder.append(DOUBLE_LINES);
 		}
 		builder.append("}");
+		builder.append("\n");
 		return builder.toString();
 	}
 
@@ -123,6 +124,7 @@ public class HelpPageGenerator {
 		builder.append(PREFIX_INDENT);
 		builder.append(method.getSignature(shortName));
 		builder.append("\n}");
+		builder.append("\n");
 		return builder.toString();
 	}
 
