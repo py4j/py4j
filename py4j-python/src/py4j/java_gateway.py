@@ -842,6 +842,7 @@ class JavaClass():
         self._command_header = fqn + '\n'
         self._converters = self._gateway_client.converters
         self._gateway_doc = None
+        self._statics = None
 
     @property
     def __doc__(self):
@@ -850,6 +851,20 @@ class JavaClass():
         if self._gateway_doc is None:
             self._gateway_doc = gateway_help(self._gateway_client, self, display=False)
         return self._gateway_doc
+
+
+    def __dir__(self):
+        if self._statics is None:
+            command = DIR_COMMAND_NAME +\
+                DIR_STATIC_SUBCOMMAND_NAME +\
+                self._fqn + '\n' +\
+                END_COMMAND_PART
+
+            answer = self._gateway_client.send_command(command)
+            return_value = get_return_value(answer, self._gateway_client,
+                    self._fqn, "__dir__")
+            self._statics = return_value.split('\n')
+        return self._statics[:]
 
     def __getattr__(self, name):
         if name in ['__str__', '__repr__']:

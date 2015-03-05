@@ -39,6 +39,7 @@ import py4j.Protocol;
 import py4j.Py4JException;
 import py4j.ReturnObject;
 import py4j.reflection.ReflectionEngine;
+import py4j.reflection.TypeUtil;
 
 public class DirCommand extends AbstractCommand {
 
@@ -49,6 +50,8 @@ public class DirCommand extends AbstractCommand {
 	public static final String DIR_COMMAND_NAME = "d";
 	public static final String DIR_FIELDS_SUBCOMMAND_NAME = "f";
 	public static final String DIR_METHODS_SUBCOMMAND_NAME = "m";
+	public static final String DIR_STATIC_SUBCOMMAND_NAME = "s";
+
 
 	public DirCommand() {
 		this.commandName = DIR_COMMAND_NAME;
@@ -58,31 +61,44 @@ public class DirCommand extends AbstractCommand {
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
 		String subCommand = reader.readLine();
-		Object targetObject = gateway.getObject(reader.readLine());
-		final String[] names;
-		if (subCommand.equals(DIR_FIELDS_SUBCOMMAND_NAME)) {
-			names = reflectionEngine.getPublicFieldNames(targetObject);
-		} else { // if (subCommand.equals(DIR_METHODS_SUBCOMMAND_NAME))
-			names = reflectionEngine.getPublicMethodNames(targetObject);
+
+		String param = reader.readLine();
+		String returnCommand;
+		try {
+			final String[] names;
+			if (subCommand.equals(DIR_FIELDS_SUBCOMMAND_NAME)) {
+				Object targetObject = gateway.getObject(param);
+				names = reflectionEngine.getPublicFieldNames(targetObject);
+			} else if (subCommand.equals(DIR_METHODS_SUBCOMMAND_NAME)) {
+				Object targetObject = gateway.getObject(param);
+				names = reflectionEngine.getPublicMethodNames(targetObject);
+			} else { // if (subCommand.equals(DIR_STATIC_SUBCOMMAND_NAME)) {
+				Class<?> clazz = TypeUtil.forName(param);
+				names = reflectionEngine.getPublicStaticNames(clazz);
+			}
+
+			// Read and discard end of command
+			reader.readLine();
+
+			StringBuilder namesJoinedBuilder = new StringBuilder();
+			for (String name : names) {
+				namesJoinedBuilder.append(name);
+				namesJoinedBuilder.append("\n");
+			}
+			final String namesJoined;
+			if (namesJoinedBuilder.length() > 0) {
+				namesJoined = namesJoinedBuilder.substring(0,
+						namesJoinedBuilder.length() - 1);
+			} else {
+				namesJoined = "";
+			}
+
+			ReturnObject returnObject = gateway.getReturnObject(namesJoined);
+			returnCommand = Protocol.getOutputCommand(returnObject);
+		} catch (Exception e) {
+			returnCommand = Protocol.getOutputErrorCommand();
 		}
 
-		// Read and discard end of command
-		reader.readLine();
-
-		StringBuilder namesJoinedBuilder = new StringBuilder();
-		for (String name : names) {
-			namesJoinedBuilder.append(name);
-			namesJoinedBuilder.append("\n");
-		}
-		final String namesJoined;
-		if (namesJoinedBuilder.length() > 0) {
-			namesJoined = namesJoinedBuilder.substring(0, namesJoinedBuilder.length() - 1);
-		} else {
-			namesJoined = "";
-		}
-
-		ReturnObject returnObject = gateway.getReturnObject(namesJoined);
-		String returnCommand = Protocol.getOutputCommand(returnObject);
 		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();

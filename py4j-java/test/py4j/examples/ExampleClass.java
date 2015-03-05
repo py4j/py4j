@@ -175,4 +175,8 @@ public class ExampleClass {
 	public static int static_method() {
 		return 0;
 	}
+
+	public static class StaticClass {
+
+	}
 }

@@ -47,6 +47,12 @@ ExampleClassMethods = sorted([
                       "wait"
                       ])
 
+ExampleClassStatics = sorted([
+                              "StaticClass",
+                              "static_field",
+                              "static_method"
+                              ])
+
 @contextmanager
 def example_app_process():
     p = start_example_app_process()
@@ -103,3 +109,9 @@ def test_dir_object_shows_manually_called_before_dir():
                 pass
             # Make sure the manually called method now shows up
             eq_(sorted(dir(ex)), sorted(ExampleClassMethods + ['does_not_exist_in_example']))
+
+def test_dir_class():
+    with example_app_process():
+        with gateway() as g:
+            exclass = g.jvm.py4j.examples.ExampleClass
+            eq_(sorted(dir(exclass)), ExampleClassStatics)
