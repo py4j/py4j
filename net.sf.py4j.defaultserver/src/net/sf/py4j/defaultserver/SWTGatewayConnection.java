@@ -15,7 +15,7 @@ import py4j.commands.Command;
 
 public class SWTGatewayConnection extends GatewayConnection {
 	
-	private final Logger logger = Logger.getLogger(SWTGatewayConnection.class.getName());
+	private final static Logger logger = Logger.getLogger(SWTGatewayConnection.class.getName());
 
 	public SWTGatewayConnection(Gateway gateway, Socket socket,
 			List<Class<? extends Command>> customCommands,

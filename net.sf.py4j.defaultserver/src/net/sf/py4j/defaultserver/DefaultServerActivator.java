@@ -10,7 +10,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
+import py4j.ClassLoaderService;
 import py4j.GatewayServer;
 
 public class DefaultServerActivator extends AbstractUIPlugin {
@@ -37,18 +39,17 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 		DefaultServerActivator.context = bundleContext;
 		activator = this;
 
-		final boolean enabled = getPreferenceStore().getBoolean(
-				PreferenceConstants.PREF_PY4J_ACTIVE);
-		if (!enabled)
-			return;
+		final boolean enabled = getPreferenceStore().getBoolean(PreferenceConstants.PREF_PY4J_ACTIVE);
+		boolean override = Boolean.getBoolean(PreferenceConstants.PREF_PY4J_ACTIVE); // They can override the default using -DPREF_PY4J_ACTIVE=...
+		if (!enabled && !override) return;
 
-		int defaultPort = getPreferenceStore().getInt(
-				PreferenceConstants.PREF_DEFAULT_PORT);
-		int defaultCallBackPort = getPreferenceStore().getInt(
-				PreferenceConstants.PREF_DEFAULT_CALLBACK_PORT);
+		int defaultPort = getPreferenceStore().getInt(PreferenceConstants.PREF_DEFAULT_PORT);
+		if (defaultPort<1) defaultPort = GatewayServer.DEFAULT_PORT;
+		
+		int defaultCallBackPort = getPreferenceStore().getInt(PreferenceConstants.PREF_DEFAULT_CALLBACK_PORT);
+		if (defaultCallBackPort<1) defaultCallBackPort = GatewayServer.DEFAULT_PYTHON_PORT;
 
-		if (getPreferenceStore().getBoolean(
-				PreferenceConstants.PREF_USE_SWT_DISPLAY_TREAD)) {
+		if (getPreferenceStore().getBoolean(PreferenceConstants.PREF_USE_SWT_DISPLAY_THREAD)) {
 
 			server = new SWTGatewayServer(this, getFreePort(defaultPort),
 					getFreePort(defaultCallBackPort),
@@ -59,6 +60,17 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 			server = new GatewayServer(this, defaultPort, defaultCallBackPort,
 					GatewayServer.DEFAULT_CONNECT_TIMEOUT,
 					GatewayServer.DEFAULT_READ_TIMEOUT, null);
+		}
+
+		if (getPreferenceStore().getBoolean(PreferenceConstants.PREF_USE_EXTERNAL_CLASS_LOADER_SERVICE)) {
+			try {
+				ServiceReference<?> r = context.getServiceReference(ClassLoaderService.SERVICE_NAME);
+				if (r != null) {
+					ClassLoaderService s = (ClassLoaderService) context.getService(r);
+					server.setClassLoader(s.getClassLoader());
+				}
+			} catch (Exception e) {
+			}
 		}
 		server.start();
 	}

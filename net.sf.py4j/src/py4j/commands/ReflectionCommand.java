@@ -104,7 +104,7 @@ public class ReflectionCommand extends AbstractCommand {
 		reader.readLine();
 		String returnCommand = null;
 		try {
-			Class<?> clazz = TypeUtil.forName(fqn);
+			Class<?> clazz = TypeUtil.forName(fqn, loader);
 			Field f = rEngine.getField(clazz, member);
 			if (f != null && Modifier.isStatic(f.getModifiers())) {
 				Object obj = rEngine.getFieldValue(null, f);
@@ -150,7 +150,7 @@ public class ReflectionCommand extends AbstractCommand {
 		try {
 			// TODO APPEND CLASS NAME, because it might not be the fqn, but a
 			// new one because of imports!
-			String fullyQualifiedName = TypeUtil.forName(fqn, view).getName();
+			String fullyQualifiedName = TypeUtil.forName(fqn, view, loader).getName();
 			returnCommand = Protocol.getMemberOutputCommand(
 					Protocol.CLASS_TYPE, fullyQualifiedName);
 		} catch (ClassNotFoundException e) {

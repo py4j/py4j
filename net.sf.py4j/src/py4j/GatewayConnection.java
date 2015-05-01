@@ -47,6 +47,7 @@ import py4j.commands.ArrayCommand;
 import py4j.commands.CallCommand;
 import py4j.commands.Command;
 import py4j.commands.ConstructorCommand;
+import py4j.commands.DirCommand;
 import py4j.commands.ExceptionCommand;
 import py4j.commands.FieldCommand;
 import py4j.commands.HelpPageCommand;
@@ -100,6 +101,7 @@ public class GatewayConnection implements Runnable {
 		baseCommands.add(ShutdownGatewayServerCommand.class);
 		baseCommands.add(JVMViewCommand.class);
 		baseCommands.add(ExceptionCommand.class);
+		baseCommands.add(DirCommand.class);
 	}
 
 	/**
@@ -120,6 +122,12 @@ public class GatewayConnection implements Runnable {
 	public GatewayConnection(Gateway gateway, Socket socket,
 			List<Class<? extends Command>> customCommands,
 			List<GatewayServerListener> listeners) throws IOException {
+		this(gateway, socket, customCommands, listeners, null);
+	}
+
+	public GatewayConnection(Gateway gateway, Socket socket,
+			List<Class<? extends Command>> customCommands,
+			List<GatewayServerListener> listeners, final ClassLoader loader) throws IOException {
 		super();
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(
@@ -127,9 +135,9 @@ public class GatewayConnection implements Runnable {
 		this.writer = new BufferedWriter(new OutputStreamWriter(
 				socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String, Command>();
-		initCommands(gateway, baseCommands);
+		initCommands(gateway, baseCommands, loader);
 		if (customCommands != null) {
-			initCommands(gateway, customCommands);
+			initCommands(gateway, customCommands, loader);
 		}
 		this.listeners = listeners;
 		Thread t = new Thread(this);
@@ -164,11 +172,12 @@ public class GatewayConnection implements Runnable {
 	 * @param gateway
 	 */
 	protected void initCommands(Gateway gateway,
-			List<Class<? extends Command>> commandsClazz) {
+			List<Class<? extends Command>> commandsClazz, ClassLoader loader) {
 		for (Class<? extends Command> clazz : commandsClazz) {
 			try {
 				Command cmd = clazz.newInstance();
 				cmd.init(gateway);
+				cmd.setClassLoader(loader);
 				commands.put(cmd.getCommandName(), cmd);
 			} catch (Exception e) {
 				String name = "null";

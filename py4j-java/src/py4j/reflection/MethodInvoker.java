@@ -28,10 +28,12 @@
  *******************************************************************************/
 package py4j.reflection;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +78,9 @@ public class MethodInvoker {
 	}
 
 	private static int buildConverters(List<TypeConverter> converters,
-			Class<?>[] parameters, Class<?>[] arguments) {
+			                           AccessibleObject exec, Class<?>[] arguments) {
+		
+		Class<?>[] parameters = getParameterTypes(exec);
 		int cost = 0;
 		int tempCost = -1;
 		int size = arguments.length;
@@ -104,6 +108,33 @@ public class MethodInvoker {
 					&& TypeUtil.isBoolean(arguments[i])) {
 				tempCost = 0;
 				converters.add(TypeConverter.NO_CONVERTER);
+				
+			// Deal with converting enums
+			} else if (parameters[i].isEnum() && arguments[i].isAssignableFrom(String.class)) {
+				tempCost = 0;
+				@SuppressWarnings("unchecked")
+				Class<? extends Enum<?>> enumClazz = (Class<? extends Enum<?>>)parameters[i];
+				converters.add(new TypeConverter(enumClazz));
+
+			// Deal with varargs if we are
+			} else if (isVarArgs(exec) && i == parameters.length-1) { // If we are the last argument and varargs, it can be an array
+				// Maybe the rest of the arguments are varargs?
+				Class<?> arrayClass = parameters[i].getComponentType();
+				boolean varArgsOk = false;
+				for (int j = i; j<arguments.length;++j) {
+					if (arrayClass.isAssignableFrom(arguments[j])) {
+						varArgsOk = true;
+						continue;
+					}
+					varArgsOk = false;
+					break;
+				}
+
+				if (varArgsOk) {
+					tempCost = 0;
+					converters.add(TypeConverter.VARARGS_CONVERTER);
+					break;
+				}
 			}
 
 			if (tempCost != -1) {
@@ -127,7 +158,7 @@ public class MethodInvoker {
 		if (arguments == null || size == 0) {
 			invoker = new MethodInvoker(constructor, null, 0);
 		} else {
-			cost = buildConverters(converters, constructor.getParameterTypes(),
+			cost = buildConverters(converters, constructor,
 					arguments);
 		}
 		if (cost == -1) {
@@ -152,8 +183,7 @@ public class MethodInvoker {
 		if (arguments == null || size == 0) {
 			invoker = new MethodInvoker(method, null, 0);
 		} else {
-			cost = buildConverters(converters, method.getParameterTypes(),
-					arguments);
+			cost = buildConverters(converters, method, arguments);
 		}
 		if (cost == -1) {
 			invoker = INVALID_INVOKER;
@@ -172,9 +202,7 @@ public class MethodInvoker {
 
 	private TypeConverter[] converters;
 
-	private Method method;
-
-	private Constructor<?> constructor;
+	private AccessibleObject executable;
 
 	private final Logger logger = Logger.getLogger(MethodInvoker.class
 			.getName());
@@ -185,53 +213,66 @@ public class MethodInvoker {
 	public MethodInvoker(Constructor<?> constructor,
 			TypeConverter[] converters, int cost) {
 		super();
-		this.constructor = constructor;
+		this.executable = constructor;
 		this.converters = converters;
 		this.cost = cost;
 	}
 
 	public MethodInvoker(Method method, TypeConverter[] converters, int cost) {
 		super();
-		this.method = method;
+		this.executable = method;
 		this.converters = converters;
 		this.cost = cost;
-	}
-
-	public Constructor<?> getConstructor() {
-		return constructor;
 	}
 
 	public TypeConverter[] getConverters() {
 		return converters;
 	}
 
+	public Constructor<?> getConstructor() {
+		if (executable instanceof Constructor) {
+			return (Constructor<?>)executable;
+		}
+		return null;
+	}
+
+	public Method getMethod() {
+		if (executable instanceof Method) {
+			return (Method)executable;
+		}
+		return null;
+	}
+
 	public int getCost() {
 		return cost;
 	}
 
-	public Method getMethod() {
-		return method;
-	}
-
 	public Object invoke(Object obj, Object[] arguments) {
+		
 		Object returnObject = null;
-
 		try {
 			Object[] newArguments = arguments;
 
 			if (converters != null) {
 				int size = arguments.length;
-				newArguments = new Object[size];
+				newArguments = Arrays.copyOf(newArguments, newArguments.length);
 				for (int i = 0; i < size; i++) {
-					newArguments[i] = converters[i].convert(arguments[i]);
+					// For VarArgs method where this is the last converter
+					// transform all remaining arguments
+					if( i == getParameterCount(executable)-1 && converters[i].isVarArgs()) { // last converter
+						newArguments = converters[i].convert(i, newArguments);
+						break;
+					} else {
+					    newArguments[i] = converters[i].convert(arguments[i]);
+					}
 				}
 			}
-			if (method != null) {
-				method.setAccessible(true);
-				returnObject = method.invoke(obj, newArguments);
-			} else if (constructor != null) {
-				constructor.setAccessible(true);
-				returnObject = constructor.newInstance(newArguments);
+			
+			executable.setAccessible(true);
+			if (executable instanceof Method) {
+				returnObject = ((Method)executable).invoke(obj, newArguments);
+			} else if (executable instanceof Constructor) {
+				returnObject = ((Constructor<?>)executable).newInstance(newArguments);
 			}
 		} catch (InvocationTargetException ie) {
 			logger.log(Level.WARNING, "Exception occurred in client code.", ie);
@@ -247,11 +288,24 @@ public class MethodInvoker {
 		return returnObject;
 	}
 
+
+	private static boolean isVarArgs(AccessibleObject exec) {
+		return exec instanceof Method ? ((Method)exec).isVarArgs() : ((Constructor<?>)exec).isVarArgs();
+	}
+
+	private static Class<?>[] getParameterTypes(AccessibleObject exec) {
+		return exec instanceof Method ? ((Method)exec).getParameterTypes() : ((Constructor<?>)exec).getParameterTypes();
+	}
+
+	private int getParameterCount(AccessibleObject exec) {
+		return getParameterTypes(exec).length;
+	}
+
 	public boolean isVoid() {
-		if (constructor != null) {
+		if (executable instanceof Constructor) {
 			return false;
 		} else {
-			return method.getReturnType().equals(void.class);
+			return ((Method)executable).getReturnType().equals(void.class);
 		}
 	}
 

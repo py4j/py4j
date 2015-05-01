@@ -87,12 +87,11 @@ public interface Command {
 	/**
 	 * <p>
 	 * Called when a command instance is created and assigned to a connection.
-	 * Called by {@link GatewayConnection#initCommands(Gateway,List<Class<?
-	 * extends Command>>)}
 	 * </p>
 	 * 
 	 * @param gateway
 	 */
 	public void init(Gateway gateway);
 
+	public void setClassLoader(ClassLoader loader);
 }

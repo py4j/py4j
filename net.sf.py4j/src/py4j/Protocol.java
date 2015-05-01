@@ -34,6 +34,10 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import py4j.reflection.PythonProxyHandler;
 
@@ -130,12 +134,17 @@ public class Protocol {
 	// STATIC REFERENCES
 	public final static String STATIC_PREFIX = "z:";
 
+    // PYTHON CONSTANTS
+    public final static String PYTHON_NAN = "nan";
+    public final static String PYTHON_INFINITY = "inf";
+    public final static String PYTHON_NEGATIVE_INFINITY = "-inf";
+
 	/**
 	 * <p>
 	 * Transform the byte array into Base64 characters.
 	 * </p>
 	 * 
-	 * @param primitive
+	 * @param bytes
 	 * @return
 	 */
 	public static String encodeBytes(byte[] bytes) {
@@ -188,8 +197,20 @@ public class Protocol {
 	 * @return The double value corresponding to this command part.
 	 */
 	public final static double getDouble(String commandPart) {
-		return Double
-				.parseDouble(commandPart.substring(1, commandPart.length()));
+        String doubleValue = commandPart.substring(1, commandPart.length());
+        try {
+            return Double.parseDouble(doubleValue);
+        } catch (NumberFormatException e) {
+            if (doubleValue.equals(PYTHON_INFINITY)) {
+                return Double.POSITIVE_INFINITY;
+            } else if (doubleValue.equals(PYTHON_NEGATIVE_INFINITY)) {
+                return Double.NEGATIVE_INFINITY;
+            } else if (doubleValue.equals(PYTHON_NAN)) {
+                return Double.NaN;
+            } else {
+                throw e;
+            }
+        }
 	}
 
 	/**
@@ -286,11 +307,39 @@ public class Protocol {
 				return getDecimal(commandPart);
 			case PYTHON_PROXY_TYPE:
 				return getPythonProxy(commandPart, gateway);
+			case LIST_TYPE:
+				return getList(commandPart, gateway);
+			case MAP_TYPE:
+				return getMap(commandPart, gateway);
 			default:
 				throw new Py4JException("Command Part is unknown: "
 						+ commandPart);
 			}
 		}
+	}
+	
+	private static Object getMap(String commandPart, Gateway gateway) {
+		
+		String[] lines = commandPart.substring(1, commandPart.length()).split("\\#\\$_LISTSEP_\\$\\#");
+		final Map<Object, Object> map = new HashMap<Object, Object>(lines.length);
+		for (String line : lines) {
+			String[] kv = line.split("\\#\\$_MAPSEP_\\$\\#");
+			Object key   = getObject(kv[0], gateway);
+			Object value = getObject(kv[1], gateway);
+			map.put(key, value);
+		}
+		return map;
+	}
+
+
+	private static Object getList(String commandPart, Gateway gateway) {
+		
+		String[] ret = commandPart.substring(1, commandPart.length()).split("\\#\\$_LISTSEP_\\$\\#");
+		final List<Object> list = new ArrayList<Object>(ret.length);
+		for (String cmdP : ret) {
+			list.add(getObject(cmdP, gateway));
+		}
+		return list;
 	}
 
 	public final static String getOutputCommand(ReturnObject rObject) {

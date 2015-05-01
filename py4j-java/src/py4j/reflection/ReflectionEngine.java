@@ -35,7 +35,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,6 +59,8 @@ public class ReflectionEngine {
 	private final Logger logger = Logger.getLogger(ReflectionEngine.class
 			.getName());
 
+	private ClassLoader loader;
+
 	public final static Object RETURN_VOID = new Object();
 
 	private static ThreadLocal<LRUCache<MethodDescriptor, MethodInvoker>> cacheHolder = new ThreadLocal<LRUCache<MethodDescriptor, MethodInvoker>>() {
@@ -68,17 +72,22 @@ public class ReflectionEngine {
 
 	};
 
-	public Object createArray(String fqn, int[] dimensions) {
-		Class<?> clazz = null;
-		Object returnObject = null;
+	public void setClassLoader(ClassLoader loader) {
+		this.loader = loader;
+	}
+
+	private Class<?> getClass(String classFQN) {
 		try {
-			clazz = TypeUtil.forName(fqn);
-			returnObject = Array.newInstance(clazz, dimensions);
+			return TypeUtil.forName(classFQN, loader);
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + fqn, e);
+			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
+					e);
 			throw new Py4JException(e);
 		}
-		return returnObject;
+	}
+
+	public Object createArray(String fqn, int[] dimensions) {
+		return Array.newInstance(getClass(fqn), dimensions);
 	}
 
 	private MethodInvoker getBestConstructor(
@@ -189,17 +198,7 @@ public class ReflectionEngine {
 	}
 
 	public MethodInvoker getConstructor(String classFQN, Object[] parameters) {
-		Class<?> clazz = null;
-
-		try {
-			clazz = Class.forName(classFQN);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
-					e);
-			throw new Py4JException(e);
-		}
-
-		return getConstructor(clazz, getClassParameters(parameters));
+		return getConstructor(getClass(classFQN), getClassParameters(parameters));
 	}
 
 	private List<Constructor<?>> getConstructorsByLength(Class<?> clazz,
@@ -252,18 +251,7 @@ public class ReflectionEngine {
 	}
 
 	public Field getField(String classFQN, String name) {
-		Class<?> clazz = null;
-
-		try {
-			clazz = Class.forName(classFQN);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
-					e);
-			throw new Py4JException(e);
-		}
-
-		return getField(clazz, name);
-
+		return getField(getClass(classFQN), name);
 	}
 
 	/**
@@ -345,17 +333,7 @@ public class ReflectionEngine {
 
 	public MethodInvoker getMethod(String classFQN, String name,
 			Object[] parameters) {
-		Class<?> clazz = null;
-
-		try {
-			clazz = Class.forName(classFQN);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
-					e);
-			throw new Py4JException(e);
-		}
-
-		return getMethod(clazz, name, getClassParameters(parameters));
+		return getMethod(getClass(classFQN), name, getClassParameters(parameters));
 	}
 
 	private List<Method> getMethodsByNameAndLength(Class<?> clazz, String name,
@@ -363,8 +341,8 @@ public class ReflectionEngine {
 		List<Method> methods = new ArrayList<Method>();
 
 		for (Method method : clazz.getMethods()) {
-			if (method.getName().equals(name)
-					&& method.getParameterTypes().length == length) {
+			if (method.getName().equals(name) && 
+					(method.getParameterTypes().length == length || method.isVarArgs())) {
 				methods.add(method);
 			}
 		}
@@ -401,5 +379,104 @@ public class ReflectionEngine {
 					+ field, e);
 			throw new Py4JException(e);
 		}
+	}
+
+	/**
+	 * Retrieve the names of all the public methods in the obj
+	 * @param obj the object to inspect
+	 * @return list of all the names of public methods in obj
+	 */
+	public String[] getPublicMethodNames(Object obj) {
+		Method[] methods = obj.getClass().getMethods();
+		Set<String> methodNames = new HashSet<String>();
+		for (Method method : methods) {
+			if (Modifier.isPublic(method.getModifiers())) {
+				methodNames.add(method.getName());
+			}
+		}
+		return (String[]) methodNames.toArray(new String[methodNames.size()]);
+	}
+
+	/**
+	 * Retrieve the names of all the public fields in the obj
+	 * @param obj the object to inspect
+	 * @return list of all the names of public fields in obj
+	 */
+	public String[] getPublicFieldNames(Object obj) {
+		Field[] fields = obj.getClass().getFields();
+		Set<String> fieldNames = new HashSet<String>();
+		for (Field field : fields) {
+			if (Modifier.isPublic(field.getModifiers())) {
+				fieldNames.add(field.getName());
+			}
+		}
+		return (String[]) fieldNames.toArray(new String[fieldNames.size()]);
+	}
+
+	/**
+	 * Retrieve the names of all the public static fields in the clazz
+	 *
+	 * @param clazz
+	 *            the object to inspect
+	 * @return list of all the names of public statics
+	 */
+	public String[] getPublicStaticFieldNames(Class<?> clazz) {
+		Field[] fields = clazz.getFields();
+		Set<String> fieldNames = new HashSet<String>();
+		for (Field field : fields) {
+			if (Modifier.isPublic(field.getModifiers())
+					&& Modifier.isStatic(field.getModifiers())) {
+				fieldNames.add(field.getName());
+			}
+		}
+		return (String[]) fieldNames.toArray(new String[fieldNames.size()]);
+	}
+
+	/**
+	 * Retrieve the names of all the public static methods in the clazz
+	 * @param clazz the object to inspect
+	 * @return list of all the names of public statics
+	 */
+	public String[] getPublicStaticMethodNames(Class<?> clazz) {
+		Method[] methods = clazz.getMethods();
+		Set<String> methodNames = new HashSet<String>();
+		for (Method method : methods) {
+			if (Modifier.isPublic(method.getModifiers())
+					&& Modifier.isStatic(method.getModifiers())) {
+				methodNames.add(method.getName());
+			}
+		}
+		return (String[]) methodNames.toArray(new String[methodNames.size()]);
+	}
+
+	/**
+	 * Retrieve the names of all the public static classes in the clazz
+	 * @param clazz the object to inspect
+	 * @return list of all the names of public statics
+	 */
+	public String[] getPublicStaticClassNames(Class<?> clazz) {
+		Class<?>[] classes = clazz.getClasses();
+		Set<String> classNames = new HashSet<String>();
+		for (Class<?> clazz2 : classes) {
+			if (Modifier.isPublic(clazz2.getModifiers())
+					&& Modifier.isStatic(clazz2.getModifiers())) {
+				classNames.add(clazz2.getSimpleName());
+			}
+		}
+		return (String[]) classNames.toArray(new String[classNames.size()]);
+	}
+
+	/**
+	 * Retrieve the names of all the public static fields, methods and
+	 * classes in the clazz
+	 * @param clazz the object to inspect
+	 * @return list of all the names of public statics
+	 */
+	public String[] getPublicStaticNames(Class<?> clazz) {
+		Set<String> names = new HashSet<String>();
+		names.addAll(Arrays.asList(getPublicStaticClassNames(clazz)));
+		names.addAll(Arrays.asList(getPublicStaticFieldNames(clazz)));
+		names.addAll(Arrays.asList(getPublicStaticMethodNames(clazz)));
+		return (String[]) names.toArray(new String[names.size()]);
 	}
 }

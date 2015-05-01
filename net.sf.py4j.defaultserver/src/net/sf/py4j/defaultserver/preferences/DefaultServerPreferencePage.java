@@ -37,7 +37,7 @@ public class DefaultServerPreferencePage extends FieldEditorPreferencePage
 		implements IWorkbenchPreferencePage {
 
 	private IntegerFieldEditor tcpPort, callPort;
-	private BooleanFieldEditor swt, active;
+	private BooleanFieldEditor swt, active, service;
 	private LabelFieldEditor info;
 
 	public DefaultServerPreferencePage() {
@@ -77,7 +77,7 @@ public class DefaultServerPreferencePage extends FieldEditorPreferencePage
 		addField(callPort);
 
 		this.swt = new BooleanFieldEditor(
-				PreferenceConstants.PREF_USE_SWT_DISPLAY_TREAD,
+				PreferenceConstants.PREF_USE_SWT_DISPLAY_THREAD,
 				"Run calls in SWT Thread", getFieldEditorParent());
 		addField(swt);
 
@@ -85,6 +85,12 @@ public class DefaultServerPreferencePage extends FieldEditorPreferencePage
 				"NOTE: using the pydev python console and SWT threading can, rarely, give an unexpected error.\nPlease use an ordinary shell-based python to avoid this should you encounter it.",
 				getFieldEditorParent());
 		addField(info);
+
+		this.service = new BooleanFieldEditor(
+				PreferenceConstants.PREF_USE_EXTERNAL_CLASS_LOADER_SERVICE,
+				"Use an external class loader that is provided by a service",
+				getFieldEditorParent());
+		addField(service);
 
 		// Spacer
 		new Label(getFieldEditorParent(), SWT.NONE);
