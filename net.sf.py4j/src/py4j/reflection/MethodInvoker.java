@@ -94,8 +94,7 @@ public class MethodInvoker {
 					converters.add(TypeConverter.NO_CONVERTER);
 				}
 			} else if (parameters[i].isAssignableFrom(arguments[i])) {
-				tempCost = TypeUtil
-						.computeDistance(parameters[i], arguments[i]);
+				tempCost = 0;
 				converters.add(TypeConverter.NO_CONVERTER);
 			} else if (TypeUtil.isNumeric(parameters[i])
 					&& TypeUtil.isNumeric(arguments[i])) {
