@@ -765,6 +765,8 @@ class JavaObject(object):
         return list(set(self._methods.keys()) | self._field_names)
 
     def _populate_fields(self):
+        # Theoretically, not thread safe, but the worst case scenario is
+        # cache miss or double overwrite of the same method...
         if not self._fully_populated:
             if self._auto_field:
                 command = DIR_COMMAND_NAME +\
@@ -854,6 +856,8 @@ class JavaClass(object):
 
 
     def __dir__(self):
+        # Theoretically, not thread safe, but the worst case scenario is
+        # cache miss or double overwrite of the same method...
         if self._statics is None:
             command = DIR_COMMAND_NAME +\
                 DIR_STATIC_SUBCOMMAND_NAME +\
@@ -1024,14 +1028,13 @@ class JVMView(object):
             # for regular Py4J classes.
             self._jvm_object = jvm_object
 
-        self._dir_sequence = None
-        self._dir_cache = []
+        self._dir_sequence_and_cache = None, []
 
     def __dir__(self):
         command = DIR_COMMAND_NAME +\
             DIR_JVMVIEW_SUBCOMMAND_NAME +\
             self._id + '\n' +\
-            get_command_part(self._dir_sequence) + '\n' +\
+            get_command_part(self._dir_sequence_and_cache[0]) + '\n' +\
             END_COMMAND_PART
 
         answer = self._gateway_client.send_command(command)
@@ -1039,9 +1042,10 @@ class JVMView(object):
                 self._fqn, "__dir__")
         if return_value is not None:
             result = return_value.split('\n')
-            self._dir_sequence = result[0]
-            self._dir_cache = result[1:] + [UserHelpAutoCompletion.KEY]
-        return self._dir_cache[:]
+            # Theoretically, not thread safe, but the worst case scenario is
+            # cache miss or double overwrite of the same method...
+            self._dir_sequence_and_cache = result[0], result[1:] + [UserHelpAutoCompletion.KEY]
+        return self._dir_sequence_and_cache[1][:]
 
     def __getattr__(self, name):
         if name == UserHelpAutoCompletion.KEY:
