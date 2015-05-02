@@ -591,8 +591,7 @@ class JavaMember(object):
         temp_args = []
         new_args = []
         for arg in args:
-            if not isinstance(arg, JavaObject) and \
-               not isinstance(arg, basestring):
+            if not isinstance(arg, JavaObject):
                 for converter in self.gateway_client.converters:
                     if converter.can_convert(arg):
                         temp_arg = converter.convert(arg, self.gateway_client)
@@ -753,8 +752,7 @@ class JavaClass():
         temp_args = []
         new_args = []
         for arg in args:
-            if not isinstance(arg, JavaObject) and \
-               not isinstance(arg, basestring):
+            if not isinstance(arg, JavaObject):
                 for converter in self._converters:
                     if converter.can_convert(arg):
                         temp_arg = converter.convert(arg, self._gateway_client)

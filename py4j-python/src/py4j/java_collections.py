@@ -470,7 +470,10 @@ class SetConverter(object):
 
 class ListConverter(object):
     def can_convert(self, object):
-        return hasattr2(object, '__iter__')
+        # Check for iterator protocol and should not be an instance of byte
+        # array (taken care of by protocol)
+        return hasattr2(object, '__iter__') and not isbytearray(object) and\
+            not ispython3bytestr(object) and not isinstance(object, basestring)
 
     def convert(self, object, gateway_client):
         ArrayList = JavaClass('java.util.ArrayList', gateway_client)

@@ -338,7 +338,7 @@ def register_output_converter(output_type, converter):
     OUTPUT_CONVERTER[output_type] = converter
 
 
-def register_input_converter(converter):
+def register_input_converter(converter, prepend=False):
     """Registers an input converter to the list of global input converters.
 
     When initialized with `auto_convert=True`, a :class:`JavaGateway
@@ -348,10 +348,14 @@ def register_input_converter(converter):
 
     :param converter: A converter that declares the methods
         `can_convert(object)` and `convert(object,gateway_client)`.
+    :param prepend: Put at the beginning of the input converters list
 
     """
     global INPUT_CONVERTER
-    INPUT_CONVERTER.append(converter)
+    if prepend:
+        INPUT_CONVERTER.insert(0, converter)
+    else:
+        INPUT_CONVERTER.append(converter)
 
 
 class Py4JError(Exception):

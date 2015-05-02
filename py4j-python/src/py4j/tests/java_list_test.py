@@ -40,6 +40,9 @@ class AutoConvertTest(unittest.TestCase):
         java_list = self.gateway.jvm.java.util.ArrayList(python_list)
         self.assertTrue(java_list.equals(python_list))
 
+    def testAutoConvertNotByteArray(self):
+        self.gateway.jvm.java.nio.ByteBuffer.wrap(bytearray(range(255)))
+
 
 class ListTest(unittest.TestCase):
     def setUp(self):
