@@ -31,12 +31,17 @@ class AutoConvertTest(unittest.TestCase):
 
     def testAutoConvert(self):
         ex = self.gateway.getNewExample()
-        pList = get_list(3)
-        jList = ex.getList(3)
-        self.assertTrue(jList.equals(pList))
+        python_list = get_list(3)
+        java_list = ex.getList(3)
+        self.assertTrue(java_list.equals(python_list))
+
+    def testAutoConvertConstructor(self):
+        python_list = get_list(3)
+        java_list = self.gateway.jvm.java.util.ArrayList(python_list)
+        self.assertTrue(java_list.equals(python_list))
 
 
-class Test(unittest.TestCase):
+class ListTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
         self.gateway = JavaGateway()

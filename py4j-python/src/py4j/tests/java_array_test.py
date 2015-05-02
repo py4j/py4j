@@ -13,7 +13,7 @@ from py4j.tests.java_gateway_test import (
     start_example_app_process)
 
 
-class Test(unittest.TestCase):
+class ArrayTest(unittest.TestCase):
     def setUp(self):
 #        logger = logging.getLogger("py4j")
 #        logger.setLevel(logging.DEBUG)
