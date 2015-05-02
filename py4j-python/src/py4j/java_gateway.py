@@ -757,7 +757,7 @@ class JavaClass():
                not isinstance(arg, basestring):
                 for converter in self._converters:
                     if converter.can_convert(arg):
-                        temp_arg = converter.convert(arg, self.gateway_client)
+                        temp_arg = converter.convert(arg, self._gateway_client)
                         temp_args.append(temp_arg)
                         new_args.append(temp_arg)
                         break
