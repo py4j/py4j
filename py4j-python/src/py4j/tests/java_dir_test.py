@@ -3,6 +3,7 @@ from __future__ import unicode_literals, absolute_import
 
 from py4j.java_gateway import JavaGateway, GatewayParameters, java_import,\
     UserHelpAutoCompletion
+from py4j.protocol import Py4JError
 from py4j.tests.java_gateway_test import (
     start_example_app_process)
 from contextlib import contextmanager
@@ -93,7 +94,7 @@ def test_dir_object_shows_manually_called_after_dir():
             try:
                 ex.does_not_exist_in_example()
                 raise AssertionError("Method should not have succeeded")
-            except:
+            except Py4JError:
                 pass
             # Make sure the manually called method now shows up
             assert sorted(dir(ex)) == sorted(ExampleClassMethods + ['does_not_exist_in_example'])
@@ -105,7 +106,7 @@ def test_dir_object_shows_manually_called_before_dir():
             try:
                 ex.does_not_exist_in_example()
                 raise AssertionError("Method should not have succeeded")
-            except:
+            except Py4JError:
                 pass
             # Make sure the manually called method now shows up
             assert sorted(dir(ex)) == sorted(ExampleClassMethods + ['does_not_exist_in_example'])
