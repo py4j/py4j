@@ -35,7 +35,7 @@ class AutoConvertTest(unittest.TestCase):
         self.assertTrue(dj.equals(dp))
 
 
-class Test(unittest.TestCase):
+class MapTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
         self.gateway = JavaGateway()

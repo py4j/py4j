@@ -31,7 +31,7 @@ class AutoConvertTest(unittest.TestCase):
         self.assertTrue(sj.equals(sp))
 
 
-class Test(unittest.TestCase):
+class SetTest(unittest.TestCase):
     def setUp(self):
 #        logger = logging.getLogger("py4j")
 #        logger.setLevel(logging.DEBUG)
