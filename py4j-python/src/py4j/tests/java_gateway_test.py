@@ -697,20 +697,17 @@ class HelpTest(unittest.TestCase):
     def testHelpObject(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, short_name=True, display=False)
-        #print(help_page)
         self.assertTrue(len(help_page) > 1)
 
     def testHelpObjectWithPattern(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, pattern='m*', short_name=True,
                 display=False)
-        #print(help_page)
         self.assertTrue(len(help_page) > 1)
 
     def testHelpClass(self):
         String = self.gateway.jvm.java.lang.String
         help_page = self.gateway.help(String, short_name=False, display=False)
-        #print(help_page)
         self.assertTrue(len(help_page) > 1)
         self.assertTrue("String" in help_page)
 
