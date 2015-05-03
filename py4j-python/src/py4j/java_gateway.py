@@ -1026,7 +1026,7 @@ class JVMView(object):
             # for regular Py4J classes.
             self._jvm_object = jvm_object
 
-        self._dir_sequence_and_cache = None, []
+        self._dir_sequence_and_cache = (None, [])
 
     def __dir__(self):
         command = DIR_COMMAND_NAME +\
@@ -1042,7 +1042,8 @@ class JVMView(object):
             result = return_value.split('\n')
             # Theoretically, not thread safe, but the worst case scenario is
             # cache miss or double overwrite of the same method...
-            self._dir_sequence_and_cache = result[0], result[1:] + [UserHelpAutoCompletion.KEY]
+            self._dir_sequence_and_cache = (
+                result[0], result[1:] + [UserHelpAutoCompletion.KEY])
         return self._dir_sequence_and_cache[1][:]
 
     def __getattr__(self, name):

@@ -5,7 +5,7 @@ from py4j.java_gateway import JavaGateway, GatewayParameters, java_import,\
     UserHelpAutoCompletion
 from py4j.protocol import Py4JError
 from py4j.tests.java_gateway_test import (
-    start_example_app_process)
+    start_example_app_process, sleep)
 from contextlib import contextmanager
 
 ExampleClassFields = sorted([
@@ -61,6 +61,7 @@ def example_app_process():
         yield p
     finally:
         p.join()
+        sleep()
 
 @contextmanager
 def gateway(*args, **kwargs):
