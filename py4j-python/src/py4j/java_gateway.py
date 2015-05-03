@@ -15,7 +15,7 @@ from __future__ import unicode_literals, absolute_import
 from collections import deque
 import logging
 import os
-from pydoc import ttypager
+from pydoc import pager
 import select
 import socket
 from subprocess import Popen, PIPE
@@ -242,6 +242,58 @@ def quiet_shutdown(socket_instance):
     except Exception:
         pass
 
+
+def gateway_help(gateway_client, var, pattern=None, short_name=True, display=True):
+    """Displays a help page about a class or an object.
+
+    :param gateway_client: The gatway client
+
+    :param var: JavaObject, JavaClass or JavaMember for which a help page
+     will be generated.
+
+    :param pattern: Star-pattern used to filter the members. For example
+     'get*Foo' may return getMyFoo, getFoo, getFooBar, but not bargetFoo.
+     The pattern is matched against the entire signature. To match only
+     the name of a method, use 'methodName(*'.
+
+    :param short_name: If True, only the simple name of the parameter
+     types and return types will be displayed. If False, the fully
+     qualified name of the types will be displayed.
+
+    :param display: If True, the help page is displayed in an interactive
+     page similar to the `help` command in Python. If False, the page is
+     returned as a string.
+    """
+    if hasattr2(var, '_get_object_id'):
+        command = HELP_COMMAND_NAME +\
+                  HELP_OBJECT_SUBCOMMAND_NAME +\
+                  var._get_object_id() + '\n' +\
+                  get_command_part(pattern) +\
+                  get_command_part(short_name) +\
+                  END_COMMAND_PART
+        answer = gateway_client.send_command(command)
+    elif hasattr2(var, '_fqn'):
+        command = HELP_COMMAND_NAME +\
+                  HELP_CLASS_SUBCOMMAND_NAME +\
+                  var._fqn + '\n' +\
+                  get_command_part(pattern) +\
+                  get_command_part(short_name) +\
+                  END_COMMAND_PART
+        answer = gateway_client.send_command(command)
+    elif hasattr2(var, 'container') and hasattr2(var, 'name'):
+        if pattern is not None:
+            raise Py4JError('pattern should be None with var is a JavaMember')
+        pattern = var.name + "(*"
+        var = var.container
+        return gateway_help(gateway_client, var, pattern, short_name=short_name, display=display)
+    else:
+        raise Py4JError('var is none of Java Object, Java Class or Java Member')
+
+    help_page = get_return_value(answer, gateway_client, None, None)
+    if (display):
+        pager(help_page)
+    else:
+        return help_page
 
 def _garbage_collect_object(gateway_client, target_id):
 #    print(target_id + ' deleted')
@@ -586,6 +638,15 @@ class JavaMember(object):
         self.command_header = self.target_id + '\n' + self.name + '\n'
         self.pool = self.gateway_client.gateway_property.pool
         self.converters = self.gateway_client.converters
+        self._gateway_doc = None
+
+    @property
+    def __doc__(self):
+        # The __doc__ string is used by IPython/PyDev/etc to generate help string,
+        # therefore provide useful help
+        if self._gateway_doc is None:
+            self._gateway_doc = gateway_help(self.gateway_client, self, display=False)
+        return self._gateway_doc
 
     def _get_args(self, args):
         temp_args = []
@@ -647,6 +708,9 @@ class JavaObject(object):
         self._gateway_client = gateway_client
         self._auto_field = gateway_client.gateway_property.auto_field
         self._methods = {}
+        self._field_names = set()
+        self._fully_populated = False
+        self._gateway_doc = None
 
         key = smart_decode(self._gateway_client.address) +\
               smart_decode(self._gateway_client.port) +\
@@ -663,11 +727,29 @@ class JavaObject(object):
     def _get_object_id(self):
         return self._target_id
 
+    @property
+    def __doc__(self):
+        # The __doc__ string is used by IPython/PyDev/etc to generate help string,
+        # therefore provide useful help
+        if self._gateway_doc is None:
+            self._gateway_doc = gateway_help(self._gateway_client, self, display=False)
+        return self._gateway_doc
+
     def __getattr__(self, name):
+        if name == '__call__':
+            # Provide an explicit definition for __call__ so that a JavaMember does
+            # not get created for it. This serves two purposes:
+            # 1) IPython (and others?) stop showing incorrect help indicating that
+            #    this is callable
+            # 2) A TypeError(object not callable) is raised if someone does try
+            #    to call here
+            raise AttributeError
+
         if name not in self._methods:
             if (self._auto_field):
                 (is_field, return_value) = self._get_field(name)
                 if (is_field):
+                    self._field_names.add(name)
                     return return_value
             # Theoretically, not thread safe, but the worst case scenario is
             # cache miss or double overwrite of the same method...
@@ -676,6 +758,41 @@ class JavaObject(object):
 
         # The name is a method
         return self._methods[name]
+
+    def __dir__(self):
+        self._populate_fields()
+        return list(set(self._methods.keys()) | self._field_names)
+
+    def _populate_fields(self):
+        # Theoretically, not thread safe, but the worst case scenario is
+        # cache miss or double overwrite of the same method...
+        if not self._fully_populated:
+            if self._auto_field:
+                command = DIR_COMMAND_NAME +\
+                    DIR_FIELDS_SUBCOMMAND_NAME +\
+                    self._target_id + '\n' +\
+                    END_COMMAND_PART
+
+                answer = self._gateway_client.send_command(command)
+                return_value = get_return_value(answer, self._gateway_client,
+                        self._target_id, "__dir__")
+                self._field_names.update(return_value.split('\n'))
+
+            command = DIR_COMMAND_NAME +\
+                DIR_METHODS_SUBCOMMAND_NAME +\
+                self._target_id + '\n' +\
+                END_COMMAND_PART
+
+            answer = self._gateway_client.send_command(command)
+            return_value = get_return_value(answer, self._gateway_client,
+                    self._target_id, "__dir__")
+            names = return_value.split('\n')
+            for name in names:
+                if name not in self._methods:
+                    self._methods[name] = JavaMember(name, self, self._target_id,
+                            self._gateway_client)
+
+            self._fully_populated = True
 
     def _get_field(self, name):
         command = FIELD_COMMAND_NAME +\
@@ -711,7 +828,7 @@ class JavaObject(object):
         return 'JavaObject id=' + self._target_id
 
 
-class JavaClass():
+class JavaClass(object):
     """A `JavaClass` represents a Java Class from which static members can be
        retrieved. `JavaClass` instances are also needed to initialize an array.
 
@@ -725,8 +842,37 @@ class JavaClass():
         self._pool = self._gateway_client.gateway_property.pool
         self._command_header = fqn + '\n'
         self._converters = self._gateway_client.converters
+        self._gateway_doc = None
+        self._statics = None
+
+    @property
+    def __doc__(self):
+        # The __doc__ string is used by IPython/PyDev/etc to generate help string,
+        # therefore provide useful help
+        if self._gateway_doc is None:
+            self._gateway_doc = gateway_help(self._gateway_client, self, display=False)
+        return self._gateway_doc
+
+
+    def __dir__(self):
+        # Theoretically, not thread safe, but the worst case scenario is
+        # cache miss or double overwrite of the same method...
+        if self._statics is None:
+            command = DIR_COMMAND_NAME +\
+                DIR_STATIC_SUBCOMMAND_NAME +\
+                self._fqn + '\n' +\
+                END_COMMAND_PART
+
+            answer = self._gateway_client.send_command(command)
+            return_value = get_return_value(answer, self._gateway_client,
+                    self._fqn, "__dir__")
+            self._statics = return_value.split('\n')
+        return self._statics[:]
 
     def __getattr__(self, name):
+        if name in ['__str__', '__repr__']:
+            raise AttributeError
+
         command = REFLECTION_COMMAND_NAME +\
             REFL_GET_MEMBER_SUB_COMMAND_NAME +\
             self._fqn + '\n' +\
@@ -745,8 +891,8 @@ class JavaClass():
                 return get_return_value(answer, self._gateway_client,
                         self._fqn, name)
         else:
-            raise Py4JError('{0} does not exist in the JVM'.
-                    format(self._fqn + name))
+            raise Py4JError('{0}.{1} does not exist in the JVM'.
+                    format(self._fqn, name))
 
     def _get_args(self, args):
         temp_args = []
@@ -792,7 +938,32 @@ class JavaClass():
         return return_value
 
 
-class JavaPackage():
+class UserHelpAutoCompletion(object):
+    """
+    Type a package name or a class name.
+
+    For example with a JVMView called view:
+    >>> o = view.Object() # create a java.lang.Object
+    >>> random = view.jvm.java.util.Random() # create a java.util.Random instance
+
+    The default JVMView is in the gateway and is called:
+    >>> gateway.jvm
+
+    By default, java.lang.* is available in the view. To
+    add additional Classes/Packages, do:
+    >>> from py4j.java_gateway import java_import
+    >>> java_import(gateway.jvm, 'com.example.Class1')
+    >>> instance = gateway.jvm.Class1()
+
+    Package and class completions are only available for
+    explicitly imported Java classes. For example, if you
+    java_import(gateway.jvm, 'com.example.Class1')
+    then Class1 will appear in the completions.
+    """
+    KEY = "<package or class name>"
+
+
+class JavaPackage(object):
     """A `JavaPackage` represents part of a Java package from which Java
        classes can be accessed.
 
@@ -807,7 +978,16 @@ class JavaPackage():
             self._jvm_id = DEFAULT_JVM_ID
         self._jvm_id = jvm_id
 
+    def __dir__(self):
+        return [UserHelpAutoCompletion.KEY]
+
     def __getattr__(self, name):
+        if name == UserHelpAutoCompletion.KEY:
+            return UserHelpAutoCompletion
+
+        if name in ['__str__', '__repr__']:
+            raise AttributeError
+
         if name == '__call__':
             raise Py4JError('Trying to call a package.')
         new_fqn = self._fqn + '.' + name
@@ -846,7 +1026,31 @@ class JVMView(object):
             # for regular Py4J classes.
             self._jvm_object = jvm_object
 
+        self._dir_sequence_and_cache = (None, [])
+
+    def __dir__(self):
+        command = DIR_COMMAND_NAME +\
+            DIR_JVMVIEW_SUBCOMMAND_NAME +\
+            self._id + '\n' +\
+            get_command_part(self._dir_sequence_and_cache[0]) + '\n' +\
+            END_COMMAND_PART
+
+        answer = self._gateway_client.send_command(command)
+        return_value = get_return_value(answer, self._gateway_client,
+                self._fqn, "__dir__")
+        if return_value is not None:
+            result = return_value.split('\n')
+            # Theoretically, not thread safe, but the worst case scenario is
+            # cache miss or double overwrite of the same method...
+            self._dir_sequence_and_cache = (
+                result[0], result[1:] + [UserHelpAutoCompletion.KEY])
+        return self._dir_sequence_and_cache[1][:]
+
     def __getattr__(self, name):
+        if name == UserHelpAutoCompletion.KEY:
+            return UserHelpAutoCompletion()
+
+
         answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME +\
                 REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + self._id +\
                 '\n' + END_COMMAND_PART)
@@ -1122,11 +1326,13 @@ class JavaGateway(object):
     def help(self, var, pattern=None, short_name=True, display=True):
         """Displays a help page about a class or an object.
 
-        :param var: JavaObject or JavaClass for which a help page will be
-         generated.
+        :param var: JavaObject, JavaClass or JavaMember for which a help page
+         will be generated.
 
         :param pattern: Star-pattern used to filter the members. For example
          'get*Foo' may return getMyFoo, getFoo, getFooBar, but not bargetFoo.
+         The pattern is matched against the entire signature. To match only
+         the name of a method, use 'methodName(*'.
 
         :param short_name: If True, only the simple name of the parameter
          types and return types will be displayed. If False, the fully
@@ -1136,30 +1342,7 @@ class JavaGateway(object):
          page similar to the `help` command in Python. If False, the page is
          returned as a string.
         """
-        if hasattr2(var, '_get_object_id'):
-            command = HELP_COMMAND_NAME +\
-                      HELP_OBJECT_SUBCOMMAND_NAME +\
-                      var._get_object_id() + '\n' +\
-                      get_command_part(pattern) +\
-                      get_command_part(short_name) +\
-                      END_COMMAND_PART
-            answer = self._gateway_client.send_command(command)
-        elif hasattr2(var, '_fqn'):
-            command = HELP_COMMAND_NAME +\
-                      HELP_CLASS_SUBCOMMAND_NAME +\
-                      var._fqn + '\n' +\
-                      get_command_part(pattern) +\
-                      get_command_part(short_name) +\
-                      END_COMMAND_PART
-            answer = self._gateway_client.send_command(command)
-        else:
-            raise Py4JError('var is neither a Java Object nor a Java Class')
-
-        help_page = get_return_value(answer, self._gateway_client, None, None)
-        if (display):
-            ttypager(help_page)
-        else:
-            return help_page
+        return gateway_help(self._gateway_client, var, pattern, short_name, display)
 
     @classmethod
     def launch_gateway(cls, port=0, jarpath="", classpath="", javaopts=[],
