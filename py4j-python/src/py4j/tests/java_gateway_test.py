@@ -18,13 +18,16 @@ import time
 from traceback import print_exc
 import unittest
 
-from py4j.compat import range, isbytearray, bytearray2, long
+from py4j.compat import (
+    range, isbytearray, ispython3bytestr, bytearray2, long)
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_gateway import (
     JavaGateway, JavaMember, get_field, get_method,
     GatewayClient, set_field, java_import, JavaObject, is_instance_of,
     GatewayParameters, CallbackServerParameters)
-from py4j.protocol import *
+from py4j.protocol import (
+    Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
+    encode_bytearray, escape_new_line, unescape_new_line)
 
 
 SERVER_PORT = 25333
