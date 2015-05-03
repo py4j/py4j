@@ -15,10 +15,12 @@ def example_app_process():
     finally:
         p.join()
 
+
 @contextmanager
 def gateway(*args, **kwargs):
     g = JavaGateway(
-        gateway_parameters=GatewayParameters(*args, auto_convert=True, **kwargs))
+        gateway_parameters=GatewayParameters(
+            *args, auto_convert=True, **kwargs))
     lineSep = g.jvm.System.lineSeparator()
     try:
         yield g
@@ -27,23 +29,26 @@ def gateway(*args, **kwargs):
     finally:
         g.shutdown()
 
+
 def test_help_object():
     with example_app_process():
         with gateway() as g:
             ex = g.getNewExample()
             doc = g.help(ex, display=False)
-            assert 'Help on class ExampleClass in package py4j.examples' in doc
-            assert 'method1' in doc
-            assert 'method2' in doc
+            assert "Help on class ExampleClass in package py4j.examples" in doc
+            assert "method1" in doc
+            assert "method2" in doc
+
 
 def test_doc_object():
     with example_app_process():
         with gateway() as g:
             ex = g.getNewExample()
             doc = ex.__doc__
-            assert 'Help on class ExampleClass in package py4j.examples' in doc
-            assert 'method1' in doc
-            assert 'getField1' in doc
+            assert "Help on class ExampleClass in package py4j.examples" in doc
+            assert "method1" in doc
+            assert "getField1" in doc
+
 
 def test_not_callable():
     with example_app_process():
@@ -53,25 +58,28 @@ def test_not_callable():
                 ex()
                 raise AssertionError
             except TypeError as e:
-                assert 'object is not callable' in str(e)
+                assert "object is not callable" in str(e)
+
 
 def test_help_pattern_1():
     with example_app_process():
         with gateway() as g:
             ex = g.getNewExample()
             doc = g.help(ex, display=False, pattern="m*")
-            assert 'Help on class ExampleClass in package py4j.examples' in doc
-            assert 'method1' in doc
-            assert 'getField1' not in doc
+            assert "Help on class ExampleClass in package py4j.examples" in doc
+            assert "method1" in doc
+            assert "getField1" not in doc
+
 
 def test_help_pattern_2():
     with example_app_process():
         with gateway() as g:
             ex = g.getNewExample()
             doc = g.help(ex, display=False, pattern="getField1(*")
-            assert 'Help on class ExampleClass in package py4j.examples' in doc
-            assert 'method1' not in doc
-            assert 'getField1' in doc
+            assert "Help on class ExampleClass in package py4j.examples" in doc
+            assert "method1" not in doc
+            assert "getField1" in doc
+
 
 def test_help_method():
     with example_app_process():
@@ -79,9 +87,10 @@ def test_help_method():
             ex = g.getNewExample()
             doc = g.help(ex.method7, display=False)
             # Make sure multiple method7s appear (overloaded method)
-            assert 'method7(int)' in doc
-            assert 'method7(Object)' in doc
-            assert 'method1' not in doc
+            assert "method7(int)" in doc
+            assert "method7(Object)" in doc
+            assert "method1" not in doc
+
 
 def test_doc_method():
     with example_app_process():
@@ -89,18 +98,20 @@ def test_doc_method():
             ex = g.getNewExample()
             doc = ex.method7.__doc__
             # Make sure multiple method7s appear (overloaded method)
-            assert 'method7(int)' in doc
-            assert 'method7(Object)' in doc
-            assert 'method1' not in doc
+            assert "method7(int)" in doc
+            assert "method7(Object)" in doc
+            assert "method1" not in doc
+
 
 def test_help_class():
     with example_app_process():
         with gateway() as g:
             clazz = g.jvm.py4j.examples.ExampleClass
             doc = g.help(clazz, display=False)
-            assert 'Help on class ExampleClass in package py4j.examples' in doc
-            assert 'method1' in doc
-            assert 'method2' in doc
+            assert "Help on class ExampleClass in package py4j.examples" in doc
+            assert "method1" in doc
+            assert "method2" in doc
+
 
 def test_doc_class():
     with example_app_process():
@@ -108,6 +119,6 @@ def test_doc_class():
             clazz = g.jvm.py4j.examples.ExampleClass
             doc = clazz.__doc__
             # Make sure multiple method7s appear (overloaded method)
-            assert 'Help on class ExampleClass in package py4j.examples' in doc
-            assert 'method1' in doc
-            assert 'method2' in doc
+            assert "Help on class ExampleClass in package py4j.examples" in doc
+            assert "method1" in doc
+            assert "method2" in doc

@@ -1,9 +1,9 @@
 #coding: utf-8
-'''
+"""
 Compatibility functions for unified behavior between Python 2.x and 3.x.
 
 :author: Alex Grönholm
-'''
+"""
 from __future__ import unicode_literals, absolute_import
 
 import inspect
@@ -38,15 +38,15 @@ else:
     bytearray2 = bytes
     unichr = chr
     bytestr = bytes
-    tobytestr = lambda s: bytes(s, 'ascii')
+    tobytestr = lambda s: bytes(s, "ascii")
     isbytestr = lambda s: isinstance(s, bytes)
     ispython3bytestr = lambda s: isinstance(s, bytes)
     isbytearray = lambda s: isinstance(s, bytearray)
     bytetoint = lambda b: b
-    bytetostr = lambda b: str(b, encoding='ascii')
-    strtobyte = lambda s: bytes(s, encoding='ascii')
+    bytetostr = lambda b: str(b, encoding="ascii")
+    strtobyte = lambda s: bytes(s, encoding="ascii")
 
-if hasattr(inspect, 'getattr_static'):
+if hasattr(inspect, "getattr_static"):
     hasattr2 = lambda obj, attr: bool(inspect.getattr_static(obj, attr, False))
 else:
     hasattr2 = hasattr
