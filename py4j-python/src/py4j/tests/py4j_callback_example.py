@@ -8,11 +8,10 @@ from py4j.java_gateway import JavaGateway, CallbackServerParameters
 
 class Addition(object):
     def doOperation(self, i, j, k=None):
-        if k == None:
+        if k is None:
             return i + j
         else:
             return 3722507311
-#            return i + j + k
 
     class Java:
         implements = ['py4j.examples.Operator']

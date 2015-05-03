@@ -518,7 +518,6 @@ class GatewayClient(object):
             self._give_back_connection(connection)
         except Py4JNetworkError:
             if retry:
-                #print_exc()
                 response = self.send_command(command)
             else:
                 response = proto.ERROR
@@ -634,7 +633,6 @@ class GatewayConnection(object):
                 raise Py4JError("Answer from Java side is empty")
             return answer
         except Exception:
-            #print_exc()
             logger.exception('Error while sending or receiving.')
             raise Py4JNetworkError('Error while sending or receiving')
 
@@ -719,7 +717,6 @@ class JavaObject(object):
         :param gateway_client: the gateway client used to communicate with
          the JVM.
         """
-#        print(target_id + ' created.')
         self._target_id = target_id
         self._gateway_client = gateway_client
         self._auto_field = gateway_client.gateway_property.auto_field

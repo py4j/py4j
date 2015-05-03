@@ -277,11 +277,6 @@ def get_command_part(parameter, python_proxy_pool=None):
 
     command_part += '\n'
 
-    #print('THIS IS GOING OUT: {0}'.format(command_part))
-    #print(type(command_part))
-    #for c in command_part:
-        #print(ord(c))
-
     return command_part
 
 
