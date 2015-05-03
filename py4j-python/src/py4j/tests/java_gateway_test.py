@@ -20,15 +20,17 @@ import unittest
 
 from py4j.compat import range, isbytearray, bytearray2, long
 from py4j.finalizer import ThreadSafeFinalizer
-from py4j.java_gateway import JavaGateway, JavaMember, get_field, get_method, \
-     GatewayClient, set_field, java_import, JavaObject, is_instance_of,\
-     GatewayParameters, CallbackServerParameters
+from py4j.java_gateway import (
+    JavaGateway, JavaMember, get_field, get_method,
+    GatewayClient, set_field, java_import, JavaObject, is_instance_of,
+    GatewayParameters, CallbackServerParameters)
 from py4j.protocol import *
 
 
 SERVER_PORT = 25333
 TEST_PORT = 25332
-PY4J_JAVA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+PY4J_JAVA_PATH = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)),
     '../../../../py4j-java/bin')
 
 
@@ -52,7 +54,8 @@ def start_echo_server_process():
 
 
 def start_example_server():
-    subprocess.call(["java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+    subprocess.call([
+        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
         "py4j.examples.ExampleApplication"])
 
 
@@ -137,8 +140,8 @@ class ProtocolTest(unittest.TestCase):
         self.assertEqual('c\nt\ngetExample\ne\n', testConnection.last_message)
         e.method1(1, True, 'Hello\nWorld', e, None, 1.5)
         self.assertEqual(
-                'c\no0\nmethod1\ni1\nbTrue\nsHello\\nWorld\nro0\nn\nd1.5\ne\n',
-                testConnection.last_message)
+            'c\no0\nmethod1\ni1\nbTrue\nsHello\\nWorld\nro0\nn\nd1.5\ne\n',
+            testConnection.last_message)
         del(e)
 
     def testProtocolReceive(self):
@@ -300,7 +303,7 @@ class FieldTest(unittest.TestCase):
         sb = ex.field20
         sb.append('Hello')
         self.assertEqual('Hello', sb.toString())
-        self.assertTrue(ex.field21 == None)
+        self.assertTrue(ex.field21 is None)
 
     def testAutoFieldDeprecated(self):
         self.gateway = JavaGateway(auto_field=True)
@@ -367,13 +370,17 @@ class UtilityTest(unittest.TestCase):
 
         # FQN
         self.assertTrue(is_instance_of(self.gateway, a_list, "java.util.List"))
-        self.assertFalse(is_instance_of(self.gateway, a_list, "java.lang.String"))
+        self.assertFalse(
+            is_instance_of(
+                self.gateway, a_list, "java.lang.String"))
 
         # JavaClass
-        self.assertTrue(is_instance_of(self.gateway, a_list,
-            self.gateway.jvm.java.util.List))
-        self.assertFalse(is_instance_of(self.gateway, a_list,
-            self.gateway.jvm.java.lang.String))
+        self.assertTrue(
+            is_instance_of(
+                self.gateway, a_list, self.gateway.jvm.java.util.List))
+        self.assertFalse(
+            is_instance_of(
+                self.gateway, a_list, self.gateway.jvm.java.lang.String))
 
         # JavaObject
         self.assertTrue(is_instance_of(self.gateway, a_list, a_list))
@@ -396,10 +403,10 @@ class MemoryManagementTest(unittest.TestCase):
         sb.append('Hello World')
         self.gateway.shutdown()
 
-        self.assertRaises(Exception, lambda : sb.append('Python'))
+        self.assertRaises(Exception, lambda: sb.append('Python'))
 
-        self.assertRaises(Exception,
-                lambda : gateway2.jvm.java.lang.StringBuffer())
+        self.assertRaises(
+            Exception, lambda: gateway2.jvm.java.lang.StringBuffer())
 
     def testDetach(self):
         self.gateway = JavaGateway()
@@ -414,8 +421,8 @@ class MemoryManagementTest(unittest.TestCase):
         sb2._detach()
         gc.collect()
 
-        self.assertEqual(len(ThreadSafeFinalizer.finalizers) -
-                finalizers_size_start, 0)
+        self.assertEqual(
+            len(ThreadSafeFinalizer.finalizers) - finalizers_size_start, 0)
         self.gateway.shutdown()
 
 
@@ -464,11 +471,11 @@ class UnicodeTest(unittest.TestCase):
         safe_shutdown(self)
         self.p.join()
 
-    #def testUtfMethod(self):
-        #ex = self.gateway.jvm.py4j.examples.UTFExample()
+    # def testUtfMethod(self):
+        # ex = self.gateway.jvm.py4j.examples.UTFExample()
 
-        ## Only works for Python 3
-        #self.assertEqual(2, ex.strangeMéthod())
+        # Only works for Python 3
+        # self.assertEqual(2, ex.strangeMéthod())
 
     def testUnicodeString(self):
         # NOTE: this is unicode because of import future unicode literal...
@@ -508,13 +515,13 @@ class ByteTest(unittest.TestCase):
         self.assertEqual(-1, ex.getJavaByteValue(ba[4]))
 
     def testProtocolConversion(self):
-        #b1 = tobytestr('abc\n')
+        # b1 = tobytestr('abc\n')
         b2 = bytearray([1, 2, 3, 255, 0, 128, 127])
 
-        #encoded1 = encode_bytearray(b1)
+        # encoded1 = encode_bytearray(b1)
         encoded2 = encode_bytearray(b2)
 
-        #self.assertEqual(b1, decode_bytearray(encoded1))
+        # self.assertEqual(b1, decode_bytearray(encoded1))
         self.assertEqual(b2, decode_bytearray(encoded2))
 
     def testBytesType(self):
@@ -561,8 +568,9 @@ class ExceptionTest(unittest.TestCase):
         try:
             self.gateway.jvm.Integer.valueOf('allo')
         except Py4JJavaError as e:
-            self.assertEqual('java.lang.NumberFormatException',
-                    e.java_exception.getClass().getName())
+            self.assertEqual(
+                'java.lang.NumberFormatException',
+                e.java_exception.getClass().getName())
         except Exception:
             self.fail()
 
@@ -570,8 +578,9 @@ class ExceptionTest(unittest.TestCase):
         try:
             self.gateway.jvm.Integer('allo')
         except Py4JJavaError as e:
-            self.assertEqual('java.lang.NumberFormatException',
-                    e.java_exception.getClass().getName())
+            self.assertEqual(
+                'java.lang.NumberFormatException',
+                e.java_exception.getClass().getName())
         except Exception:
             self.fail()
 
@@ -670,7 +679,7 @@ class JVMTest(unittest.TestCase):
         java_import(self.gateway.jvm, 'java.io.File')
         self.assertTrue(self.gateway.jvm.ArrayList() is not None)
         self.assertTrue(self.gateway.jvm.File('hello.txt') is not None)
-        self.assertRaises(Exception, lambda : newView.File('test.txt'))
+        self.assertRaises(Exception, lambda: newView.File('test.txt'))
 
         java_import(newView, 'java.util.HashSet')
         self.assertTrue(newView.HashSet() is not None)
@@ -679,9 +688,11 @@ class JVMTest(unittest.TestCase):
         self.assertEqual('FOO', str(self.gateway.jvm.py4j.examples.Enum2.FOO))
 
     def testInnerClass(self):
-        self.assertEqual('FOO',
+        self.assertEqual(
+            'FOO',
             str(self.gateway.jvm.py4j.examples.EnumExample.MyEnum.FOO))
-        self.assertEqual('HELLO2',
+        self.assertEqual(
+            'HELLO2',
             self.gateway.jvm.py4j.examples.EnumExample.InnerClass.MY_CONSTANT2)
 
 
@@ -701,8 +712,8 @@ class HelpTest(unittest.TestCase):
 
     def testHelpObjectWithPattern(self):
         ex = self.gateway.getNewExample()
-        help_page = self.gateway.help(ex, pattern='m*', short_name=True,
-                display=False)
+        help_page = self.gateway.help(
+            ex, pattern='m*', short_name=True, display=False)
         self.assertTrue(len(help_page) > 1)
 
     def testHelpClass(self):
@@ -728,7 +739,7 @@ class Runner(Thread):
                     self.ok = False
                     break
                 self.gateway.detach(l)
-#                gc.collect()
+                # gc.collect()
             except Exception:
                 self.ok = False
                 break
@@ -747,9 +758,9 @@ class ThreadTest(unittest.TestCase):
 
     def testStress(self):
         # Real stress test!
-#        runner1 = Runner(xrange(1,10000,2),self.gateway)
-#        runner2 = Runner(xrange(1000,1000000,10000), self.gateway)
-#        runner3 = Runner(xrange(1000,1000000,10000), self.gateway)
+        # runner1 = Runner(xrange(1,10000,2),self.gateway)
+        # runner2 = Runner(xrange(1000,1000000,10000), self.gateway)
+        # runner3 = Runner(xrange(1000,1000000,10000), self.gateway)
         # Small stress test
         runner1 = Runner(range(1, 10000, 1000), self.gateway)
         runner2 = Runner(range(1000, 1000000, 100000), self.gateway)
