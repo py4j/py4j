@@ -70,8 +70,8 @@ def java_import(jvm_view, import_str):
     """
     gateway_client = jvm_view._gateway_client
     command = JVMVIEW_COMMAND_NAME + JVM_IMPORT_SUB_COMMAND_NAME +\
-            jvm_view._id + '\n' + escape_new_line(import_str) + '\n' +\
-            END_COMMAND_PART
+        jvm_view._id + '\n' + escape_new_line(import_str) + '\n' +\
+        END_COMMAND_PART
     answer = gateway_client.send_command(command)
     return_value = get_return_value(answer, gateway_client, None, None)
     return return_value
@@ -83,10 +83,10 @@ def find_jar_path():
     paths = []
     jar_file = "py4j{0}.jar".format(__version__)
     paths.append(jar_file)
-    paths.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-            "../../../py4j-java/" + jar_file))
-    paths.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-            "../share/py4j/" + jar_file))
+    paths.append(os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), "../../../py4j-java/" + jar_file))
+    paths.append(os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), "../share/py4j/" + jar_file))
     paths.append("../../../current-release/" + jar_file)
     paths.append(os.path.join(sys.prefix, "share/py4j/" + jar_file))
 
@@ -97,7 +97,7 @@ def find_jar_path():
 
 
 def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
-        die_on_exit=False):
+                   die_on_exit=False):
     """Launch a `Gateway` in a new Java process.
 
     :param port: the port to launch the Java Gateway on.  If no port is
@@ -147,16 +147,17 @@ def get_field(java_object, field_name):
     :param field_name: the name of the field to retrieve
     """
     command = FIELD_COMMAND_NAME + FIELD_GET_SUBCOMMAND_NAME +\
-            java_object._target_id + '\n' + field_name + '\n' +\
-            END_COMMAND_PART
+        java_object._target_id + '\n' + field_name + '\n' +\
+        END_COMMAND_PART
     answer = java_object._gateway_client.send_command(command)
 
     if answer == NO_MEMBER_COMMAND or is_error(answer)[0]:
         raise Py4JError('no field {0} in object {1}'.format(
             field_name, java_object._target_id))
     else:
-        return get_return_value(answer, java_object._gateway_client,
-                java_object._target_id, field_name)
+        return get_return_value(
+            answer, java_object._gateway_client, java_object._target_id,
+            field_name)
 
 
 def set_field(java_object, field_name, value):
@@ -170,19 +171,21 @@ def set_field(java_object, field_name, value):
     :param value: the value to assign to the field
     """
 
-    command_part = get_command_part(value,
-            java_object._gateway_client.gateway_property.pool)
+    command_part = get_command_part(
+        value,
+        java_object._gateway_client.gateway_property.pool)
 
     command = FIELD_COMMAND_NAME + FIELD_SET_SUBCOMMAND_NAME +\
-            java_object._target_id + '\n' + field_name + '\n' +\
-            command_part + '\n' + END_COMMAND_PART
+        java_object._target_id + '\n' + field_name + '\n' +\
+        command_part + '\n' + END_COMMAND_PART
 
     answer = java_object._gateway_client.send_command(command)
     if answer == NO_MEMBER_COMMAND or is_error(answer)[0]:
         raise Py4JError('no field {0} in object {1}'.format(
             field_name, java_object._target_id))
-    return get_return_value(answer, java_object._gateway_client,
-        java_object._target_id, field_name)
+    return get_return_value(
+        answer, java_object._gateway_client, java_object._target_id,
+        field_name)
 
 
 def get_method(java_object, method_name):
@@ -195,8 +198,9 @@ def get_method(java_object, method_name):
     :param java_object: the instance containing the method
     :param method_name: the name of the method to retrieve
     """
-    return JavaMember(method_name, java_object, java_object._target_id,
-            java_object._gateway_client)
+    return JavaMember(
+        method_name, java_object, java_object._target_id,
+        java_object._gateway_client)
 
 
 def is_instance_of(gateway, java_object, java_class):
@@ -215,10 +219,11 @@ def is_instance_of(gateway, java_object, java_class):
     elif isinstance(java_class, JavaObject):
         param = java_class.getClass()
     else:
-        raise Py4JError("java_class must be a string, a JavaClass, or a JavaObject")
+        raise Py4JError(
+            "java_class must be a string, a JavaClass, or a JavaObject")
 
-    return gateway.jvm.py4j.reflection.TypeUtil.isInstanceOf(param,
-            java_object)
+    return gateway.jvm.py4j.reflection.TypeUtil.isInstanceOf(
+        param, java_object)
 
 
 def quiet_close(closable):
@@ -243,7 +248,8 @@ def quiet_shutdown(socket_instance):
         pass
 
 
-def gateway_help(gateway_client, var, pattern=None, short_name=True, display=True):
+def gateway_help(gateway_client, var, pattern=None, short_name=True,
+                 display=True):
     """Displays a help page about a class or an object.
 
     :param gateway_client: The gatway client
@@ -266,28 +272,31 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True, display=Tru
     """
     if hasattr2(var, '_get_object_id'):
         command = HELP_COMMAND_NAME +\
-                  HELP_OBJECT_SUBCOMMAND_NAME +\
-                  var._get_object_id() + '\n' +\
-                  get_command_part(pattern) +\
-                  get_command_part(short_name) +\
-                  END_COMMAND_PART
+            HELP_OBJECT_SUBCOMMAND_NAME +\
+            var._get_object_id() + '\n' +\
+            get_command_part(pattern) +\
+            get_command_part(short_name) +\
+            END_COMMAND_PART
         answer = gateway_client.send_command(command)
     elif hasattr2(var, '_fqn'):
         command = HELP_COMMAND_NAME +\
-                  HELP_CLASS_SUBCOMMAND_NAME +\
-                  var._fqn + '\n' +\
-                  get_command_part(pattern) +\
-                  get_command_part(short_name) +\
-                  END_COMMAND_PART
+            HELP_CLASS_SUBCOMMAND_NAME +\
+            var._fqn + '\n' +\
+            get_command_part(pattern) +\
+            get_command_part(short_name) +\
+            END_COMMAND_PART
         answer = gateway_client.send_command(command)
     elif hasattr2(var, 'container') and hasattr2(var, 'name'):
         if pattern is not None:
             raise Py4JError('pattern should be None with var is a JavaMember')
         pattern = var.name + "(*"
         var = var.container
-        return gateway_help(gateway_client, var, pattern, short_name=short_name, display=display)
+        return gateway_help(
+            gateway_client, var, pattern, short_name=short_name,
+            display=display)
     else:
-        raise Py4JError('var is none of Java Object, Java Class or Java Member')
+        raise Py4JError(
+            'var is none of Java Object, Java Class or Java Member')
 
     help_page = get_return_value(answer, gateway_client, None, None)
     if (display):
@@ -295,10 +304,12 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True, display=Tru
     else:
         return help_page
 
+
 def _garbage_collect_object(gateway_client, target_id):
-#    print(target_id + ' deleted')
-    ThreadSafeFinalizer.remove_finalizer(smart_decode(gateway_client.address) +
-            smart_decode(gateway_client.port) + target_id)
+    ThreadSafeFinalizer.remove_finalizer(
+        smart_decode(gateway_client.address) +
+        smart_decode(gateway_client.port) +
+        target_id)
     if target_id != ENTRY_POINT_OBJECT_ID and gateway_client.is_connected:
         try:
             gateway_client.send_command(MEMORY_COMMAND_NAME +
@@ -318,8 +329,7 @@ def _garbage_collect_connection(socket_instance):
     Otherwise, it is always better (because it is predictable) to explicitly
     close the socket by calling `GatewayConnection.close()`.
     """
-#    print('delete connection')
-    if socket_instance != None:
+    if socket_instance is not None:
         quiet_shutdown(socket_instance)
         quiet_close(socket_instance)
 
@@ -428,7 +438,7 @@ class GatewayClient(object):
     connections, which is essential when using callbacks.  """
 
     def __init__(self, address=DEFAULT_ADDRESS, port=25333, auto_close=True,
-            gateway_property=None):
+                 gateway_property=None):
         """
         :param address: the address to which the client will request a
          connection
@@ -459,9 +469,8 @@ class GatewayClient(object):
         return connection
 
     def _create_connection(self):
-#        print('Creating connection')
-        connection = GatewayConnection(self.address, self.port,
-                self.auto_close, self.gateway_property)
+        connection = GatewayConnection(
+            self.address, self.port, self.auto_close, self.gateway_property)
         connection.start()
         return connection
 
@@ -535,7 +544,7 @@ class GatewayConnection(object):
        with the Java Virtual Machine."""
 
     def __init__(self, address=DEFAULT_ADDRESS, port=25333, auto_close=True,
-            gateway_property=None):
+                 gateway_property=None):
         """
         :param address: the address to which the connection will be established
 
@@ -554,7 +563,8 @@ class GatewayConnection(object):
         self.is_connected = False
         self.auto_close = auto_close
         self.gateway_property = gateway_property
-        self.wr = weakref.ref(self,
+        self.wr = weakref.ref(
+            self,
             lambda wr, socket_instance=self.socket:
             _garbage_collect_connection(socket_instance))
 
@@ -642,10 +652,11 @@ class JavaMember(object):
 
     @property
     def __doc__(self):
-        # The __doc__ string is used by IPython/PyDev/etc to generate help string,
-        # therefore provide useful help
+        # The __doc__ string is used by IPython/PyDev/etc to generate
+        # help string, therefore provide useful help
         if self._gateway_doc is None:
-            self._gateway_doc = gateway_help(self.gateway_client, self, display=False)
+            self._gateway_doc = gateway_help(
+                self.gateway_client, self, display=False)
         return self._gateway_doc
 
     def _get_args(self, args):
@@ -674,7 +685,7 @@ class JavaMember(object):
             temp_args = []
 
         args_command = ''.join(
-                [get_command_part(arg, self.pool) for arg in new_args])
+            [get_command_part(arg, self.pool) for arg in new_args])
 
         command = CALL_COMMAND_NAME +\
             self.command_header +\
@@ -682,8 +693,8 @@ class JavaMember(object):
             END_COMMAND_PART
 
         answer = self.gateway_client.send_command(command)
-        return_value = get_return_value(answer, self.gateway_client,
-                self.target_id, self.name)
+        return_value = get_return_value(
+            answer, self.gateway_client, self.target_id, self.name)
 
         for temp_arg in temp_args:
             temp_arg._detach()
@@ -713,11 +724,13 @@ class JavaObject(object):
         self._gateway_doc = None
 
         key = smart_decode(self._gateway_client.address) +\
-              smart_decode(self._gateway_client.port) +\
-              self._target_id
+            smart_decode(self._gateway_client.port) +\
+            self._target_id
 
-        value = weakref.ref(self, lambda wr, cc=self._gateway_client,
-                id=self._target_id: _garbage_collect_object(cc, id))
+        value = weakref.ref(
+            self,
+            lambda wr, cc=self._gateway_client, id=self._target_id:
+            _garbage_collect_object(cc, id))
 
         ThreadSafeFinalizer.add_finalizer(key, value)
 
@@ -729,18 +742,19 @@ class JavaObject(object):
 
     @property
     def __doc__(self):
-        # The __doc__ string is used by IPython/PyDev/etc to generate help string,
-        # therefore provide useful help
+        # The __doc__ string is used by IPython/PyDev/etc to generate
+        # help string, therefore provide useful help
         if self._gateway_doc is None:
-            self._gateway_doc = gateway_help(self._gateway_client, self, display=False)
+            self._gateway_doc = gateway_help(
+                self._gateway_client, self, display=False)
         return self._gateway_doc
 
     def __getattr__(self, name):
         if name == '__call__':
-            # Provide an explicit definition for __call__ so that a JavaMember does
-            # not get created for it. This serves two purposes:
-            # 1) IPython (and others?) stop showing incorrect help indicating that
-            #    this is callable
+            # Provide an explicit definition for __call__ so that a JavaMember
+            # does not get created for it. This serves two purposes:
+            # 1) IPython (and others?) stop showing incorrect help indicating
+            #    that this is callable
             # 2) A TypeError(object not callable) is raised if someone does try
             #    to call here
             raise AttributeError
@@ -753,8 +767,8 @@ class JavaObject(object):
                     return return_value
             # Theoretically, not thread safe, but the worst case scenario is
             # cache miss or double overwrite of the same method...
-            self._methods[name] = JavaMember(name, self, self._target_id,
-                    self._gateway_client)
+            self._methods[name] = JavaMember(
+                name, self, self._target_id, self._gateway_client)
 
         # The name is a method
         return self._methods[name]
@@ -774,8 +788,8 @@ class JavaObject(object):
                     END_COMMAND_PART
 
                 answer = self._gateway_client.send_command(command)
-                return_value = get_return_value(answer, self._gateway_client,
-                        self._target_id, "__dir__")
+                return_value = get_return_value(
+                    answer, self._gateway_client, self._target_id, "__dir__")
                 self._field_names.update(return_value.split('\n'))
 
             command = DIR_COMMAND_NAME +\
@@ -784,13 +798,13 @@ class JavaObject(object):
                 END_COMMAND_PART
 
             answer = self._gateway_client.send_command(command)
-            return_value = get_return_value(answer, self._gateway_client,
-                    self._target_id, "__dir__")
+            return_value = get_return_value(
+                answer, self._gateway_client, self._target_id, "__dir__")
             names = return_value.split('\n')
             for name in names:
                 if name not in self._methods:
-                    self._methods[name] = JavaMember(name, self, self._target_id,
-                            self._gateway_client)
+                    self._methods[name] = JavaMember(
+                        name, self, self._target_id, self._gateway_client)
 
             self._fully_populated = True
 
@@ -805,12 +819,12 @@ class JavaObject(object):
         if answer == NO_MEMBER_COMMAND or is_error(answer)[0]:
             return (False, None)
         else:
-            return_value = get_return_value(answer, self._gateway_client,
-                    self._target_id, name)
+            return_value = get_return_value(
+                answer, self._gateway_client, self._target_id, name)
             return (True, return_value)
 
     def __eq__(self, other):
-        if other == None:
+        if other is None:
             return False
         elif (hasattr2(other, '_get_object_id')):
             return self.equals(other)
@@ -847,12 +861,12 @@ class JavaClass(object):
 
     @property
     def __doc__(self):
-        # The __doc__ string is used by IPython/PyDev/etc to generate help string,
-        # therefore provide useful help
+        # The __doc__ string is used by IPython/PyDev/etc to generate
+        # help string, therefore provide useful help
         if self._gateway_doc is None:
-            self._gateway_doc = gateway_help(self._gateway_client, self, display=False)
+            self._gateway_doc = gateway_help(
+                self._gateway_client, self, display=False)
         return self._gateway_doc
-
 
     def __dir__(self):
         # Theoretically, not thread safe, but the worst case scenario is
@@ -864,8 +878,8 @@ class JavaClass(object):
                 END_COMMAND_PART
 
             answer = self._gateway_client.send_command(command)
-            return_value = get_return_value(answer, self._gateway_client,
-                    self._fqn, "__dir__")
+            return_value = get_return_value(
+                answer, self._gateway_client, self._fqn, "__dir__")
             self._statics = return_value.split('\n')
         return self._statics[:]
 
@@ -882,17 +896,18 @@ class JavaClass(object):
 
         if len(answer) > 1 and answer[0] == SUCCESS:
             if answer[1] == METHOD_TYPE:
-                return JavaMember(name, None, STATIC_PREFIX + self._fqn,
-                        self._gateway_client)
+                return JavaMember(
+                    name, None, STATIC_PREFIX + self._fqn,
+                    self._gateway_client)
             elif answer[1].startswith(CLASS_TYPE):
-                return JavaClass(self._fqn + '$' + name,
-                        self._gateway_client)
+                return JavaClass(
+                    self._fqn + '$' + name, self._gateway_client)
             else:
-                return get_return_value(answer, self._gateway_client,
-                        self._fqn, name)
+                return get_return_value(
+                    answer, self._gateway_client, self._fqn, name)
         else:
-            raise Py4JError('{0}.{1} does not exist in the JVM'.
-                    format(self._fqn, name))
+            raise Py4JError(
+                "{0}.{1} does not exist in the JVM".format(self._fqn, name))
 
     def _get_args(self, args):
         temp_args = []
@@ -921,7 +936,7 @@ class JavaClass(object):
             temp_args = []
 
         args_command = ''.join(
-                [get_command_part(arg, self._pool) for arg in new_args])
+            [get_command_part(arg, self._pool) for arg in new_args])
 
         command = CONSTRUCTOR_COMMAND_NAME +\
             self._command_header +\
@@ -929,8 +944,8 @@ class JavaClass(object):
             END_COMMAND_PART
 
         answer = self._gateway_client.send_command(command)
-        return_value = get_return_value(answer, self._gateway_client, None,
-                self._fqn)
+        return_value = get_return_value(
+            answer, self._gateway_client, None, self._fqn)
 
         for temp_arg in temp_args:
             temp_arg._detach()
@@ -944,7 +959,7 @@ class UserHelpAutoCompletion(object):
 
     For example with a JVMView called view:
     >>> o = view.Object() # create a java.lang.Object
-    >>> random = view.jvm.java.util.Random() # create a java.util.Random instance
+    >>> random = view.jvm.java.util.Random() # create a java.util.Random
 
     The default JVMView is in the gateway and is called:
     >>> gateway.jvm
@@ -992,10 +1007,10 @@ class JavaPackage(object):
             raise Py4JError('Trying to call a package.')
         new_fqn = self._fqn + '.' + name
         command = REFLECTION_COMMAND_NAME +\
-                REFL_GET_UNKNOWN_SUB_COMMAND_NAME +\
-                new_fqn + '\n' +\
-                self._jvm_id + '\n' +\
-                END_COMMAND_PART
+            REFL_GET_UNKNOWN_SUB_COMMAND_NAME +\
+            new_fqn + '\n' +\
+            self._jvm_id + '\n' +\
+            END_COMMAND_PART
         answer = self._gateway_client.send_command(command)
         if answer == SUCCESS_PACKAGE:
             return JavaPackage(new_fqn, self._gateway_client, self._jvm_id)
@@ -1036,8 +1051,8 @@ class JVMView(object):
             END_COMMAND_PART
 
         answer = self._gateway_client.send_command(command)
-        return_value = get_return_value(answer, self._gateway_client,
-                self._fqn, "__dir__")
+        return_value = get_return_value(
+            answer, self._gateway_client, self._fqn, "__dir__")
         if return_value is not None:
             result = return_value.split('\n')
             # Theoretically, not thread safe, but the worst case scenario is
@@ -1050,10 +1065,10 @@ class JVMView(object):
         if name == UserHelpAutoCompletion.KEY:
             return UserHelpAutoCompletion()
 
-
-        answer = self._gateway_client.send_command(REFLECTION_COMMAND_NAME +\
-                REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + self._id +\
-                '\n' + END_COMMAND_PART)
+        answer = self._gateway_client.send_command(
+            REFLECTION_COMMAND_NAME +
+            REFL_GET_UNKNOWN_SUB_COMMAND_NAME + name + '\n' + self._id +
+            '\n' + END_COMMAND_PART)
         if answer == SUCCESS_PACKAGE:
             return JavaPackage(name, self._gateway_client, jvm_id=self._id)
         elif answer.startswith(SUCCESS_CLASS):
@@ -1239,8 +1254,9 @@ class JavaGateway(object):
         answer = self._gateway_client.send_command(command)
         java_object = get_return_value(answer, self._gateway_client)
 
-        return JVMView(gateway_client=self._gateway_client, jvm_name=name,
-                jvm_object=java_object)
+        return JVMView(
+            gateway_client=self._gateway_client, jvm_name=name,
+            jvm_object=java_object)
 
     def new_array(self, java_class, *dimensions):
         """Creates a Java array of type `java_class` of `dimensions`
@@ -1257,8 +1273,8 @@ class JavaGateway(object):
         if len(dimensions) == 0:
             raise Py4JError('new arrays must have at least one dimension')
         command = ARRAY_COMMAND_NAME +\
-                  ARRAY_CREATE_SUB_COMMAND_NAME +\
-                  get_command_part(java_class._fqn)
+            ARRAY_CREATE_SUB_COMMAND_NAME +\
+            get_command_part(java_class._fqn)
         for dimension in dimensions:
             command += get_command_part(dimension)
         command += END_COMMAND_PART
@@ -1269,8 +1285,8 @@ class JavaGateway(object):
         """Shuts down the :class:`GatewayClient` and the
            :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
 
-        :param raise_exception: If `True`, raise an exception if an error occurs
-         while shutting down (very likely with sockets).
+        :param raise_exception: If `True`, raise an exception if an error
+         occurs while shutting down (very likely with sockets).
         """
         try:
             self._gateway_client.shutdown_gateway()
@@ -1283,8 +1299,8 @@ class JavaGateway(object):
         """Shuts down the
            :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
 
-        :param raise_exception: If `True`, raise an exception if an error occurs
-         while shutting down (very likely with sockets).
+        :param raise_exception: If `True`, raise an exception if an error
+         occurs while shutting down (very likely with sockets).
         """
         try:
             self._callback_server.shutdown()
@@ -1304,7 +1320,7 @@ class JavaGateway(object):
            necessary (e.g., if a :class:`JavaMethod` is called).
 
         :param keep_callback_server: if `True`, the callback server is not
-         shut down.
+            shut down.
         """
         self._gateway_client.close()
         if not keep_callback_server:
@@ -1319,7 +1335,7 @@ class JavaGateway(object):
         are created on the Java side.
 
         :param java_object: The JavaObject instance to dereference (free) on
-         the Java side.
+            the Java side.
         """
         java_object._detach()
 
@@ -1327,25 +1343,27 @@ class JavaGateway(object):
         """Displays a help page about a class or an object.
 
         :param var: JavaObject, JavaClass or JavaMember for which a help page
-         will be generated.
+            will be generated.
 
         :param pattern: Star-pattern used to filter the members. For example
-         'get*Foo' may return getMyFoo, getFoo, getFooBar, but not bargetFoo.
-         The pattern is matched against the entire signature. To match only
-         the name of a method, use 'methodName(*'.
+            'get*Foo' may return getMyFoo, getFoo, getFooBar, but not
+            bargetFoo. The pattern is matched against the entire signature.
+            To match only the name of a method, use 'methodName(*'.
 
         :param short_name: If True, only the simple name of the parameter
-         types and return types will be displayed. If False, the fully
-         qualified name of the types will be displayed.
+            types and return types will be displayed. If False, the fully
+            qualified name of the types will be displayed.
 
         :param display: If True, the help page is displayed in an interactive
-         page similar to the `help` command in Python. If False, the page is
-         returned as a string.
+            page similar to the `help` command in Python. If False, the page is
+            returned as a string.
         """
-        return gateway_help(self._gateway_client, var, pattern, short_name, display)
+        return gateway_help(
+            self._gateway_client, var, pattern, short_name, display)
 
     @classmethod
-    def launch_gateway(cls, port=0, jarpath="", classpath="", javaopts=[],
+    def launch_gateway(
+            cls, port=0, jarpath="", classpath="", javaopts=[],
             die_on_exit=False):
         """Launch a `Gateway` in a new Java process and create a default
         :class:`JavaGateway <py4j.java_gateway.JavaGateway>` to connect to
@@ -1358,8 +1376,9 @@ class JavaGateway(object):
             a different `sys.prefix` than the one that Py4J was installed
             under.
         :param classpath: the classpath used to launch the Java Gateway.
-        :param javaopts: an array of extra options to pass to Java (the classpath
-            should be specified using the `classpath` parameter, not `javaopts`.)
+        :param javaopts: an array of extra options to pass to Java (the
+            classpath should be specified using the `classpath` parameter,
+            not `javaopts`.)
         :param die_on_exit: if `True`, the Java gateway process will die when
             this Python process exits or is killed.
 
@@ -1384,13 +1403,13 @@ class CallbackServer(object):
             address=DEFAULT_ADDRESS, callback_server_parameters=None):
         """
         :param pool: the pool responsible of tracking Python objects passed to
-         the Java side.
+            the Java side.
 
         :param gateway_client: the gateway client used to call Java objects.
 
         :param callback_server_parameters: An instance of
-        `CallbackServerParameters` used to configure various options of the
-        callback server.
+            `CallbackServerParameters` used to configure various options of the
+            callback server.
 
         """
         self.gateway_client = gateway_client
@@ -1417,8 +1436,8 @@ class CallbackServer(object):
         """Starts the CallbackServer. This method should be called by the
         client instead of run()."""
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,
-                1)
+        self.server_socket.setsockopt(
+            socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             self.server_socket.bind((self.address, self.port))
         except Exception:
@@ -1446,13 +1465,14 @@ class CallbackServer(object):
                 self.is_shutdown = False
             logger.info('Callback Server Starting')
             self.server_socket.listen(5)
-            logger.info('Socket listening on {0}'.
-                    format(smart_decode(self.server_socket.getsockname())))
+            logger.info(
+                'Socket listening on {0}'.
+                format(smart_decode(self.server_socket.getsockname())))
 
             read_list = [self.server_socket]
             while not self.is_shutdown:
-                readable, writable, errored = select.select(read_list, [], [],
-                        DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT)
+                readable, writable, errored = select.select(
+                    read_list, [], [], DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT)
 
                 if self.is_shutdown:
                     break
@@ -1523,8 +1543,9 @@ class CallbackConnection(Thread):
             while True:
                 command = smart_decode(self.input.readline())[:-1]
                 obj_id = smart_decode(self.input.readline())[:-1]
-                logger.info('Received command {0} on object id {1}'.
-                        format(command, obj_id))
+                logger.info(
+                    'Received command {0} on object id {1}'.
+                    format(command, obj_id))
                 if obj_id is None or len(obj_id.strip()) == 0:
                     break
                 if command == CALL_PROXY_COMMAND_NAME:
@@ -1537,7 +1558,8 @@ class CallbackConnection(Thread):
                     logger.error('Unknown command {0}'.format(command))
         except Exception:
             # This is a normal exception...
-            logger.info('Error while callback connection was waiting for'
+            logger.info(
+                'Error while callback connection was waiting for'
                 'a message')
 
             logger.info('Closing down connection')
@@ -1552,9 +1574,9 @@ class CallbackConnection(Thread):
                 params = self._get_params(input)
                 return_value = getattr(self.pool[obj_id], method)(*params)
                 return_message = 'y' +\
-                        get_command_part(return_value, self.pool)
+                    get_command_part(return_value, self.pool)
             except Exception:
-                logger.exception('There was an exception while executing the '\
+                logger.exception('There was an exception while executing the '
                                  'Python Proxy on the Python Side.')
         return return_message
 
@@ -1620,7 +1642,8 @@ class PythonProxyPool(object):
             return len(self.dict)
 
 # Basic registration
-register_output_converter(REFERENCE_TYPE,
+register_output_converter(
+    REFERENCE_TYPE,
     lambda target_id, gateway_client: JavaObject(target_id, gateway_client))
 
 if PY4J_SKIP_COLLECTIONS not in os.environ or\
