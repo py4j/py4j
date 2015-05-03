@@ -15,16 +15,19 @@ from py4j.compat import items
 
 
 class ThreadSafeFinalizer(object):
-    """A `ThreadSafeFinalizer` is a global class used to register weak reference finalizers
-    (i.e., a weak reference with a callback).
+    """A `ThreadSafeFinalizer` is a global class used to register weak
+    reference finalizers (i.e., a weak reference with a callback).
 
-    This class is useful when one wants to register a finalizer of an object with circular references.
-    The finalizer of an object with circular references might never be called if the object's finalizer
-    is kept by the same object.
+    This class is useful when one wants to register a finalizer of an object
+    with circular references.  The finalizer of an object with circular
+    references might never be called if the object's finalizer is kept by the
+    same object.
 
-    For example, if object A refers to B and B refers to A, A should not keep a weak reference to itself.
+    For example, if object A refers to B and B refers to A, A should not keep a
+    weak reference to itself.
 
-    `ThreadSafeFinalizer` is thread-safe and uses reentrant lock on each operation."""
+    `ThreadSafeFinalizer` is thread-safe and uses reentrant lock on each
+    operation."""
 
     finalizers = {}
     lock = RLock()
@@ -43,7 +46,8 @@ class ThreadSafeFinalizer(object):
     def remove_finalizer(cls, id):
         """Removes a finalizer associated with this id.
 
-        :param id: The id of the object for which the finalizer will be deleted.
+        :param id: The id of the object for which the finalizer will be
+            deleted.
         """
         with cls.lock:
             cls.finalizers.pop(id, None)
@@ -52,9 +56,9 @@ class ThreadSafeFinalizer(object):
     def clear_finalizers(cls, clear_all=False):
         """Removes all registered finalizers.
 
-        :param clear_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from
-                          an empty weak reference are deleted (i.e., weak references pointing to
-                          inexistent objects).
+        :param clear_all: If `True`, all finalizers are deleted. Otherwise,
+            only the finalizers from an empty weak reference are deleted
+            (i.e., weak references pointing to inexistent objects).
         """
         with cls.lock:
             if clear_all:
@@ -69,13 +73,16 @@ class Finalizer(object):
     """A `Finalizer` is a global class used to register weak reference finalizers
     (i.e., a weak reference with a callback).
 
-    This class is useful when one wants to register a finalizer of an object with circular references.
-    The finalizer of an object with circular references might never be called if the object's finalizer
-    is kept by the same object.
+    This class is useful when one wants to register a finalizer of an object
+    with circular references.  The finalizer of an object with circular
+    references might never be called if the object's finalizer is kept by the
+    same object.
 
-    For example, if object A refers to B and B refers to A, A should not keep a weak reference to itself.
+    For example, if object A refers to B and B refers to A, A should not keep a
+    weak reference to itself.
 
-    `Finalizer` is not thread-safe and should only be used by single-threaded programs."""
+    `Finalizer` is not thread-safe and should only be used by single-threaded
+    programs."""
 
     finalizers = {}
 
@@ -92,7 +99,8 @@ class Finalizer(object):
     def remove_finalizer(cls, id):
         """Removes a finalizer associated with this id.
 
-        :param id: The id of the object for which the finalizer will be deleted.
+        :param id: The id of the object for which the finalizer will be
+            deleted.
         """
         cls.finalizers.pop(id, None)
 
@@ -100,9 +108,10 @@ class Finalizer(object):
     def clear_finalizers(cls, clear_all=False):
         """Removes all registered finalizers.
 
-        :param clear_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from
-                          an empty weak reference are deleted (i.e., weak references pointing to
-                          inexistent objects).
+        :param clear_all: If `True`, all finalizers are deleted. Otherwise,
+            only the finalizers from an empty weak reference are deleted (i.e.,
+            weak references pointing to inexistent objects).
+
         """
         if clear_all:
             cls.finalizers.clear()
@@ -113,11 +122,13 @@ class Finalizer(object):
 
 
 def clear_finalizers(clear_all=False):
-    """Removes all registered finalizers in :class:`ThreadSafeFinalizer` and :class:`Finalizer`.
+    """Removes all registered finalizers in :class:`ThreadSafeFinalizer` and
+    :class:`Finalizer`.
 
-    :param clear_all: If `True`, all finalizers are deleted. Otherwise, only the finalizers from
-                      an empty weak reference are deleted (i.e., weak references pointing to
-                      inexistent objects).
+    :param clear_all: If `True`, all finalizers are deleted. Otherwise, only
+        the finalizers from an empty weak reference are deleted (i.e., weak
+        references pointing to inexistent objects).
+
     """
     ThreadSafeFinalizer.clear_finalizers(clear_all)
     Finalizer.clear_finalizers(clear_all)
