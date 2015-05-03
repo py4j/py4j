@@ -22,9 +22,10 @@ from base64 import standard_b64encode, standard_b64decode
 
 from decimal import Decimal
 
-from py4j.compat import long, basestring, unicode, bytearray2,\
-        bytestr, isbytestr, isbytearray, ispython3bytestr, \
-        bytetoint, bytetostr, strtobyte
+from py4j.compat import (
+    long, basestring, unicode, bytearray2,
+    bytestr, isbytestr, isbytearray, ispython3bytestr,
+    bytetoint, bytetostr, strtobyte)
 
 
 JAVA_MAX_INT = 2147483647
@@ -146,15 +147,16 @@ DIR_METHODS_SUBCOMMAND_NAME = 'm\n'
 DIR_STATIC_SUBCOMMAND_NAME = 's\n'
 DIR_JVMVIEW_SUBCOMMAND_NAME = 'v\n'
 
-OUTPUT_CONVERTER = {NULL_TYPE: (lambda x, y: None),
-              BOOLEAN_TYPE: (lambda value, y: value.lower() == 'true'),
-              LONG_TYPE: (lambda value, y: long(value)),
-              DECIMAL_TYPE: (lambda value, y: Decimal(value)),
-              INTEGER_TYPE: (lambda value, y: int(value)),
-              BYTES_TYPE: (lambda value, y: decode_bytearray(value)),
-              DOUBLE_TYPE: (lambda value, y: float(value)),
-              STRING_TYPE: (lambda value, y: unescape_new_line(value)),
-              }
+OUTPUT_CONVERTER = {
+    NULL_TYPE: (lambda x, y: None),
+    BOOLEAN_TYPE: (lambda value, y: value.lower() == 'true'),
+    LONG_TYPE: (lambda value, y: long(value)),
+    DECIMAL_TYPE: (lambda value, y: Decimal(value)),
+    INTEGER_TYPE: (lambda value, y: int(value)),
+    BYTES_TYPE: (lambda value, y: decode_bytearray(value)),
+    DOUBLE_TYPE: (lambda value, y: float(value)),
+    STRING_TYPE: (lambda value, y: unescape_new_line(value)),
+}
 
 INPUT_CONVERTER = []
 
@@ -169,7 +171,7 @@ def escape_new_line(original):
     :rtype: an escaped string
     """
     return smart_decode(original).replace('\\', '\\\\').replace('\r', '\\r').\
-            replace('\n', '\\n')
+        replace('\n', '\\n')
 
 
 def unescape_new_line(escaped):
@@ -250,7 +252,7 @@ def get_command_part(parameter, python_proxy_pool=None):
     """
     command_part = ''
 
-    if parameter == None:
+    if parameter is None:
         command_part = NULL_TYPE
     elif isinstance(parameter, bool):
         command_part = BOOLEAN_TYPE + smart_decode(parameter)
@@ -310,8 +312,8 @@ def get_return_value(answer, gateway_client, target_id=None, name=None):
                     format(target_id, '.', name, value))
         else:
             raise Py4JError(
-                    'An error occurred while calling {0}{1}{2}'.
-                    format(target_id, '.', name))
+                'An error occurred while calling {0}{1}{2}'.
+                format(target_id, '.', name))
     else:
         type = answer[1]
         if type == VOID_TYPE:
@@ -385,7 +387,7 @@ class Py4JJavaError(Py4JError):
         self.errmsg = msg
         self.java_exception = java_exception
         self.exception_cmd = EXCEPTION_COMMAND_NAME + REFERENCE_TYPE + \
-                java_exception._target_id + '\n' + END_COMMAND_PART
+            java_exception._target_id + '\n' + END_COMMAND_PART
 
     def __str__(self):
         gateway_client = self.java_exception._gateway_client
