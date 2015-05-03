@@ -1345,8 +1345,10 @@ class JavaGateway(object):
         return gateway_help(self._gateway_client, var, pattern, short_name, display)
 
     @classmethod
-    def launch_gateway(cls, port=0, jarpath="", classpath="", javaopts=[],
-            die_on_exit=False):
+    def launch_gateway(
+        cls, port=0, jarpath="", classpath="", javaopts=[], die_on_exit=False,
+        **kwargs
+    ):
         """Launch a `Gateway` in a new Java process and create a default
         :class:`JavaGateway <py4j.java_gateway.JavaGateway>` to connect to
         it.
@@ -1363,12 +1365,14 @@ class JavaGateway(object):
         :param die_on_exit: if `True`, the Java gateway process will die when
             this Python process exits or is killed.
 
+        Additional keyword arguments are passed along to the newly created
+        instance.
+
         :rtype: a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
             connected to the `Gateway` server.
         """
         _port = launch_gateway(port, jarpath, classpath, javaopts, die_on_exit)
-        gateway = JavaGateway(GatewayClient(port=_port))
-        return gateway
+        return cls(GatewayClient(port=_port), **kwargs)
 
 
 # CALLBACK SPECIFIC
