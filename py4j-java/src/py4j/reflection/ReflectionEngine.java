@@ -35,7 +35,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -401,5 +403,104 @@ public class ReflectionEngine {
 					+ field, e);
 			throw new Py4JException(e);
 		}
+	}
+
+	/**
+	 * Retrieve the names of all the public methods in the obj
+	 * @param obj the object to inspect
+	 * @return list of all the names of public methods in obj
+	 */
+	public String[] getPublicMethodNames(Object obj) {
+		Method[] methods = obj.getClass().getMethods();
+		Set<String> methodNames = new HashSet<String>();
+		for (Method method : methods) {
+			if (Modifier.isPublic(method.getModifiers())) {
+				methodNames.add(method.getName());
+			}
+		}
+		return (String[]) methodNames.toArray(new String[methodNames.size()]);
+	}
+
+	/**
+	 * Retrieve the names of all the public fields in the obj
+	 * @param obj the object to inspect
+	 * @return list of all the names of public fields in obj
+	 */
+	public String[] getPublicFieldNames(Object obj) {
+		Field[] fields = obj.getClass().getFields();
+		Set<String> fieldNames = new HashSet<String>();
+		for (Field field : fields) {
+			if (Modifier.isPublic(field.getModifiers())) {
+				fieldNames.add(field.getName());
+			}
+		}
+		return (String[]) fieldNames.toArray(new String[fieldNames.size()]);
+	}
+
+	/**
+	 * Retrieve the names of all the public static fields in the clazz
+	 *
+	 * @param clazz
+	 *            the object to inspect
+	 * @return list of all the names of public statics
+	 */
+	public String[] getPublicStaticFieldNames(Class<?> clazz) {
+		Field[] fields = clazz.getFields();
+		Set<String> fieldNames = new HashSet<String>();
+		for (Field field : fields) {
+			if (Modifier.isPublic(field.getModifiers())
+					&& Modifier.isStatic(field.getModifiers())) {
+				fieldNames.add(field.getName());
+			}
+		}
+		return (String[]) fieldNames.toArray(new String[fieldNames.size()]);
+	}
+
+	/**
+	 * Retrieve the names of all the public static methods in the clazz
+	 * @param clazz the object to inspect
+	 * @return list of all the names of public statics
+	 */
+	public String[] getPublicStaticMethodNames(Class<?> clazz) {
+		Method[] methods = clazz.getMethods();
+		Set<String> methodNames = new HashSet<String>();
+		for (Method method : methods) {
+			if (Modifier.isPublic(method.getModifiers())
+					&& Modifier.isStatic(method.getModifiers())) {
+				methodNames.add(method.getName());
+			}
+		}
+		return (String[]) methodNames.toArray(new String[methodNames.size()]);
+	}
+
+	/**
+	 * Retrieve the names of all the public static classes in the clazz
+	 * @param clazz the object to inspect
+	 * @return list of all the names of public statics
+	 */
+	public String[] getPublicStaticClassNames(Class<?> clazz) {
+		Class<?>[] classes = clazz.getClasses();
+		Set<String> classNames = new HashSet<String>();
+		for (Class<?> clazz2 : classes) {
+			if (Modifier.isPublic(clazz2.getModifiers())
+					&& Modifier.isStatic(clazz2.getModifiers())) {
+				classNames.add(clazz2.getSimpleName());
+			}
+		}
+		return (String[]) classNames.toArray(new String[classNames.size()]);
+	}
+
+	/**
+	 * Retrieve the names of all the public static fields, methods and
+	 * classes in the clazz
+	 * @param clazz the object to inspect
+	 * @return list of all the names of public statics
+	 */
+	public String[] getPublicStaticNames(Class<?> clazz) {
+		Set<String> names = new HashSet<String>();
+		names.addAll(Arrays.asList(getPublicStaticClassNames(clazz)));
+		names.addAll(Arrays.asList(getPublicStaticFieldNames(clazz)));
+		names.addAll(Arrays.asList(getPublicStaticMethodNames(clazz)));
+		return (String[]) names.toArray(new String[names.size()]);
 	}
 }
