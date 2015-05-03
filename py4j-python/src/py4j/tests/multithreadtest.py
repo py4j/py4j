@@ -1,8 +1,8 @@
-'''
+"""
 Created on Sep 17, 2010
 
 @author: barthelemy
-'''
+"""
 from __future__ import unicode_literals, absolute_import
 
 from threading import Thread
@@ -55,17 +55,14 @@ class TestJVM4(Thread):
     def run(self):
         print(self.System.currentTimeMillis())
         try:
-            self.System.loadLibrary('toto')
+            self.System.loadLibrary("toto")
         except:
-            print('Good!')
+            print("Good!")
         print(self.System.currentTimeMillis())
 
 
 class JVMMultiProcessTest(unittest.TestCase):
     def setUp(self):
-#        logger = logging.getLogger("py4j")
-#        logger.setLevel(logging.DEBUG)
-#        logger.addHandler(logging.StreamHandler())
         self.p = start_example_app_process()
         self.gateway = JavaGateway()
 
@@ -115,5 +112,4 @@ class JVMMultiProcessTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testJavaList']
     unittest.main()
