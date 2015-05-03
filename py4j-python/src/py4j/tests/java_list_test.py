@@ -1,8 +1,8 @@
-'''
+"""
 Created on Dec 17, 2009
 
 @author: barthelemy
-'''
+"""
 from __future__ import unicode_literals, absolute_import
 
 import unittest
@@ -58,8 +58,8 @@ class ListTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         pList = get_list(3)
         jList = ex.getList(3)
-        pList.append('1')
-        jList.append('1')
+        pList.append("1")
+        jList.append("1")
         pList.sort()
         jList.sort()
         self.assertEqual(len(pList), len(jList))
@@ -68,9 +68,9 @@ class ListTest(unittest.TestCase):
         jList.reverse()
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
-        self.assertEqual(pList.count('1'), jList.count('1'))
-        self.assertEqual(pList.count('2'), jList.count('2'))
-        self.assertEqual(pList.count('-1'), jList.count('-1'))
+        self.assertEqual(pList.count("1"), jList.count("1"))
+        self.assertEqual(pList.count("2"), jList.count("2"))
+        self.assertEqual(pList.count("-1"), jList.count("-1"))
 
         # Hack because this is a list of strings
         self.assertEqual(max(pList), max(jList))
@@ -152,7 +152,7 @@ class ListTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         pList = get_list(6)
         jList = ex.getList(6)
-        tList = ['500', '600']
+        tList = ["500", "600"]
 
         pList[0:0] = tList
         jList[0:0] = tList
@@ -183,12 +183,12 @@ class ListTest(unittest.TestCase):
         jList = ex.getList(6)
         try:
             pList[0:6:2] = tList
-            self.fail('Should have failed')
+            self.fail("Should have failed")
         except ValueError:
             self.assertTrue(True)
         try:
             jList[0:6:2] = tList
-            self.fail('Should have failed')
+            self.fail("Should have failed")
         except ValueError:
             self.assertTrue(True)
 
@@ -210,7 +210,7 @@ class ListTest(unittest.TestCase):
 
         try:
             self.assertTrue(jList.equals(pList))
-            self.fail('Should have failed')
+            self.fail("Should have failed")
         except Exception:
             self.assertTrue(True)
 
@@ -229,8 +229,8 @@ class ListTest(unittest.TestCase):
         self.assertEqual(str(pList), str(jList))
         self.assertEqual(pList, pList2)
         self.assertEqual(jList, jList2)
-        pList.append('4')
-        jList.append('4')
+        pList.append("4")
+        jList.append("4")
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
 
@@ -242,28 +242,28 @@ class ListTest(unittest.TestCase):
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
 
-        self.assertEqual('1' in pList, '1' in jList)
-        self.assertEqual('500' in pList, '500' in jList)
+        self.assertEqual("1" in pList, "1" in jList)
+        self.assertEqual("500" in pList, "500" in jList)
 
-        pList[0] = '100'
-        jList[0] = '100'
-        pList[3] = '150'
-        jList[3] = '150'
-        pList[-1] = '200'
-        jList[-1] = '200'
+        pList[0] = "100"
+        jList[0] = "100"
+        pList[3] = "150"
+        jList[3] = "150"
+        pList[-1] = "200"
+        jList[-1] = "200"
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
 
-        pList.insert(0, '100')
-        jList.insert(0, '100')
-        pList.insert(3, '150')
-        jList.insert(3, '150')
-        pList.insert(-1, '200')
-        jList.insert(-1, '200')
-        pList.insert(len(pList), '300')
-        jList.insert(len(pList), '300')
-        pList.insert(300, '1500')
-        jList.insert(300, '1500')
+        pList.insert(0, "100")
+        jList.insert(0, "100")
+        pList.insert(3, "150")
+        jList.insert(3, "150")
+        pList.insert(-1, "200")
+        jList.insert(-1, "200")
+        pList.insert(len(pList), "300")
+        jList.insert(len(pList), "300")
+        pList.insert(300, "1500")
+        jList.insert(300, "1500")
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
 
@@ -288,19 +288,19 @@ class ListTest(unittest.TestCase):
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
 
-        pList.append('700')
-        jList.append('700')
-        pList.insert(0, '700')
-        jList.insert(0, '700')
+        pList.append("700")
+        jList.append("700")
+        pList.insert(0, "700")
+        jList.insert(0, "700")
 
-        pList.remove('700')
-        jList.remove('700')
+        pList.remove("700")
+        jList.remove("700")
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
 
         try:
             jList[15]
-            self.fail('Should Fail!')
+            self.fail("Should Fail!")
         except IndexError:
             self.assertTrue(True)
 
