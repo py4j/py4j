@@ -46,13 +46,27 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 		int defaultPort = getPreferenceStore().getInt(PreferenceConstants.PREF_DEFAULT_PORT);
 		if (defaultPort<1) defaultPort = GatewayServer.DEFAULT_PORT;
 		
+		// We look for a free port and change the preference if the port is not free.
+		if (!isPortFree(defaultPort)) {
+			defaultPort = getFreePort(defaultPort);
+			getPreferenceStore().setValue(PreferenceConstants.PREF_DEFAULT_PORT, defaultPort);
+		}
+		
+		
 		int defaultCallBackPort = getPreferenceStore().getInt(PreferenceConstants.PREF_DEFAULT_CALLBACK_PORT);
 		if (defaultCallBackPort<1) defaultCallBackPort = GatewayServer.DEFAULT_PYTHON_PORT;
+		
+		// We look for a free port and change the preference if the port is not free.
+		if (!isPortFree(defaultCallBackPort)) {
+			defaultCallBackPort = getFreePort(defaultCallBackPort);
+			getPreferenceStore().setValue(PreferenceConstants.PREF_DEFAULT_CALLBACK_PORT, defaultCallBackPort);
+		}
+
 
 		if (getPreferenceStore().getBoolean(PreferenceConstants.PREF_USE_SWT_DISPLAY_THREAD)) {
 
-			server = new SWTGatewayServer(this, getFreePort(defaultPort),
-					getFreePort(defaultCallBackPort),
+			server = new SWTGatewayServer(this, defaultPort,
+					defaultCallBackPort,
 					GatewayServer.DEFAULT_CONNECT_TIMEOUT,
 					GatewayServer.DEFAULT_READ_TIMEOUT, null);
 
@@ -72,7 +86,14 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 			} catch (Exception e) {
 			}
 		}
-		server.start();
+		
+		// Fix to defect whereby cannot access the preferences
+		// to change the port when the port is already in use.
+		try {
+		    server.start();
+		} catch (Throwable ne) {
+			ne.printStackTrace();
+		}
 	}
 
 	/**
@@ -164,4 +185,5 @@ public class DefaultServerActivator extends AbstractUIPlugin {
 		});
 	}
 
+	
 }
