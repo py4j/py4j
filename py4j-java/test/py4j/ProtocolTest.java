@@ -228,6 +228,11 @@ public class ProtocolTest {
 		assertEquals(1.25, Protocol.getDouble("d1.25"), 0.001);
 		assertEquals(0.0, Protocol.getDouble("d0"), 0.001);
 		assertEquals(1234.567, Protocol.getDouble("d1234.567"), 0.001);
+        assertEquals(Double.NaN, Protocol.getDouble("dnan"), 0.001);
+        assertEquals(Double.POSITIVE_INFINITY, Protocol.getDouble("dinf"),
+                0.001);
+        assertEquals(Double.NEGATIVE_INFINITY, Protocol.getDouble("d-inf"),
+                0.001);
 	}
 
 	@Test

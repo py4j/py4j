@@ -130,6 +130,11 @@ public class Protocol {
 	// STATIC REFERENCES
 	public final static String STATIC_PREFIX = "z:";
 
+    // PYTHON CONSTANTS
+    public final static String PYTHON_NAN = "nan";
+    public final static String PYTHON_INFINITY = "inf";
+    public final static String PYTHON_NEGATIVE_INFINITY = "-inf";
+
 	/**
 	 * <p>
 	 * Transform the byte array into Base64 characters.
@@ -188,8 +193,20 @@ public class Protocol {
 	 * @return The double value corresponding to this command part.
 	 */
 	public final static double getDouble(String commandPart) {
-		return Double
-				.parseDouble(commandPart.substring(1, commandPart.length()));
+        String doubleValue = commandPart.substring(1, commandPart.length());
+        try {
+            return Double.parseDouble(doubleValue);
+        } catch (NumberFormatException e) {
+            if (doubleValue.equals(PYTHON_INFINITY)) {
+                return Double.POSITIVE_INFINITY;
+            } else if (doubleValue.equals(PYTHON_NEGATIVE_INFINITY)) {
+                return Double.NEGATIVE_INFINITY;
+            } else if (doubleValue.equals(PYTHON_NAN)) {
+                return Double.NaN;
+            } else {
+                throw e;
+            }
+        }
 	}
 
 	/**

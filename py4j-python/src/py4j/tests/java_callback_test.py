@@ -1,8 +1,8 @@
-'''
+"""
 Created on Apr 5, 2010
 
 @author: Barthelemy Dagenais
-'''
+"""
 from __future__ import unicode_literals, absolute_import
 
 from multiprocessing import Process
@@ -19,17 +19,20 @@ from py4j.tests.java_gateway_test import (
 
 
 def start_example_server():
-    subprocess.call(["java", "-cp", PY4J_JAVA_PATH,
+    subprocess.call([
+        "java", "-cp", PY4J_JAVA_PATH,
         "py4j.examples.ExampleApplication"])
 
 
 def start_example_server2():
-    subprocess.call(["java", "-cp", PY4J_JAVA_PATH,
+    subprocess.call([
+        "java", "-cp", PY4J_JAVA_PATH,
         "py4j.examples.OperatorExampleTest"])
 
 
 def start_example_server3():
-    subprocess.call(["java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+    subprocess.call([
+        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
         "py4j.examples.InterfaceExample"])
 
 
@@ -62,14 +65,14 @@ def start_example_app_process3():
 
 class FalseAddition(object):
     def doOperation(self, i, j, k=None):
-        if k == None:
+        if k is None:
             # Integer overflow!
             return 3722507311
         else:
             return 3722507311
 
     class Java:
-        implements = ['py4j.examples.Operator']
+        implements = ["py4j.examples.Operator"]
 
 
 class GoodAddition(object):
@@ -77,7 +80,7 @@ class GoodAddition(object):
         return i + j
 
     class Java:
-        implements = ['py4j.examples.Operator']
+        implements = ["py4j.examples.Operator"]
 
 
 class CustomBytesOperator(object):
@@ -92,7 +95,7 @@ class CustomBytesOperator(object):
             return None
 
     class Java:
-        implements = ['py4j.examples.BytesOperator']
+        implements = ["py4j.examples.BytesOperator"]
 
 
 class Runner(Thread):
@@ -132,25 +135,22 @@ class TestPool(unittest.TestCase):
 
 class SimpleProxy(object):
     def hello(self, i, j):
-        return 'Hello\nWorld' + str(i) + str(j)
+        return "Hello\nWorld" + str(i) + str(j)
 
 
 class IHelloImpl(object):
     def sayHello(self, i=None, s=None):
-        if i == None:
-            return 'This is Hello!'
+        if i is None:
+            return "This is Hello!"
         else:
-            return 'This is Hello;\n{0}{1}'.format(i, s)
+            return "This is Hello;\n{0}{1}".format(i, s)
 
     class Java:
-        implements = ['py4j.examples.IHello']
+        implements = ["py4j.examples.IHello"]
 
 
 class TestIntegration(unittest.TestCase):
     def setUp(self):
-#        logger = logging.getLogger("py4j")
-#        logger.setLevel(logging.DEBUG)
-#        logger.addHandler(logging.StreamHandler())
         self.p = start_example_app_process()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters())
@@ -164,29 +164,31 @@ class TestIntegration(unittest.TestCase):
     def testShutdown(self):
         example = self.gateway.entry_point.getNewExample()
         impl = IHelloImpl()
-        self.assertEqual('This is Hello!', example.callHello(impl))
-        self.assertEqual('This is Hello;\n10MyMy!\n;',
-                example.callHello2(impl))
+        self.assertEqual("This is Hello!", example.callHello(impl))
+        self.assertEqual(
+            "This is Hello;\n10MyMy!\n;",
+            example.callHello2(impl))
         self.gateway.shutdown()
         self.assertEqual(0, len(self.gateway.gateway_property.pool))
 
     def testProxy(self):
-#        self.gateway.jvm.py4j.GatewayServer.turnLoggingOn()
         sleep()
         example = self.gateway.entry_point.getNewExample()
         impl = IHelloImpl()
-        self.assertEqual('This is Hello!', example.callHello(impl))
-        self.assertEqual('This is Hello;\n10MyMy!\n;',
-                example.callHello2(impl))
+        self.assertEqual("This is Hello!", example.callHello(impl))
+        self.assertEqual(
+            "This is Hello;\n10MyMy!\n;",
+            example.callHello2(impl))
 
     def testGC(self):
         # This will only work with some JVM.
         sleep()
         example = self.gateway.entry_point.getNewExample()
         impl = IHelloImpl()
-        self.assertEqual('This is Hello!', example.callHello(impl))
-        self.assertEqual('This is Hello;\n10MyMy!\n;',
-                example.callHello2(impl))
+        self.assertEqual("This is Hello!", example.callHello(impl))
+        self.assertEqual(
+            "This is Hello;\n10MyMy!\n;",
+            example.callHello2(impl))
         self.assertEqual(2, len(self.gateway.gateway_property.pool))
         self.gateway.jvm.java.lang.System.gc()
         sleep(1)
@@ -244,7 +246,7 @@ class TestPeriodicCleanup(unittest.TestCase):
 
 class A(object):
     class Java:
-        implements = ['py4j.examples.InterfaceA']
+        implements = ["py4j.examples.InterfaceA"]
 
 
 class B(object):
@@ -252,7 +254,7 @@ class B(object):
         return A()
 
     class Java:
-        implements = ['py4j.examples.InterfaceB']
+        implements = ["py4j.examples.InterfaceB"]
 
 
 class InterfaceTest(unittest.TestCase):

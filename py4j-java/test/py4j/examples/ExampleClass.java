@@ -46,6 +46,8 @@ public class ExampleClass {
 
 	public StringBuffer field21;
 
+	public static int static_field = 3;
+
 	public ExampleClass() {
 
 	}
@@ -159,5 +161,22 @@ public class ExampleClass {
 
 	public BigInteger method11(BigInteger bi) {
 		return bi.add(new BigInteger("1"));
+	}
+
+	@SuppressWarnings("unused")
+	private int private_method() {
+		return 0;
+	}
+
+	protected int protected_method() {
+		return 0;
+	}
+
+	public static int static_method() {
+		return 0;
+	}
+
+	public static class StaticClass {
+
 	}
 }

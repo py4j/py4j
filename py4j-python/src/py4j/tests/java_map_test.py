@@ -1,8 +1,8 @@
-'''
+"""
 Created on Feb 5, 2010
 
 @author: barthelemy
-'''
+"""
 from __future__ import unicode_literals, absolute_import
 
 import unittest
@@ -29,13 +29,13 @@ class AutoConvertTest(unittest.TestCase):
 
     def testAutoConvert(self):
         dj = self.gateway.jvm.java.util.HashMap()
-        dj['b'] = 2
-        dj['a'] = 1
-        dp = {'a': 1, 'b': 2}
+        dj["b"] = 2
+        dj["a"] = 1
+        dp = {"a": 1, "b": 2}
         self.assertTrue(dj.equals(dp))
 
 
-class Test(unittest.TestCase):
+class MapTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
         self.gateway = JavaGateway()

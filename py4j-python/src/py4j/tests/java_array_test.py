@@ -1,8 +1,8 @@
-'''
+"""
 Created on Mar 24, 2010
 
 @author: Barthelemy Dagenais
-'''
+"""
 from __future__ import unicode_literals, absolute_import
 
 import time
@@ -13,11 +13,8 @@ from py4j.tests.java_gateway_test import (
     start_example_app_process)
 
 
-class Test(unittest.TestCase):
+class ArrayTest(unittest.TestCase):
     def setUp(self):
-#        logger = logging.getLogger("py4j")
-#        logger.setLevel(logging.DEBUG)
-#        logger.addHandler(logging.StreamHandler())
         self.p = start_example_app_process()
         time.sleep(0.5)
         self.gateway = JavaGateway()
@@ -34,12 +31,12 @@ class Test(unittest.TestCase):
         self.assertEqual(3, len(array1))
         self.assertEqual(4, len(array2))
 
-        self.assertEqual('333', array1[2])
+        self.assertEqual("333", array1[2])
         self.assertEqual(5, array2[1])
 
-        array1[2] = 'aaa'
+        array1[2] = "aaa"
         array2[1] = 6
-        self.assertEqual('aaa', array1[2])
+        self.assertEqual("aaa", array1[2])
         self.assertEqual(6, array2[1])
 
         new_array = array2[1:3]
