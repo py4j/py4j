@@ -1,8 +1,8 @@
-'''
+"""
 Created on Mar 7, 2010
 
 @author: barthelemy
-'''
+"""
 from __future__ import unicode_literals, absolute_import
 
 import gc
@@ -26,16 +26,18 @@ class AClass(object):
     def __init__(self, id, acc):
         self.id = id
         self.acc = acc
-        ThreadSafeFinalizer.add_finalizer(id,
-                ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
+        ThreadSafeFinalizer.add_finalizer(
+            id,
+            ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
 
 
 class AClass2(object):
     def __init__(self, id, acc):
         self.id = id
         self.acc = acc
-        Finalizer.add_finalizer(id,
-                ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
+        Finalizer.add_finalizer(
+            id,
+            ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
 
 
 class JavaObjecTest(object):
@@ -43,8 +45,9 @@ class JavaObjecTest(object):
         self.id = id
         self.acc = acc
         self.methods = []
-        ThreadSafeFinalizer.add_finalizer(id,
-                ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
+        ThreadSafeFinalizer.add_finalizer(
+            id,
+            ref(self, lambda wr, i=self.id, a=self.acc: deleted(a, i)))
 
 
 class JavaMemberTest(object):
@@ -81,7 +84,7 @@ class TestThreadSafeFinalizer(unittest.TestCase):
 
     def work_circ(self, acc):
         jobj = JavaObjecTest(1, acc)
-        jmem1 = JavaMemberTest('append', jobj)
+        jmem1 = JavaMemberTest("append", jobj)
         jobj.methods.append(jmem1)
 
     def testCircularReference2(self):
