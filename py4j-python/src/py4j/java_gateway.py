@@ -23,7 +23,7 @@ import sys
 from threading import Thread, RLock
 import weakref
 
-from py4j.compat import range, hasattr2, basestring
+from py4j.compat import range, hasattr2, basestring, CompatThread
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j import protocol as proto
 from py4j.protocol import (
@@ -100,7 +100,8 @@ def find_jar_path():
 
 
 def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
-                   die_on_exit=False):
+                   die_on_exit=False, redirect_stdout=None,
+                   redirect_stderr=None, daemonize_redirect=False):
     """Launch a `Gateway` in a new Java process.
 
     :param port: the port to launch the Java Gateway on.  If no port is
@@ -132,11 +133,30 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         command.append("--die-on-broken-pipe")
     command.append(str(port))
     logger.debug("Launching gateway with command {0}".format(command))
-    proc = Popen(command, stdout=PIPE, stdin=PIPE)
+
+    # stderr redirection
+    if redirect_stderr is None:
+        stderr = open(os.devnull, "w")
+    elif hasattr2(redirect_stderr, "write"):
+        stderr = redirect_stderr
+
+    # stdout redirection
+    if redirect_stdout is None:
+        stdout = open(os.devnull, "w")
+
+    proc = Popen(command, stdout=PIPE, stdin=PIPE, stderr=stderr,
+                 close_fds=True)
 
     # Determine which port the server started on (needed to support
     # ephemeral ports)
     _port = int(proc.stdout.readline())
+
+    # Start consumer threads so process does not deadlock/hangs
+    OutputConsumer(stdout, proc.stdout, daemon=daemonize_redirect).start()
+    if redirect_stderr is not None:
+        OutputConsumer(stderr, proc.stderr, daemon=daemonize_redirect).start()
+    ProcessConsumer(proc, daemon=daemonize_redirect).start()
+
     return _port
 
 
@@ -336,6 +356,41 @@ def _garbage_collect_connection(socket_instance):
     if socket_instance is not None:
         quiet_shutdown(socket_instance)
         quiet_close(socket_instance)
+
+
+class OutputConsumer(CompatThread):
+    """Thread that consumes output
+    """
+
+    def __init__(self, redirect, stream, *args, **kwargs):
+        super(OutputConsumer, self).__init__(*args, **kwargs)
+        self.redirect = redirect
+        self.stream = stream
+
+        if hasattr2(redirect, "write"):
+            self.redirect_func = self._pipe_fd
+
+    def _pipe_fd(self, line):
+        self.redirect.write(line)
+
+    def run(self):
+        lines_iterator = iter(self.stream.readline, b"")
+        for line in lines_iterator:
+            self.redirect_func(smart_decode(line))
+
+
+class ProcessConsumer(CompatThread):
+    """Thread that ensures process stdout and stderr are properly closed.
+    """
+
+    def __init__(self, proc, *args, **kwargs):
+        super(ProcessConsumer, self).__init__(*args, **kwargs)
+        self.proc = proc
+
+    def run(self):
+        self.proc.wait()
+        quiet_close(self.proc.stdout)
+        quiet_close(self.proc.stderr)
 
 
 class GatewayParameters(object):

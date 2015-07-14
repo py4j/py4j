@@ -8,6 +8,7 @@ from __future__ import unicode_literals, absolute_import
 
 import inspect
 import sys
+from threading import Thread
 
 if sys.version_info[0] < 3:
     items = lambda d: d.items()
@@ -50,3 +51,16 @@ if hasattr(inspect, "getattr_static"):
     hasattr2 = lambda obj, attr: bool(inspect.getattr_static(obj, attr, False))
 else:
     hasattr2 = hasattr
+
+
+class CompatThread(Thread):
+    def __init__(self, *args, **kwargs):
+        daemon = None
+        try:
+            daemon = kwargs.pop("daemon")
+        except KeyError:
+            pass
+        super(CompatThread, self).__init__(*args, **kwargs)
+
+        if daemon:
+            self.daemon = daemon
