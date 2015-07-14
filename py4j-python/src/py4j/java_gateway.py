@@ -115,6 +115,19 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         should be specified using the `classpath` parameter, not `javaopts`.)
     :param die_on_exit: if `True`, the Java gateway process will die when
         this Python process exits or is killed.
+    :param redirect_stdout: where to redirect the JVM stdout. If None (default)
+        stdout is redirected to os.devnull. Otherwise accepts a
+        file descriptor, a queue, or a deque. Will send one line at a time
+        to these objects.
+    :param redirect_stderr: where to redirect the JVM stdout. If None (default)
+        stderr is redirected to os.devnull. Otherwise accepts a
+        file descriptor, a queue, or a deque. Will send one line at a time to
+        these objects.
+    :param daemonize_redirect: if True, the consumer threads will be daemonized
+        and will not prevent the main Python process from exiting. This means
+        the file descriptors (stderr, stdout, redirect_stderr, redirect_stdout)
+        might not be properly closed. This is not usually a problem, but the
+        default is conservatively set to False.
 
     :rtype: the port number of the `Gateway` server.
     """
