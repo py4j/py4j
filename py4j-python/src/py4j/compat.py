@@ -54,6 +54,11 @@ else:
 
 
 class CompatThread(Thread):
+    """Compatibility Thread class.
+
+    Allows Python 2 Thread class to accept daemon kwarg in init.
+    """
+
     def __init__(self, *args, **kwargs):
         daemon = None
         try:
