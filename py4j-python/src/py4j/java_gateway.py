@@ -23,7 +23,8 @@ import sys
 from threading import Thread, RLock
 import weakref
 
-from py4j.compat import range, hasattr2, basestring, CompatThread
+from py4j.compat import (
+    range, hasattr2, basestring, CompatThread, Queue)
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j import protocol as proto
 from py4j.protocol import (
@@ -104,6 +105,17 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
                    redirect_stderr=None, daemonize_redirect=False):
     """Launch a `Gateway` in a new Java process.
 
+    The redirect parameters accept file-like objects, Queue, or deque. When
+    text lines are sent to the stdout or stderr of the child JVM, these lines
+    are redirected to the file-like object (``write(line)``), the Queue
+    (``put(line)``), or the deque (``appendleft(line)``).
+
+    The text line will contain a newline character.
+
+    Only text output is accepted on stdout and stderr. If you wish to
+    communicate with the child JVM through bytes, you need to create your own
+    helper function.
+
     :param port: the port to launch the Java Gateway on.  If no port is
         specified then an ephemeral port is used.
     :param jarpath: the path to the Py4J jar.  Only necessary if the jar
@@ -150,12 +162,17 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     # stderr redirection
     if redirect_stderr is None:
         stderr = open(os.devnull, "w")
-    elif hasattr2(redirect_stderr, "write"):
+    elif isinstance(redirect_stderr, Queue) or\
+            isinstance(redirect_stderr, deque):
+        stderr = PIPE
+    else:
         stderr = redirect_stderr
+        # we don't need this anymore
+        redirect_stderr = None
 
     # stdout redirection
     if redirect_stdout is None:
-        stdout = open(os.devnull, "w")
+        redirect_stdout = open(os.devnull, "w")
 
     proc = Popen(command, stdout=PIPE, stdin=PIPE, stderr=stderr,
                  close_fds=True)
@@ -165,10 +182,12 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     _port = int(proc.stdout.readline())
 
     # Start consumer threads so process does not deadlock/hangs
-    OutputConsumer(stdout, proc.stdout, daemon=daemonize_redirect).start()
+    OutputConsumer(
+        redirect_stdout, proc.stdout, daemon=daemonize_redirect).start()
     if redirect_stderr is not None:
-        OutputConsumer(stderr, proc.stderr, daemon=daemonize_redirect).start()
-    ProcessConsumer(proc, daemon=daemonize_redirect).start()
+        OutputConsumer(
+            redirect_stderr, proc.stderr, daemon=daemonize_redirect).start()
+    ProcessConsumer(proc, [redirect_stdout], daemon=daemonize_redirect).start()
 
     return _port
 
@@ -380,8 +399,18 @@ class OutputConsumer(CompatThread):
         self.redirect = redirect
         self.stream = stream
 
+        if isinstance(redirect, Queue):
+            self.redirect_func = self._pipe_queue
+        if isinstance(redirect, deque):
+            self.redirect_func = self._pipe_deque
         if hasattr2(redirect, "write"):
             self.redirect_func = self._pipe_fd
+
+    def _pipe_queue(self, line):
+        self.redirect.put(line)
+
+    def _pipe_deque(self, line):
+        self.redirect.appendleft(line)
 
     def _pipe_fd(self, line):
         self.redirect.write(line)
@@ -396,14 +425,22 @@ class ProcessConsumer(CompatThread):
     """Thread that ensures process stdout and stderr are properly closed.
     """
 
-    def __init__(self, proc, *args, **kwargs):
+    def __init__(self, proc, closable_list, *args, **kwargs):
         super(ProcessConsumer, self).__init__(*args, **kwargs)
         self.proc = proc
+        if closable_list:
+            # We don't care if it contains queues or deques, quiet_close will
+            # just ignore them.
+            self.closable_list = closable_list
+        else:
+            self.closable_list = []
 
     def run(self):
         self.proc.wait()
         quiet_close(self.proc.stdout)
         quiet_close(self.proc.stderr)
+        for closable in self.closable_list:
+            quiet_close(closable)
 
 
 class GatewayParameters(object):
@@ -1436,10 +1473,14 @@ class JavaGateway(object):
     @classmethod
     def launch_gateway(
             cls, port=0, jarpath="", classpath="", javaopts=[],
-            die_on_exit=False):
+            die_on_exit=False, redirect_stdout=None,
+            redirect_stderr=None, daemonize_redirect=False):
         """Launch a `Gateway` in a new Java process and create a default
         :class:`JavaGateway <py4j.java_gateway.JavaGateway>` to connect to
         it.
+
+        See :func:`launch_gateway <py4j.java_gateway.launch_gateway>` for more
+        information about this function.
 
         :param port: the port to launch the Java Gateway on.  If no port is
             specified then an ephemeral port is used.
@@ -1453,12 +1494,31 @@ class JavaGateway(object):
             not `javaopts`.)
         :param die_on_exit: if `True`, the Java gateway process will die when
             this Python process exits or is killed.
+        :param redirect_stdout: where to redirect the JVM stdout.
+            If None (default)
+            stdout is redirected to os.devnull. Otherwise accepts a
+            file descriptor, a queue, or a deque. Will send one line at a time
+            to these objects.
+        :param redirect_stderr: where to redirect the JVM stdout.
+            If None (default)
+            stderr is redirected to os.devnull. Otherwise accepts a
+            file descriptor, a queue, or a deque. Will send one line at a time
+            to these objects.
+        :param daemonize_redirect: if True, the consumer threads will be
+            daemonized and will not prevent the main Python process from
+            exiting. This means the file descriptors (stderr, stdout,
+            redirect_stderr, redirect_stdout) might not be properly closed.
+            This is not usually a problem, but the default is conservatively
+            set to False.
 
         :rtype: a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
             connected to the `Gateway` server.
         """
-        _port = launch_gateway(port, jarpath, classpath, javaopts, die_on_exit)
-        gateway = JavaGateway(GatewayClient(port=_port))
+        _port = launch_gateway(
+            port, jarpath, classpath, javaopts, die_on_exit,
+            redirect_stdout=redirect_stdout, redirect_stderr=redirect_stderr,
+            daemonize_redirect=daemonize_redirect)
+        gateway = JavaGateway(gateway_parameters=GatewayParameters(port=_port))
         return gateway
 
 
