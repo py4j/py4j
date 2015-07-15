@@ -6,6 +6,7 @@ Created on Dec 10, 2009
 """
 from __future__ import unicode_literals, absolute_import
 
+from collections import deque
 from decimal import Decimal
 import gc
 import math
@@ -13,18 +14,20 @@ from multiprocessing import Process
 import os
 from socket import AF_INET, SOCK_STREAM, socket
 import subprocess
+import tempfile
 from threading import Thread
 import time
 from traceback import print_exc
 import unittest
 
 from py4j.compat import (
-    range, isbytearray, ispython3bytestr, bytearray2, long)
+    range, isbytearray, ispython3bytestr, bytearray2, long,
+    Queue)
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_gateway import (
     JavaGateway, JavaMember, get_field, get_method,
     GatewayClient, set_field, java_import, JavaObject, is_instance_of,
-    GatewayParameters, CallbackServerParameters)
+    GatewayParameters, CallbackServerParameters, quiet_close)
 from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
     encode_bytearray, escape_new_line, unescape_new_line)
@@ -790,6 +793,72 @@ class GatewayLauncherTest(unittest.TestCase):
     def testJavaopts(self):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
         self.assertTrue(self.gateway.jvm)
+
+    def testRedirectToNull(self):
+        self.gateway = JavaGateway.launch_gateway()
+        for i in range(4097):  # Hangs if not properly redirected
+            self.gateway.jvm.System.out.println("Test")
+
+    def testRedirectToQueue(self):
+        qout = Queue()
+        qerr = Queue()
+        self.gateway = JavaGateway.launch_gateway(
+            redirect_stdout=qout, redirect_stderr=qerr)
+        for i in range(10):
+            self.gateway.jvm.System.out.println("Test")
+            self.gateway.jvm.System.err.println("Test2")
+        sleep()
+        for i in range(10):
+            self.assertEqual("Test\n", qout.get())
+            self.assertEqual("Test2\n", qerr.get())
+        self.assertTrue(qout.empty)
+        self.assertTrue(qerr.empty)
+
+    def testRedirectToDeque(self):
+        qout = deque()
+        qerr = deque()
+        self.gateway = JavaGateway.launch_gateway(
+            redirect_stdout=qout, redirect_stderr=qerr)
+        for i in range(10):
+            self.gateway.jvm.System.out.println("Test")
+            self.gateway.jvm.System.err.println("Test2")
+        sleep()
+        for i in range(10):
+            self.assertEqual("Test\n", qout.pop())
+            self.assertEqual("Test2\n", qerr.pop())
+        self.assertEqual(0, len(qout))
+        self.assertEqual(0, len(qerr))
+
+    def testRedirectToFile(self):
+        (_, outpath) = tempfile.mkstemp(text=True)
+        (_, errpath) = tempfile.mkstemp(text=True)
+
+        stdout = open(outpath, "w")
+        stderr = open(errpath, "w")
+
+        try:
+            self.gateway = JavaGateway.launch_gateway(
+                redirect_stdout=stdout, redirect_stderr=stderr)
+            for i in range(10):
+                self.gateway.jvm.System.out.println("Test")
+                self.gateway.jvm.System.err.println("Test2")
+            # Should not be necessary
+            quiet_close(stdout)
+            quiet_close(stderr)
+
+            # Test that the redirect files were written to correctly
+            with open(outpath, "r") as stdout:
+                lines = stdout.readlines()
+                self.assertEqual(10, len(lines))
+                self.assertEqual("Test\n", lines[0])
+
+            with open(errpath, "r") as stderr:
+                lines = stderr.readlines()
+                self.assertEqual(10, len(lines))
+                self.assertEqual("Test2\n", lines[0])
+        finally:
+            os.unlink(outpath)
+            os.unlink(errpath)
 
 
 if __name__ == "__main__":
