@@ -6,7 +6,7 @@ DIST_DIR = 'py4j-python/dist'
 # For Python 3 compatibility, we can't use execfile; this is 2to3's conversion:
 exec(compile(open("py4j-python/src/py4j/version.py").read(),
      "py4j-python/src/py4j/version.py", 'exec'))
-VERSION = __version__
+VERSION = __version__  # noqa
 RELEASE = 'py4j-' + VERSION
 JAR_FILE = 'py4j' + VERSION + '.jar'
 # Note: please do "ant python-light-release" before doing setup.py sdist.

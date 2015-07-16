@@ -61,8 +61,8 @@ class TestThreadSafeFinalizer(unittest.TestCase):
         clear_finalizers(True)
 
     def work1(self, acc):
-        a1 = AClass(1, acc)
-        a2 = AClass(2, acc)
+        a1 = AClass(1, acc)  # noqa
+        a2 = AClass(2, acc)  # noqa
 
     def work1b(self, acc):
         a1 = AClass(1, acc)
@@ -72,7 +72,7 @@ class TestThreadSafeFinalizer(unittest.TestCase):
 
     def work2(self, acc):
         a1 = AClass(1, acc)
-        a2 = AClass(2, acc)
+        a2 = AClass(2, acc)  # noqa
         return a1
 
     def testFinalizer(self):
@@ -126,12 +126,12 @@ class TestFinalizer(unittest.TestCase):
         clear_finalizers(True)
 
     def work1(self, acc):
-        a1 = AClass2(1, acc)
-        a2 = AClass2(2, acc)
+        a1 = AClass2(1, acc)  # noqa
+        a2 = AClass2(2, acc)  # noqa
 
     def work2(self, acc):
-        a1 = AClass2(1, acc)
-        a2 = AClass2(2, acc)
+        a1 = AClass2(1, acc)  # noqa
+        a2 = AClass2(2, acc)  # noqa
         return a1
 
     def testFinalizer(self):

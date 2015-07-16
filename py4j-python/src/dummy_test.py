@@ -3,7 +3,7 @@ from py4j.java_gateway import JavaGateway, CallbackServerParameters
 
 class FalseAddition(object):
     def doOperation(self, i, j, k=None):
-        if k == None:
+        if k is None:
             # Integer overflow!
             return 3722507311
         else:
