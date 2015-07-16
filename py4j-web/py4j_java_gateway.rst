@@ -154,11 +154,9 @@ JVMView
 .. _api_javaobject:
 
 JavaObject
------------
+----------
 
-.. autoclass:: py4j.java_gateway.JavaObject
-   :members:
-   :undoc-members:
+TBD
 
 ..
   Examples
@@ -173,9 +171,7 @@ JavaObject
 JavaMember
 -----------
 
-.. autoclass:: py4j.java_gateway.JavaMember
-   :members:
-   :undoc-members:
+TBD
 
 ..
   Examples
@@ -190,9 +186,7 @@ JavaMember
 JavaClass
 ---------
 
-.. autoclass:: py4j.java_gateway.JavaClass
-   :members:
-   :undoc-members:
+TBD
 
 ..
   Examples

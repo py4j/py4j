@@ -494,21 +494,22 @@ class CallbackServerParameters(object):
             daemonize=False, daemonize_connections=False, eager_load=True):
         """
         :param address: the address to which the client will request a
-         connection
+            connection
 
         :param port: the port to which the client will request a connection.
-         Default is 25333.
+            Default is 25333.
 
         :param daemonize: If `True`, will set the daemon property of the server
-        thread to True. The callback server will exit automatically if all the
-        other threads exit.
+            thread to True. The callback server will exit automatically if all
+            the other threads exit.
 
         :param daemonize_connections: If `True`, callback server connections
-        are executed in daemonized threads and will not block the exit of a
-        program if non daemonized threads are finished.
+            are executed in daemonized threads and will not block the exit of a
+            program if non daemonized threads are finished.
 
         :param eager_load: If `True`, the callback server is automatically
-        started when the JavaGateway is created.
+            started when the JavaGateway is created.
+
         """
         self.address = address
         self.port = port
