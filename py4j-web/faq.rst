@@ -44,8 +44,8 @@ How to call a constructor?
 --------------------------
 
 Use the ``jvm`` member of a gateway followed by the class's fully qualified
-name. See :ref:`JVM Views <jvm_views>` to learn how to import packages and avoid
-typing the fully qualified name of classes:
+name. See :ref:`JVM Views <jvm_views>` to learn how to import packages and
+avoid typing the fully qualified name of classes:
 
 ::
 
@@ -231,17 +231,24 @@ There are many ways to contribute to Py4J:
 
 * **Found a bug or have a feature request?** Fill a detailed `issue report
   <https://github.com/bartdag/py4j/issues>`_.
-* **Found a typo or have a better way to clarify the documentation?** Write a comment at the bottom of documentation
-  the
-  page, send a patch on the `mailing list <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_, or
-  fill a `bug report <https://github.com/bartdag/py4j/issues>`_. The source of each documentation page is
-  accessible in the sidebar. We use `ReStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`_
-* **Good at writing Python or Java?** Good news, we could use some help, especially in the Python department!
-  You can either contribute a code patch through the `mailing list
-  <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_ by adding a feature or just addressing an
-  `open issue <https://github.com/bartdag/py4j/issues>`_.
+
+* **Found a typo or have a better way to clarify the documentation?** Write a
+  comment at the bottom of documentation the page, send a patch on the `mailing
+  list <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_,
+  fill a `bug report <https://github.com/bartdag/py4j/issues>`_ or open a pull
+  request. The source of each documentation page is accessible in the sidebar.
+  We use `ReStructuredText
+  <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`_
+
+* **Good at writing Python or Java?** Good news, we could use some help. You
+  can open a pull request that adds a new feature or that address an `open
+  issue <https://github.com/bartdag/py4j/issues>`_. For new features, it is
+  always best to discuss it on the `mailing list
+  <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_ first.
+  Do not forget to read our :doc:`contribution guidelines </contributing>`.
+
 * **Feeling artsy?** We need a logo. Hop on the `mailing list
   <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_.
 
-In case of doubt, do not hesitate to contact the founder of the project, `Barthelemy
-<mailto:barthe@users.sourceforge.net>`_.
+In case of doubt, do not hesitate to contact the founder of the project,
+`Barthelemy <mailto:barthelemy@infobart.com>`_.
