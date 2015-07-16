@@ -222,7 +222,7 @@ class ListTest(unittest.TestCase):
         jList2 = ex.getList(3)
 
         # Lists are not "hashable" in Python. Too bad.
-        #self.assertEqual(hash(pList),hash(pList2))
+        # self.assertEqual(hash(pList),hash(pList2))
         self.assertEqual(hash(jList), hash(jList2))
 
         self.assertEqual(len(pList), len(jList))
@@ -325,11 +325,11 @@ class ListTest(unittest.TestCase):
         jList2 = ex.getList(4)
         self.assertTrue(jList == jList)
         self.assertTrue(jList != jList2)
-        #self.assertTrue(jList < jList2)
+        # self.assertTrue(jList < jList2)
         self.assertTrue(jList != pList)
-        #self.assertTrue(jList == pList)
-#        self.assertTrue(jList2 != pList)
-#        self.assertTrue(jList2 > pList)
+        # self.assertTrue(jList == pList)
+        # self.assertTrue(jList2 != pList)
+        # self.assertTrue(jList2 > pList)
 
     def testException(self):
         ex = self.gateway.getNewExample()
