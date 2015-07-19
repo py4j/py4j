@@ -12,4 +12,5 @@ Py4J Documentation
    py4j_python
    py4j_java
    faq
+   contributing
    changelog

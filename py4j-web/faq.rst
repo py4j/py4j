@@ -44,8 +44,8 @@ How to call a constructor?
 --------------------------
 
 Use the ``jvm`` member of a gateway followed by the class's fully qualified
-name. See :ref:`JVM Views <jvm_views>` to learn how to import packages and avoid
-typing the fully qualified name of classes:
+name. See :ref:`JVM Views <jvm_views>` to learn how to import packages and
+avoid typing the fully qualified name of classes:
 
 ::
 
@@ -202,7 +202,9 @@ Are there any security concerns with Py4J?
 ------------------------------------------
 
 Running a Py4J gateway on a JVM exposes the JVM over the network, which is a
-major security concern.
+major security concern because a client can use the JVM to run any code (access
+files, delete files, write programs and execute them, communicate over the
+network, etc.).
 
 By default, Py4J only listens to the IPv4 localhost (127.0.0.1), so if you
 trust all users having access to the localhost, the security risks are minimal
@@ -210,13 +212,10 @@ because external programs and users do not have access to the localhost by
 default on most systems.
 
 If you use Py4J to make a JVM available over the network, you are responsible
-for ensuring that only trusted connections can communicate with the JVM. This
-is usually achieved with a proper firewall configuration.
-
-You can view Py4J as a dangerous equivalent of redis or memcached server: no
-protection by default with access to system commands and the filesystem. Still,
-redis and memcached are used by lots of organizations, it is just that they are
-usually not open outside of a private and trusted network.
+for ensuring that (1) only trusted sources can communicate with the JVM and
+(2) the privileges of the user running the JVM are properly constrained. This
+is usually achieved with a proper firewall configuration, network
+segmentation, and security policies configured with selinux or apparmor.
 
 I found a bug, how do I report it?
 ----------------------------------
@@ -231,17 +230,24 @@ There are many ways to contribute to Py4J:
 
 * **Found a bug or have a feature request?** Fill a detailed `issue report
   <https://github.com/bartdag/py4j/issues>`_.
-* **Found a typo or have a better way to clarify the documentation?** Write a comment at the bottom of documentation
-  the
-  page, send a patch on the `mailing list <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_, or
-  fill a `bug report <https://github.com/bartdag/py4j/issues>`_. The source of each documentation page is
-  accessible in the sidebar. We use `ReStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`_
-* **Good at writing Python or Java?** Good news, we could use some help, especially in the Python department!
-  You can either contribute a code patch through the `mailing list
-  <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_ by adding a feature or just addressing an
-  `open issue <https://github.com/bartdag/py4j/issues>`_.
+
+* **Found a typo or have a better way to clarify the documentation?** Write a
+  comment at the bottom of documentation the page, send a patch on the `mailing
+  list <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_,
+  fill a `bug report <https://github.com/bartdag/py4j/issues>`_ or open a pull
+  request. The source of each documentation page is accessible in the sidebar.
+  We use `ReStructuredText
+  <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`_
+
+* **Good at writing Python or Java?** Good news, we could use some help. You
+  can open a pull request that adds a new feature or that address an `open
+  issue <https://github.com/bartdag/py4j/issues>`_. For new features, it is
+  always best to discuss it on the `mailing list
+  <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_ first.
+  Do not forget to read our :doc:`contribution guidelines </contributing>`.
+
 * **Feeling artsy?** We need a logo. Hop on the `mailing list
   <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_.
 
-In case of doubt, do not hesitate to contact the founder of the project, `Barthelemy
-<mailto:barthe@users.sourceforge.net>`_.
+In case of doubt, do not hesitate to contact the founder of the project,
+`Barthelemy <mailto:barthelemy@infobart.com>`_.

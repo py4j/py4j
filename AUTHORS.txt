@@ -1,0 +1,17 @@
+Py4J was originally created in 2009 by Barthelemy Dagenais.
+
+Here is an inevitably incomplete list of MUCH-APPRECIATED CONTRIBUTORS --
+people who have submitted patches, reported bugs, and generally made Py4J that
+much better:
+
+Jacek Bzdak <jbzdak@gmail.com>
+Barthelemy Dagenais <barthelemy@infobart.com>
+Frankie Dintino <fdintino@theatlantic.com>
+Matthew Farrellee <matt@redhat.com>
+Matthew Gerring <matthew.gerring@gmail.com>
+Jonah Graham <jonah@kichwacoders.com>
+Alex Grönholm <alex.gronholm+git@nextday.fi>
+Josh Rosen <rosenville@gmail.com>
+Isaac Sánchez Barrera <isaac@isb1009.es>
+David C. Sterratt <david.c.sterratt@ed.ac.uk>
+Greg Warner <gdwarner@gmail.com>
