@@ -15,4 +15,19 @@ This is the source repository of Py4J projects. Please visit the `Py4J homepage
 For help, register and then post to the Py4J mailing list at
 ``py4j-users at lists dot sourceforge dot net``
 
+LICENSE
+=======
+
+Py4J is distributed with the BSD 3-Clause license. See LICENSE.txt for more
+information.
+
+
+CONTRIBUTING
+============
+
+We are always happy to receive code contributions, bug reports, and
+documentation fixes. Please visit the `contributing guide
+<http://py4j.sourceforge.net/contributing.html>`_ for more
+information.
+
 .. image:: https://api.travis-ci.org/bartdag/py4j.png
