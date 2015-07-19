@@ -202,7 +202,9 @@ Are there any security concerns with Py4J?
 ------------------------------------------
 
 Running a Py4J gateway on a JVM exposes the JVM over the network, which is a
-major security concern.
+major security concern because a client can use the JVM to run any code (access
+files, delete files, write programs and execute them, communicate over the
+network, etc.).
 
 By default, Py4J only listens to the IPv4 localhost (127.0.0.1), so if you
 trust all users having access to the localhost, the security risks are minimal
@@ -210,13 +212,10 @@ because external programs and users do not have access to the localhost by
 default on most systems.
 
 If you use Py4J to make a JVM available over the network, you are responsible
-for ensuring that only trusted connections can communicate with the JVM. This
-is usually achieved with a proper firewall configuration.
-
-You can view Py4J as a dangerous equivalent of redis or memcached server: no
-protection by default with access to system commands and the filesystem. Still,
-redis and memcached are used by lots of organizations, it is just that they are
-usually not open outside of a private and trusted network.
+for ensuring that (1) only trusted sources can communicate with the JVM and
+(2) the privileges of the user running the JVM are properly constrained. This
+is usually achieved with a proper firewall configuration, network
+segmentation, and security policies configured with selinux or apparmor.
 
 I found a bug, how do I report it?
 ----------------------------------
