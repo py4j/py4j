@@ -498,8 +498,8 @@ class GatewayClient(object):
             self.close()
             self.is_connected = False
         except Py4JNetworkError:
-            self.shutdown_gateway()
             logger.debug("Error while shutting down gateway.", exc_info=True)
+            self.shutdown_gateway()
 
     def send_command(self, command, retry=True):
         """Sends a command to the JVM. This method is not intended to be
