@@ -289,7 +289,7 @@ def quiet_close(closable):
     try:
         closable.close()
     except Exception:
-        pass
+        logger.debug("Exception while closing", exc_info=True)
 
 
 def quiet_shutdown(socket_instance):
@@ -300,7 +300,7 @@ def quiet_shutdown(socket_instance):
     try:
         socket_instance.shutdown(socket.SHUT_RDWR)
     except Exception:
-        pass
+        logger.debug("Exception while shutting down a socket", exc_info=True)
 
 
 def gateway_help(gateway_client, var, pattern=None, short_name=True,
@@ -374,7 +374,8 @@ def _garbage_collect_object(gateway_client, target_id):
                 target_id +
                 "\ne\n")
         except Exception:
-            pass
+            logger.debug("Exception while garbage collecting an object",
+                         exc_info=True)
 
 
 def _garbage_collect_connection(socket_instance):
@@ -574,7 +575,7 @@ class GatewayClient(object):
             raise Py4JNetworkError("Gateway is not connected.")
         try:
             connection = self.deque.pop()
-        except Exception:
+        except IndexError:
             connection = self._create_connection()
         return connection
 
@@ -588,7 +589,8 @@ class GatewayClient(object):
         try:
             self.deque.append(connection)
         except Exception:
-            pass
+            logger.warning(
+                "Exception while giving back connection", exc_info=True)
 
     def shutdown_gateway(self):
         """Sends a shutdown command to the gateway. This will close the
@@ -602,6 +604,7 @@ class GatewayClient(object):
             self.close()
             self.is_connected = False
         except Py4JNetworkError:
+            logger.debug("Error while shutting down gateway.", exc_info=True)
             self.shutdown_gateway()
 
     def send_command(self, command, retry=True):
@@ -624,8 +627,11 @@ class GatewayClient(object):
             self._give_back_connection(connection)
         except Py4JNetworkError:
             if retry:
+                logging.info("Exception while sending command.", exc_info=True)
                 response = self.send_command(command)
             else:
+                logging.exception(
+                    "Exception while sending command.")
                 response = proto.ERROR
 
         return response
@@ -644,7 +650,7 @@ class GatewayClient(object):
             try:
                 connection = self.deque.pop()
                 quiet_close(connection)
-            except Exception:
+            except IndexError:
                 pass
 
 
@@ -684,11 +690,11 @@ class GatewayConnection(object):
             self.socket.connect((self.address, self.port))
             self.is_connected = True
             self.stream = self.socket.makefile("rb", 0)
-        except Exception:
+        except Exception as e:
             msg = "An error occurred while trying to connect to the Java "\
                 "server"
             logger.exception(msg)
-            raise Py4JNetworkError(msg)
+            raise Py4JNetworkError(msg, e)
 
     def close(self):
         """Closes the connection by closing the socket."""
@@ -714,7 +720,8 @@ class GatewayConnection(object):
             self.is_connected = False
         except Exception:
             # Do nothing! Exceptions might occur anyway.
-            pass
+            logger.debug("Exception occurred while shutting down gateway",
+                         exc_info=True)
 
     def send_command(self, command):
         """Sends a command to the JVM. This method is not intended to be
@@ -738,9 +745,9 @@ class GatewayConnection(object):
                 self.close()
                 raise Py4JError("Answer from Java side is empty")
             return answer
-        except Exception:
+        except Exception as e:
             logger.exception("Error while sending or receiving.")
-            raise Py4JNetworkError("Error while sending or receiving")
+            raise Py4JNetworkError("Error while sending or receiving", e)
 
 
 class JavaMember(object):
@@ -1403,6 +1410,10 @@ class JavaGateway(object):
         except Exception:
             if raise_exception:
                 raise
+            else:
+                logger.info(
+                    "Exception while shutting down callback server",
+                    exc_info=True)
         self.shutdown_callback_server()
 
     def shutdown_callback_server(self, raise_exception=False):
@@ -1417,6 +1428,10 @@ class JavaGateway(object):
         except Exception:
             if raise_exception:
                 raise
+            else:
+                logger.info(
+                    "Exception while shutting down callback server",
+                    exc_info=True)
 
     def restart_callback_server(self):
         """Shuts down the callback server (if started) and restarts a new one.
@@ -1573,10 +1588,10 @@ class CallbackServer(object):
             socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             self.server_socket.bind((self.address, self.port))
-        except Exception:
+        except Exception as e:
             msg = "An error occurred while trying to start the callback server"
             logger.exception(msg)
-            raise Py4JNetworkError(msg)
+            raise Py4JNetworkError(msg, e)
 
         # Maybe thread needs to be cleanup up?
         self.thread = Thread(target=self.run)
@@ -1693,7 +1708,7 @@ class CallbackConnection(Thread):
             # This is a normal exception...
             logger.info(
                 "Error while callback connection was waiting for"
-                "a message")
+                "a message", exc_info=True)
 
             logger.info("Closing down connection")
             quiet_shutdown(self.socket)

@@ -364,7 +364,10 @@ def register_input_converter(converter, prepend=False):
 
 class Py4JError(Exception):
     """Exception raised when a problem occurs with Py4J."""
-    pass
+
+    def __init__(self, args=None, cause=None):
+        super(Py4JError, self).__init__(args)
+        self.cause = cause
 
 
 class Py4JNetworkError(Py4JError):
