@@ -10,7 +10,7 @@ programs to call back Python objects.
 The latest compiled release is available in the current-release directory.
 
 This is the source repository of Py4J projects. Please visit the `Py4J homepage
-<http://py4j.sourceforge.net>`_ for more information.
+<http://www.py4j.org>`_ for more information.
 
 For help, register and then post to the Py4J mailing list at
 ``py4j-users at lists dot sourceforge dot net``
@@ -27,7 +27,7 @@ CONTRIBUTING
 
 We are always happy to receive code contributions, bug reports, and
 documentation fixes. Please visit the `contributing guide
-<http://py4j.sourceforge.net/contributing.html>`_ for more
+<http://www.py4j.org/contributing.html>`_ for more
 information.
 
 .. image:: https://api.travis-ci.org/bartdag/py4j.png

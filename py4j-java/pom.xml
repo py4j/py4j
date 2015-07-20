@@ -11,9 +11,9 @@
 	<artifactId>py4j</artifactId>
 	<packaging>jar</packaging>
 	<name>Py4J</name>
-	<version>0.9pre</version>
+	<version>0.9</version>
 	<description>Py4J enables Python programs running in a Python interpreter to dynamically access Java objects in a Java Virtual Machine. Methods are called as if the Java objects resided in the Python interpreter and Java collections can be accessed through standard Python collection methods. Py4J also enables Java programs to call back Python objects.</description>
-	<url>http://py4j.sourceforge.net/</url>
+	<url>http://www.py4j.org/</url>
 	<licenses>
 		<license>
 			<name>The New BSD License</name>

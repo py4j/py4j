@@ -3,6 +3,14 @@ Changelog
 
 The changelog describes in plain English the changes that occurred between Py4J releases.
 
+Py4J 0.9
+------------
+
+- Python side: constructor parameters have been deprecated in favor of
+  GatewayParameters and CallbackServerParameters.
+- `github 0.9 milestone
+  <https://github.com/bartdag/py4j/issues?q=is%3Aissue+milestone%3A0.9+is%3Aclosed>`_
+
 Py4J 0.8.2.1
 ------------
 
@@ -87,7 +95,7 @@ Py4J 0.5
   Java library. The other
   provides a default GatewayServer that is started when Eclipse starts. Both
   features are available on the new Py4J Eclipse update site:
-  ``http://py4j.sourceforge.net/py4j_eclipse``
+  ``http://www.py4j.org/py4j_eclipse``
 - Redesigned the module decomposition of Py4J: there are no more mandatory circular dependencies among modules.
 - `github 0.5 milestone
   <https://github.com/bartdag/py4j/issues/labels/v0.5>`_
