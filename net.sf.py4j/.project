@@ -25,4 +25,16 @@
 		<nature>org.eclipse.pde.PluginNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/py4j-java/src</locationURI>
+		</link>
+		<link>
+			<name>test</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/py4j-java/test</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

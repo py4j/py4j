@@ -3,7 +3,7 @@ Eclipse-BuddyPolicy: global
 Bundle-ManifestVersion: 2
 Bundle-Name: Py4J
 Bundle-SymbolicName: net.sf.py4j
-Bundle-Version: 0.8.1.qualifier
+Bundle-Version: 0.9.0.qualifier
 Bundle-Vendor: Py4J
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: py4j,
