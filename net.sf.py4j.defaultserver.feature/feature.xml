@@ -2,7 +2,7 @@
 <feature
       id="net.sf.py4j.defaultserver.feature"
       label="Py4J Default Server"
-      version="0.8.1.qualifier"
+      version="0.9.0.qualifier"
       provider-name="Py4J">
 
    <description url="http://www.py4j.org/">
@@ -14,7 +14,8 @@ standard Python collection methods.
    </description>
 
    <copyright>
-      © Copyright 2010, Barthélémy Dagenais
+      Copyright (c) 2009-2015, Barthelemy Dagenais and individual contributors. All
+rights reserved.
    </copyright>
 
    <license url="https://github.com/bartdag/py4j/blob/master/LICENSE.txt">
