@@ -14,7 +14,7 @@ Download Py4J for Eclipse
 
 You can download Py4J plug-ins from this update site:
 
-``http://py4j.sourceforge.net/py4j_eclipse``
+``http://www.py4j.org/py4j_eclipse``
 
 Requirements
 ============
@@ -30,4 +30,4 @@ Py4J for Eclipse requires:
 * Eclipse 3.6 (Eclipse 3.4 and 3.5 should probably work)
 * Java 6.0+
 
-If you would like a particular version of Python or Java to be supported, fill an `enhancement request <https://sourceforge.net/apps/trac/py4j/newticket>`_.
+If you would like a particular version of Python or Java to be supported, fill a `feature request <https://github.com/bartdag/py4j/issues/new>`_.

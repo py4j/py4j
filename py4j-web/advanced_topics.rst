@@ -478,7 +478,7 @@ dependencies.
 Unless they have specific needs, users are encouraged to use the Eclipse
 plug-ins provided by Py4J available on the following update site:
 
-``http://py4j.sourceforge.net/py4j_eclipse``
+``http://www.py4j.org/py4j_eclipse``
 
 The first plug-in, `net.sf.py4j`, provides all the Py4J Java classes such as
 `GatewayServer`. The plug-in comes with the source and the javadoc. The plug-in

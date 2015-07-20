@@ -29,9 +29,9 @@ setup(
                      'collections can be accessed '
                      'through standard Python collection methods. Py4J also '
                      'enables Java programs to call back Python objects.',
-    url="http://py4j.sourceforge.net/",
+    url="http://www.py4j.org/",
     author="Barthelemy Dagenais",
-    author_email="barthe@users.sourceforge.net",
+    author_email="barthelemy@infobart.com",
     license="BSD License",
     classifiers=[
         'Development Status :: 4 - Beta',

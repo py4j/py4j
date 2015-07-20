@@ -3,7 +3,7 @@
 
 .. module:: py4j.protocol
   :synopsis: Main Py4J Protocol Python module.
-.. moduleauthor:: Barthelemy Dagenais <barthe@users.sourceforge.net>
+.. moduleauthor:: Barthelemy Dagenais <barthelemy@infobart.com>
 
 The :mod:`py4j.protocol` module defines most of the types, functions, and
 characters used in the Py4J protocol. It does not need to be explicitly used by
@@ -36,12 +36,12 @@ Py4JJavaError
 
 Py4J Protocol Functions
 -----------------------
-   
+
 The following functions can be used to extend Py4J (e.g., to create new commands):
 
 .. autofunction:: py4j.protocol.escape_new_line
 
-.. autofunction:: py4j.protocol.unescape_new_line 
+.. autofunction:: py4j.protocol.unescape_new_line
 
 .. autofunction:: py4j.protocol.get_command_part
 

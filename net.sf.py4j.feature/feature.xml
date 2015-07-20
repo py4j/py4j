@@ -5,7 +5,7 @@
       version="0.8.1.qualifier"
       provider-name="Py4J">
 
-   <description url="http://py4j.sourceforge.net/">
+   <description url="http://www.py4j.org/">
       Py4J enables Python programs running in a Python interpreter to dynamically access Java objects residing in a Java Virtual Machine. Methods are called as if the Java objects resided in the Python interpreter and Java collections can be accessed through standard Python collection methods.
    </description>
 
@@ -13,7 +13,7 @@
       © Copyright 2009-2010, Barthélémy Dagenais
    </copyright>
 
-   <license url="http://sourceforge.net/apps/trac/py4j/browser/trunk/py4j-python/LICENSE.txt">
+   <license url="https://github.com/bartdag/py4j/blob/master/LICENSE.txt">
       Copyright (c) 2009-2010, Barthelemy Dagenais All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -43,9 +43,9 @@ POSSIBILITY OF SUCH DAMAGE.
    </license>
 
    <url>
-      <discovery label="Py4J Home" url="http://py4j.sourceforge.net/"/>
-      <discovery label="Py4J Trac - To report bugs" url="http://sourceforge.net/apps/trac/py4j/wiki"/>
-      <discovery label="Py4J Development Blog" url="http://py4j.wordpress.com/"/>
+      <discovery label="Py4J Home" url="http://www.py4j.org/"/>
+      <discovery label="Py4J Issues - To report bugs" url="https://github.com/bartdag/py4j/issues/new"/>
+      <discovery label="Py4J Development Blog" url="http://blog.py4j.org/"/>
    </url>
 
    <plugin

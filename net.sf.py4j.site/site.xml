@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <description name="Py4J Main Update Site" url="http://py4j.sourceforge.net/py4j_eclipse">
+   <description name="Py4J Main Update Site" url="http://www.py4j.org/py4j_eclipse">
       Main update site for Py4J
    </description>
    <feature url="features/net.sf.py4j.defaultserver.feature_0.8.1.201312260830.jar" id="net.sf.py4j.defaultserver.feature" version="0.8.1.201312260830">

@@ -3,7 +3,7 @@
 
 .. module:: py4j.finalizer
   :synopsis: Global classes to register finalizers.
-.. moduleauthor:: Barthelemy Dagenais <barthe@users.sourceforge.net>
+.. moduleauthor:: Barthelemy Dagenais <barthelemy@infobart.com>
 
 The :mod:`py4j.finalizer` module contains global classes that enables the registration of finalizers, i.e., weak
 reference callbacks. This module is used by Py4J to register a finalizer for each JavaObject instance: once there is no
@@ -52,6 +52,6 @@ Py4J Finalizer Functions
 ------------------------
 
 .. _api_functions_clear_finalizers:
- 
-    
+
+
 .. autofunction:: py4j.finalizer.clear_finalizers
