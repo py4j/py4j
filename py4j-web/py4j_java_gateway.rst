@@ -90,11 +90,10 @@ GatewayParameters
    :undoc-members:
 
 
-
-.. _api_callbackserverparameters
+.. _api_callbackserverparameters:
 
 CallbackServerParameters
------------------
+------------------------
 
 .. autoclass:: py4j.java_gateway.CallbackServerParameters
    :members:
@@ -159,7 +158,7 @@ JVMView
 JavaObject
 ----------
 
-TBD
+Represents a Java object from which you can call methods or access fields.
 
 ..
   Examples
@@ -174,7 +173,9 @@ TBD
 JavaMember
 -----------
 
-TBD
+Represents a member (i.e., method) of a :class:`JavaObject`. For now, only
+methods are supported. Fields are retrieved directly and are not contained in a
+JavaMember.
 
 ..
   Examples
@@ -189,7 +190,12 @@ TBD
 JavaClass
 ---------
 
-TBD
+A `JavaClass` represents a Java Class from which static members can be
+retrieved. `JavaClass` instances are also needed to initialize an array.
+
+Usually, `JavaClass` are not initialized using their constructor, but they are
+created while accessing the `jvm` property of a gateway, e.g.,
+`gateway.jvm.java.lang.String`.
 
 ..
   Examples
