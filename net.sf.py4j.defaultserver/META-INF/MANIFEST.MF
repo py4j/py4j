@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Py4J Default Server
 Bundle-SymbolicName: net.sf.py4j.defaultserver;singleton:=true
-Bundle-Version: 0.8.1.qualifier
+Bundle-Version: 0.9.0.qualifier
 Bundle-Activator: net.sf.py4j.defaultserver.DefaultServerActivator
 Bundle-Vendor: Py4J
 Require-Bundle: org.eclipse.core.runtime,
