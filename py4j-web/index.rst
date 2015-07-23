@@ -65,6 +65,11 @@ Support & Resources
 News
 ====
 
+* **July 25th 2015** - Py4J 0.9 has been released. See the :doc:`changelog` for
+  more details about the bug fixes. Py4j has moved away from sourcefoge and is
+  now hosted on `py4j.org <https://www.py4j.org/>`_ and it has a new mailing
+  list.
+
 * **July 27th 2014** - Py4J 0.8.2 has been released. See the :doc:`changelog`
   for more details about the bug fixes.
 
