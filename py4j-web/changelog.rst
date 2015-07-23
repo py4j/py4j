@@ -1,13 +1,49 @@
 Changelog
 =========
 
-The changelog describes in plain English the changes that occurred between Py4J releases.
+The changelog describes in plain English the changes that occurred between Py4J
+releases.
 
 Py4J 0.9
-------------
+--------
 
 - Python side: constructor parameters have been deprecated in favor of
-  GatewayParameters and CallbackServerParameters.
+  GatewayParameters and CallbackServerParameters. This was necessary because
+  the number of configuration options is growing fast. Old parameters will be
+  supported until Py4J 1.0 (at least two more minor versions).
+- Python side: IDEs and interactive interpreters such as IPython can now get
+  help text for Java classes, objects, and members. Thanks to
+  @jonahkichwacoders
+- Python side: the callback gateway server (necessary for Java to call back
+  Python functions) can be daemonized and can be started after the main
+  JavaGateway is started.
+- Python side: py4j.java_gateway.launch_gateway has now a cleaner
+  implementation that discards stdout and stderr output by default. It is also
+  possible to redirect the output from these channels to separate files,
+  deques, or queues. Thanks to @davidcsterratt for finding the root cause and
+  work on the fix.
+- It is now possible to install Py4J from git with pip: pip install
+  git+https://github.com/bartdag/py4j.git
+- The Eclipse components of Py4J have been moved to another directory. Existing
+  forks and pull requests can still use the @before-eclipse-split branch until
+  Py4J reaches 1.0. Fixes won't be backported to this branch, but pull requests
+  will be merged by the main maintainer to @master if requested.
+- Major cleanup of Python source code to make it fully flake8 (pep8 + pyflakes)
+  compliant. This should be easier to contribute now.
+- Major test cleanup effort to make Python tests more reliable. Testing Py4J is
+  difficult because there are many versions of Python and Java to test and
+  Python 2.6 lacks many interesting test features. Effort to make tests even
+  more robust will continue in the next milestone.
+- We introduced an implicit contributor license agreement that indicates that
+  anyone contributing to Py4J keeps the copyright of the contribution but gives
+  a non-revokable right to license the code using Py4J's license (3-clause
+  BSD). The copyright statement has been changed to "Copyright (c) 2009-2015,
+  Barthelemy Dagenais and individual contributors.  All rights reserved." to
+  make it clear that individual contributors retain copyrights of their
+  contributions. An AUTHORS.txt file has been added to the repository to keep
+  track of contributors: if your name is not in the file and you have
+  contributed to Py4J, do not hesitate to write on the mailing list or open a
+  pull request.
 - `github 0.9 milestone
   <https://github.com/bartdag/py4j/issues?q=is%3Aissue+milestone%3A0.9+is%3Aclosed>`_
 

@@ -332,6 +332,10 @@ def is_error(answer):
 def register_output_converter(output_type, converter):
     """Registers an output converter to the list of global output converters.
 
+    An output converter transforms the output of the Java side to an instance
+    on the Python side. For example, you could transform a java.util.ArrayList
+    to a Python list. See ``py4j.java_collections`` for examples.
+
     :param output_type: A Py4J type of a return object (e.g., MAP_TYPE,
         BOOLEAN_TYPE).
     :param converter: A function that takes an object_id and a gateway_client
@@ -344,6 +348,11 @@ def register_output_converter(output_type, converter):
 
 def register_input_converter(converter, prepend=False):
     """Registers an input converter to the list of global input converters.
+
+    An input converter transforms the input of the Python side to an instance
+    on the Java side. For example, you could transform a Python list into a
+    java.util.ArrayList on the Java side. See ``py4j.java_collections`` for
+    examples.
 
     When initialized with `auto_convert=True`, a :class:`JavaGateway
     <py4j.java_gateway.JavaGateway>` will use the input converters on any
