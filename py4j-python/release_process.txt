@@ -1,26 +1,24 @@
 0. Update all versions (version.py, properties, documentation, index.rst).
-0. Write changelog
-0. ant cleanall clean-python-release
+1. Write changelog
+2. ant cleanall clean-python-release
 
-1. ant python-release
-2. create signature using gpg (gpg -b --armor)
-3. create folder on sourceforge
-4. upload to sourceforge using scp command:
-scp Py4J-0.4.zip barthe,py4j@frs.sourceforge.net:/home/frs/project/p/py/py4j/0.4 (note: sourceforge sometimes refuse the connection/user/password for whatever reason).
+3. close all bugs on github
+4. tag the release on git
 
-5. copy source of py4j-java in eclipse plug-ins
-6. don't forget to remove artifact.jar and the like: they break the update site (e.g., no category)
-7. upload update site
+5. ant python-release
+6. create signature using gpg (gpg -b --armor)
 
-8. python setup.py register
-9. upload to PyPI
-10. ant deploy-website
-11. mvn package javadoc:jar source:jar
-12. create signature for the three jar files and the pom (gpg -b --armor py4j-....jar)
-13. jar -cvf bundle.jar pom.xml ... (all files)
-14. create staging release in central (https://oss.sonatype.org Staging Upload, Upload Bundle)
-15. close release
-16. publish release
-17. close all bugs on github
-18. tag the release on git
-19. send an email to the mailing list.
+7. upload to PyPI using twine
+
+8. mvn package javadoc:jar source:jar
+9. create signature for the three jar files and the pom (gpg -b --armor py4j-....jar)
+10. jar -cvf bundle.jar pom.xml ... (all files)
+11. create staging release in central (https://oss.sonatype.org Staging Upload, Upload Bundle)
+12. close release
+13. publish release
+
+14. Py4J for Eclipse: remove artifact.jar and the like: they break the update site (e.g., no category)
+15. Py4J for Eclipse: build update site
+16. upload update site using scp
+
+17. send an email to the mailing list.

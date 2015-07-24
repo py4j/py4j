@@ -13,7 +13,7 @@ This is the source repository of Py4J projects. Please visit the `Py4J homepage
 <http://www.py4j.org>`_ for more information.
 
 For help, register and then post to the Py4J mailing list at
-``py4j-users at lists dot sourceforge dot net``
+``py4j at py4j dot org``
 
 LICENSE
 =======

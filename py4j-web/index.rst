@@ -9,8 +9,7 @@ access Java objects in a Java Virtual Machine. Methods are called as if the
 Java objects resided in the Python interpreter and Java collections can be
 accessed through standard Python collection methods. Py4J also enables Java
 programs to call back Python objects. Py4J is distributed under the `BSD
-license
-<https://github.com/bartdag/py4j/blob/master/LICENSE.txt>`_.
+license <https://github.com/bartdag/py4j/blob/master/LICENSE.txt>`_.
 
 Here is a brief example of what you can do with Py4J. The following Python
 program creates a `java.util.Random` instance from a JVM and calls some of its
@@ -59,16 +58,17 @@ Support & Resources
 
 * Take a look at the tutorial :doc:`getting_started`.
 * Browse the :doc:`contents` or the :doc:`faq`.
-* Ask a question on the `mailing list <https://lists.sourceforge.net/lists/listinfo/py4j-users>`_.
+* Ask a question on the `mailing list
+  <https://groups.google.com/a/py4j.org/forum/#!forum/py4j>`_.
 * Look at the `roadmap <https://github.com/bartdag/py4j/milestones>`_.
 
 News
 ====
 
-* **July 25th 2015** - Py4J 0.9 has been released. See the :doc:`changelog` for
-  more details about the bug fixes. Py4j has moved away from sourcefoge and is
-  now hosted on `py4j.org <https://www.py4j.org/>`_ and it has a new mailing
-  list.
+* **July 25th 2015** - Py4J 0.9 has been released. See the :doc:`changelog`
+  for more details about the bug fixes. Py4j has moved away from sourcefoge
+  and is now hosted on `py4j.org <https://www.py4j.org/>`_ and it has a new
+  mailing list.
 
 * **July 27th 2014** - Py4J 0.8.2 has been released. See the :doc:`changelog`
   for more details about the bug fixes.
@@ -76,30 +76,30 @@ News
 * **December 26th 2013** - Py4J 0.8.1 has been released. See the
   :doc:`changelog` for more details about the new features.
 
-* **June 14th 2013** - Py4J 0.8 has been released. See the :doc:`changelog` for
-  more details about the new features.
+* **June 14th 2013** - Py4J 0.8 has been released. See the :doc:`changelog`
+  for more details about the new features.
 
 * **June 2nd 2011** - Py4J 0.7 has been released. See the :doc:`changelog` for
   more details about the new features.
 
-* **February 17th 2011** - Py4J 0.6 has been released. See the :doc:`changelog`
-  for more details about the new features.
+* **February 17th 2011** - Py4J 0.6 has been released. See the
+  :doc:`changelog` for more details about the new features.
 
 * **October 30th 2010** - Py4J 0.5 has been released. See the :doc:`changelog`
   for more details about the new features.
 
-* **September 19th 2010** - Py4J 0.4 has been released. See the :doc:`changelog`
-  for more details about the new features.
+* **September 19th 2010** - Py4J 0.4 has been released. See the
+  :doc:`changelog` for more details about the new features.
 
 * **April 27th 2010** - Py4J 0.3 has been released. See the :doc:`changelog`
   for more details about the new features!
 
-* **February 11th 2010** - Py4J 0.2 has been released. See the :doc:`changelog`
-  for more details about all the new features that found their way in the
-  latest release!
+* **February 11th 2010** - Py4J 0.2 has been released. See the
+  :doc:`changelog` for more details about all the new features that found
+  their way in the latest release!
 
 * **December 23rd 2009** - Py4J 0.1 has been released. Rejoice!
 
-* **December 11th 2009** - Py4J is still in the planning phase, but the
-  code currently works for basic scenarios. A release and a tutorial should
-  be available in the following weeks.
+* **December 11th 2009** - Py4J is still in the planning phase, but the code
+  currently works for basic scenarios. A release and a tutorial should be
+  available in the following weeks.

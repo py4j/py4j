@@ -12,8 +12,9 @@ Py4J 0.9
   the number of configuration options is growing fast. Old parameters will be
   supported until Py4J 1.0 (at least two more minor versions).
 - Python side: IDEs and interactive interpreters such as IPython can now get
-  help text for Java classes, objects, and members. Thanks to
-  @jonahkichwacoders
+  help text/autocompletion for Java classes, objects, and members. This makes
+  Py4J an ideal tool to explore complex Java APIs (e.g., the Eclipse API).
+  Thanks to @jonahkichwacoders
 - Python side: the callback gateway server (necessary for Java to call back
   Python functions) can be daemonized and can be started after the main
   JavaGateway is started.
