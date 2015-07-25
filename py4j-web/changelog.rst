@@ -25,7 +25,7 @@ Py4J 0.9
   work on the fix.
 - It is now possible to install Py4J from git with pip: pip install
   git+https://github.com/bartdag/py4j.git
-- The Eclipse components of Py4J have been moved to another directory. Existing
+- The Eclipse components of Py4J have been moved to another repository. Existing
   forks and pull requests can still use the @before-eclipse-split branch until
   Py4J reaches 1.0. Fixes won't be backported to this branch, but pull requests
   will be merged by the main maintainer to @master if requested.
@@ -35,19 +35,24 @@ Py4J 0.9
   difficult because there are many versions of Python and Java to test and
   Python 2.6 lacks many interesting test features. Effort to make tests even
   more robust will continue in the next milestone.
-- We introduced an implicit contributor license agreement that indicates that
-  anyone contributing to Py4J keeps the copyright of the contribution but gives
-  a non-revokable right to license the code using Py4J's license (3-clause
-  BSD). The copyright statement has been changed to "Copyright (c) 2009-2015,
-  Barthelemy Dagenais and individual contributors.  All rights reserved." to
-  make it clear that individual contributors retain copyrights of their
-  contributions. An AUTHORS.txt file has been added to the repository to keep
-  track of contributors: if your name is not in the file and you have
-  contributed to Py4J, do not hesitate to write on the mailing list or open a
-  pull request.
-- We have a new website: `www.py4j.org <https://www.py4j.org>`_
-- We have a new blog: `blog.py4j.org <https://blog.py4j.org>`_
-- Eclipse features have moved to: `eclipse.py4j.org <https://eclipse.py4j.org>`_
+- We introduced a :doc:`contributing guide and an implicit contributor license
+  agreement </contributing>` that indicates that anyone contributing to Py4J
+  keeps the copyright of the contribution but gives a non-revokable right to
+  license the code using Py4J's license (3-clause BSD). The copyright statement
+  has been changed to "Copyright (c) 2009-2015, Barthelemy Dagenais and
+  individual contributors.  All rights reserved." to make it clear that
+  individual contributors retain copyrights of their contributions. An
+  AUTHORS.txt file has been added to the repository to keep track of
+  contributors: if your name is not in the file and you have contributed to
+  Py4J, do not hesitate to write on the mailing list or open a pull request.
+- Cleaned up the doc that was referring to broken links or refactored classes.
+  Long-time users may want to review the :doc:`advanced topics
+  </advanced_topics>` page.
+- Added support for `Python Wheels <https://pypi.python.org/pypi/wheel>`_.
+- We have a new website: `https://www.py4j.org <https://www.py4j.org>`_
+- We have a new blog: `https://blog.py4j.org <https://blog.py4j.org>`_
+- Eclipse features have moved to: `https://eclipse.py4j.org
+  <https://eclipse.py4j.org>`_
 - We have a `new mailing list
   <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_.
 - `github 0.9 milestone

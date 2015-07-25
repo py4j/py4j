@@ -625,7 +625,7 @@ resources appropriately.
 **On the Python side: receiving callbacks from Java**
 
 Py4J explicitly creates a thread to run the
-:class:`CallbackServer<py4j.java_callback.CallbackServer`, which accepts
+:class:`CallbackServer <py4j.java_gateway.CallbackServer>`, which accepts
 callback connection requests, and a thread for each callback connection
 request. As long as there is no concurrent callback from the Java side, the
 same callback connection/thread will be used.
