@@ -51,8 +51,8 @@ Py4J 0.9
 - Added support for `Python Wheels <https://pypi.python.org/pypi/wheel>`_.
 - We have a new website: `https://www.py4j.org <https://www.py4j.org>`_
 - We have a new blog: `https://blog.py4j.org <https://blog.py4j.org>`_
-- Eclipse features have moved to: `https://eclipse.py4j.org
-  <https://eclipse.py4j.org>`_
+- Eclipse features have moved to: `http://eclipse.py4j.org
+  <http://eclipse.py4j.org>`_
 - We have a `new mailing list
   <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_.
 - `github 0.9 milestone

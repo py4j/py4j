@@ -16,7 +16,7 @@ Download Py4J for Eclipse
 
 You can download Py4J plug-ins from this update site:
 
-``https://eclipse.py4j.org/``
+``http://eclipse.py4j.org/``
 
 Requirements
 ============
