@@ -68,7 +68,7 @@ New code or bug fix should ideally be accompanied by a test case.
 Because we start a JVM for most test cases, it may happen that some test fails
 because the process was not ready to receive a request. This is a problem we
 have been working on for some time now and it has been a few months since the
-test suite failed because of synchronization issues. If your test constantly
+test suite failed because of synchronization issues. If your tests constantly
 fail, then something is wrong with your test!
 
 Testing Java Code
