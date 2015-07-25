@@ -239,15 +239,6 @@
         </copy>
     </target>
 
-    <target depends="sphinx-release" name="deploy-website">
-        <symlink resource="${doc.dst.dir}" link="${htdocs.dst.dir}" />
-        <exec executable="scp" dir="${py4jpy.dir}">
-            <arg line="-r"/>
-            <arg line="htdocs"/>
-            <arg line="barthe@web.sourceforge.net:/home/project-web/py4j"/>
-        </exec>
-    </target>
-
     <!-- Py4J PYTHON DISTRIBUTION -->
 
     <target name="clean-python-release">
@@ -277,6 +268,10 @@
             <arg line="sdist"/>
             <arg line="--formats=zip,gztar"/>
         </exec>
+        <exec executable="python" dir="${py4jpy.dir}">
+            <arg line="setup.py"/>
+            <arg line="bdist_wheel"/>
+        </exec>
     </target>
 
     <target depends="java-release,sphinx-release,python-tox" name="python-release">
@@ -284,6 +279,10 @@
             <arg line="setup.py"/>
             <arg line="sdist"/>
             <arg line="--formats=zip,gztar"/>
+        </exec>
+        <exec executable="python" dir="${py4jpy.dir}">
+            <arg line="setup.py"/>
+            <arg line="bdist_wheel"/>
         </exec>
     </target>
 
