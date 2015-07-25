@@ -59,7 +59,7 @@ Support & Resources
 * Take a look at the tutorial :doc:`getting_started`.
 * Browse the :doc:`contents` or the :doc:`faq`.
 * Ask a question on the `mailing list
-  <https://groups.google.com/a/py4j.org/forum/#!forum/py4j>`_.
+  <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_.
 * Look at the `roadmap <https://github.com/bartdag/py4j/milestones>`_.
 
 News

@@ -29,7 +29,7 @@ setup(
                      'collections can be accessed '
                      'through standard Python collection methods. Py4J also '
                      'enables Java programs to call back Python objects.',
-    url="http://www.py4j.org/",
+    url="https://www.py4j.org/",
     author="Barthelemy Dagenais",
     author_email="barthelemy@infobart.com",
     license="BSD License",

@@ -45,6 +45,11 @@ Py4J 0.9
   track of contributors: if your name is not in the file and you have
   contributed to Py4J, do not hesitate to write on the mailing list or open a
   pull request.
+- We have a new website: `www.py4j.org <https://www.py4j.org>`_
+- We have a new blog: `blog.py4j.org <https://blog.py4j.org>`_
+- Eclipse features have moved to: `eclipse.py4j.org <https://eclipse.py4j.org>`_
+- We have a `new mailing list
+  <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_.
 - `github 0.9 milestone
   <https://github.com/bartdag/py4j/issues?q=is%3Aissue+milestone%3A0.9+is%3Aclosed>`_
 
