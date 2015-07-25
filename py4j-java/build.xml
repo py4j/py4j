@@ -152,7 +152,7 @@
 
     <!-- JAVA - JAVADOC -->
 	<target name="javadoc">
-        <javadoc access="protected" author="true" classpath="" destdir="${javadoc.dir}" doctitle="Py4J" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="py4j,py4j.examples" source="1.6" sourcepath="src:examples" splitindex="true" use="true" version="true">
+        <javadoc access="protected" author="true" classpath="" destdir="${javadoc.dir}" doctitle="Py4J" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="py4j,py4j.examples,py4j.commands,py4j.reflection,py4j.model" source="1.6" sourcepath="src:examples" splitindex="true" use="true" version="true">
             <link href="http://java.sun.com/javase/6/docs/api/"/>
         </javadoc>
     </target>
