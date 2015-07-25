@@ -859,6 +859,7 @@ class JavaObject(object):
     def __doc__(self):
         # The __doc__ string is used by IPython/PyDev/etc to generate
         # help string, therefore provide useful help
+        print("HELLO")
         if self._gateway_doc is None:
             self._gateway_doc = gateway_help(
                 self._gateway_client, self, display=False)
@@ -1228,12 +1229,12 @@ class JavaGateway(object):
             gateway_parameters=None, callback_server_parameters=None):
         """
         :param gateway_parameters: An instance of `GatewayParameters` used to
-        configure the various options of the gateway.
+            configure the various options of the gateway.
 
         :param callback_server_parameters: An instance of
-        `CallbackServerParameters` used to configure various options of the
-        gateway server. Must be provided to start a gateway server. Otherwise,
-        callbacks won"t be available.
+            `CallbackServerParameters` used to configure various options of the
+            gateway server. Must be provided to start a gateway server.
+            Otherwise, callbacks won"t be available.
         """
 
         self.gateway_parameters = gateway_parameters
@@ -1323,12 +1324,12 @@ class JavaGateway(object):
         """Starts the callback server.
 
         :param callback_server_parameters: parameters to use to start the
-        server. If not provided, it will use the gateway callback server
-        parameters.
+            server. If not provided, it will use the gateway callback server
+            parameters.
 
         :rtype: Returns True if the server was started by this call or False if
-        it was already started (you cannot have more than one started callback
-        server).
+            it was already started (you cannot have more than one started
+            callback server).
         """
         if self._callback_server:
             return False
@@ -1358,8 +1359,8 @@ class JavaGateway(object):
         Java behavior).
 
         :param name: Optional name of the jvm view. Does not need to be
-         unique, i.e., two distinct views can have the same name
-         (internally, they will have a distinct id).
+            unique, i.e., two distinct views can have the same name
+            (internally, they will have a distinct id).
 
         :rtype: A JVMView instance (same class as the gateway.jvm instance).
         """
@@ -1379,13 +1380,13 @@ class JavaGateway(object):
         """Creates a Java array of type `java_class` of `dimensions`
 
         :param java_class: The :class:`JavaClass` instance representing the
-         type of the array.
+            type of the array.
 
         :param dimensions: A list of dimensions of the array. For example
-         `[1,2]` would produce an `array[1][2]`.
+            `[1,2]` would produce an `array[1][2]`.
 
         :rtype: A :class:`JavaArray <py4j.java_collections.JavaArray>`
-         instance.
+            instance.
         """
         if len(dimensions) == 0:
             raise Py4JError("new arrays must have at least one dimension")
@@ -1403,7 +1404,7 @@ class JavaGateway(object):
            :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
 
         :param raise_exception: If `True`, raise an exception if an error
-         occurs while shutting down (very likely with sockets).
+            occurs while shutting down (very likely with sockets).
         """
         try:
             self._gateway_client.shutdown_gateway()
@@ -1421,7 +1422,7 @@ class JavaGateway(object):
            :class:`CallbackServer <py4j.java_callback.CallbackServer>`.
 
         :param raise_exception: If `True`, raise an exception if an error
-         occurs while shutting down (very likely with sockets).
+            occurs while shutting down (very likely with sockets).
         """
         try:
             self._callback_server.shutdown()
@@ -1471,9 +1472,9 @@ class JavaGateway(object):
             will be generated.
 
         :param pattern: Star-pattern used to filter the members. For example
-            "get*Foo" may return getMyFoo, getFoo, getFooBar, but not
+            "get\*Foo" may return getMyFoo, getFoo, getFooBar, but not
             bargetFoo. The pattern is matched against the entire signature.
-            To match only the name of a method, use "methodName(*".
+            To match only the name of a method, use "methodName(\*".
 
         :param short_name: If True, only the simple name of the parameter
             types and return types will be displayed. If False, the fully

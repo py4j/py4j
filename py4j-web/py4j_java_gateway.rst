@@ -3,15 +3,18 @@
 
 .. module:: py4j.java_gateway
   :synopsis: Main Py4J Python module.
-.. moduleauthor:: Barthelemy Dagenais <barthe@users.sourceforge.net>
+.. moduleauthor:: Barthelemy Dagenais <barthelemy@infobart.com>
 
 The :mod:`py4j.java_gateway` module defines most of the classes that are needed
 to use Py4J. Py4J users are expected to only use explicitly :class:`JavaGateway
-<py4j.java_gateway.JavaGateway>` and optionally, :class:`GatewayClient
-<py4j.java_gateway.GatewayClient>`, :func:`java_import
+<py4j.java_gateway.JavaGateway>` and optionally, :class:`GatewayParameters
+<py4j.java_gateway.GatewayParameters>`, :class:`CallbackServerParameters
+<py4j.java_gateway.CallbackServerParameters>`, :func:`java_import
 <py4j.java_gateway.java_import>`, :func:`get_field
-<py4j.java_gateway.get_field>`, and :func:`get_method
-<py4j.java_gateway.get_method>`. The other module members are documented to
+<py4j.java_gateway.get_field>`, :func:`get_method
+<py4j.java_gateway.get_method>`, :func:`launch_gateway
+<py4j.java_gateway.launch_gateway>`, and :func:`is_instance_of
+<py4j.java_gateway.is_instance_of>`. The other module members are documented to
 support the extension of Py4J.
 
 .. _api_javagateway:
@@ -87,11 +90,10 @@ GatewayParameters
    :undoc-members:
 
 
-
-.. _api_callbackserverparameters
+.. _api_callbackserverparameters:
 
 CallbackServerParameters
------------------
+------------------------
 
 .. autoclass:: py4j.java_gateway.CallbackServerParameters
    :members:
@@ -156,7 +158,7 @@ JVMView
 JavaObject
 ----------
 
-TBD
+Represents a Java object from which you can call methods or access fields.
 
 ..
   Examples
@@ -171,7 +173,9 @@ TBD
 JavaMember
 -----------
 
-TBD
+Represents a member (i.e., method) of a :class:`JavaObject`. For now, only
+methods are supported. Fields are retrieved directly and are not contained in a
+JavaMember.
 
 ..
   Examples
@@ -186,7 +190,12 @@ TBD
 JavaClass
 ---------
 
-TBD
+A `JavaClass` represents a Java Class from which static members can be
+retrieved. `JavaClass` instances are also needed to initialize an array.
+
+Usually, `JavaClass` are not initialized using their constructor, but they are
+created while accessing the `jvm` property of a gateway, e.g.,
+`gateway.jvm.java.lang.String`.
 
 ..
   Examples

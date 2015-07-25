@@ -12,15 +12,16 @@ You can install Python by going to the `official Python download page
 <http://www.python.org/download/>`_.
 
 
-Installing Java 6
------------------
+Installing Java 6+
+------------------
 
-You also need to install a Java environment, version 6. You can install a Java
-environment by going to the `official Java download page
-<http://java.sun.com/javase/downloads/index.jsp>`_ You will need to download
-the JDK if you plan to use the Java compiler, but you only need the JRE if you
-are using another compiler, such as the one provided by the `Eclipse
-Development Environment <http://www.eclipse.org>`_.
+You also need to install a Java environment, version 6 (7 and 8 are also
+supported). You can install a Java environment by going to the `official Java
+download page
+<http://www.oracle.com/technetwork/java/javase/downloads/index.html>`_ You will
+need to download the JDK if you plan to use the Java compiler, but you only
+need the JRE if you are using another compiler, such as the one provided by the
+`Eclipse Development Environment <http://www.eclipse.org>`_.
 
 
 Installing Py4J
@@ -48,8 +49,7 @@ Using easy_install or pip
 Using an official release
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. Download the latest official release from `SourceForge
-   <https://sourceforge.net/projects/py4j/files/>`_ or from `PyPI
+1. Download the latest official release from from `PyPI
    <http://pypi.python.org/pypi/py4j>`_. If you are using a \*NIX OS, download
    the tar.gz file. If you are using Windows, download the zip file.
 2. Untar/Unzip the file and navigate to the newly created directory, e.g., ``cd

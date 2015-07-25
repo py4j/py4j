@@ -13,7 +13,7 @@ Logging is turned off by default. In Java, simply call
 Py4J-java uses the ``java.util.logging`` framework. To get fined-grained
 control over the logging behavior, just obtain a Logger instance by calling
 ``Logger.getLogger("py4j")``. You can also look at the `Java Logging Overview
-<http://java.sun.com/javase/6/docs/technotes/guides/logging/overview.html>`_
+<http://docs.oracle.com/javase/6/docs/technotes/guides/logging/overview.html>`_
 for more information on this framework.
 
 For example, in Java, you can do:
@@ -75,8 +75,8 @@ Use the :func:`get_field <py4j.java_gateway.get_field>` function:
   >>> field_value = py4j.java_gateway.get_field(object,'public_field')
 
 
-Or you can also set the :ref:`auto_field <api_javagateway>` parameter to `True`
-when you create the gateway:
+Or you can also set the :ref:`auto_field <api_gatewayparameters>` parameter to
+`True` when you create the gateway:
 
 ::
 
@@ -165,8 +165,8 @@ be accessed concurrently.
 
 
 The Python component of Py4J is also thread-safe, except the :func:`close
-<py4j.java_gateway.CommChannelFactory.close>` function of a
-:class:`CommChannelFactory <py4j.java_gateway.CommChannelFactory>`, which must
+<py4j.java_gateway.GatewayClient.close>` function of a
+:class:`CommChannelFactory <py4j.java_gateway.GatewayClient>`, which must
 not be accessed concurrently with other methods to ensure that all
 communication channels are closed. This is a trade-off to avoid accessing a
 lock every time a Java method is called on the Python side. This will only be a
@@ -233,7 +233,7 @@ There are many ways to contribute to Py4J:
 
 * **Found a typo or have a better way to clarify the documentation?** Write a
   comment at the bottom of documentation the page, send a patch on the `mailing
-  list <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_,
+  list <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_,
   fill a `bug report <https://github.com/bartdag/py4j/issues>`_ or open a pull
   request. The source of each documentation page is accessible in the sidebar.
   We use `ReStructuredText
@@ -243,11 +243,11 @@ There are many ways to contribute to Py4J:
   can open a pull request that adds a new feature or that address an `open
   issue <https://github.com/bartdag/py4j/issues>`_. For new features, it is
   always best to discuss it on the `mailing list
-  <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_ first.
+  <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_ first.
   Do not forget to read our :doc:`contribution guidelines </contributing>`.
 
-* **Feeling artsy?** We need a logo. Hop on the `mailing list
-  <http://sourceforge.net/mailarchive/forum.php?forum_name=py4j-users>`_.
+* **Feeling artistic?** We need a logo. Hop on the `mailing list
+  <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_.
 
 In case of doubt, do not hesitate to contact the founder of the project,
 `Barthelemy <mailto:barthelemy@infobart.com>`_.
