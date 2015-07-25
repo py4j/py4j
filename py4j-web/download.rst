@@ -18,6 +18,10 @@ You can download Py4J plug-ins from this update site:
 
 ``http://eclipse.py4j.org/``
 
+If you have Java 7+, you can use https:
+
+``https://eclipse.py4j.org/``
+
 Requirements
 ============
 

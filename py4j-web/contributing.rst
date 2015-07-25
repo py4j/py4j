@@ -102,8 +102,8 @@ request!
 If you are working for a company while contributing to Py4J, make sure that the
 code is yours or that your company agrees with this implied CLA.
 
-This approach is closely related to the `Django Contributor License Agreement.
-<https://www.djangoproject.com/foundation/cla/faq/>`_.
+This approach is heavily inspired from the `Django Contributor License
+Agreement.  <https://www.djangoproject.com/foundation/cla/faq/>`_.
 
 If you have any question, do not hesitate to contact the founder of the
 project, `Barthelemy <mailto:barthelemy@infobart.com>`_.
