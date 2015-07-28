@@ -859,7 +859,6 @@ class JavaObject(object):
     def __doc__(self):
         # The __doc__ string is used by IPython/PyDev/etc to generate
         # help string, therefore provide useful help
-        print("HELLO")
         if self._gateway_doc is None:
             self._gateway_doc = gateway_help(
                 self._gateway_client, self, display=False)
