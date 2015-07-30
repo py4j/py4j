@@ -29,7 +29,8 @@ from py4j.finalizer import ThreadSafeFinalizer
 from py4j import protocol as proto
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, escape_new_line, get_command_part,
-    get_return_value, is_error, register_output_converter, smart_decode)
+    get_return_value, is_error, register_output_converter, smart_decode,
+    classproperty)
 from py4j.version import __version__
 
 
@@ -957,51 +958,104 @@ class JavaObject(object):
         return "JavaObject id=" + self._target_id
 
 
+def java_class_doc(cls):
+    # The __doc__ string is used by IPython/PyDev/etc to generate
+    # help string, therefore provide useful help
+    if cls._instance._gateway_doc is None:
+        cls._instance._gateway_doc = gateway_help(
+            cls._instance._gateway_client, cls._instance,
+            display=False)
+    return cls._instance._gateway_doc
+
+
+class DynamicJavaClass(type):
+    """
+    """
+
+    def __new__(cls, name, bases, dct):
+        attributes = {
+            "__doc__": classproperty(java_class_doc)
+        }
+        return super(DynamicJavaClass, cls).__new__(
+            cls, name, (JavaClass,), attributes)
+
+    # XXX could call is_instance_of
+    # def __instancecheck__(cls, other):
+        # return super(DynamicJavaClass).__instancecheck__(other)
+
+
 class JavaClass(object):
     """A `JavaClass` represents a Java Class from which static members can be
-       retrieved. `JavaClass` instances are also needed to initialize an array.
+    retrieved. `JavaClass` instances are also needed to initialize an array.
 
-       Usually, `JavaClass` are not initialized using their constructor, but
-       they are created while accessing the `jvm` property of a gateway, e.g.,
-       `gateway.jvm.java.lang.String`.
+    Usually, `JavaClass` are not initialized using their constructor, but
+    they are created while accessing the `jvm` property of a gateway, e.g.,
+    `gateway.jvm.java.lang.String`.
+
+    JavaClass are never directly instantiated: instead, derived types are
+    created and instances are singletons of these derived types. This brings
+    a few benefits:
+
+    * can overload isinstance check
+    * can provide class-based __dir__ and __doc__ which does not break
+        sphinx and pydoc help()
+
+    Singletons are used because:
+
+    * We can override __call__ instead of __new__ when the Java constructor
+        is called on a JavaClass
+    * We stay backward compatible: isinstance(java_class, JavaClass) will still
+        work.
     """
-    def __init__(self, fqn, gateway_client):
+    _instance = None
+
+    def __init__(self, fqn, gateway_client, simple_name=None):
         self._fqn = fqn
+        if not simple_name:
+            # TODO raise deprecation warning
+            simple_name = fqn.split(".")[-1]
+
+        self._name = simple_name
         self._gateway_client = gateway_client
         self._pool = self._gateway_client.gateway_property.pool
-        self._command_header = fqn + "\n"
+        self._command_header = self._fqn + "\n"
         self._converters = self._gateway_client.converters
-        self._gateway_doc = None
         self._statics = None
+        self._gateway_doc = None
 
-    @property
-    def __doc__(self):
-        # The __doc__ string is used by IPython/PyDev/etc to generate
-        # help string, therefore provide useful help
-        if self._gateway_doc is None:
-            self._gateway_doc = gateway_help(
-                self._gateway_client, self, display=False)
-        return self._gateway_doc
+    @staticmethod
+    def create_java_class(fqn, gateway_client):
+        simple_name = fqn.split(".")[-1]
+        # TODO this is a ghetto string conversion for python 2
+        # It works because str is the right type for python 3...
+        python_safe_name = str(simple_name.replace("$", "__"))
+        NewJavaClass = DynamicJavaClass(python_safe_name, tuple(), {})
+        new_java_class = NewJavaClass(fqn, gateway_client)
+        NewJavaClass._instance = new_java_class
+        return new_java_class
 
-    def __dir__(self):
+    @classproperty
+    def __name__(cls):
+        return cls._instance._name
+
+    @classmethod
+    def __dir__(cls):
         # Theoretically, not thread safe, but the worst case scenario is
         # cache miss or double overwrite of the same method...
-        if self._statics is None:
+        if cls._instance._statics is None:
             command = proto.DIR_COMMAND_NAME +\
                 proto.DIR_STATIC_SUBCOMMAND_NAME +\
-                self._fqn + "\n" +\
+                cls._instance._fqn + "\n" +\
                 proto.END_COMMAND_PART
 
-            answer = self._gateway_client.send_command(command)
+            answer = cls._instance._gateway_client.send_command(command)
             return_value = get_return_value(
-                answer, self._gateway_client, self._fqn, "__dir__")
-            self._statics = return_value.split("\n")
-        return self._statics[:]
+                answer, cls._instance._gateway_client,
+                cls._instance._fqn, "__dir__")
+            cls._instance._statics = return_value.split("\n")
+        return cls._instance._statics[:]
 
     def __getattr__(self, name):
-        if name in ["__str__", "__repr__"]:
-            raise AttributeError
-
         command = proto.REFLECTION_COMMAND_NAME +\
             proto.REFL_GET_MEMBER_SUB_COMMAND_NAME +\
             self._fqn + "\n" +\
@@ -1015,7 +1069,7 @@ class JavaClass(object):
                     name, None, proto.STATIC_PREFIX + self._fqn,
                     self._gateway_client)
             elif answer[1].startswith(proto.CLASS_TYPE):
-                return JavaClass(
+                return JavaClass.create_java_class(
                     self._fqn + "$" + name, self._gateway_client)
             else:
                 return get_return_value(
@@ -1130,7 +1184,7 @@ class JavaPackage(object):
         if answer == proto.SUCCESS_PACKAGE:
             return JavaPackage(new_fqn, self._gateway_client, self._jvm_id)
         elif answer.startswith(proto.SUCCESS_CLASS):
-            return JavaClass(
+            return JavaClass.create_java_class(
                 answer[proto.CLASS_FQN_START:], self._gateway_client)
         else:
             raise Py4JError("{0} does not exist in the JVM".format(new_fqn))
@@ -1188,7 +1242,7 @@ class JVMView(object):
         if answer == proto.SUCCESS_PACKAGE:
             return JavaPackage(name, self._gateway_client, jvm_id=self._id)
         elif answer.startswith(proto.SUCCESS_CLASS):
-            return JavaClass(
+            return JavaClass.create_java_class(
                 answer[proto.CLASS_FQN_START:], self._gateway_client)
         else:
             raise Py4JError("{0} does not exist in the JVM".format(name))

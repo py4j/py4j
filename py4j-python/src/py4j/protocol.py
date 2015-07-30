@@ -371,6 +371,28 @@ def register_input_converter(converter, prepend=False):
         INPUT_CONVERTER.append(converter)
 
 
+class ClassPropertyDescriptor(object):
+    """Property wrapper for classes.
+    """
+
+    def __init__(self, fget):
+        self.fget = fget
+
+    def __get__(self, obj, klass=None):
+        if klass is None:
+            klass = type(obj)
+        return self.fget.__get__(obj, klass)()
+
+
+def classproperty(func):
+    """Decorator used to transform a class method into a property
+    """
+    if not isinstance(func, (classmethod, staticmethod)):
+        func = classmethod(func)
+
+    return ClassPropertyDescriptor(func)
+
+
 class Py4JError(Exception):
     """Exception raised when a problem occurs with Py4J."""
 
