@@ -174,8 +174,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     if redirect_stdout is None:
         redirect_stdout = open(os.devnull, "w")
 
-    proc = Popen(command, stdout=PIPE, stdin=PIPE, stderr=stderr,
-                 close_fds=True)
+    proc = Popen(command, stdout=PIPE, stdin=PIPE, stderr=stderr)
 
     # Determine which port the server started on (needed to support
     # ephemeral ports)
