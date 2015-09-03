@@ -77,6 +77,8 @@ Testing Java Code
 We use JUnit to write test cases.
 
 
+.. _license_and_copyrights:
+
 License and Copyrights
 ----------------------
 
