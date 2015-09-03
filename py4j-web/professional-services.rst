@@ -22,7 +22,7 @@ features will be introduced in the code base and bugs will inevitably be fixed
 along the way.
 
 If you are interested in professional services for Py4J, please get in touch
-with us at `bart@resulto.ca <mailto:bart@resulto.ca>`_.
+with us at `py4j@resulto.ca <mailto:py4j@resulto.ca>`_.
 
 
 FAQ
@@ -50,7 +50,7 @@ Who is Resulto?
 ~~~~~~~~~~~~~~~
 
 `Resulto <http://www.resulto.ca/en/>`_ is a small software development company
-that started in April 2014. Their main product is a personalized
+that started in May 2014. Their main product is a personalized
 marketing/customer retention platform, `LoyalAction
 <http://www.loyalaction.com/en/>`_. Resulto also offers `professional services
 <http://www.resulto.ca/en/services/>`_ to build custom platforms and
@@ -67,21 +67,13 @@ Is Resulto the new owner of Py4J?
 No, Resulto is just a company offering professional services related to Py4J.
 
 
-Will Py4J survive if Resulto does not get enough services requests?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Yes, neither Py4J nor Resulto need each other in order to thrive. This is just
-an offer that has the potential to be convenient and useful for all parties
-involved: Py4J users, clients, and Resulto.
-
-
 How does professional services work?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Professional services can be provided in many ways: license, formal contract
-with NDA, or simple email exchange followed by a paypal payment.
+with NDA, or simple email exchange followed by an online payment.
 
-Usually, you will contact Resulto with a description of your needs, and you
+Usually, you will contact Resulto with a description of your needs, then you
 will receive a proposition with a fixed rate and fixed amount of hours so you
 get no surprise on your side and you do not write a blank check.
 
@@ -94,4 +86,4 @@ How can I contact Resulto?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Just send us an email with a description of your requirements or your questions
-at `bart@resulto.ca <mailto:bart@resulto.ca>`_
+at `py4j@resulto.ca <mailto:py4j@resulto.ca>`_
