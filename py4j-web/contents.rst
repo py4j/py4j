@@ -13,4 +13,5 @@ Py4J Documentation
    py4j_java
    faq
    contributing
+   professional-services
    changelog
