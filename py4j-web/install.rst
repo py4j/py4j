@@ -40,7 +40,7 @@ Using easy_install or pip
    location depends on the platform and the installation type. Some likely
    locations are:
 
-   1. ``/usr/share/py4j/py4j0.x.jar`` for system-wide install on Linux.
+   1. ``/usr/share/py4j/py4j0.x.jar`` for system-wide install on Linux. Alternatively, it can be at ``/usr/local/share/py4j/py4j0.x.jar``.
    2. ``{virtual_env_dir}/share/py4j/py4j0.x.jar`` for installation in a
       virtual environment.
    3. ``C:\python27\share\py4j\py4j0.x.jar`` for system-wide install on
