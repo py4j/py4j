@@ -285,6 +285,10 @@ def quiet_close(closable):
 
     :param closable: Object with a ``close`` method.
     """
+    if closable is None:
+        # Do not attempt to close a None. This logs unecessary exceptions.
+        return
+
     try:
         closable.close()
     except Exception:
@@ -296,6 +300,10 @@ def quiet_shutdown(socket_instance):
 
     :param socket_instance: Socket with ``shutdown`` method.
     """
+    if socket_instance is None:
+        # Do not attempt to close a None. This logs unecessary exceptions.
+        return
+
     try:
         socket_instance.shutdown(socket.SHUT_RDWR)
     except Exception:
@@ -1422,6 +1430,9 @@ class JavaGateway(object):
         :param raise_exception: If `True`, raise an exception if an error
             occurs while shutting down (very likely with sockets).
         """
+        if self._callback_server is None:
+            # Nothing to shutdown
+            return
         try:
             self._callback_server.shutdown()
         except Exception:
