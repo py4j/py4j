@@ -431,9 +431,15 @@ public class Protocol {
 		Object returnValue = null;
 
 		if (isError(returnMessage)) {
+			String error;
+			if (returnMessage == null || returnMessage.length() == 0) {
+				error = "";
+			} else {
+				error = returnMessage.substring(1);
+			}
 			throw new Py4JException(
 					"An exception was raised by the Python Proxy. Return Message: "
-							+ returnMessage);
+							+ error);
 		} else {
 			returnValue = getObject(returnMessage.substring(1), gateway);
 		}

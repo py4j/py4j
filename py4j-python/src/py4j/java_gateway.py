@@ -1734,6 +1734,8 @@ class CallbackConnection(Thread):
                 return_message = "y" +\
                     get_command_part(return_value, self.pool)
             except Exception:
+                import traceback
+                return_message = proto.ERROR_RETURN_MESSAGE + traceback.format_exc()
                 logger.exception("There was an exception while executing the "
                                  "Python Proxy on the Python Side.")
         return return_message
