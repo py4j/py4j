@@ -4,6 +4,13 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.9.1-SNAPSHOT
+-------------------
+- Python side: When listening on port 0, allow callbacks to query the actual
+  address and port where the CallbackServer is listening.
+- JVM side: After GatewayServer is already launched, expose an ability to change
+  the address:port where the CallbackClient connects.`
+
 Py4J 0.9
 --------
 
