@@ -6,10 +6,18 @@ releases.
 
 Py4J 0.9.1-SNAPSHOT
 -------------------
-- Python side: When listening on port 0, allow callbacks to query the actual
-  address and port where the CallbackServer is listening.
-- JVM side: After GatewayServer is already launched, expose an ability to change
-  the address:port where the CallbackClient connects.`
+
+- Python side: it is now possible to retrieve the listening address and port of
+  the CallbackServer. This is useful CallbackServer is bound to port 0.
+- Python side: The daemonize_redirect flag is not set to True by default to
+  preserve backward compatibility prior to 0.9.
+- Python side: JavaGateway.shutdown() no longer raises unecessary NoneType
+  exceptions.
+- JVM side: After GatewayServer is launched, it is now possible to change
+  the address:port where the CallbackClient connects.
+- Added a comment in an empty init file so 7zip does not report on error on
+  Windows (go figure :-) )
+
 
 Py4J 0.9
 --------
