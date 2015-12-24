@@ -1,7 +1,7 @@
 /*******************************************************************************
  *
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- *  
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
@@ -47,9 +47,9 @@ import java.util.logging.Logger;
  * are created as needed (e.g., one per concurrent thread) and are closed after
  * a certain time.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class CallbackClient {
 	public final static String DEFAULT_ADDRESS = "127.0.0.1";
@@ -100,7 +100,7 @@ public class CallbackClient {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param port
 	 *            The port used by channels to connect to the Python side.
 	 * @param address
@@ -185,12 +185,12 @@ public class CallbackClient {
 	 * Closes communication channels that have not been used for a time
 	 * specified at the creation of the callback client.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Clients should not directly call this method: it is called by a periodic
 	 * cleaner thread.
 	 * </p>
-	 * 
+	 *
 	 */
 	public void periodicCleanup() {
 		try {
@@ -219,7 +219,7 @@ public class CallbackClient {
 	 * Python proxies to call Python methods or to request the garbage
 	 * collection of a proxy.
 	 * </p>
-	 * 
+	 *
 	 * @param command
 	 *            The command to send.
 	 * @return The response.
@@ -261,7 +261,7 @@ public class CallbackClient {
 	 * <p>
 	 * Closes all active channels, stops the periodic cleanup of channels and
 	 * mark the client as shutting down.
-	 * 
+	 *
 	 * No more commands can be sent after this method has been called,
 	 * <em>except</em> commands that were initiated before the shutdown method
 	 * was called..
