@@ -127,9 +127,9 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	private final int port;
 
-	private final int pythonPort;
+	private int pythonPort;
 
-	private final InetAddress pythonAddress;
+	private InetAddress pythonAddress;
 
 	private final Gateway gateway;
 
@@ -142,7 +142,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	private final List<Socket> connections = new ArrayList<Socket>();
 
-	private final CallbackClient cbClient;
+	private CallbackClient cbClient;
 
 	private final List<Class<? extends Command>> customCommands;
 
@@ -226,6 +226,17 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		this.cbClient = new CallbackClient(pythonPort, pythonAddress);
 		this.gateway = new Gateway(entryPoint, cbClient);
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
+	}
+
+
+	public void resetCallbackClientAddress(InetAddress pythonAddress, int pythonPort) {
+		if (cbClient != null) {
+			cbClient.shutdown();
+		}
+
+		this.cbClient = new CallbackClient(pythonPort, pythonAddress);
+		this.pythonPort = pythonPort;
+		this.pythonAddress = pythonAddress;
 	}
 
 	/**

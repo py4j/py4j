@@ -699,7 +699,7 @@ class GatewayConnection(object):
             self.stream = self.socket.makefile("rb", 0)
         except Exception as e:
             msg = "An error occurred while trying to connect to the Java "\
-                "server"
+                "server ({0}:{1})".format(self.address, self.port)
             logger.exception(msg)
             raise Py4JNetworkError(msg, e)
 
@@ -1326,6 +1326,9 @@ class JavaGateway(object):
             self.shutdown()
             raise
 
+    def get_callback_server(self):
+        return self._callback_server
+
     def start_callback_server(self, callback_server_parameters=None):
         """Starts the callback server.
 
@@ -1598,8 +1601,11 @@ class CallbackServer(object):
             socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             self.server_socket.bind((self.address, self.port))
+            self._listening_address, self._listening_port = \
+                self.server_socket.getsockname()
         except Exception as e:
-            msg = "An error occurred while trying to start the callback server"
+            msg = "An error occurred while trying to start the callback "\
+                  "server ({0}:{1})".format(self.address, self.port)
             logger.exception(msg)
             raise Py4JNetworkError(msg, e)
 
@@ -1609,6 +1615,12 @@ class CallbackServer(object):
         # Default is False
         self.thread.daemon = self.callback_server_parameters.daemonize
         self.thread.start()
+
+    def get_listening_port(self):
+        return self._listening_port
+
+    def get_listening_address(self):
+        return self._listening_address
 
     def run(self):
         """Starts listening and accepting connection requests.
