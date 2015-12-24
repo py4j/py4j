@@ -102,7 +102,7 @@ def find_jar_path():
 
 def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
                    die_on_exit=False, redirect_stdout=None,
-                   redirect_stderr=None, daemonize_redirect=False):
+                   redirect_stderr=None, daemonize_redirect=True):
     """Launch a `Gateway` in a new Java process.
 
     The redirect parameters accept file-like objects, Queue, or deque. When
@@ -138,8 +138,8 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     :param daemonize_redirect: if True, the consumer threads will be daemonized
         and will not prevent the main Python process from exiting. This means
         the file descriptors (stderr, stdout, redirect_stderr, redirect_stdout)
-        might not be properly closed. This is not usually a problem, but the
-        default is conservatively set to False.
+        might not be properly closed. This is not usually a problem, but in
+        case of errors related to file descriptors, set this flag to False.
 
     :rtype: the port number of the `Gateway` server.
     """
