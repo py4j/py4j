@@ -54,13 +54,9 @@ import java.util.logging.Logger;
 public class CallbackClient {
 	public final static String DEFAULT_ADDRESS = "127.0.0.1";
 
-	/**
-	 * CallbackClient is only needed to be initialized when JVM invokes python code.
-	 * Until then the value of the port and address is unused and can be changed.
-	 */
-	private int port;
+	private final int port;
 
-	private InetAddress address;
+	private final InetAddress address;
 
 	private final Deque<CallbackConnection> connections = new ArrayDeque<CallbackConnection>();
 
@@ -167,14 +163,6 @@ public class CallbackClient {
 
 	public int getPort() {
 		return port;
-	}
-
-	public void setPort(int port) {
-		this.port = port;
-	}
-
-	public void setAddress(InetAddress address) {
-		this.address = address;
 	}
 
 	private void giveBackConnection(CallbackConnection cc) {
