@@ -1,20 +1,20 @@
 /*******************************************************************************
- * 
+ *
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * 
+ *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -59,13 +59,13 @@ import py4j.reflection.PythonProxyHandler;
  * parameter, etc.)</li>
  * <li>The End of Command marker (e)</li>
  * </ul>
- * 
+ *
  * <p>
  * The various parts of a command are separated by \n characters. These
  * characters are automatically escaped and unescaped in Strings on both sides
  * (Java and Python).
  * </p>
- * 
+ *
  * <p>
  * An output command is usually composed of:
  * </p>
@@ -74,13 +74,13 @@ import py4j.reflection.PythonProxyHandler;
  * <li>A return value (e.g., n for null, v for void, or any other value like a
  * String)</li>
  * </ul>
- * 
+ *
  * <p>
  * This class should be used only if the user creates new commands.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class Protocol {
 
@@ -139,7 +139,7 @@ public class Protocol {
 	 * <p>
 	 * Transform the byte array into Base64 characters.
 	 * </p>
-	 * 
+	 *
 	 * @param bytes
 	 * @return
 	 */
@@ -151,7 +151,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return The boolean value corresponding to this command part.
 	 */
@@ -164,7 +164,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return The byte array corresponding to this command part.
 	 */
@@ -176,7 +176,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return The decimal value corresponding to this command part.
 	 */
@@ -188,7 +188,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return The double value corresponding to this command part.
 	 */
@@ -213,7 +213,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return The integer value corresponding to this command part.
 	 */
@@ -225,7 +225,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return The long value corresponding to this command part.
 	 */
@@ -263,7 +263,7 @@ public class Protocol {
 	 * <p>
 	 * Method provided for consistency. Just returns null.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return null.
 	 */
@@ -374,7 +374,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return A Python proxy specified in this command part.
 	 */
@@ -403,7 +403,7 @@ public class Protocol {
 
 		Object proxy = Proxy.newProxyInstance(gateway.getClass()
 				.getClassLoader(), interfaces, new PythonProxyHandler(parts[0],
-				gateway.getCallbackClient(), gateway));
+				gateway));
 
 		return proxy;
 	}
@@ -412,7 +412,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return The object referenced in this command part.
 	 */
@@ -465,7 +465,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return The reference contained in this command part.
 	 */
@@ -490,7 +490,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return True if the command part is a boolean
 	 */
@@ -502,7 +502,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return True if the command part is a byte array
 	 */
@@ -514,7 +514,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return True if the command part is a decimal
 	 */
@@ -526,7 +526,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return True if the command part is a double
 	 */
@@ -542,7 +542,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return True if the command part is the end token
 	 */
@@ -554,7 +554,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> null.
 	 * </p>
-	 * 
+	 *
 	 * @param returnMessage
 	 * @return True if the return message is an error
 	 */
@@ -567,7 +567,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return True if the command part is an integer
 	 */
@@ -579,7 +579,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return True if the command part is a long
 	 */
@@ -591,7 +591,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return True if the command part is null
 	 */
@@ -603,7 +603,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return True if the command part is a python proxy
 	 */
@@ -615,7 +615,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return True if the command part is a reference
 	 */
@@ -627,7 +627,7 @@ public class Protocol {
 	 * <p>
 	 * Assumes that commandPart is <b>not</b> empty.
 	 * </p>
-	 * 
+	 *
 	 * @param commandPart
 	 * @return True if the command part is a reference
 	 */

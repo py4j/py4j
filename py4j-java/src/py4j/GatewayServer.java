@@ -142,8 +142,6 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	private final List<Socket> connections = new ArrayList<Socket>();
 
-	private CallbackClient cbClient;
-
 	private final List<Class<? extends Command>> customCommands;
 
 	private final List<GatewayServerListener> listeners;
@@ -223,18 +221,26 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 		this.address = address;
 		this.pythonAddress = pythonAddress;
-		this.cbClient = new CallbackClient(pythonPort, pythonAddress);
-		this.gateway = new Gateway(entryPoint, cbClient);
+		this.gateway = new Gateway(entryPoint, new CallbackClient(pythonPort, pythonAddress));
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 	}
 
-
+	/**
+	 * <p>
+	 * Replace the callback client with the new one which connects to the given address
+	 * and port. This method is useful if for some reason your CallbackServer changes its
+	 * address or you come to know of the address after Gateway has already instantiated.
+	 * </p>
+	 *
+	 * @param pythonAddress
+	 *            The address used by a PythonProxyHandler to connect to a
+	 *            Python gateway.
+	 * @param pythonPort
+	 *            The port used by a PythonProxyHandler to connect to a Python
+	 *            gateway. Essentially the port used for Python callbacks.
+	 */
 	public void resetCallbackClientAddress(InetAddress pythonAddress, int pythonPort) {
-		if (cbClient != null) {
-			cbClient.shutdown();
-		}
-
-		this.cbClient = new CallbackClient(pythonPort, pythonAddress);
+		gateway.resetCallbackClientAddress(pythonAddress, pythonPort);
 		this.pythonPort = pythonPort;
 		this.pythonAddress = pythonAddress;
 	}
@@ -300,8 +306,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		} catch (UnknownHostException e) {
 			throw new Py4JNetworkException(e);
 		}
-		this.cbClient = new CallbackClient(pythonPort, this.pythonAddress);
-		this.gateway = new Gateway(entryPoint, cbClient);
+		this.gateway = new Gateway(entryPoint, new CallbackClient(pythonPort, this.pythonAddress));
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 	}
 
@@ -312,7 +317,6 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		this.port = port;
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;
-		this.cbClient = cbClient;
 		this.gateway = new Gateway(entryPoint, cbClient);
 		this.pythonPort = cbClient.getPort();
 		this.pythonAddress = cbClient.getAddress();
@@ -435,7 +439,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	}
 
 	public CallbackClient getCallbackClient() {
-		return cbClient;
+		return gateway.getCallbackClient();
 	}
 
 	public int getConnectTimeout() {
@@ -539,7 +543,6 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 			}
 			connections.clear();
 			gateway.shutdown();
-			cbClient.shutdown();
 			fireServerPostShutdown();
 		} finally {
 			lock.unlock();
