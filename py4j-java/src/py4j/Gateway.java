@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * 
+ *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,6 +32,7 @@ package py4j;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -45,18 +46,18 @@ import py4j.reflection.MethodInvoker;
 import py4j.reflection.ReflectionEngine;
 
 /**
- * 
+ *
  * <p>
  * A Gateway manages various states: entryPoint, references to objects returned
  * to a Python program, etc.
  * </p>
- * 
+ *
  * <p>
  * This class is not intended to be directly accessed by users.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class Gateway {
 
@@ -66,7 +67,7 @@ public class Gateway {
 	private final static String OBJECT_NAME_PREFIX = "o";
 	private final Object entryPoint;
 	private final ReflectionEngine rEngine = new ReflectionEngine();
-	private final CallbackClient cbClient;
+	private CallbackClient cbClient;
 	private final JVMView defaultJVMView;
 
 	private final Logger logger = Logger.getLogger(Gateway.class.getName());
@@ -82,6 +83,28 @@ public class Gateway {
 		this.cbClient = cbClient;
 		this.defaultJVMView = new JVMView("default",
 				Protocol.DEFAULT_JVM_OBJECT_ID);
+	}
+
+	/**
+	 * <p>
+	 * Replace the callback client with the new one which connects to the given address
+	 * and port. This method is useful if for some reason your CallbackServer changes its
+	 * address or you come to know of the address after Gateway has already instantiated.
+	 * </p>
+	 *
+	 * @param pythonAddress
+	 *            The address used by a PythonProxyHandler to connect to a
+	 *            Python gateway.
+	 * @param pythonPort
+	 *            The port used by a PythonProxyHandler to connect to a Python
+	 *            gateway. Essentially the port used for Python callbacks.
+	 */
+	public void resetCallbackClientAddress(InetAddress pythonAddress, int pythonPort) {
+		if (cbClient != null) {
+			cbClient.shutdown();
+		}
+
+		this.cbClient = new CallbackClient(pythonPort, pythonAddress);
 	}
 
 	/**
@@ -102,7 +125,7 @@ public class Gateway {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The bindings of the Gateway. Should never be called by other
 	 *         classes except subclasses and testing classes.
 	 */
@@ -131,7 +154,7 @@ public class Gateway {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param objectId
 	 * @return The object associated with the id or null if the object id is
 	 *         unknown.
@@ -195,7 +218,7 @@ public class Gateway {
 	 * <p>
 	 * Invokes a constructor and returned the constructed object.
 	 * </p>
-	 * 
+	 *
 	 * @param fqn
 	 *            The fully qualified name of the class.
 	 * @param args
@@ -229,7 +252,7 @@ public class Gateway {
 	 * <p>
 	 * Invokes a method.
 	 * </p>
-	 * 
+	 *
 	 * @param methodName
 	 * @param targetObjectId
 	 * @param args
@@ -311,7 +334,7 @@ public class Gateway {
 	 * Should NEVER be called by other classes except subclasses and testing
 	 * classes.
 	 * </p>
-	 * 
+	 *
 	 * @param object
 	 * @return
 	 */
@@ -337,6 +360,9 @@ public class Gateway {
 	public void shutdown() {
 		isStarted = false;
 		bindings.clear();
+		if (cbClient != null) {
+			cbClient.shutdown();
+		}
 	}
 
 	public void startup() {
