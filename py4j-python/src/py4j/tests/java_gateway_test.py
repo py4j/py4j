@@ -78,7 +78,7 @@ def test_gateway_connection():
     test_gateway = JavaGateway()
     try:
         # Call a dummy method just to make sure we can connect to the JVM
-        test_gateway.jvm.System.lineSeparator()
+        test_gateway.jvm.System.currentTimeMillis()
     except Py4JNetworkError:
         # We could not connect. Let"s wait a long time.
         # If it fails after that, there is a bug with our code!
