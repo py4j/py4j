@@ -1,3 +1,6 @@
+dependencies:
+  override:
+    - echo 'No dependencies'
 test:
   override:
     - pyenv global 2.7.10
