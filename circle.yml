@@ -5,4 +5,4 @@ dependencies:
 test:
   override:
     - echo `java -version` && echo `javac -version` && echo `python --version` && cd py4j-java && ant cleanall && ant jar && ant java-test && sleep 1 && cd ../py4j-python && nosetests -w src -c nose.cfg:
-      parallel: true
+        parallel: true
