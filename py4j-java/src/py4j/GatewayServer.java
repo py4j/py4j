@@ -538,7 +538,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 * </p>
 	 */
 	public void shutdown() {
-        this.shutdown(true);
+		this.shutdown(true);
 	}
 
 	/**
