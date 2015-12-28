@@ -373,6 +373,7 @@ def _garbage_collect_object(gateway_client, target_id):
         smart_decode(gateway_client.port) +
         target_id)
     if target_id != proto.ENTRY_POINT_OBJECT_ID and\
+            target_id != proto.GATEWAY_SERVER_OBJECT_ID and\
             gateway_client.is_connected:
         try:
             gateway_client.send_command(
@@ -1219,6 +1220,9 @@ class JavaGateway(object):
     * The `entry_point` field of a `JavaGateway` instance is connected to
       the `Gateway.entryPoint` instance on the Java side.
 
+    * The `java_gateway_server` field of a `JavaGateway` instance is connected
+      to the `GatewayServer` instance on the Java side.
+
     * The `jvm` field of `JavaGateway` enables user to access classes, static
       members (fields and methods) and call constructors.
 
@@ -1311,6 +1315,9 @@ class JavaGateway(object):
 
         self.entry_point = JavaObject(
             proto.ENTRY_POINT_OBJECT_ID, self._gateway_client)
+
+        self.java_gateway_server = JavaObject(
+            proto.GATEWAY_SERVER_OBJECT_ID, self._gateway_client)
 
         self.jvm = JVMView(
             self._gateway_client, jvm_name=proto.DEFAULT_JVM_NAME,
@@ -1617,9 +1624,16 @@ class CallbackServer(object):
         self.thread.start()
 
     def get_listening_port(self):
+        """Returns the port on which the callback server is listening to.
+        Different than `port` when port is 0.
+        """
         return self._listening_port
 
     def get_listening_address(self):
+        """Returns the address on which the callback server is listening to.
+        May be different than `address` if `address` was an alias (e.g.,
+        localhost).
+        """
         return self._listening_address
 
     def run(self):

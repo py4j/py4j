@@ -32,6 +32,7 @@ package py4j;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -101,6 +102,29 @@ public class GatewayServerTest {
 		assertTrue(listeningPort > 0);
 		assertTrue(server.getPort() != listeningPort);
 		server.shutdown();
+	}
+
+	@Test
+	public void testResetCallbackClient() {
+		GatewayServer server = new GatewayServer(null, 0);
+		server.start(true);
+		try {
+			Thread.sleep(250);
+		} catch (Exception e) {
+
+		}
+		server.resetCallbackClient(server.getAddress(), GatewayServer
+				.DEFAULT_PYTHON_PORT + 1);
+		try {
+			Thread.sleep(250);
+		} catch (Exception e) {
+
+		}
+		int pythonPort = server.getPythonPort();
+		InetAddress pythonAddress = server.getPythonAddress();
+		assertEquals(pythonPort, GatewayServer.DEFAULT_PYTHON_PORT + 1);
+		assertEquals(pythonAddress, server.getAddress());
+		server.shutdown(true);
 	}
 
 }

@@ -213,6 +213,32 @@ class TestIntegration(unittest.TestCase):
         self.assertTrue(oe2 is not None)
 
 
+class TestResetCallbackClient(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        self.gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters(port=0))
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+        sleep()
+
+    def testProxy(self):
+        sleep()
+        pythonAddress = self.gateway.java_gateway_server.getPythonAddress()
+        port = self.gateway.get_callback_server().get_listening_port()
+        self.gateway.java_gateway_server.resetCallbackClient(
+            pythonAddress, port)
+
+        example = self.gateway.entry_point.getNewExample()
+        impl = IHelloImpl()
+        self.assertEqual("This is Hello!", example.callHello(impl))
+        self.assertEqual(
+            "This is Hello;\n10MyMy!\n;",
+            example.callHello2(impl))
+
+
 class TestPeriodicCleanup(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process2()
