@@ -1,7 +1,7 @@
 /*******************************************************************************
  *
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- *  
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
@@ -43,15 +43,13 @@ import py4j.Protocol;
  * send Python objects that implements a Java interface to the JVM: these Python
  * objects are represented by dynamic proxies with a PythonProxyHandler.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class PythonProxyHandler implements InvocationHandler {
 
 	private final String id;
-
-	private final CallbackClient cbClient;
 
 	private final Gateway gateway;
 
@@ -64,11 +62,9 @@ public class PythonProxyHandler implements InvocationHandler {
 
 	public final static String GARBAGE_COLLECT_PROXY_COMMAND_NAME = "g\n";
 
-	public PythonProxyHandler(String id, CallbackClient cbClient,
-			Gateway gateway) {
+	public PythonProxyHandler(String id, Gateway gateway) {
 		super();
 		this.id = id;
-		this.cbClient = cbClient;
 		this.gateway = gateway;
 		this.finalizeCommand = GARBAGE_COLLECT_PROXY_COMMAND_NAME + id
 				+ "\ne\n";
@@ -78,7 +74,7 @@ public class PythonProxyHandler implements InvocationHandler {
 	protected void finalize() throws Throwable {
 		try {
 			logger.fine("Finalizing python proxy id " + this.id);
-			cbClient.sendCommand(finalizeCommand);
+			gateway.getCallbackClient().sendCommand(finalizeCommand);
 		} catch (Exception e) {
 			logger.warning("Python Proxy ID could not send a finalize message: "
 					+ this.id);
@@ -108,7 +104,7 @@ public class PythonProxyHandler implements InvocationHandler {
 
 		sBuilder.append("e\n");
 
-		String returnCommand = cbClient.sendCommand(sBuilder.toString());
+		String returnCommand = gateway.getCallbackClient().sendCommand(sBuilder.toString());
 
 		return Protocol.getReturnValue(returnCommand, gateway);
 	}
