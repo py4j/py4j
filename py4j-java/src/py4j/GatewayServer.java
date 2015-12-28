@@ -232,6 +232,11 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 * address or you come to know of the address after Gateway has already instantiated.
 	 * </p>
 	 *
+	 * <p>
+	 * This method <strong>is not thread-safe</strong>! Make sure that only
+	 * one thread calls this method.
+	 * </p>
+	 *
 	 * @param pythonAddress
 	 *            The address used by a PythonProxyHandler to connect to a
 	 *            Python gateway.
@@ -239,8 +244,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 *            The port used by a PythonProxyHandler to connect to a Python
 	 *            gateway. Essentially the port used for Python callbacks.
 	 */
-	public void resetCallbackClientAddress(InetAddress pythonAddress, int pythonPort) {
-		gateway.resetCallbackClientAddress(pythonAddress, pythonPort);
+	public void resetCallbackClient(InetAddress pythonAddress, int pythonPort) {
+		gateway.resetCallbackClient(pythonAddress, pythonPort);
 		this.pythonPort = pythonPort;
 		this.pythonAddress = pythonAddress;
 	}
@@ -533,6 +538,19 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 * </p>
 	 */
 	public void shutdown() {
+        this.shutdown(true);
+	}
+
+	/**
+	 * <p>
+	 * Stops accepting connections, closes all current connections, and calls
+	 * {@link py4j.Gateway#shutdown() Gateway.shutdown()}
+	 * </p>
+	 *
+	 * @param shutdownCallbackClient If True, shuts down the CallbackClient
+	 *                                  instance.
+	 */
+	public void shutdown(boolean shutdownCallbackClient) {
 		fireServerPreShutdown();
 		try {
 			lock.lock();
@@ -542,7 +560,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 				NetworkUtil.quietlyClose(socket);
 			}
 			connections.clear();
-			gateway.shutdown();
+			gateway.shutdown(shutdownCallbackClient);
 			fireServerPostShutdown();
 		} finally {
 			lock.unlock();

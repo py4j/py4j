@@ -27,7 +27,7 @@ from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_gateway import (
     JavaGateway, JavaMember, get_field, get_method,
     GatewayClient, set_field, java_import, JavaObject, is_instance_of,
-    GatewayParameters, CallbackServerParameters, quiet_close)
+    GatewayParameters, CallbackServerParameters, quiet_close, DEFAULT_PORT)
 from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
     encode_bytearray, escape_new_line, unescape_new_line)
@@ -671,6 +671,11 @@ class JVMTest(unittest.TestCase):
     def testNone(self):
         ex = self.gateway.entry_point.getNewExample()
         ex.method4(None)
+
+    def testJavaGatewayServer(self):
+        server = self.gateway.java_gateway_server
+        self.assertEqual(
+            server.getListeningPort(), DEFAULT_PORT)
 
     def testJVMView(self):
         newView = self.gateway.new_jvm_view("myjvm")

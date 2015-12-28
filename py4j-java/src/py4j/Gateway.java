@@ -91,6 +91,10 @@ public class Gateway {
 	 * and port. This method is useful if for some reason your CallbackServer changes its
 	 * address or you come to know of the address after Gateway has already instantiated.
 	 * </p>
+	 * <p>
+	 * This method <strong>is not thread-safe</strong>! Make sure that only
+	 * one thread calls this method.
+	 * </p>
 	 *
 	 * @param pythonAddress
 	 *            The address used by a PythonProxyHandler to connect to a
@@ -99,7 +103,7 @@ public class Gateway {
 	 *            The port used by a PythonProxyHandler to connect to a Python
 	 *            gateway. Essentially the port used for Python callbacks.
 	 */
-	public void resetCallbackClientAddress(InetAddress pythonAddress, int pythonPort) {
+	public void resetCallbackClient(InetAddress pythonAddress, int pythonPort) {
 		if (cbClient != null) {
 			cbClient.shutdown();
 		}
@@ -354,13 +358,27 @@ public class Gateway {
 
 	/**
 	 * <p>
-	 * Releases all objects that were referenced by this Gateway.
+	 * Releases all objects that were referenced by this Gateway and shuts
+	 * down the CallbackClient.
 	 * <p>
 	 */
 	public void shutdown() {
+		this.shutdown(true);
+	}
+
+	/**
+	 * <p>
+	 * Releases all objects that were referenced by this Gateway and
+	 * optionally shut down the callback client.
+	 * <p>
+	 *
+	 * @param shutdownCallbackClient Shuts down the CallbackClient instance
+	 *                                  if true.
+	 */
+	public void shutdown(boolean shutdownCallbackClient) {
 		isStarted = false;
 		bindings.clear();
-		if (cbClient != null) {
+		if (cbClient != null && shutdownCallbackClient) {
 			cbClient.shutdown();
 		}
 	}
