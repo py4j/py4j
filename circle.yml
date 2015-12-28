@@ -1,0 +1,4 @@
+test:
+  override:
+    - pyenv global 2.7.10
+    - echo `java -version` && echo `python --version` && cd py4j-java && ant cleanall && ant jar && ant java-test && cd ../py4j-python && nosetests -w src -c nose.cfg
