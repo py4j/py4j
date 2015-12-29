@@ -7,6 +7,7 @@ Created on Dec 10, 2009
 from __future__ import unicode_literals, absolute_import
 
 from collections import deque
+from contextlib import contextmanager
 from decimal import Decimal
 import gc
 import math
@@ -102,6 +103,29 @@ def safe_shutdown(instance):
         instance.gateway.shutdown()
     except Exception:
         print_exc()
+
+
+@contextmanager
+def gateway(*args, **kwargs):
+    g = JavaGateway(
+        gateway_parameters=GatewayParameters(
+            *args, auto_convert=True, **kwargs))
+    time = g.jvm.System.currentTimeMillis()
+    try:
+        yield g
+        # Call a dummy method to make sure we haven't corrupted the streams
+        assert time <= g.jvm.System.currentTimeMillis()
+    finally:
+        g.shutdown()
+
+
+@contextmanager
+def example_app_process():
+    p = start_example_app_process()
+    try:
+        yield p
+    finally:
+        p.join()
 
 
 class TestConnection(object):
