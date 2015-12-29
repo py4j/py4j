@@ -158,6 +158,7 @@ class TestIntegration(unittest.TestCase):
         self.p = start_example_app_process()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters())
+        sleep()
 
     def tearDown(self):
         safe_shutdown(self)
@@ -222,6 +223,7 @@ class TestResetCallbackClient(unittest.TestCase):
         self.p = start_example_app_process()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters(port=0))
+        sleep()
 
     def tearDown(self):
         safe_shutdown(self)
@@ -248,6 +250,7 @@ class TestPeriodicCleanup(unittest.TestCase):
         self.p = start_example_app_process2()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters())
+        sleep()
 
     def tearDown(self):
         safe_shutdown(self)
@@ -292,6 +295,7 @@ class InterfaceTest(unittest.TestCase):
         self.p = start_example_app_process3()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters())
+        sleep()
 
     def tearDown(self):
         safe_shutdown(self)
