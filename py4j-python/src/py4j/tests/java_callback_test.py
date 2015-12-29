@@ -13,9 +13,13 @@ import unittest
 
 from py4j.compat import range
 from py4j.java_gateway import (
-    JavaGateway, PythonProxyPool, CallbackServerParameters)
+    JavaGateway, PythonProxyPool, CallbackServerParameters,
+    set_default_callback_accept_timeout)
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, safe_shutdown, sleep, test_gateway_connection)
+
+
+set_default_callback_accept_timeout(0.125)
 
 
 def start_example_server():

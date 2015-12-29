@@ -27,7 +27,8 @@ from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_gateway import (
     JavaGateway, JavaMember, get_field, get_method,
     GatewayClient, set_field, java_import, JavaObject, is_instance_of,
-    GatewayParameters, CallbackServerParameters, quiet_close, DEFAULT_PORT)
+    GatewayParameters, CallbackServerParameters, quiet_close, DEFAULT_PORT,
+    set_default_callback_accept_timeout)
 from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
     encode_bytearray, escape_new_line, unescape_new_line)
@@ -38,6 +39,9 @@ TEST_PORT = 25332
 PY4J_JAVA_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     "../../../../py4j-java/bin")
+
+
+set_default_callback_accept_timeout(0.125)
 
 
 def sleep(sleep_time=0.250):
