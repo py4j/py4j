@@ -44,6 +44,7 @@ public class EchoClientTest {
 		try {
 			Thread.sleep(500);
 			EchoServer.main(null);
+			Thread.sleep(500);
 			Socket testSocket = new Socket(GatewayServer.DEFAULT_ADDRESS,
 					EchoServer.TEST_PORT);
 			BufferedWriter testWriter = new BufferedWriter(
