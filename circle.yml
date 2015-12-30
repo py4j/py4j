@@ -2,6 +2,8 @@ dependencies:
   override:
     - pyenv global 2.6.8; sudo update-alternatives --set java /usr/lib/jvm/jdk1.6.0/bin/java; sudo update-alternatives --set javac /usr/lib/jvm/java-6-openjdk-amd64/bin/javac; echo 'export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64' >> ~/.circlerc;
     - if [ $CIRCLE_NODE_INDEX == "1" ] ; then pyenv global 2.7.10; sudo update-alternatives --set java /usr/lib/jvm/jdk1.7.0/bin/java; sudo update-alternatives --set javac /usr/lib/jvm/java-7-openjdk-amd64/bin/javac; echo 'export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64' >> ~/.circlerc; fi
+    - if [ $CIRCLE_NODE_INDEX == "2" ] ; then pyenv global 3.4.3; sudo update-alternatives --set java /usr/lib/jvm/jdk1.7.0/bin/java; sudo update-alternatives --set javac /usr/lib/jvm/java-7-openjdk-amd64/bin/javac; echo 'export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64' >> ~/.circlerc; fi
+    - if [ $CIRCLE_NODE_INDEX == "3" ] ; then pyenv global 3.5.0; sudo update-alternatives --set java /usr/lib/jvm/jdk1.8.0/bin/java; sudo update-alternatives --set javac /usr/lib/jvm/java-8-openjdk-amd64/bin/javac; echo 'export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64' >> ~/.circlerc; fi
 test:
   override:
     - deactivate; echo `java -version` && echo `javac -version` && echo `python --version` && cd py4j-java && ant cleanall && ant jar && ant java-test && sleep 1 && cd ../py4j-python && nosetests -w src -c nose.cfg:
