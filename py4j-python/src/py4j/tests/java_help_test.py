@@ -1,33 +1,7 @@
 from __future__ import unicode_literals, absolute_import
 
 
-from py4j.java_gateway import JavaGateway, GatewayParameters
-from py4j.tests.java_gateway_test import (
-    start_example_app_process)
-from contextlib import contextmanager
-
-
-@contextmanager
-def example_app_process():
-    p = start_example_app_process()
-    try:
-        yield p
-    finally:
-        p.join()
-
-
-@contextmanager
-def gateway(*args, **kwargs):
-    g = JavaGateway(
-        gateway_parameters=GatewayParameters(
-            *args, auto_convert=True, **kwargs))
-    lineSep = g.jvm.System.lineSeparator()
-    try:
-        yield g
-        # Call a dummy method to make sure we haven't corrupted the streams
-        assert lineSep == g.jvm.System.lineSeparator()
-    finally:
-        g.shutdown()
+from py4j.tests.java_gateway_test import gateway, example_app_process
 
 
 def test_help_object():

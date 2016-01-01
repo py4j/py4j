@@ -7,6 +7,7 @@ Created on Dec 10, 2009
 from __future__ import unicode_literals, absolute_import
 
 from collections import deque
+from contextlib import contextmanager
 from decimal import Decimal
 import gc
 import math
@@ -27,7 +28,8 @@ from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_gateway import (
     JavaGateway, JavaMember, get_field, get_method,
     GatewayClient, set_field, java_import, JavaObject, is_instance_of,
-    GatewayParameters, CallbackServerParameters, quiet_close, DEFAULT_PORT)
+    GatewayParameters, CallbackServerParameters, quiet_close, DEFAULT_PORT,
+    set_default_callback_accept_timeout)
 from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
     encode_bytearray, escape_new_line, unescape_new_line)
@@ -38,6 +40,9 @@ TEST_PORT = 25332
 PY4J_JAVA_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     "../../../../py4j-java/bin")
+
+
+set_default_callback_accept_timeout(0.125)
 
 
 def sleep(sleep_time=0.250):
@@ -78,7 +83,7 @@ def test_gateway_connection():
     test_gateway = JavaGateway()
     try:
         # Call a dummy method just to make sure we can connect to the JVM
-        test_gateway.jvm.System.lineSeparator()
+        test_gateway.jvm.System.currentTimeMillis()
     except Py4JNetworkError:
         # We could not connect. Let"s wait a long time.
         # If it fails after that, there is a bug with our code!
@@ -98,6 +103,29 @@ def safe_shutdown(instance):
         instance.gateway.shutdown()
     except Exception:
         print_exc()
+
+
+@contextmanager
+def gateway(*args, **kwargs):
+    g = JavaGateway(
+        gateway_parameters=GatewayParameters(
+            *args, auto_convert=True, **kwargs))
+    time = g.jvm.System.currentTimeMillis()
+    try:
+        yield g
+        # Call a dummy method to make sure we haven't corrupted the streams
+        assert time <= g.jvm.System.currentTimeMillis()
+    finally:
+        g.shutdown()
+
+
+@contextmanager
+def example_app_process():
+    p = start_example_app_process()
+    try:
+        yield p
+    finally:
+        p.join()
 
 
 class TestConnection(object):

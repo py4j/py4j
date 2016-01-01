@@ -13,9 +13,13 @@ import unittest
 
 from py4j.compat import range
 from py4j.java_gateway import (
-    JavaGateway, PythonProxyPool, CallbackServerParameters)
+    JavaGateway, PythonProxyPool, CallbackServerParameters,
+    set_default_callback_accept_timeout)
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, safe_shutdown, sleep, test_gateway_connection)
+
+
+set_default_callback_accept_timeout(0.125)
 
 
 def start_example_server():
@@ -154,6 +158,7 @@ class TestIntegration(unittest.TestCase):
         self.p = start_example_app_process()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters())
+        sleep()
 
     def tearDown(self):
         safe_shutdown(self)
@@ -218,6 +223,7 @@ class TestResetCallbackClient(unittest.TestCase):
         self.p = start_example_app_process()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters(port=0))
+        sleep()
 
     def tearDown(self):
         safe_shutdown(self)
@@ -244,6 +250,7 @@ class TestPeriodicCleanup(unittest.TestCase):
         self.p = start_example_app_process2()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters())
+        sleep()
 
     def tearDown(self):
         safe_shutdown(self)
@@ -288,6 +295,7 @@ class InterfaceTest(unittest.TestCase):
         self.p = start_example_app_process3()
         self.gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters())
+        sleep()
 
     def tearDown(self):
         safe_shutdown(self)

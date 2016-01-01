@@ -38,6 +38,7 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class EchoServer {
 
@@ -125,7 +126,7 @@ public class EchoServer {
 						if (command == null) {
 							break;
 						}
-						String returnCommand = queue.poll();
+						String returnCommand = queue.poll(1, TimeUnit.SECONDS);
 						System.out.println(returnCommand);
 						writer.write(returnCommand + "\n");
 						writer.flush();
