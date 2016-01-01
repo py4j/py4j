@@ -310,6 +310,20 @@ callback server must be started manually by calling
    `implements = ['package1.MyClass$Operator']`
 
 
+
+.. _dynamic_ports:
+
+Using Py4J without pre-determined ports (dynamic port number)
+-------------------------------------------------------------
+
+If you do not want to use Py4J's default port (25333 on the Java side and 25334
+on the Python side to receive callback), you can use the port 0 and Py4J will
+use the next available port. Once a port is assigned, the other side needs to
+be aware of this port. Here is one way to do it:
+
+
+
+
 .. _collections_conversion:
 
 Converting Python collections to Java Collections
