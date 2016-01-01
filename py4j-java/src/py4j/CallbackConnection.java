@@ -53,6 +53,7 @@ public class CallbackConnection {
 
 	private boolean used;
 
+	private final int DEFAULT_NONBLOCKING_SO_TIMEOUT = 1000;
 	private final int port;
 
 	private final InetAddress address;
@@ -73,13 +74,23 @@ public class CallbackConnection {
 	}
 
 	public String sendCommand(String command) {
+		return this.sendCommand(command, true);
+	}
+
+	public String sendCommand(String command, boolean blocking) {
 		logger.log(Level.INFO, "Sending CB command: " + command);
 		String returnCommand = null;
 		try {
 			this.used = true;
 			writer.write(command);
 			writer.flush();
-			returnCommand = reader.readLine();
+
+			if (blocking) {
+				returnCommand = this.readBlockingResponse(this.reader);
+			} else {
+				returnCommand = this.readNonBlockingResponse(this.socket, this
+						.reader);
+			}
 		} catch (Exception e) {
 			throw new Py4JNetworkException("Error while sending a command: "
 					+ command, e);
@@ -87,6 +98,36 @@ public class CallbackConnection {
 		logger.log(Level.INFO, "Returning CB command: " + returnCommand);
 		return returnCommand;
 	}
+
+	protected String readBlockingResponse(BufferedReader reader) throws
+			IOException {
+		return reader.readLine();
+	}
+
+	protected String readNonBlockingResponse(Socket socket, BufferedReader
+			reader)
+	throws IOException {
+		String returnCommand = null;
+
+		socket.setSoTimeout(DEFAULT_NONBLOCKING_SO_TIMEOUT);
+
+		while (true) {
+			try {
+				returnCommand = reader.readLine();
+				break;
+			} finally {
+				// Set back blocking timeout (necessary if
+				// sockettimeoutexception is raised and propagated)
+				socket.setSoTimeout(0);
+			}
+		}
+
+		// Set back blocking timeout
+		socket.setSoTimeout(0);
+
+		return returnCommand;
+	}
+
 
 	public void setUsed(boolean used) {
 		this.used = used;
