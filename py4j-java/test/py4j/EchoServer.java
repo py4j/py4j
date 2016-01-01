@@ -125,7 +125,7 @@ public class EchoServer {
 						if (command == null) {
 							break;
 						}
-						String returnCommand = queue.poll();
+						String returnCommand = queue.take();
 						System.out.println(returnCommand);
 						writer.write(returnCommand + "\n");
 						writer.flush();
