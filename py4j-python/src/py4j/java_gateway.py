@@ -50,6 +50,16 @@ PY4J_SKIP_COLLECTIONS = "PY4J_SKIP_COLLECTIONS"
 PY4J_TRUE = set(["yes", "y", "t", "true"])
 
 
+def set_default_callback_accept_timeout(accept_timeout):
+    """Sets default accept timeout of callback server.
+
+    TODO: Create a CallbackServer parameter for this value. Because it is only
+    used during testing, this is not a major issue for now.
+    """
+    global DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT
+    DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT = accept_timeout
+
+
 def deprecated(name, last_version, use_instead="", level=logging.DEBUG,
                raise_exc=False):
     if not use_instead:
@@ -368,22 +378,26 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True,
 
 
 def _garbage_collect_object(gateway_client, target_id):
-    ThreadSafeFinalizer.remove_finalizer(
-        smart_decode(gateway_client.address) +
-        smart_decode(gateway_client.port) +
-        target_id)
-    if target_id != proto.ENTRY_POINT_OBJECT_ID and\
-            target_id != proto.GATEWAY_SERVER_OBJECT_ID and\
-            gateway_client.is_connected:
-        try:
-            gateway_client.send_command(
-                proto.MEMORY_COMMAND_NAME +
-                proto.MEMORY_DEL_SUBCOMMAND_NAME +
-                target_id +
-                "\ne\n")
-        except Exception:
-            logger.debug("Exception while garbage collecting an object",
-                         exc_info=True)
+    try:
+        ThreadSafeFinalizer.remove_finalizer(
+            smart_decode(gateway_client.address) +
+            smart_decode(gateway_client.port) +
+            target_id)
+        if target_id != proto.ENTRY_POINT_OBJECT_ID and\
+                target_id != proto.GATEWAY_SERVER_OBJECT_ID and\
+                gateway_client.is_connected:
+            try:
+                gateway_client.send_command(
+                    proto.MEMORY_COMMAND_NAME +
+                    proto.MEMORY_DEL_SUBCOMMAND_NAME +
+                    target_id +
+                    "\ne\n")
+            except Exception:
+                logger.debug("Exception while garbage collecting an object",
+                             exc_info=True)
+    except Exception:
+        logger.debug("Exception while garbage collecting an object",
+                     exc_info=True)
 
 
 def _garbage_collect_connection(socket_instance):
@@ -1510,7 +1524,7 @@ class JavaGateway(object):
     def launch_gateway(
             cls, port=0, jarpath="", classpath="", javaopts=[],
             die_on_exit=False, redirect_stdout=None,
-            redirect_stderr=None, daemonize_redirect=False):
+            redirect_stderr=None, daemonize_redirect=True):
         """Launch a `Gateway` in a new Java process and create a default
         :class:`JavaGateway <py4j.java_gateway.JavaGateway>` to connect to
         it.
@@ -1544,8 +1558,8 @@ class JavaGateway(object):
             daemonized and will not prevent the main Python process from
             exiting. This means the file descriptors (stderr, stdout,
             redirect_stderr, redirect_stdout) might not be properly closed.
-            This is not usually a problem, but the default is conservatively
-            set to False.
+            This is not usually a problem, but in case of errors related
+            to file descriptors, set this flag to False.
 
         :rtype: a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
             connected to the `Gateway` server.

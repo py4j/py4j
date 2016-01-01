@@ -39,12 +39,14 @@ public class BufferGatewayTest {
 
 	@Test
 	public void testBufferedGateway1() {
-		BufferGenerator.main(null);
+        EchoClient client = new EchoClient();
 
-		EchoClient client = new EchoClient();
+        try {
+            Thread.sleep(500);
+            BufferGenerator.main(null);
 
-		try {
-			Thread.sleep(250);
+
+			Thread.sleep(500);
 			client.connect();
 
 			client.write("c\nt\ngetStringBuffer\ne\n");
