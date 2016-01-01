@@ -74,7 +74,7 @@ public class PythonProxyHandler implements InvocationHandler {
 	protected void finalize() throws Throwable {
 		try {
 			logger.fine("Finalizing python proxy id " + this.id);
-			gateway.getCallbackClient().sendCommand(finalizeCommand);
+			gateway.getCallbackClient().sendCommand(finalizeCommand, false);
 		} catch (Exception e) {
 			logger.warning("Python Proxy ID could not send a finalize message: "
 					+ this.id);

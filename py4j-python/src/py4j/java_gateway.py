@@ -1752,10 +1752,12 @@ class CallbackConnection(Thread):
                 elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                     self.input.readline()
                     del(self.pool[obj_id])
-                    self.socket.sendall("y\n".encode("utf-8"))
+                    # self.socket.sendall(
+                        # proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                 else:
                     logger.error("Unknown command {0}".format(command))
-                    self.socket.sendall(proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
+                    self.socket.sendall(
+                        proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
         except Exception:
             # This is a normal exception...
             logger.info(
