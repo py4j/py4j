@@ -195,8 +195,16 @@ class TestIntegration(unittest.TestCase):
             "This is Hello;\n10MyMy!\n;",
             example.callHello2(impl))
         self.assertEqual(2, len(self.gateway.gateway_property.pool))
+
+        # Make sure that finalizers do not block
+        impl2 = IHelloImpl()
+        self.assertEqual("This is Hello!", example.callHello(impl2))
+        self.assertEqual(3, len(self.gateway.gateway_property.pool))
+
         self.gateway.jvm.java.lang.System.gc()
-        sleep(1)
+
+        # Leave time for sotimeout
+        sleep(3)
         self.assertTrue(len(self.gateway.gateway_property.pool) < 2)
 
     def testDoubleCallbackServer(self):
