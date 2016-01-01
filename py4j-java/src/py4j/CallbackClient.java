@@ -225,6 +225,25 @@ public class CallbackClient {
 	 * @return The response.
 	 */
 	public String sendCommand(String command) {
+		return sendCommand(command, true);
+	}
+
+	/**
+	 * <p>
+	 * Sends a command to the Python side. This method is typically used by
+	 * Python proxies to call Python methods or to request the garbage
+	 * collection of a proxy.
+	 * </p>
+	 *
+	 * @param command
+	 *            The command to send.
+	 * @param blocking
+	 * 			  If the CallbackClient should wait for an answer (default
+	 * 			  should be True, except for critical cases such as a
+	 * 			  finalizer sending a command).
+	 * @return The response.
+	 */
+	public String sendCommand(String command, boolean blocking) {
 		String returnCommand = null;
 		CallbackConnection cc = getConnectionLock();
 
@@ -233,11 +252,11 @@ public class CallbackClient {
 		}
 
 		try {
-			returnCommand = cc.sendCommand(command);
+			returnCommand = cc.sendCommand(command, blocking);
 		} catch (Py4JNetworkException pe) {
 			logger.log(Level.WARNING, "Error while sending a command", pe);
 			// Retry in case the channel was dead.
-			returnCommand = sendCommand(command);
+			returnCommand = sendCommand(command, blocking);
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Critical error while sending a command",
 					e);
