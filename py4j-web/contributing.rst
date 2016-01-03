@@ -52,6 +52,13 @@ On the Python side, we use nose and tox:
 
 .. code-block:: bash
 
+  # make sure that the jar file is created
+  cd  py4j-java
+  ant cleanall
+  ant jar
+
+  # install test requirements
+  cd py4j-python
   pip install -r py4j-python/requirements-test.txt
 
   # Run the full test suite
@@ -75,6 +82,12 @@ Testing Java Code
 -----------------
 
 We use JUnit to write test cases.
+
+.. code-block:: bash
+
+  cd py4j-java
+  ant cleanall
+  ant java-test
 
 
 .. _license_and_copyrights:
