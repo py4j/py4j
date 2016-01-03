@@ -184,32 +184,32 @@ Here is the code of the main Java program:
 
   public class OperatorExample {
 
-	  // To prevent integer overflow
-	  private final static int MAX = 1000;
+        // To prevent integer overflow
+        private final static int MAX = 1000;
 
-	  public List<Integer> randomBinaryOperator(Operator op) {
-		  Random random = new Random();
-		  List<Integer> numbers = new ArrayList<Integer>();
-		  numbers.add(random.nextInt(MAX));
-		  numbers.add(random.nextInt(MAX));
-		  numbers.add(op.doOperation(numbers.get(0), numbers.get(1)));
-		  return numbers;
-	  }
+        public List<Integer> randomBinaryOperator(Operator op) {
+            Random random = new Random();
+            List<Integer> numbers = new ArrayList<Integer>();
+            numbers.add(random.nextInt(MAX));
+            numbers.add(random.nextInt(MAX));
+            numbers.add(op.doOperation(numbers.get(0), numbers.get(1)));
+            return numbers;
+        }
 
-	  public List<Integer> randomTernaryOperator(Operator op) {
-		  Random random = new Random();
-		  List<Integer> numbers = new ArrayList<Integer>();
-		  numbers.add(random.nextInt(MAX));
-		  numbers.add(random.nextInt(MAX));
-		  numbers.add(random.nextInt(MAX));
-		  numbers.add(op.doOperation(numbers.get(0), numbers.get(1), numbers.get(2)));
-		  return numbers;
-	  }
+        public List<Integer> randomTernaryOperator(Operator op) {
+            Random random = new Random();
+            List<Integer> numbers = new ArrayList<Integer>();
+            numbers.add(random.nextInt(MAX));
+            numbers.add(random.nextInt(MAX));
+            numbers.add(random.nextInt(MAX));
+            numbers.add(op.doOperation(numbers.get(0), numbers.get(1), numbers.get(2)));
+            return numbers;
+        }
 
-	  public static void main(String[] args) {
-		  GatewayServer server = new GatewayServer(new OperatorExample());
-		  server.start();
-	  }
+        public static void main(String[] args) {
+            GatewayServer server = new GatewayServer(new OperatorExample());
+            server.start();
+        }
 
   }
 
@@ -227,9 +227,9 @@ declaration of `Operator`:
 
   public interface Operator {
 
-	  public int doOperation(int i, int j);
+        public int doOperation(int i, int j);
 
-	  public int doOperation(int i, int j, int k);
+        public int doOperation(int i, int j, int k);
 
   }
 
@@ -243,13 +243,13 @@ Operator in Python. Here is his little Python program:
 
   class Addition(object):
       def doOperation(self, i, j, k = None):
-	  if k == None:
-	      return i + j
-	  else:
-	      return i + j + k
+        if k == None:
+            return i + j
+        else:
+            return i + j + k
 
-      class Java:
-	  implements = ['py4j.examples.Operator']
+        class Java:
+        implements = ['py4j.examples.Operator']
 
   if __name__ == '__main__':
       # The callback server parameters is optional, but it tells to start the
@@ -308,6 +308,50 @@ callback server must be started manually by calling
    in the class `package1.MyClass`, you will have to write:
 
    `implements = ['package1.MyClass$Operator']`
+
+
+
+.. _dynamic_ports:
+
+Using Py4J without pre-determined ports (dynamic port number)
+-------------------------------------------------------------
+
+If you do not want to use Py4J's default port (25333 on the Java side and 25334
+on the Python side to receive callback), you can use the port 0 and Py4J will
+use the next available port. Once a port is assigned, the other side needs to
+be aware of this port. Here is one way to do it:
+
+
+.. code-block:: python
+
+  from py4j.java_gateway import (
+      JavaGateway, CallbackServerParameters, GatewayParameters,
+      launch_gateway)
+  # launch Java side with dynamic port and get back the port on which the
+  # server was bound to.
+  port = launch_gateway()
+
+  # connect python side to Java side with Java dynamic port and start python
+  # callback server with a dynamic port
+  gateway = JavaGateway(
+      gateway_parameters=GatewayParameters(port=port),
+      callback_server_parameters=CallbackServerParameters(port=0))
+
+  # retrieve the port on which the python callback server was bound to.
+  python_port = gateway.get_callback_server().get_listening_port()
+
+  # tell the Java side to connect to the python callback server with the new
+  # python port. Note that we use the java_gateway_server attribute that
+  # retrieves the GatewayServer instance.
+  gateway.java_gateway_server.resetCallbackClient(
+      gateway.java_gateway_server.getCallbackClient().getAddress(),
+      python_port)
+
+  # Test that callbacks work
+  from py4j.tests.java_callback_test import IHelloImpl
+  hello = IHelloImpl()
+  example = gateway.jvm.py4j.examples.ExampleClass()
+  example.callHello(hello)
 
 
 .. _collections_conversion:
