@@ -168,4 +168,15 @@ public class GatewayTest {
 		}
 	}
 
+	@Test
+	public void testNoObject() {
+		String name = gateway.putNewObject(entryPoint.getNewExample());
+		try {
+			gateway.invoke("method1", name + "bob", null);
+			fail();
+		} catch(Py4JException pe) {
+			assertTrue(true);
+		}
+	}
+
 }

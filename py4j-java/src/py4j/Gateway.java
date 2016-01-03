@@ -277,10 +277,14 @@ public class Gateway {
 			if (targetObject != null) {
 				method = rEngine
 						.getMethod(targetObject, methodName, parameters);
-			} else {
+			} else if (targetObjectId.startsWith(Protocol.STATIC_PREFIX)) {
 				method = rEngine.getMethod(targetObjectId
 						.substring(Protocol.STATIC_PREFIX.length()),
 						methodName, parameters);
+			} else {
+				throw new Py4JException(
+						"Target Object ID does not exist for this gateway :" +
+						targetObjectId);
 			}
 
 			Object object = rEngine.invoke(targetObject, method, parameters);
