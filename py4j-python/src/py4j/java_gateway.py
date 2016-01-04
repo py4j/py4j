@@ -1679,13 +1679,14 @@ class CallbackServer(object):
                     socket_instance, _ = self.server_socket.accept()
                     input = socket_instance.makefile("rb", 0)
                     connection = CallbackConnection(
-                        self.pool, input, socket_instance, self.gateway_client,
+                        self.pool, input, socket_instance, self,
                         self.callback_server_parameters)
                     with self.lock:
                         if not self.is_shutdown:
                             self.connections.append(connection)
                             connection.start()
                         else:
+                            quiet_close(connection.input)
                             quiet_shutdown(connection.socket)
                             quiet_close(connection.socket)
         except Exception:
@@ -1693,6 +1694,13 @@ class CallbackServer(object):
                 logger.info("Error while waiting for a connection.")
             else:
                 logger.exception("Error while waiting for a connection.")
+
+    def remove_connection(self, connection):
+        with self.lock:
+            quiet_close(connection.input)
+            quiet_shutdown(connection.socket)
+            quiet_close(connection.socket)
+            self.connections.remove(connection)
 
     def shutdown(self):
         """Stops listening and accepting connection requests. All live
@@ -1707,7 +1715,9 @@ class CallbackServer(object):
             quiet_close(self.server_socket)
             self.server_socket = None
 
-            for connection in self.connections:
+            while self.connections:
+                connection = self.connections.pop()
+                quiet_close(connection.input)
                 quiet_shutdown(connection.socket)
                 quiet_close(connection.socket)
 
@@ -1721,13 +1731,14 @@ class CallbackConnection(Thread):
        requests from the Java side.
     """
     def __init__(
-            self, pool, input, socket_instance, gateway_client,
+            self, pool, input, socket_instance, callback_server,
             callback_server_parameters):
         super(CallbackConnection, self).__init__()
         self.pool = pool
         self.input = input
         self.socket = socket_instance
-        self.gateway_client = gateway_client
+        self.callback_server = callback_server
+        self.gateway_client = callback_server.gateway_client
 
         self.callback_server_parameters = callback_server_parameters
         if not callback_server_parameters:
@@ -1766,9 +1777,8 @@ class CallbackConnection(Thread):
                 "Error while callback connection was waiting for"
                 "a message", exc_info=True)
 
-            logger.info("Closing down connection")
-            quiet_shutdown(self.socket)
-            quiet_close(self.socket)
+        logger.info("Closing down connection")
+        self.callback_server.remove_connection(self)
 
     def _call_proxy(self, obj_id, input):
         return_message = proto.ERROR_RETURN_MESSAGE
