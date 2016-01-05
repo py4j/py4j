@@ -9,7 +9,7 @@ import sys
 
 version_info = sys.version_info
 
-if version_info[:2] == [2, 6]:
+if version_info[:2] == (2, 6):
     from _weakref import ref
 
     class _IterationGuard(object):
