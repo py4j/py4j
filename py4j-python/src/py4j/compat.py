@@ -10,7 +10,14 @@ import inspect
 import sys
 from threading import Thread
 
-if sys.version_info[0] < 3:
+version_info = sys.version_info
+
+if version_info[:2] == (2, 6):
+    from py4j.backport import WeakSet  # noqa
+else:
+    from weakref import WeakSet  # noqa
+
+if version_info[0] < 3:
     def items(d):
         return d.items()
 

@@ -24,7 +24,7 @@ from threading import Thread, RLock
 import weakref
 
 from py4j.compat import (
-    range, hasattr2, basestring, CompatThread, Queue)
+    range, hasattr2, basestring, CompatThread, Queue, WeakSet)
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j import protocol as proto
 from py4j.protocol import (
@@ -1607,7 +1607,7 @@ class CallbackServer(object):
         self.port = self.callback_server_parameters.port
         self.address = self.callback_server_parameters.address
         self.pool = pool
-        self.connections = []
+        self.connections = WeakSet()
         # Lock is used to isolate critical region like connection creation.
         # Some code can produce exceptions when ran in parallel, but
         # They will be caught and dealt with.
@@ -1683,7 +1683,7 @@ class CallbackServer(object):
                         self.callback_server_parameters)
                     with self.lock:
                         if not self.is_shutdown:
-                            self.connections.append(connection)
+                            self.connections.add(connection)
                             connection.start()
                         else:
                             quiet_shutdown(connection.socket)
@@ -1766,9 +1766,9 @@ class CallbackConnection(Thread):
                 "Error while callback connection was waiting for"
                 "a message", exc_info=True)
 
-            logger.info("Closing down connection")
-            quiet_shutdown(self.socket)
-            quiet_close(self.socket)
+        logger.info("Closing down connection")
+        quiet_shutdown(self.socket)
+        quiet_close(self.socket)
 
     def _call_proxy(self, obj_id, input):
         return_message = proto.ERROR_RETURN_MESSAGE
