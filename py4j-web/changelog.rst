@@ -4,9 +4,10 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
-Py4J 0.9.1-SNAPSHOT
--------------------
+Py4J 0.9.1
+----------
 
+- Release date: January 9th 2016
 - Python side: it is now possible to retrieve the listening address and port of
   the CallbackServer. This is useful if CallbackServer is bound to port 0.
 - Python side: The daemonize_redirect flag is not set to True by default to
@@ -15,17 +16,24 @@ Py4J 0.9.1-SNAPSHOT
   exceptions.
 - Python side: if you attempt to access an inexistent object on the Java side,
   you will receive a more meaningful exception.
+- Python side: the callback server was not correctly closing sockets and it was
+  possible to leak sockets until no more were available. This has been fixed.
 - Java side: the finalization code telling the Python side that it can garbage
   collect a python proxy should not longer block (major bug fix).
 - Java side: After GatewayServer is launched, it is :ref:`now possible to
   change the address:port where the CallbackClient connects <dynamic_ports>`.
 - Added a comment in an empty init file so 7zip does not report on error on
   Windows (go figure :-) )
+- We moved from Travis CI to Circle CI and the automated tests now reliably
+  pass.
+- `tickets closed for 0.9.1 release
+  <https://github.com/bartdag/py4j/issues?q=is%3Aissue+milestone%3A0.9.1+is%3Aclosed>`_
 
 
 Py4J 0.9
 --------
 
+- Release date: July 25th 2015
 - Python side: constructor parameters have been deprecated in favor of
   GatewayParameters and CallbackServerParameters. This was necessary because
   the number of configuration options is growing fast. Old parameters will be
@@ -80,11 +88,13 @@ Py4J 0.9
 Py4J 0.8.2.1
 ------------
 
+- Release date: July 27th 2014
 - Fixed a test that used an assert method that does not exist in Python 2.6
 
 Py4J 0.8.2
 ----------
 
+- Release date: July 27th 2014
 - Fixed constructors not being able to pass proxy (python classes implementing
   Java interfaces)
 - Java 6 compatibility was restored in compiled jar file.
@@ -97,6 +107,7 @@ Py4J 0.8.2
 Py4J 0.8.1
 ----------
 
+- Release date: December 26th 2013
 - Fixed a bug in type inference when interface hierarchy is deeper than
   abstract class hierarchy.
 - Added a utility method ``is_instance_of`` in py4j.java_gateway to determine
@@ -109,6 +120,7 @@ Py4J 0.8.1
 Py4J 0.8
 --------
 
+- Release date: June 15th 2013
 - Major fix to the Java byte[] support. Thanks to @agronholm for spotting
   this subtle but major issue and thanks to @fdinto from The Atlantic for
   providing a patch!
@@ -127,6 +139,7 @@ Py4J 0.8
 Py4J 0.7
 --------
 
+- Release date: June 2nd 2011
 - Major refactoring to support Python 3. Thanks to Alex Grönholm for his
   patch.
 - The build and setup files have been totally changed. Py4J no longer requires
@@ -142,6 +155,7 @@ Py4J 0.7
 Py4J 0.6
 --------
 
+- Release date: February 17th 2011
 - Added new exception ``Py4JJavaError`` that enables Python client programs to access
   instance of Java exception thrown in the Java client code.
 - Improved Py4J setup: no more warnings displayed when installing Py4J.
@@ -152,6 +166,7 @@ Py4J 0.6
 Py4J 0.5
 --------
 
+- Release date: November 30th 2010
 - Added the ability to import packages (e.g., ``java_import(gateway.jvm, 'java.io.*')``)
 - Added support for pattern filtering in ``JavaGateway.help()`` (e.g., ``gateway.help(obj,'get*Foo*Bar')``)
 - Added support for automatic conversion of Python collections (list, set,
@@ -169,6 +184,7 @@ Py4J 0.5
 Py4J 0.4
 --------
 
+- Release date: September 19th 2010
 - Polishing of existing features: fields can be set (not just read), None is accepted as a method parameter, methods are sorted alhabetically in gateway.help(), etc.
 - Java Exception Stack Trace are now propagated to Python side.
 - Changed **interfaces** member in Callback classes to **implements**.
@@ -179,6 +195,7 @@ Py4J 0.4
 Py4J 0.3
 --------
 
+- Release date: April 27th 2010
 - Added support for Java arrays and set.
 - Added support for callbacks: Java objects can now call back Python objects.
 - Completely redesigned threading and connection model of Py4J to allow multiple threads and callbacks on both side.
@@ -188,6 +205,7 @@ Py4J 0.3
 Py4J 0.2
 --------
 
+- Release date: February 11th 2010
 - It is now possible to call constructors and reference static members: use the `jvm` member of a `JavaGateway` object.
 - Java Map is converted to a Python Dictionary.
 - Field access is supported through the ``get_field`` function or the ``auto_field=True`` member of `JavaGateway`.
@@ -202,6 +220,7 @@ Py4J 0.2
 Py4J 0.1
 --------
 
+- Release date: December 23rd 2009
 - This is the first release.
 - Basic features like connecting to a JVM and calling methods are implemented.
 - Java List is converted to a Python List.
