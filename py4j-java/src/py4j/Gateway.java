@@ -108,7 +108,7 @@ public class Gateway {
 			cbClient.shutdown();
 		}
 
-		this.cbClient = new CallbackClient(pythonPort, pythonAddress);
+		this.cbClient = cbClient.copyWith(pythonAddress, pythonPort);
 	}
 
 	/**

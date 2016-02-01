@@ -693,3 +693,56 @@ a Python object. When a callback is called, a connection to the CallbackServer
 is established in the calling thread. If **you created** multiple threads in
 Java to call back Python concurrently, Py4J will ensure that each thread has
 its own CallbackConnection.
+
+TLS
+---
+
+Py4J supports TLS for both connections from Python to the JVM and the callback
+connections to Python. This requires configuring both Java and Python:
+
+**On the Python side**
+
+Use Python's `ssl` module to create an `ssl.SSLContext`. Note that this was
+added in Python 2.7, so if you want to use TLS on 2.6 you should investigate
+the backports on PyPI. For the connection to the JVM you'll need something
+like:
+
+.. code-block:: python
+
+  client_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+  client_ssl_context.verify_mode = ssl.CERT_REQUIRED
+  client_ssl_context.check_hostname = True
+  client_ssl_context.load_verify_locations(cafile='/path/to/pem/ca/certs')
+
+This `ssl.SSLContext` should be set as the `ssl_context` parameter when
+constructing an instanceof of `GatewayParameters`. If you're setting
+`check_hostname` to `True` like the code above then the `address` parameter
+of the `GatewayParameters` must match (one of) the hostnames in the certificate
+the Java `GatewayServer` presents.
+
+For the socket listening for callbacks from the JVM, you'll need something
+like:
+
+.. code-block:: python
+
+  server_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+  server_ssl_context.load_cert_chain(
+    '/path/to/pem/private/key',
+    password='key-password')
+
+This `ssl.SSLContext` should be set as the `ssl_context` parameter when
+constructing an instance of `CallbackServerParameters`. You can see a full
+example in the test file `py4j-python/src/tests/java_tls_test.py`.
+
+**On the Java side**
+
+Use the `GatewayServer` constructor that takes a `ServerSocketFactory`, and
+pass an instance of type `SSLServerSocketFactory`. The easiest way of
+constructing one of these is using `SSLServerSocketFactory.getDefault()`,
+however for more control construct a `SSLContext`.
+
+To add TLS to callbacks, create a `CallbackClient` with the constructor that
+takes a `SSLSocketFactory`. You can get an instance of this via `getDefault()`
+or a `SSLContext` instance similarly.
+
+A runnable example is in `py4j.examples.ExampleSSLApplication`.
