@@ -40,6 +40,8 @@ import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.net.SocketFactory;
+
 /**
  * <p>
  * Default implementation of the CommunicationChannel interface using TCP
@@ -58,6 +60,8 @@ public class CallbackConnection {
 
 	private final InetAddress address;
 
+	private final SocketFactory socketFactory;
+
 	private Socket socket;
 
 	private BufferedReader reader;
@@ -68,9 +72,14 @@ public class CallbackConnection {
 			.getName());
 
 	public CallbackConnection(int port, InetAddress address) {
+		this(port, address, SocketFactory.getDefault());
+	}
+
+	public CallbackConnection(int port, InetAddress address, SocketFactory socketFactory) {
 		super();
 		this.port = port;
 		this.address = address;
+		this.socketFactory = socketFactory;
 	}
 
 	public String sendCommand(String command) {
@@ -142,7 +151,7 @@ public class CallbackConnection {
 	public void start() throws IOException {
 		logger.info("Starting Communication Channel on " + address + " at "
 				+ port);
-		socket = new Socket(address, port);
+		socket = socketFactory.createSocket(address, port);
 		reader = new BufferedReader(new InputStreamReader(
 				socket.getInputStream(), Charset.forName("UTF-8")));
 		writer = new BufferedWriter(new OutputStreamWriter(

@@ -31,6 +31,7 @@ package py4j;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.Executors;
@@ -40,6 +41,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.net.SocketFactory;
 
 /**
  * <p>
@@ -57,6 +60,8 @@ public class CallbackClient {
 	private final int port;
 
 	private final InetAddress address;
+
+	private final SocketFactory socketFactory;
 
 	private final Deque<CallbackConnection> connections = new ArrayDeque<CallbackConnection>();
 
@@ -87,16 +92,17 @@ public class CallbackClient {
 		}
 		this.minConnectionTime = DEFAULT_MIN_CONNECTION_TIME;
 		this.minConnectionTimeUnit = TimeUnit.SECONDS;
+		this.socketFactory = SocketFactory.getDefault();
 		setupCleaner();
 	}
 
 	public CallbackClient(int port, InetAddress address) {
-		super();
-		this.port = port;
-		this.address = address;
-		this.minConnectionTime = DEFAULT_MIN_CONNECTION_TIME;
-		this.minConnectionTimeUnit = TimeUnit.SECONDS;
-		setupCleaner();
+		this(port, address, DEFAULT_MIN_CONNECTION_TIME, TimeUnit.SECONDS);
+	}
+
+	public CallbackClient(int port, InetAddress address,
+			long minConnectionTime, TimeUnit minConnectionTimeUnit) {
+		this(port, address, minConnectionTime, minConnectionTimeUnit, SocketFactory.getDefault());
 	}
 
 	/**
@@ -110,14 +116,18 @@ public class CallbackClient {
 	 *            connected for this time after sending a command.
 	 * @param minConnectionTimeUnit
 	 *            The minimum coonnection time unit.
+	 * @param socketFactory
+	 *            The non-{@code null} factory to make {@link Socket}s.
 	 */
 	public CallbackClient(int port, InetAddress address,
-			long minConnectionTime, TimeUnit minConnectionTimeUnit) {
+			long minConnectionTime, TimeUnit minConnectionTimeUnit,
+			SocketFactory socketFactory) {
 		super();
 		this.port = port;
 		this.address = address;
 		this.minConnectionTime = minConnectionTime;
 		this.minConnectionTimeUnit = minConnectionTimeUnit;
+		this.socketFactory = socketFactory;
 		setupCleaner();
 	}
 
@@ -130,7 +140,7 @@ public class CallbackClient {
 
 		connection = connections.pollLast();
 		if (connection == null) {
-			connection = new CallbackConnection(port, address);
+			connection = new CallbackConnection(port, address, socketFactory);
 			connection.start();
 		}
 
@@ -163,6 +173,31 @@ public class CallbackClient {
 
 	public int getPort() {
 		return port;
+	}
+
+	/**
+	 * <p>
+	 * Creates a callback client which connects to the given address and port,
+	 * but retains all the other settings (like the {@link #minConnectionTime}
+	 * and the {@link #socketFactory}. This method is useful if for some reason
+	 * your CallbackServer changes its address or you come to know of the
+	 * address after Gateway has already instantiated.
+	 * </p>
+	 *
+	 * @param pythonAddress
+	 *            The address used by a PythonProxyHandler to connect to a
+	 *            Python gateway.
+	 * @param pythonPort
+	 *            The port used by a PythonProxyHandler to connect to a Python
+	 *            gateway. Essentially the port used for Python callbacks.
+	 */
+	public CallbackClient copyWith(InetAddress pythonAddress, int pythonPort) {
+		return new CallbackClient(
+			pythonPort,
+			pythonAddress,
+			minConnectionTime,
+			minConnectionTimeUnit,
+			socketFactory);
 	}
 
 	private void giveBackConnection(CallbackConnection cc) {

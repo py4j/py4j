@@ -33,7 +33,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
-import py4j.CallbackClient;
 import py4j.Gateway;
 import py4j.Protocol;
 

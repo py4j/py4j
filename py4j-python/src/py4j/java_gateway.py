@@ -473,10 +473,13 @@ class GatewayParameters(object):
 
     def __init__(
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
-            auto_close=True, auto_convert=False, eager_load=False):
+            auto_close=True, auto_convert=False, eager_load=False,
+            ssl_context=None):
         """
         :param address: the address to which the client will request a
-         connection
+         connection. If you're assing a `SSLContext` with `check_hostname=True`
+         then this address must match (one of) the hostname(s) in the
+         certificate the gateway server presents.
 
         :param port: the port to which the client will request a connection.
          Default is 25333.
@@ -498,6 +501,9 @@ class GatewayParameters(object):
         :param eager_load: if `True`, the gateway tries to connect to the JVM
          by calling System.currentTimeMillis. If the gateway cannot connect to
          the JVM, it shuts down itself and raises an exception.
+
+        :param ssl_context: if not None, SSL connections will be made using this
+         this SSLContext
         """
         self.address = address
         self.port = port
@@ -505,6 +511,7 @@ class GatewayParameters(object):
         self.auto_close = auto_close
         self.auto_convert = auto_convert
         self.eager_load = eager_load
+        self.ssl_context = ssl_context
 
 
 class CallbackServerParameters(object):
@@ -514,7 +521,8 @@ class CallbackServerParameters(object):
 
     def __init__(
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PYTHON_PROXY_PORT,
-            daemonize=False, daemonize_connections=False, eager_load=True):
+            daemonize=False, daemonize_connections=False, eager_load=True,
+            ssl_context=None):
         """
         :param address: the address to which the client will request a
             connection
@@ -533,12 +541,15 @@ class CallbackServerParameters(object):
         :param eager_load: If `True`, the callback server is automatically
             started when the JavaGateway is created.
 
+        :param ssl_context: if not None, the SSLContext's certificate will be
+         presented to callback connections.
         """
         self.address = address
         self.port = port
         self.daemonize = daemonize
         self.daemonize_connections = daemonize_connections
         self.eager_load = eager_load
+        self.ssl_context = ssl_context
 
 
 class DummyRLock(object):
@@ -571,7 +582,7 @@ class GatewayClient(object):
     connections, which is essential when using callbacks.  """
 
     def __init__(self, address=DEFAULT_ADDRESS, port=25333, auto_close=True,
-                 gateway_property=None):
+                 gateway_property=None, ssl_context=None):
         """
         :param address: the address to which the client will request a
          connection
@@ -584,12 +595,16 @@ class GatewayClient(object):
 
         :param gateway_property: used to keep gateway preferences without a
          cycle with the gateway
+
+        :param ssl_context: if not None, SSL connections will be made using this
+         this SSLContext
         """
         self.address = address
         self.port = port
         self.is_connected = True
         self.auto_close = auto_close
         self.gateway_property = gateway_property
+        self.ssl_context = ssl_context
         self.deque = deque()
 
     def _get_connection(self):
@@ -603,7 +618,8 @@ class GatewayClient(object):
 
     def _create_connection(self):
         connection = GatewayConnection(
-            self.address, self.port, self.auto_close, self.gateway_property)
+            self.address, self.port, self.auto_close, self.gateway_property,
+            self.ssl_context)
         connection.start()
         return connection
 
@@ -681,7 +697,7 @@ class GatewayConnection(object):
        with the Java Virtual Machine."""
 
     def __init__(self, address=DEFAULT_ADDRESS, port=25333, auto_close=True,
-                 gateway_property=None):
+                 gateway_property=None, ssl_context=None):
         """
         :param address: the address to which the connection will be established
 
@@ -693,10 +709,15 @@ class GatewayConnection(object):
 
         :param gateway_property: contains gateway preferences to avoid a cycle
          with gateway
+
+        :param ssl_context: if not None, SSL connections will be made using this
+         this SSLContext
         """
         self.address = address
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if ssl_context:
+            self.socket = ssl_context.wrap_socket(self.socket, server_hostname=address)
         self.is_connected = False
         self.auto_close = auto_close
         self.gateway_property = gateway_property
@@ -1296,7 +1317,8 @@ class JavaGateway(object):
             gateway_client = GatewayClient(
                 address=self.gateway_parameters.address,
                 port=self.gateway_parameters.port,
-                auto_close=self.gateway_parameters.auto_close)
+                auto_close=self.gateway_parameters.auto_close,
+                ssl_context=self.gateway_parameters.ssl_context)
 
         self.gateway_property = GatewayProperty(
             self.gateway_parameters.auto_field, PythonProxyPool())
@@ -1606,6 +1628,7 @@ class CallbackServer(object):
 
         self.port = self.callback_server_parameters.port
         self.address = self.callback_server_parameters.address
+        self.ssl_context = self.callback_server_parameters.ssl_context
         self.pool = pool
         self.connections = WeakSet()
         # Lock is used to isolate critical region like connection creation.
@@ -1677,6 +1700,9 @@ class CallbackServer(object):
 
                 for s in readable:
                     socket_instance, _ = self.server_socket.accept()
+                    if self.ssl_context:
+                        socket_instance = self.ssl_context.wrap_socket(
+                            socket_instance, server_side=True)
                     input = socket_instance.makefile("rb", 0)
                     connection = CallbackConnection(
                         self.pool, input, socket_instance, self.gateway_client,
