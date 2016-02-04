@@ -18,3 +18,4 @@ Isaac Sánchez Barrera <isaac@isb1009.es>
 David C. Sterratt <david.c.sterratt@ed.ac.uk>
 Greg Warner <gdwarner@gmail.com>
 Shixiong Zhu <@zsxwing>
+Nick White <n.j.white@gmail.com>

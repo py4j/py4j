@@ -29,8 +29,8 @@
 
 package py4j;
 
-import java.io.IOException;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -44,6 +44,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.net.ServerSocketFactory;
 
 import py4j.commands.Command;
 
@@ -146,6 +148,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	private final List<GatewayServerListener> listeners;
 
+	private final ServerSocketFactory sSocketFactory;
+
 	private ServerSocket sSocket;
 
 	private boolean isShutdown = false;
@@ -154,6 +158,14 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	static {
 		GatewayServer.turnLoggingOff();
+	}
+
+	private static InetAddress defaultAddress() {
+		try {
+			return InetAddress.getByName(DEFAULT_ADDRESS);
+		} catch (UnknownHostException e) {
+			throw new Py4JNetworkException(e);
+		}
 	}
 
 	/**
@@ -212,17 +224,15 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	public GatewayServer(Object entryPoint, int port, int pythonPort,
 			InetAddress address, InetAddress pythonAddress, int connectTimeout,
 			int readTimeout, List<Class<? extends Command>> customCommands) {
-		super();
-		this.port = port;
-		this.pythonPort = pythonPort;
-		this.connectTimeout = connectTimeout;
-		this.readTimeout = readTimeout;
-		this.customCommands = customCommands;
-		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
-		this.address = address;
-		this.pythonAddress = pythonAddress;
-		this.gateway = new Gateway(entryPoint, new CallbackClient(pythonPort, pythonAddress));
-		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
+		this(
+			entryPoint,
+			port,
+			address,
+			connectTimeout,
+			readTimeout,
+			customCommands,
+			new CallbackClient(pythonPort, pythonAddress),
+			ServerSocketFactory.getDefault());
 	}
 
 	/**
@@ -298,28 +308,61 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	public GatewayServer(Object entryPoint, int port, int pythonPort,
 			int connectTimeout, int readTimeout,
 			List<Class<? extends Command>> customCommands) {
-		super();
-		this.port = port;
-		this.pythonPort = pythonPort;
-		this.connectTimeout = connectTimeout;
-		this.readTimeout = readTimeout;
-		this.customCommands = customCommands;
-		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
-		try {
-			this.address = InetAddress.getByName(DEFAULT_ADDRESS);
-			this.pythonAddress = InetAddress.getByName(DEFAULT_ADDRESS);
-		} catch (UnknownHostException e) {
-			throw new Py4JNetworkException(e);
-		}
-		this.gateway = new Gateway(entryPoint, new CallbackClient(pythonPort, this.pythonAddress));
-		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
+		this(
+			entryPoint,
+			port,
+			defaultAddress(),
+			connectTimeout,
+			readTimeout,
+			customCommands,
+			new CallbackClient(pythonPort, defaultAddress()),
+			ServerSocketFactory.getDefault());
 	}
 
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout, List<Class<? extends Command>> customCommands,
 			CallbackClient cbClient) {
+		this(
+			entryPoint,
+			port,
+			defaultAddress(),
+			connectTimeout,
+			readTimeout,
+			customCommands,
+			cbClient,
+			ServerSocketFactory.getDefault());
+	}
+
+	/**
+	 *
+	 * @param entryPoint
+	 *        The entry point of this Gateway. Can be null.
+	 * @param port
+	 *        The port the GatewayServer is listening to.
+	 * @param address
+	 *        The address the GatewayServer is listening to.
+	 * @param connectTimeout
+	 *        Time in milliseconds (0 = infinite). If a GatewayServer does
+	 *        not receive a connection request after this time, it closes
+	 *        the server socket and no other connection is accepted.
+	 * @param readTimeout
+	 *        Time in milliseconds (0 = infinite). Once a Python program is
+	 *        connected, if a GatewayServer does not receive a request
+	 *        (e.g., a method call) after this time, the connection with the
+	 *        Python program is closed.
+	 * @param customCommands
+	 *        A list of custom Command classes to augment the Server
+	 *        features. These commands will be accessible from Python
+	 *        programs. Can be null.
+	 * @param sSocketFactory
+	 *        A factory that creates the server sockets that we listen on.
+	 */
+	public GatewayServer(Object entryPoint, int port, InetAddress address, int connectTimeout,
+			int readTimeout, List<Class<? extends Command>> customCommands,
+			CallbackClient cbClient, ServerSocketFactory sSocketFactory) {
 		super();
 		this.port = port;
+		this.address = address;
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;
 		this.gateway = new Gateway(entryPoint, cbClient);
@@ -328,11 +371,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
 		this.customCommands = customCommands;
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
-		try {
-			this.address = InetAddress.getByName(DEFAULT_ADDRESS);
-		} catch (UnknownHostException e) {
-			throw new Py4JNetworkException(e);
-		}
+		this.sSocketFactory = sSocketFactory;
 	}
 
 	public void addListener(GatewayServerListener listener) {
@@ -610,7 +649,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 */
 	protected void startSocket() throws Py4JNetworkException {
 		try {
-			sSocket = new ServerSocket(port, -1, address);
+			sSocket = sSocketFactory.createServerSocket(port, -1, address);
 			sSocket.setSoTimeout(connectTimeout);
 			sSocket.setReuseAddress(true);
 		} catch (IOException e) {
