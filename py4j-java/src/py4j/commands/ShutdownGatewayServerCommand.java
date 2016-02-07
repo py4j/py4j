@@ -33,6 +33,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 
 import py4j.Gateway;
+import py4j.GatewayConnection;
 import py4j.GatewayServer;
 import py4j.Py4JException;
 
@@ -42,9 +43,9 @@ import py4j.Py4JException;
  * GatewayServer. This command is useful to shut down the server remotely, i.e.,
  * from the Python side.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class ShutdownGatewayServerCommand extends AbstractCommand {
 
@@ -64,8 +65,8 @@ public class ShutdownGatewayServerCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void init(Gateway gateway) {
-		super.init(gateway);
+	public void init(Gateway gateway, GatewayConnection connection) {
+		super.init(gateway, connection);
 		this.gatewayServer = (GatewayServer) gateway
 				.getObject(GatewayServer.GATEWAY_SERVER_ID);
 	}

@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * 
+ *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,8 +29,13 @@
 
 package py4j.examples;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -178,5 +183,14 @@ public class ExampleClass {
 
 	public static class StaticClass {
 
+	}
+
+	public ReadableByteChannel getStream() throws IOException {
+		byte[] bytes = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.".getBytes("UTF-8");
+		return Channels.newChannel(new ByteArrayInputStream(bytes));
+	}
+
+	public ReadableByteChannel getBrokenStream() throws IOException {
+		throw new NotSerializableException("...or some other expected failure");
 	}
 }
