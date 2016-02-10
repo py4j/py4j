@@ -82,7 +82,7 @@ import py4j.commands.Command;
  *
  */
 public class GatewayServer extends DefaultGatewayServerListener implements
-		Runnable {
+		Py4JServer, Runnable {
 
 	public static final String DEFAULT_ADDRESS = "127.0.0.1";
 
@@ -160,7 +160,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		GatewayServer.turnLoggingOff();
 	}
 
-	private static InetAddress defaultAddress() {
+	public static InetAddress defaultAddress() {
 		try {
 			return InetAddress.getByName(DEFAULT_ADDRESS);
 		} catch (UnknownHostException e) {
@@ -368,7 +368,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		this.gateway = new Gateway(entryPoint, cbClient);
 		this.pythonPort = cbClient.getPort();
 		this.pythonAddress = cbClient.getAddress();
-		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
+		this.gateway.putObject(GATEWAY_SERVER_ID, this);
 		this.customCommands = customCommands;
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 		this.sSocketFactory = sSocketFactory;
@@ -482,7 +482,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		return address;
 	}
 
-	public CallbackClient getCallbackClient() {
+	public Py4JClient getCallbackClient() {
 		return gateway.getCallbackClient();
 	}
 

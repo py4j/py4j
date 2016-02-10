@@ -54,7 +54,7 @@ import javax.net.SocketFactory;
  * @author Barthelemy Dagenais
  *
  */
-public class CallbackClient {
+public class CallbackClient implements Py4JClient {
 	public final static String DEFAULT_ADDRESS = "127.0.0.1";
 
 	private final int port;
@@ -191,6 +191,7 @@ public class CallbackClient {
 	 *            The port used by a PythonProxyHandler to connect to a Python
 	 *            gateway. Essentially the port used for Python callbacks.
 	 */
+	@Override
 	public CallbackClient copyWith(InetAddress pythonAddress, int pythonPort) {
 		return new CallbackClient(
 			pythonPort,
@@ -259,6 +260,7 @@ public class CallbackClient {
 	 *            The command to send.
 	 * @return The response.
 	 */
+	@Override
 	public String sendCommand(String command) {
 		return sendCommand(command, true);
 	}
@@ -278,6 +280,7 @@ public class CallbackClient {
 	 * 			  finalizer sending a command).
 	 * @return The response.
 	 */
+	@Override
 	public String sendCommand(String command, boolean blocking) {
 		String returnCommand = null;
 		CallbackConnection cc = getConnectionLock();
@@ -321,6 +324,7 @@ public class CallbackClient {
 	 * was called..
 	 * </p>
 	 */
+	@Override
 	public void shutdown() {
 		logger.info("Shutting down Callback Client");
 		try {

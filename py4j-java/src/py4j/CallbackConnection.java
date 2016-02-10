@@ -55,7 +55,7 @@ public class CallbackConnection {
 
 	private boolean used;
 
-	private final int DEFAULT_NONBLOCKING_SO_TIMEOUT = 1000;
+	public final static int DEFAULT_NONBLOCKING_SO_TIMEOUT = 1000;
 	private final int port;
 
 	private final InetAddress address;
