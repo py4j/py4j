@@ -3,10 +3,12 @@
 from __future__ import unicode_literals, absolute_import
 
 import logging
+import select
 import socket
 
 from py4j.java_gateway import (
-    DEFAULT_ADDRESS, DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT, JavaObject,
+    DEFAULT_ADDRESS, DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT,
+    DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT, JavaObject,
     JVMView, GatewayProperty, PythonProxyPool, quiet_close, quiet_shutdown)
 from py4j import protocol as proto
 from py4j.protocol import (
@@ -53,8 +55,8 @@ class JavaParameters(object):
          by calling System.currentTimeMillis. If the gateway cannot connect to
          the JVM, it shuts down itself and raises an exception.
 
-        :param ssl_context: if not None, SSL connections will be made using this
-         this SSLContext
+        :param ssl_context: if not None, SSL connections will be made using
+        this this SSLContext
         """
         self.address = address
         self.port = port
@@ -111,20 +113,74 @@ class ClientServerConnection(object):
         # For backward compatibility
         self.address = self.java_parameters.address
         self.port = self.java_parameters.port
+
+        self.java_address = self.java_parameters.address
+        self.java_port = self.java_parameters.port
+
+        self.python_address = self.python_parameters.address
+        self.python_port = self.python_parameters.port
+
         self.ssl_context = self.java_parameters.ssl_context
+        self.server_socket = None
         self.socket = None
         self.stream = None
         self.pool = PythonProxyPool()
         self.gateway_property = GatewayProperty(
             self.java_parameters.auto_field, self.pool)
+        self._listening_address = self._listening_port = None
+        self.is_shutdown = False
 
     def connect_to_java_server(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if self.ssl_context:
             self.socket = self.ssl_context.wrap_socket(
-                self.socket, server_hostname=self.address)
-        self.socket.connect((self.address, self.port))
+                self.java_socket, server_hostname=self.java_address)
+        self.socket.connect((self.java_address, self.java_port))
         self.stream = self.socket.makefile("rb", 0)
+
+    def start_server(self, entry_point):
+        if entry_point:
+            self.pool.put(entry_point, proto.ENTRY_POINT_OBJECT_ID)
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(
+            socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            self.server_socket.bind((self.python_address, self.python_port))
+            self._listening_address, self._listening_port =\
+                self.server_socket.getsockname()
+        except Exception as e:
+            msg = "An error occurred while trying to start the callback "\
+                  "server ({0}:{1})".format(
+                      self.python_address, self.python_port)
+            logger.exception(msg)
+            raise Py4JNetworkError(msg, e)
+
+        try:
+            logger.info("Python Server Starting")
+            self.server_socket.listen(5)
+            logger.info(
+                "Socket listening on {0}".
+                format(smart_decode(self.server_socket.getsockname())))
+
+            read_list = [self.server_socket]
+            accepted_socket = False
+            while not accepted_socket:
+                readable, writable, errored = select.select(
+                    read_list, [], [], DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT)
+
+                for s in readable:
+                    self.socket, _ = self.server_socket.accept()
+                    if self.ssl_context:
+                        self.socket = self.ssl_context.wrap_socket(
+                            self.socket, server_side=True)
+                    self.stream = self.socket.makefile("rb", 0)
+                    accepted_socket = True
+                    break
+        except Exception:
+            logger.exception("Error while waiting for a connection.")
+
+        self.wait_for_commands()
+        self.close_server()
 
     def send_command(self, command):
         if not self.socket:
@@ -139,7 +195,7 @@ class ClientServerConnection(object):
                 # Happens when a the other end is dead. There might be an empty
                 # answer before the socket raises an error.
                 if answer.strip() == "":
-                    self.close()
+                    self.close_client()
                     raise Py4JError("Answer from Java side is empty")
                 if answer.startswith(proto.RETURN_MESSAGE):
                     return answer[1:]
@@ -158,13 +214,63 @@ class ClientServerConnection(object):
                             proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                     else:
                         logger.error("Unknown command {0}".format(command))
-                        # We're sending something to prevent blocking, but at this
-                        # point, the protocol is broken.
+                        # We're sending something to prevent blocking,
+                        # but at this point, the protocol is broken.
                         self.socket.sendall(
                             proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
         except Exception as e:
             logger.exception("Error while sending or receiving.")
             raise Py4JNetworkError("Error while sending or receiving", e)
+
+    def close(self):
+        """For backward compatibility.
+
+        :return:
+        """
+        self.close_client
+
+    def close_client(self):
+        logger.info("Closing down client")
+        quiet_close(self.stream)
+        quiet_shutdown(self.socket)
+        quiet_close(self.socket)
+
+    def close_server(self):
+        quiet_shutdown(self.server_socket)
+        quiet_close(self.server_socket)
+
+    def wait_for_commands(self):
+        logger.info("Python Server ready to receive messages")
+        try:
+            while True:
+                command = smart_decode(self.stream.readline())[:-1]
+                obj_id = smart_decode(self.stream.readline())[:-1]
+                logger.info(
+                    "Received command {0} on object id {1}".
+                    format(command, obj_id))
+                if obj_id is None or len(obj_id.strip()) == 0:
+                    break
+                if command == proto.CALL_PROXY_COMMAND_NAME:
+                    return_message = self._call_proxy(obj_id, self.stream)
+                    self.socket.sendall(return_message.encode("utf-8"))
+                elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
+                    self.stream.readline()
+                    del(self.pool[obj_id])
+                    self.socket.sendall(
+                        proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
+                else:
+                    logger.error("Unknown command {0}".format(command))
+                    # We're sending something to prevent blocking, but at this
+                    # point, the protocol is broken.
+                    self.socket.sendall(
+                        proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
+        except Exception:
+            # This is a normal exception...
+            logger.info(
+                "Error while python server was waiting for"
+                "a message", exc_info=True)
+
+        self.close_client()
 
     def _call_proxy(self, obj_id, input):
         return_message = proto.ERROR_RETURN_MESSAGE
@@ -173,8 +279,8 @@ class ClientServerConnection(object):
                 method = smart_decode(input.readline())[:-1]
                 params = self._get_params(input)
                 return_value = getattr(self.pool[obj_id], method)(*params)
-                return_message = proto.RETURN_MESSAGE + proto.SUCCESS + \
-                                 get_command_part(return_value, self.pool)
+                return_message = proto.RETURN_MESSAGE + proto.SUCCESS +\
+                    get_command_part(return_value, self.pool)
             except Exception:
                 logger.exception("There was an exception while executing the "
                                  "Python Proxy on the Python Side.")
@@ -188,14 +294,6 @@ class ClientServerConnection(object):
             params.append(param)
             temp = smart_decode(input.readline())[:-1]
         return params
-
-    def close(self):
-        quiet_close(self.stream)
-        quiet_shutdown(self.socket)
-        quiet_close(self.socket)
-
-    def wait_for_commands(self):
-        pass
 
 
 class ClientServer(object):

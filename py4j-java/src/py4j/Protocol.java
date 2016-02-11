@@ -413,11 +413,17 @@ public class Protocol {
 			}
 		}
 
-		Object proxy = Proxy.newProxyInstance(gateway.getClass()
-				.getClassLoader(), interfaces, new PythonProxyHandler(parts[0],
-				gateway));
+		Object proxy = getPythonProxyHandler(gateway.getClass()
+				.getClassLoader(), interfaces, parts[0], gateway);
 
 		return proxy;
+	}
+
+	public static Object getPythonProxyHandler(ClassLoader classLoader,
+			Class[] interfacesToImplement, String objectId, Gateway gateway) {
+		return Proxy.newProxyInstance(gateway.getClass()
+				.getClassLoader(), interfacesToImplement, new PythonProxyHandler
+				(objectId, gateway));
 	}
 
 	/**

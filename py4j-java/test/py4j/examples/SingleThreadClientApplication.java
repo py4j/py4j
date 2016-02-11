@@ -8,9 +8,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by barthelemy on 2016-02-10.
+ * Created by barthelemy on 2016-02-11.
  */
-public class SingleThreadApplication {
+public class SingleThreadClientApplication {
 
 	public static void main(String[] args) {
 		GatewayServer.turnAllLoggingOn();
@@ -20,9 +20,10 @@ public class SingleThreadApplication {
 		handler.setLevel(Level.FINEST);
 		logger.addHandler(handler);
 		System.out.println("Starting");
-		ExampleEntryPoint point = new ExampleEntryPoint();
-		ClientServer clientServer = new ClientServer(point);
-		clientServer.startServer();
-		System.out.println("Stopping");
+		ClientServer clientServer = new ClientServer(null);
+		IHello hello = (IHello) clientServer.getPythonServerEntryPoint
+				(new Class[] {IHello.class});
+		hello.sayHello();
+		hello.sayHello(2, "Hello World");
 	}
 }

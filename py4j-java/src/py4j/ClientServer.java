@@ -3,6 +3,7 @@ package py4j;
 import py4j.commands.Command;
 
 import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -19,15 +20,23 @@ import java.util.logging.Logger;
  */
 public class ClientServer implements Py4JServer, Py4JClient {
 
-	private final int port;
+	private final int javaPort;
 
-	private final InetAddress address;
+	private final InetAddress javaAddress;
+
+	private final int pythonPort;
+
+	private final InetAddress pythonAddress;
+
+	private int listeningPort;
 
 	private final int connectTimeout;
 
 	private final int readTimeout;
 
 	private final ServerSocketFactory sSocketFactory;
+
+	private final SocketFactory socketFactory;
 
 	private final Gateway gateway;
 
@@ -46,11 +55,14 @@ public class ClientServer implements Py4JServer, Py4JClient {
 
 
 	public ClientServer(Object entryPoint) {
-		this.port = GatewayServer.DEFAULT_PORT;
-		this.address = GatewayServer.defaultAddress();
+		this.javaPort = GatewayServer.DEFAULT_PORT;
+		this.javaAddress = GatewayServer.defaultAddress();
+		this.pythonPort = GatewayServer.DEFAULT_PYTHON_PORT;
+		this.pythonAddress = GatewayServer.defaultAddress();
 		this.connectTimeout = GatewayServer.DEFAULT_CONNECT_TIMEOUT;
 		this.readTimeout = GatewayServer.DEFAULT_READ_TIMEOUT;
 		this.sSocketFactory = ServerSocketFactory.getDefault();
+		this.socketFactory = SocketFactory.getDefault();
 		this.gateway = new Gateway(entryPoint, this);
 		this.gateway.getBindings().put(GatewayServer.GATEWAY_SERVER_ID, this);
 		this.commands = new HashMap<String, Command>();
@@ -99,10 +111,10 @@ public class ClientServer implements Py4JServer, Py4JClient {
 		System.out.println("SHOULD SHUT DOWN");
 	}
 
-	public void start() {
+	public void startServer() {
 		try {
 			gateway.startup();
-			sSocket = sSocketFactory.createServerSocket(port, -1, address);
+			sSocket = sSocketFactory.createServerSocket(javaPort, -1, javaAddress);
 			sSocket.setSoTimeout(connectTimeout);
 			sSocket.setReuseAddress(true);
 			socket = sSocket.accept();
@@ -118,6 +130,19 @@ public class ClientServer implements Py4JServer, Py4JClient {
 		waitForCommands();
 	}
 
+	public void startClient() {
+		gateway.startup();
+		try {
+			socket = socketFactory.createSocket(pythonAddress, pythonPort);
+			reader = new BufferedReader(new InputStreamReader(
+					socket.getInputStream(), Charset.forName("UTF-8")));
+			writer = new BufferedWriter(new OutputStreamWriter(
+					socket.getOutputStream(), Charset.forName("UTF-8")));
+		} catch(IOException e) {
+			throw new Py4JNetworkException(e);
+		}
+	}
+
 	@Override
 	public String sendCommand(String command) {
 		return this.sendCommand(command, true);
@@ -125,8 +150,11 @@ public class ClientServer implements Py4JServer, Py4JClient {
 
 	@Override
 	public String sendCommand(String command, boolean blocking) {
+		if (socket == null) {
+			startClient();
+		}
 		// TODO REFACTOR so that we use the same code in sendCommand and wait
-		logger.log(Level.INFO, "Sending CB command: " + command);
+		logger.log(Level.INFO, "Sending Python command: " + command);
 		String returnCommand = null;
 		try {
 			writer.write(command);
@@ -196,6 +224,13 @@ public class ClientServer implements Py4JServer, Py4JClient {
 	@Override
 	public Py4JClient copyWith(InetAddress pythonAddress, int pythonPort) {
 		throw new UnsupportedOperationException();
+	}
+
+	public Object getPythonServerEntryPoint(Class[] interfacesToImplement) {
+		Object proxy = Protocol.getPythonProxyHandler(gateway.getClass()
+				.getClassLoader(), interfacesToImplement, Protocol.ENTRY_POINT_OBJECT_ID,
+				gateway);
+		return proxy;
 	}
 
 	public void waitForCommands() {
