@@ -1839,15 +1839,18 @@ class PythonProxyPool(object):
         self.dict = {}
         self.next_id = 0
 
-    def put(self, object):
+    def put(self, object, force_id=None):
         """Adds a proxy to the pool.
 
         :param object: The proxy to add to the pool.
         :rtype: A unique identifier associated with the object.
         """
         with self.lock:
-            id = proto.PYTHON_PROXY_PREFIX + smart_decode(self.next_id)
-            self.next_id += 1
+            if force_id:
+                id = force_id
+            else:
+                id = proto.PYTHON_PROXY_PREFIX + smart_decode(self.next_id)
+                self.next_id += 1
             self.dict[id] = object
         return id
 
