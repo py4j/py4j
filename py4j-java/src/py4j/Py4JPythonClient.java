@@ -5,7 +5,7 @@ import java.net.InetAddress;
 /**
  * Created by barthelemy on 2016-02-10.
  */
-public interface Py4JClient {
+public interface Py4JPythonClient {
 
 	/**
 	 * <p>
@@ -39,5 +39,9 @@ public interface Py4JClient {
 
 	void shutdown();
 
-	Py4JClient copyWith(InetAddress pythonAddress, int pythonPort);
+	Py4JPythonClient copyWith(InetAddress pythonAddress, int pythonPort);
+
+	int getPort();
+
+	InetAddress getAddress();
 }

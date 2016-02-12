@@ -43,7 +43,7 @@ import org.junit.Test;
 public class ProxyTest {
 
 	private GatewayServer gServer;
-	private PythonClient pClient;
+	private PythonTestClient pClient;
 	private InterfaceEntry entry;
 
 	@Before
@@ -51,7 +51,7 @@ public class ProxyTest {
 		// GatewayServer.turnLoggingOn();
 		entry = new InterfaceEntry();
 		gServer = new GatewayServer(entry);
-		pClient = new PythonClient();
+		pClient = new PythonTestClient();
 		gServer.start();
 		pClient.startProxy();
 		try {

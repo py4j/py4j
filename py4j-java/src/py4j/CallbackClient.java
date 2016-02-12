@@ -54,16 +54,17 @@ import javax.net.SocketFactory;
  * @author Barthelemy Dagenais
  *
  */
-public class CallbackClient implements Py4JClient {
+public class CallbackClient implements Py4JPythonClient {
 	public final static String DEFAULT_ADDRESS = "127.0.0.1";
 
-	private final int port;
+	protected final int port;
 
-	private final InetAddress address;
+	protected final InetAddress address;
 
-	private final SocketFactory socketFactory;
+	protected final SocketFactory socketFactory;
 
-	private final Deque<CallbackConnection> connections = new ArrayDeque<CallbackConnection>();
+	private final Deque<Py4JClientConnection> connections = new
+			ArrayDeque<Py4JClientConnection>();
 
 	private final Lock lock = new ReentrantLock(true);
 
@@ -77,9 +78,9 @@ public class CallbackClient implements Py4JClient {
 	private final ScheduledExecutorService executor = Executors
 			.newScheduledThreadPool(1);
 
-	private final long minConnectionTime;
+	protected final long minConnectionTime;
 
-	private final TimeUnit minConnectionTimeUnit;
+	protected final TimeUnit minConnectionTimeUnit;
 
 	public CallbackClient(int port) {
 		super();
@@ -135,8 +136,8 @@ public class CallbackClient implements Py4JClient {
 		return address;
 	}
 
-	private CallbackConnection getConnection() throws IOException {
-		CallbackConnection connection = null;
+	protected Py4JClientConnection getConnection() throws IOException {
+		Py4JClientConnection connection = null;
 
 		connection = connections.pollLast();
 		if (connection == null) {
@@ -147,8 +148,8 @@ public class CallbackClient implements Py4JClient {
 		return connection;
 	}
 
-	private CallbackConnection getConnectionLock() {
-		CallbackConnection cc = null;
+	protected Py4JClientConnection getConnectionLock() {
+		Py4JClientConnection cc = null;
 		try {
 			logger.log(Level.INFO, "Getting CB Connection");
 			lock.lock();
@@ -192,7 +193,7 @@ public class CallbackClient implements Py4JClient {
 	 *            gateway. Essentially the port used for Python callbacks.
 	 */
 	@Override
-	public CallbackClient copyWith(InetAddress pythonAddress, int pythonPort) {
+	public Py4JPythonClient copyWith(InetAddress pythonAddress, int pythonPort) {
 		return new CallbackClient(
 			pythonPort,
 			pythonAddress,
@@ -201,7 +202,7 @@ public class CallbackClient implements Py4JClient {
 			socketFactory);
 	}
 
-	private void giveBackConnection(CallbackConnection cc) {
+	private void giveBackConnection(Py4JClientConnection cc) {
 		try {
 			lock.lock();
 			if (cc != null) {
@@ -234,7 +235,7 @@ public class CallbackClient implements Py4JClient {
 			if (!isShutdown) {
 				int size = connections.size();
 				for (int i = 0; i < size; i++) {
-					CallbackConnection cc = connections.pollLast();
+					Py4JClientConnection cc = connections.pollLast();
 					if (cc.wasUsed()) {
 						cc.setUsed(false);
 						connections.addFirst(cc);
@@ -283,7 +284,7 @@ public class CallbackClient implements Py4JClient {
 	@Override
 	public String sendCommand(String command, boolean blocking) {
 		String returnCommand = null;
-		CallbackConnection cc = getConnectionLock();
+		Py4JClientConnection cc = getConnectionLock();
 
 		if (cc == null) {
 			throw new Py4JException("Cannot obtain a new communication channel");
@@ -306,7 +307,7 @@ public class CallbackClient implements Py4JClient {
 		return returnCommand;
 	}
 
-	private void setupCleaner() {
+	protected void setupCleaner() {
 		executor.scheduleAtFixedRate(new Runnable() {
 			public void run() {
 				periodicCleanup();
@@ -330,7 +331,7 @@ public class CallbackClient implements Py4JClient {
 		try {
 			lock.lock();
 			isShutdown = true;
-			for (CallbackConnection cc : connections) {
+			for (Py4JClientConnection cc : connections) {
 				cc.shutdown();
 			}
 			executor.shutdownNow();
