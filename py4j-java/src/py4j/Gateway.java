@@ -67,7 +67,7 @@ public class Gateway {
 	private final static String OBJECT_NAME_PREFIX = "o";
 	private final Object entryPoint;
 	private final ReflectionEngine rEngine = new ReflectionEngine();
-	private Py4JClient cbClient;
+	private Py4JPythonClient cbClient;
 	private final JVMView defaultJVMView;
 
 	private final Logger logger = Logger.getLogger(Gateway.class.getName());
@@ -78,7 +78,7 @@ public class Gateway {
 		this(entryPoint, null);
 	}
 
-	public Gateway(Object entryPoint, Py4JClient cbClient) {
+	public Gateway(Object entryPoint, Py4JPythonClient cbClient) {
 		this.entryPoint = entryPoint;
 		this.cbClient = cbClient;
 		this.defaultJVMView = new JVMView("default",
@@ -137,7 +137,7 @@ public class Gateway {
 		return bindings;
 	}
 
-	public Py4JClient getCallbackClient() {
+	public Py4JPythonClient getCallbackClient() {
 		return cbClient;
 	}
 

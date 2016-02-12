@@ -77,7 +77,7 @@ import py4j.commands.ShutdownGatewayServerCommand;
  * @author Barthelemy Dagenais
  * 
  */
-public class GatewayConnection implements Runnable {
+public class GatewayConnection implements Runnable, Py4JServerConnection {
 
 	protected final static List<Class<? extends Command>> baseCommands;
 	protected final Socket socket;

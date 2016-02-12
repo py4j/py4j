@@ -22,7 +22,7 @@ public class SingleThreadApplication {
 		System.out.println("Starting");
 		ExampleEntryPoint point = new ExampleEntryPoint();
 		ClientServer clientServer = new ClientServer(point);
-		clientServer.startServer();
+		clientServer.startServer(false);
 		System.out.println("Stopping");
 	}
 }

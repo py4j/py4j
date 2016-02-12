@@ -51,7 +51,7 @@ import javax.net.SocketFactory;
  * @author Barthelemy Dagenais
  * 
  */
-public class CallbackConnection {
+public class CallbackConnection implements Py4JClientConnection {
 
 	private boolean used;
 

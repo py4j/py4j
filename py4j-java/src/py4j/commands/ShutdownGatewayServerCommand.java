@@ -35,7 +35,7 @@ import java.io.IOException;
 import py4j.Gateway;
 import py4j.GatewayServer;
 import py4j.Py4JException;
-import py4j.Py4JServer;
+import py4j.Py4JJavaServer;
 
 /**
  * <p>
@@ -49,7 +49,7 @@ import py4j.Py4JServer;
  */
 public class ShutdownGatewayServerCommand extends AbstractCommand {
 
-	private Py4JServer gatewayServer;
+	private Py4JJavaServer gatewayServer;
 
 	public static final String SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME = "s";
 
@@ -67,8 +67,8 @@ public class ShutdownGatewayServerCommand extends AbstractCommand {
 	@Override
 	public void init(Gateway gateway) {
 		super.init(gateway);
-		// TODO Move this up to Py4JServer
-		this.gatewayServer = (Py4JServer) gateway
+		// TODO Move this up to Py4JJavaServer
+		this.gatewayServer = (Py4JJavaServer) gateway
 				.getObject(GatewayServer.GATEWAY_SERVER_ID);
 	}
 
