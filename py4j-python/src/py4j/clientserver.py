@@ -5,11 +5,12 @@ from __future__ import unicode_literals, absolute_import
 import logging
 import select
 import socket
+from threading import local, Thread
 
 from py4j.java_gateway import (
-    DEFAULT_ADDRESS, DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT,
-    DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT, JavaObject,
-    JVMView, GatewayProperty, PythonProxyPool, quiet_close, quiet_shutdown)
+    DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT,
+    quiet_close, quiet_shutdown, GatewayClient, JavaGateway,
+    CallbackServerParameters, GatewayParameters, CallbackServer)
 from py4j import protocol as proto
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
@@ -18,90 +19,71 @@ from py4j.protocol import (
 
 logger = logging.getLogger("py4j.clientserver")
 
-
-class JavaParameters(object):
-    """Wrapper class that contains all parameters that can be passed to
-    configure the communication with a Java server.
-    """
-
-    def __init__(
-            self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
-            auto_close=True, auto_convert=False, eager_load=False,
-            ssl_context=None):
-        """
-        :param address: the address to which the client will request a
-         connection. If you're assing a `SSLContext` with `check_hostname=True`
-         then this address must match (one of) the hostname(s) in the
-         certificate the gateway server presents.
-
-        :param port: the port to which the Python client will request a
-            connection on the Java server. Default is 25333.
-
-        :param auto_field: if `False`, each object accessed through this
-         gateway won't try to lookup fields (they will be accessible only by
-         calling get_field). If `True`, fields will be automatically looked
-         up, possibly hiding methods of the same name and making method calls
-         less efficient.
-
-        :param auto_close: if `True`, the connections created by the client
-         close the socket when they are garbage collected.
-
-        :param auto_convert: if `True`, try to automatically convert Python
-         objects like sequences and maps to Java Objects. Default value is
-         `False` to improve performance and because it is still possible to
-         explicitly perform this conversion.
-
-        :param eager_load: if `True`, the gateway tries to connect to the JVM
-         by calling System.currentTimeMillis. If the gateway cannot connect to
-         the JVM, it shuts down itself and raises an exception.
-
-        :param ssl_context: if not None, SSL connections will be made using
-        this this SSLContext
-        """
-        self.address = address
-        self.port = port
-        self.auto_field = auto_field
-        self.auto_close = auto_close
-        self.auto_convert = auto_convert
-        self.eager_load = eager_load
-        self.ssl_context = ssl_context
+thread_connection = local()
 
 
-class PythonParameters(object):
-    """Wrapper class that contains all parameters that can be passed to
-    configure a Python server.
-    """
+JavaParameters = GatewayParameters
+
+PythonParameters = CallbackServerParameters
+
+
+class JavaClient(GatewayClient):
 
     def __init__(
-            self, address=DEFAULT_ADDRESS, port=DEFAULT_PYTHON_PROXY_PORT,
-            daemonize_connections=False, eager_load=True, ssl_context=None):
-        """
-        :param address: the address to which the client will request a
-            connection
+            self, java_parameters, python_parameters, gateway_property=None):
+        super(JavaClient, self).__init__(
+            address=java_parameters.address,
+            port=java_parameters.port,
+            auto_close=java_parameters.auto_close,
+            gateway_property=gateway_property,
+            ssl_context=java_parameters.ssl_context)
+        self.java_parameters = java_parameters
+        self.python_parameters = python_parameters
 
-        :param port: the port to which the Python server will listen to.
-            Default is 25334.
+    def _get_connection(self):
+        try:
+            connection = thread_connection.connection
+        except AttributeError:
+            connection = ClientServerConnection(
+                self.java_parameters, self.python_parameters,
+                self.gateway_property)
+            thread_connection.connection = connection
+            self.deque.append(connection)
+        return connection
 
-        :param daemonize_connections: If `True`, callback server connections
-            are executed in daemonized threads and will not block the exit of a
-            program if non daemonized threads are finished.
+    def _give_back_connection(self, connection):
+        # Nothing to do for now
+        pass
 
-        :param eager_load: If `True`, the Python server is automatically
-            started when the ClientServer is created.
+    def send_command(self, command, retry=True):
+        # Never retry with this connection model.
+        return super(JavaClient, self).send_command(command, retry=False)
 
-        :param ssl_context: if not None, the SSLContext's certificate will be
-         presented to callback connections.
-        """
-        self.address = address
-        self.port = port
-        # TODO when we will be able to accept more than one connection.
-        self.daemonize_connections = daemonize_connections
-        self.eager_load = eager_load
-        self.ssl_context = ssl_context
+
+class PythonServer(CallbackServer):
+
+    def __init__(
+            self, java_client, java_parameters, python_parameters,
+            gateway_property):
+        super(PythonServer, self).__init__(
+            pool=gateway_property.pool,
+            gateway_client=java_client,
+            callback_server_parameters=python_parameters)
+        self.java_parameters = java_parameters
+        self.python_parameters = python_parameters
+        self.gateway_property = gateway_property
+
+    def _create_connection(self, socket, stream):
+        connection = ClientServerConnection(
+            self.java_parameters, self.python_parameters,
+            self.gateway_property)
+        connection.socket = socket
+        connection.stream = stream
+        return connection
 
 
 class ClientServerConnection(object):
-    def __init__(self, java_parameters, python_parameters):
+    def __init__(self, java_parameters, python_parameters, gateway_property):
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
 
@@ -116,12 +98,10 @@ class ClientServerConnection(object):
         self.python_port = self.python_parameters.port
 
         self.ssl_context = self.java_parameters.ssl_context
-        self.server_socket = None
         self.socket = None
         self.stream = None
-        self.pool = PythonProxyPool()
-        self.gateway_property = GatewayProperty(
-            self.java_parameters.auto_field, self.pool)
+        self.gateway_property = gateway_property
+        self.pool = gateway_property.pool
         self._listening_address = self._listening_port = None
         self.is_shutdown = False
 
@@ -129,53 +109,18 @@ class ClientServerConnection(object):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if self.ssl_context:
             self.socket = self.ssl_context.wrap_socket(
-                self.java_socket, server_hostname=self.java_address)
+                self.socket, server_hostname=self.java_address)
         self.socket.connect((self.java_address, self.java_port))
         self.stream = self.socket.makefile("rb", 0)
 
-    def start_server(self, entry_point):
-        if entry_point:
-            self.pool.put(entry_point, proto.ENTRY_POINT_OBJECT_ID)
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(
-            socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        try:
-            self.server_socket.bind((self.python_address, self.python_port))
-            self._listening_address, self._listening_port =\
-                self.server_socket.getsockname()
-        except Exception as e:
-            msg = "An error occurred while trying to start the callback "\
-                  "server ({0}:{1})".format(
-                      self.python_address, self.python_port)
-            logger.exception(msg)
-            raise Py4JNetworkError(msg, e)
+    def start(self):
+        t = Thread(target=self.run)
+        t.daemon = self.python_parameters.daemonize_connections
+        t.start()
 
-        try:
-            logger.info("Python Server Starting")
-            self.server_socket.listen(5)
-            logger.info(
-                "Socket listening on {0}".
-                format(smart_decode(self.server_socket.getsockname())))
-
-            read_list = [self.server_socket]
-            accepted_socket = False
-            while not accepted_socket:
-                readable, writable, errored = select.select(
-                    read_list, [], [], DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT)
-
-                for s in readable:
-                    self.socket, _ = self.server_socket.accept()
-                    if self.ssl_context:
-                        self.socket = self.ssl_context.wrap_socket(
-                            self.socket, server_side=True)
-                    self.stream = self.socket.makefile("rb", 0)
-                    accepted_socket = True
-                    break
-        except Exception:
-            logger.exception("Error while waiting for a connection.")
-
+    def run(self):
+        thread_connection.connection = self
         self.wait_for_commands()
-        self.close_server()
 
     def send_command(self, command):
         if not self.socket:
@@ -195,7 +140,6 @@ class ClientServerConnection(object):
                 if answer.startswith(proto.RETURN_MESSAGE):
                     return answer[1:]
                 else:
-                    # TODO COMPLETE THIS BY COPYING CALLBACKCONNECTION
                     command = answer
                     obj_id = smart_decode(self.stream.readline())[:-1]
 
@@ -222,17 +166,13 @@ class ClientServerConnection(object):
 
         :return:
         """
-        self.close_client
+        self.close_client()
 
     def close_client(self):
         logger.info("Closing down client")
         quiet_close(self.stream)
         quiet_shutdown(self.socket)
         quiet_close(self.socket)
-
-    def close_server(self):
-        quiet_shutdown(self.server_socket)
-        quiet_close(self.server_socket)
 
     def wait_for_commands(self):
         logger.info("Python Server ready to receive messages")
@@ -291,25 +231,32 @@ class ClientServerConnection(object):
         return params
 
 
-class ClientServer(object):
+class ClientServer(JavaGateway):
 
-    def __init__(self, java_parameters, python_parameters):
+    def __init__(
+            self, java_parameters, python_parameters,
+            python_server_entry_point=None):
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
-        self.client_server_connection = ClientServerConnection(
-            java_parameters, python_parameters)
+        self.python_server_entry_point = python_server_entry_point
+        super(ClientServer, self).__init__(
+            gateway_parameters=java_parameters,
+            callback_server_parameters=python_parameters
+        )
 
-        self.entry_point = JavaObject(
-            proto.ENTRY_POINT_OBJECT_ID, self.client_server_connection)
+    def _create_gateway_client(self):
+        java_client = JavaClient(self.java_parameters, self.python_parameters)
+        return java_client
 
-        self.java_gateway_server = JavaObject(
-            proto.GATEWAY_SERVER_OBJECT_ID, self.client_server_connection)
+    def _create_gateway_property(self):
+        gateway_property = super(ClientServer, self)._create_gateway_property()
+        if self.python_server_entry_point:
+            gateway_property.pool.put(
+                self.python_server_entry_point, proto.ENTRY_POINT_OBJECT_ID)
+        return gateway_property
 
-        if self.java_parameters.auto_convert:
-            self.client_server_connection.converters = proto.INPUT_CONVERTER
-        else:
-            self.client_server_connection.converters = None
-
-        self.jvm = JVMView(
-            self.client_server_connection, jvm_name=proto.DEFAULT_JVM_NAME,
-            id=proto.DEFAULT_JVM_ID)
+    def _create_callback_server(self, callback_server_parameters):
+        callback_server = PythonServer(
+            self.gateway_client, self.java_parameters, self.python_parameters,
+            self.gateway_property)
+        return callback_server
