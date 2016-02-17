@@ -205,6 +205,8 @@ public class CallbackClient implements Py4JPythonClient {
 	private void giveBackConnection(Py4JClientConnection cc) {
 		try {
 			lock.lock();
+			// TODO Does not make sense for PythonClient... the list will
+			// just grow.
 			if (cc != null) {
 				if (!isShutdown) {
 					connections.addLast(cc);

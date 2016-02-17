@@ -1314,14 +1314,9 @@ class JavaGateway(object):
             deprecated("JavaGateway.gateway_client", "1.0",
                        "GatewayParameters")
         else:
-            gateway_client = GatewayClient(
-                address=self.gateway_parameters.address,
-                port=self.gateway_parameters.port,
-                auto_close=self.gateway_parameters.auto_close,
-                ssl_context=self.gateway_parameters.ssl_context)
+            gateway_client = self._create_gateway_client()
 
-        self.gateway_property = GatewayProperty(
-            self.gateway_parameters.auto_field, PythonProxyPool())
+        self.gateway_property = self._create_gateway_property()
         self._python_proxy_port = python_proxy_port
 
         # Setup gateway client
@@ -1334,6 +1329,19 @@ class JavaGateway(object):
             self._eager_load()
         if self.callback_server_parameters.eager_load:
             self.start_callback_server(self.callback_server_parameters)
+
+    def _create_gateway_client(self):
+        gateway_client = GatewayClient(
+            address=self.gateway_parameters.address,
+            port=self.gateway_parameters.port,
+            auto_close=self.gateway_parameters.auto_close,
+            ssl_context=self.gateway_parameters.ssl_context)
+        return gateway_client
+
+    def _create_gateway_property(self):
+        gateway_property = GatewayProperty(
+            self.gateway_parameters.auto_field, PythonProxyPool())
+        return gateway_property
 
     def set_gateway_client(self, gateway_client):
         """Sets the gateway client for this JavaGateway. This sets the
@@ -1389,9 +1397,9 @@ class JavaGateway(object):
         if not callback_server_parameters:
             callback_server_parameters = self.callback_server_parameters
 
-        self._callback_server = CallbackServer(
-            self.gateway_property.pool, self._gateway_client,
-            callback_server_parameters=callback_server_parameters)
+        self._callback_server = self._create_callback_server(
+            callback_server_parameters)
+
         try:
             self._callback_server.start()
         except Py4JNetworkError:
@@ -1401,6 +1409,12 @@ class JavaGateway(object):
             raise
 
         return True
+
+    def _create_callback_server(self, callback_server_parameters):
+        callback_server = CallbackServer(
+            self.gateway_property.pool, self._gateway_client,
+            callback_server_parameters=callback_server_parameters)
+        return callback_server
 
     def new_jvm_view(self, name="custom jvm"):
         """Creates a new JVM view with its own imports. A JVM view ensures
@@ -1704,9 +1718,8 @@ class CallbackServer(object):
                         socket_instance = self.ssl_context.wrap_socket(
                             socket_instance, server_side=True)
                     input = socket_instance.makefile("rb", 0)
-                    connection = CallbackConnection(
-                        self.pool, input, socket_instance, self.gateway_client,
-                        self.callback_server_parameters)
+                    connection = self._create_connection(
+                        socket_instance, input)
                     with self.lock:
                         if not self.is_shutdown:
                             self.connections.add(connection)
@@ -1719,6 +1732,12 @@ class CallbackServer(object):
                 logger.info("Error while waiting for a connection.")
             else:
                 logger.exception("Error while waiting for a connection.")
+
+    def _create_connection(self, socket_instance, stream):
+        connection = CallbackConnection(
+            self.pool, stream, socket_instance, self.gateway_client,
+            self.callback_server_parameters)
+        return connection
 
     def shutdown(self):
         """Stops listening and accepting connection requests. All live
