@@ -333,6 +333,23 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 			ServerSocketFactory.getDefault());
 	}
 
+	public GatewayServer(Object entryPoint, int port, InetAddress address, int connectTimeout,
+						 int readTimeout, List<Class<? extends Command>> customCommands,
+						 CallbackClient cbClient) {
+		super();
+		this.port = port;
+		this.address = address;
+		this.connectTimeout = connectTimeout;
+		this.readTimeout = readTimeout;
+		this.cbClient = cbClient;
+		this.gateway = new Gateway(entryPoint, cbClient);
+		this.pythonPort = cbClient.getPort();
+		this.pythonAddress = cbClient.getAddress();
+		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
+		this.customCommands = customCommands;
+		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
+	}
+
 	/**
 	 *
 	 * @param entryPoint
