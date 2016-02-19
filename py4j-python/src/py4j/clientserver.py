@@ -46,7 +46,7 @@ class JavaClient(GatewayClient):
         except AttributeError:
             connection = ClientServerConnection(
                 self.java_parameters, self.python_parameters,
-                self.gateway_property)
+                self.gateway_property, self)
             thread_connection.connection = connection
             self.deque.append(connection)
         return connection
@@ -76,14 +76,16 @@ class PythonServer(CallbackServer):
     def _create_connection(self, socket, stream):
         connection = ClientServerConnection(
             self.java_parameters, self.python_parameters,
-            self.gateway_property)
+            self.gateway_property, self.gateway_client)
         connection.socket = socket
         connection.stream = stream
         return connection
 
 
 class ClientServerConnection(object):
-    def __init__(self, java_parameters, python_parameters, gateway_property):
+    def __init__(
+            self, java_parameters, python_parameters, gateway_property,
+            gateway_client):
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
 
@@ -104,6 +106,10 @@ class ClientServerConnection(object):
         self.pool = gateway_property.pool
         self._listening_address = self._listening_port = None
         self.is_shutdown = False
+        self.is_connected = True
+
+        # TODO
+        self.gateway_client = gateway_client
 
     def connect_to_java_server(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -225,7 +231,7 @@ class ClientServerConnection(object):
         params = []
         temp = smart_decode(input.readline())[:-1]
         while temp != proto.END:
-            param = get_return_value("y" + temp, self)
+            param = get_return_value("y" + temp, self.gateway_client)
             params.append(param)
             temp = smart_decode(input.readline())[:-1]
         return params
@@ -257,6 +263,6 @@ class ClientServer(JavaGateway):
 
     def _create_callback_server(self, callback_server_parameters):
         callback_server = PythonServer(
-            self.gateway_client, self.java_parameters, self.python_parameters,
+            self._gateway_client, self.java_parameters, self.python_parameters,
             self.gateway_property)
         return callback_server

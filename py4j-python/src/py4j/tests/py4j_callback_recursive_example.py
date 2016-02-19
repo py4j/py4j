@@ -25,3 +25,20 @@ class RecursiveHello(object):
 
     class Java:
         implements = ["py4j.examples.IHello"]
+
+
+class JavaHello(object):
+
+    def __init__(self):
+        self.clientserver = None
+
+    def sayHello(self, int_value=None, string_value=None):
+        ar = self.clientserver.jvm.java.util.ArrayList()
+        ar.append("1")
+        print(ar)
+        other_value = self.clientserver.jvm.java.lang.System.currentTimeMillis()
+        print(int_value, string_value, other_value)
+        return "Said hello to {0}".format(string_value)
+
+    class Java:
+        implements = ["py4j.examples.IHello"]

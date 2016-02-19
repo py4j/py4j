@@ -67,6 +67,8 @@ public class ClientServer {
 				entryPoint, this.javaPort, this.connectTimeout,
 				this.readTimeout, null, pythonClient);
 		this.gateway = javaServer.getGateway();
+		// XXX Force gateway startup here
+		this.gateway.startup();
 		pythonClient.setGateway(gateway);
 		// TODO Not very reliable because listeners added to GatewayServer
 		// won't be added here.
