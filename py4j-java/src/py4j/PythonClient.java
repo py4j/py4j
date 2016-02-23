@@ -53,6 +53,7 @@ public class PythonClient extends CallbackClient implements Py4JPythonClient {
 		this.listeners = listeners;
 	}
 
+	@Override
 	protected void setupCleaner() {
 		// Do nothing, we don't need a cleaner.
 	}
@@ -63,6 +64,7 @@ public class PythonClient extends CallbackClient implements Py4JPythonClient {
 		return socketFactory.createSocket(address, port);
 	}
 
+	@Override
 	protected Py4JClientConnection getConnection() throws IOException {
 		Py4JClientConnection connection = null;
 
@@ -74,9 +76,16 @@ public class PythonClient extends CallbackClient implements Py4JPythonClient {
 			connection.start();
 			ClientServerConnection.setThreadConnection(
 					(ClientServerConnection) connection);
+			connections.addLast(connection);
 		}
 
 		return connection;
+	}
+
+	@Override
+	protected void giveBackConnection(Py4JClientConnection cc) {
+		// Do nothing because we already added the connection to the
+		// connections deque
 	}
 
 	@Override

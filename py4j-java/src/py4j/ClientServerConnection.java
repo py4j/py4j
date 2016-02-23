@@ -194,8 +194,9 @@ public class ClientServerConnection implements Py4JServerConnection,
 
 	@Override
 	public void shutdown() {
-		// TODO
-
+		NetworkUtil.quietlyClose(reader);
+		NetworkUtil.quietlyClose(writer);
+		NetworkUtil.quietlyClose(socket);
 	}
 
 	@Override

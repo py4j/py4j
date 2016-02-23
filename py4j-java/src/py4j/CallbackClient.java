@@ -63,7 +63,7 @@ public class CallbackClient implements Py4JPythonClient {
 
 	protected final SocketFactory socketFactory;
 
-	private final Deque<Py4JClientConnection> connections = new
+	protected final Deque<Py4JClientConnection> connections = new
 			ArrayDeque<Py4JClientConnection>();
 
 	private final Lock lock = new ReentrantLock(true);
@@ -202,7 +202,7 @@ public class CallbackClient implements Py4JPythonClient {
 			socketFactory);
 	}
 
-	private void giveBackConnection(Py4JClientConnection cc) {
+	protected void giveBackConnection(Py4JClientConnection cc) {
 		try {
 			lock.lock();
 			// TODO Does not make sense for PythonClient... the list will
