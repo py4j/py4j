@@ -752,7 +752,7 @@ class GatewayConnection(object):
            if the lifecycle of the Java program must be tied to the Python
            program.
         """
-        if (not self.is_connected):
+        if not self.is_connected:
             raise Py4JError("Gateway must be connected to send shutdown cmd.")
 
         try:

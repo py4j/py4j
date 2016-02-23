@@ -77,8 +77,7 @@ class PythonServer(CallbackServer):
         connection = ClientServerConnection(
             self.java_parameters, self.python_parameters,
             self.gateway_property, self.gateway_client)
-        connection.socket = socket
-        connection.stream = stream
+        connection.init_socket_from_python_server(socket, stream)
         return connection
 
 
@@ -105,8 +104,7 @@ class ClientServerConnection(object):
         self.gateway_property = gateway_property
         self.pool = gateway_property.pool
         self._listening_address = self._listening_port = None
-        self.is_shutdown = False
-        self.is_connected = True
+        self.is_connected = False
 
         # TODO
         self.gateway_client = gateway_client
@@ -118,6 +116,32 @@ class ClientServerConnection(object):
                 self.socket, server_hostname=self.java_address)
         self.socket.connect((self.java_address, self.java_port))
         self.stream = self.socket.makefile("rb", 0)
+        self.is_connected = True
+
+    def init_socket_from_python_server(self, socket, stream):
+        self.socket = socket
+        self.stream = stream
+        self.is_connected = True
+
+    def shutdown_gateway(self):
+        """Sends a shutdown command to the gateway. This will close the gateway
+           server: all active connections will be closed. This may be useful
+           if the lifecycle of the Java program must be tied to the Python
+           program.
+        """
+        if not self.is_connected:
+            raise Py4JError("Gateway must be connected to send shutdown cmd.")
+
+        try:
+            quiet_close(self.stream)
+            self.socket.sendall(
+                proto.SHUTDOWN_GATEWAY_COMMAND_NAME.encode("utf-8"))
+            quiet_close(self.socket)
+            self.is_connected = False
+        except Exception:
+            # Do nothing! Exceptions might occur anyway.
+            logger.debug("Exception occurred while shutting down gateway",
+                         exc_info=True)
 
     def start(self):
         t = Thread(target=self.run)
