@@ -23,16 +23,16 @@ public class SingleThreadApplication {
 		ExampleEntryPoint point = new ExampleEntryPoint();
 		ClientServer clientServer = new ClientServer(point);
 		// Wait for Python side to shut down Java side
-		clientServer.startServer(false);
+//		clientServer.startServer(false);
 
 		// Shut down after 5 seconds
-//		clientServer.startServer(true);
-//		try {
-//			Thread.currentThread().sleep(5000);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		clientServer.shutdown();
+		clientServer.startServer(true);
+		try {
+			Thread.currentThread().sleep(5000);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		clientServer.shutdown();
 
 		System.out.println("Stopping");
 	}

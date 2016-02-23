@@ -66,16 +66,18 @@ public class PythonClient extends CallbackClient implements Py4JPythonClient {
 
 	@Override
 	protected Py4JClientConnection getConnection() throws IOException {
-		Py4JClientConnection connection = null;
+		ClientServerConnection connection = null;
 
 		connection = ClientServerConnection.getThreadConnection();
-		if (connection == null) {
+		if (connection == null || connection.getSocket() == null) {
+			// TODO Refactor to be similar to Python:
+			// This is done in ClientServerConnection.sendCommand on the Python
+			// side.
 			Socket socket = startClientSocket();
 			connection = new ClientServerConnection(
 					gateway, socket, customCommands, listeners);
 			connection.start();
-			ClientServerConnection.setThreadConnection(
-					(ClientServerConnection) connection);
+			ClientServerConnection.setThreadConnection(connection);
 			connections.addLast(connection);
 		}
 
