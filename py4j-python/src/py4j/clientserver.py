@@ -44,11 +44,15 @@ class JavaClient(GatewayClient):
         try:
             connection = thread_connection.connection
         except AttributeError:
-            connection = ClientServerConnection(
-                self.java_parameters, self.python_parameters,
-                self.gateway_property, self)
-            thread_connection.connection = connection
-            self.deque.append(connection)
+            connection = self._create_new_connection()
+        return connection
+
+    def _create_new_connection(self):
+        connection = ClientServerConnection(
+            self.java_parameters, self.python_parameters,
+            self.gateway_property, self)
+        thread_connection.connection = connection
+        self.deque.append(connection)
         return connection
 
     def _give_back_connection(self, connection):
@@ -57,6 +61,10 @@ class JavaClient(GatewayClient):
 
     def send_command(self, command, retry=True):
         # Never retry with this connection model.
+        # This is potentially a big limitation: if the network fails, the
+        # ClientServer on both sides need to be shutdown and reinitialized.
+        # If we allow retry, it means the threads between Java and Python
+        # can become out of sync.
         return super(JavaClient, self).send_command(command, retry=False)
 
 
@@ -110,13 +118,21 @@ class ClientServerConnection(object):
         self.gateway_client = gateway_client
 
     def connect_to_java_server(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if self.ssl_context:
-            self.socket = self.ssl_context.wrap_socket(
-                self.socket, server_hostname=self.java_address)
-        self.socket.connect((self.java_address, self.java_port))
-        self.stream = self.socket.makefile("rb", 0)
-        self.is_connected = True
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            if self.ssl_context:
+                self.socket = self.ssl_context.wrap_socket(
+                    self.socket, server_hostname=self.java_address)
+            self.socket.connect((self.java_address, self.java_port))
+            self.stream = self.socket.makefile("rb", 0)
+            self.is_connected = True
+        except Exception:
+            quiet_close(self.socket)
+            quiet_close(self.stream)
+            self.socket = None
+            self.stream = None
+            self.is_connected = False
+            raise
 
     def init_socket_from_python_server(self, socket, stream):
         self.socket = socket
@@ -136,8 +152,7 @@ class ClientServerConnection(object):
             quiet_close(self.stream)
             self.socket.sendall(
                 proto.SHUTDOWN_GATEWAY_COMMAND_NAME.encode("utf-8"))
-            quiet_close(self.socket)
-            self.is_connected = False
+            self.close()
         except Exception:
             # Do nothing! Exceptions might occur anyway.
             logger.debug("Exception occurred while shutting down gateway",
@@ -203,6 +218,8 @@ class ClientServerConnection(object):
         quiet_close(self.stream)
         quiet_shutdown(self.socket)
         quiet_close(self.socket)
+        self.socket = None
+        self.stream = None
 
     def wait_for_commands(self):
         logger.info("Python Server ready to receive messages")

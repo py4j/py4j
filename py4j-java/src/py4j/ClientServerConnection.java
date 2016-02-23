@@ -20,9 +20,9 @@ public class ClientServerConnection implements Py4JServerConnection,
 	private boolean used = false;
 	private static ThreadLocal<ClientServerConnection> threadConnections =
 			new ThreadLocal<ClientServerConnection>();
-	protected final Socket socket;
-	protected final BufferedWriter writer;
-	protected final BufferedReader reader;
+	protected Socket socket;
+	protected BufferedWriter writer;
+	protected BufferedReader reader;
 	protected final Map<String, Command> commands;
 	protected final Logger logger = Logger.getLogger(
 			ClientServerConnection.class.getName());
@@ -197,6 +197,9 @@ public class ClientServerConnection implements Py4JServerConnection,
 		NetworkUtil.quietlyClose(reader);
 		NetworkUtil.quietlyClose(writer);
 		NetworkUtil.quietlyClose(socket);
+		socket = null;
+		writer = null;
+		reader = null;
 	}
 
 	@Override
