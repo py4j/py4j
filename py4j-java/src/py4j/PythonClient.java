@@ -73,6 +73,7 @@ public class PythonClient extends CallbackClient implements Py4JPythonClient {
 			Socket socket = startClientSocket();
 			connection = new ClientServerConnection(
 					gateway, socket, customCommands, listeners);
+			connection.setInitiatedFromClient(true);
 			connection.start();
 			// TODO Need to test that we are not creating a leak.
 			ClientServerConnection.setThreadConnection(connection);
@@ -80,6 +81,19 @@ public class PythonClient extends CallbackClient implements Py4JPythonClient {
 		}
 
 		return connection;
+	}
+
+	@Override
+	protected boolean shouldRetrySendCommand(Py4JClientConnection cc,
+			Py4JException pe) {
+		boolean shouldRetry = false;
+
+		if (cc instanceof ClientServerConnection) {
+			ClientServerConnection csc = (ClientServerConnection) cc;
+			shouldRetry = csc.isInitiatedFromClient();
+		}
+
+		return shouldRetry;
 	}
 
 	@Override

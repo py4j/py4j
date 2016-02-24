@@ -296,8 +296,12 @@ public class CallbackClient implements Py4JPythonClient {
 			returnCommand = cc.sendCommand(command, blocking);
 		} catch (Py4JNetworkException pe) {
 			logger.log(Level.WARNING, "Error while sending a command", pe);
-			// Retry in case the channel was dead.
-			returnCommand = sendCommand(command, blocking);
+			if (shouldRetrySendCommand(cc, pe)) {
+				// Retry in case the channel was dead.
+				returnCommand = sendCommand(command, blocking);
+			} else {
+				throw new Py4JException("Error while sending a command.", pe);
+			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Critical error while sending a command",
 					e);
@@ -307,6 +311,11 @@ public class CallbackClient implements Py4JPythonClient {
 		giveBackConnection(cc);
 
 		return returnCommand;
+	}
+
+	protected boolean shouldRetrySendCommand(Py4JClientConnection cc,
+			Py4JException pe) {
+		return true;
 	}
 
 	protected void setupCleaner() {
