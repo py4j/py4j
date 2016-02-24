@@ -50,11 +50,11 @@ public class BufferGatewayTest {
 			client.connect();
 
 			client.write("c\nt\ngetStringBuffer\ne\n");
-			assertEquals(client.getResponse(), "yro0\n");
+			assertEquals(client.getResponse(), "!yro0\n");
 			client.write("c\no0\nappend\nd1.1\ne\n");
-			assertEquals(client.getResponse(), "yro1\n");
+			assertEquals(client.getResponse(), "!yro1\n");
 			client.write("c\no0\ntoString\ne\n");
-			assertEquals(client.getResponse(), "ysFromJava1.1\n");
+			assertEquals(client.getResponse(), "!ysFromJava1.1\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

@@ -83,7 +83,7 @@ public class ArrayCommandTest {
 		try {
 			command.execute("a", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ys111\n", sWriter.toString());
+			assertEquals("!ys111\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -97,7 +97,7 @@ public class ArrayCommandTest {
 		try {
 			command.execute("a", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\n", sWriter.toString());
+			assertEquals("!yv\n", sWriter.toString());
 			assertEquals(Array.getInt(array2, 1), 555);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -112,7 +112,7 @@ public class ArrayCommandTest {
 		try {
 			command.execute("a", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yi2\n", sWriter.toString());
+			assertEquals("!yi2\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -154,7 +154,7 @@ public class ArrayCommandTest {
 		try {
 			command.execute("a", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yto4\n", sWriter.toString());
+			assertEquals("!yto4\n", sWriter.toString());
 			int[] intarray = (int[]) gateway.getObject("o4");
 			assertEquals(2, intarray.length);
 			assertEquals(6, intarray[1]);
@@ -163,7 +163,7 @@ public class ArrayCommandTest {
 					+ "o3" + "\ni2\ne\n";
 			command.execute("a", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yto4\nyto5\n", sWriter.toString());
+			assertEquals("!yto4\n!yto5\n", sWriter.toString());
 			String[][] stringarray = (String[][]) gateway.getObject("o5");
 			assertEquals(1, stringarray.length);
 			assertEquals("99", stringarray[0][1]);
@@ -177,6 +177,6 @@ public class ArrayCommandTest {
 	@Test
 	public void testArrayType() {
 		ReturnObject rObject = ReturnObject.getArrayReturnObject(target, 2);
-		assertEquals("yt" + target + "\n", Protocol.getOutputCommand(rObject));
+		assertEquals("!yt" + target + "\n", Protocol.getOutputCommand(rObject));
 	}
 }

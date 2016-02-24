@@ -50,7 +50,7 @@ public class ExceptionCommandTest {
 					inputCommand)), writer);
 			System.out.println("DEBUG!!!" + sWriter.toString());
 			assertTrue(sWriter.toString().startsWith(
-					"ysjava.lang.RuntimeException: Hello World\\n"));
+					"!ysjava.lang.RuntimeException: Hello World\\n"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
