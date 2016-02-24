@@ -77,11 +77,11 @@ public class MemoryCommandTest {
 			assertTrue(gateway.getBindings().containsKey(target));
 			command.execute("m", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\n", sWriter.toString());
+			assertEquals("!yv\n", sWriter.toString());
 			assertFalse(gateway.getBindings().containsKey(target));
 			command.execute("m", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\nyv\n", sWriter.toString());
+			assertEquals("!yv\n!yv\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

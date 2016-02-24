@@ -90,7 +90,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\n", sWriter.toString());
+			assertEquals("!yv\n", sWriter.toString());
 			assertEquals(list.get(0), "1");
 			assertEquals(list.get(3), "9");
 		} catch (Exception e) {
@@ -106,7 +106,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("x\n", sWriter.toString());
+			assertEquals("!x\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -120,7 +120,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\n", sWriter.toString());
+			assertEquals("!yv\n", sWriter.toString());
 			assertEquals(list.get(0), "2");
 			assertEquals(list.get(1), "3");
 			assertEquals(list.get(2), "9");
@@ -138,7 +138,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\n", sWriter.toString());
+			assertEquals("!yv\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -152,7 +152,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ys1\n", sWriter.toString());
+			assertEquals("!ys1\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -166,7 +166,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("x\n", sWriter.toString());
+			assertEquals("!x\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -180,7 +180,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ys9\n", sWriter.toString());
+			assertEquals("!ys9\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -194,7 +194,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("x\n", sWriter.toString());
+			assertEquals("!x\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -209,7 +209,7 @@ public class ListCommandTest {
 		try {
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yi2\n", sWriter.toString());
+			assertEquals("!yi2\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -225,7 +225,7 @@ public class ListCommandTest {
 			// concat l + l2
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ylo2\n", sWriter.toString());
+			assertEquals("!ylo2\n", sWriter.toString());
 			List newList = (List) gateway.getObject("o2");
 			assertEquals(7, newList.size());
 			assertEquals(4, list.size());
@@ -237,7 +237,7 @@ public class ListCommandTest {
 					+ target + "\n" + target + "\ne\n";
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ylo2\nylo3\n", sWriter.toString());
+			assertEquals("!ylo2\n!ylo3\n", sWriter.toString());
 			newList = (List) gateway.getObject("o3");
 			assertEquals(8, newList.size());
 		} catch (Exception e) {
@@ -255,7 +255,7 @@ public class ListCommandTest {
 			// l3 = l1 * 3
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ylo2\n", sWriter.toString());
+			assertEquals("!ylo2\n", sWriter.toString());
 			List newList = (List) gateway.getObject("o2");
 			assertEquals(12, newList.size());
 			assertEquals(4, list.size());
@@ -265,7 +265,7 @@ public class ListCommandTest {
 					+ target + "\ni-1\ne\n";
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ylo2\nylo3\n", sWriter.toString());
+			assertEquals("!ylo2\n!ylo3\n", sWriter.toString());
 			newList = (List) gateway.getObject("o3");
 			assertEquals(0, newList.size());
 		} catch (Exception e) {
@@ -283,7 +283,7 @@ public class ListCommandTest {
 			assertEquals(4, list.size());
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\n", sWriter.toString());
+			assertEquals("!yv\n", sWriter.toString());
 			assertEquals(12, list.size());
 
 			// l *= -1
@@ -291,7 +291,7 @@ public class ListCommandTest {
 					+ target + "\ni-1\ne\n";
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\nyv\n", sWriter.toString());
+			assertEquals("!yv\n!yv\n", sWriter.toString());
 			assertEquals(0, list.size());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -308,7 +308,7 @@ public class ListCommandTest {
 			// l3 = l1[1:3]
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ylo2\n", sWriter.toString());
+			assertEquals("!ylo2\n", sWriter.toString());
 			List newList = (List) gateway.getObject("o2");
 			assertEquals(2, newList.size());
 			assertEquals("9", newList.get(0));
@@ -320,7 +320,7 @@ public class ListCommandTest {
 					+ target + "\ne\n";
 			command.execute("l", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ylo2\nylo3\n", sWriter.toString());
+			assertEquals("!ylo2\n!ylo3\n", sWriter.toString());
 			newList = (List) gateway.getObject("o3");
 			assertEquals(0, newList.size());
 		} catch (Exception e) {

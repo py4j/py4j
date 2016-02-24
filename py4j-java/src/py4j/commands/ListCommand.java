@@ -66,8 +66,8 @@ public class ListCommand extends AbstractCommand {
 	public static final char LIST_IMULT_SUB_COMMAND_NAME = 'i';
 	public static final char LIST_COUNT_SUB_COMMAND_NAME = 'f';
 
-	public static final String RETURN_VOID = Protocol.SUCCESS + ""
-			+ Protocol.VOID + Protocol.END_OUTPUT;
+	public static final String RETURN_VOID = Protocol.RETURN_MESSAGE + "" +
+			Protocol.SUCCESS + "" + Protocol.VOID + Protocol.END_OUTPUT;
 
 	public ListCommand() {
 		super();
