@@ -62,13 +62,9 @@ class JavaClient(GatewayClient):
         # Nothing to do for now
         pass
 
-    def send_command(self, command, retry=True):
-        # Never retry with this connection model.
-        # This is potentially a big limitation: if the network fails, the
-        # ClientServer on both sides need to be shutdown and reinitialized.
-        # If we allow retry, it means the threads between Java and Python
-        # can become out of sync.
-        return super(JavaClient, self).send_command(command, retry=False)
+    def _should_retry(self, retry, connection):
+        # Only retry if Python was driving the communication.
+        return retry and connection and connection.initiated_from_client
 
 
 class PythonServer(CallbackServer):
@@ -118,6 +114,7 @@ class ClientServerConnection(object):
         self.is_connected = False
 
         self.gateway_client = gateway_client
+        self.initiated_from_client = False
 
     def connect_to_java_server(self):
         try:
@@ -128,6 +125,7 @@ class ClientServerConnection(object):
             self.socket.connect((self.java_address, self.java_port))
             self.stream = self.socket.makefile("rb", 0)
             self.is_connected = True
+            self.initiated_from_client = True
         except Exception:
             quiet_close(self.socket)
             quiet_close(self.stream)
@@ -179,7 +177,7 @@ class ClientServerConnection(object):
                 # Happens when a the other end is dead. There might be an empty
                 # answer before the socket raises an error.
                 if answer.strip() == "":
-                    self.close_client()
+                    self.close()
                     raise Py4JError("Answer from Java side is empty")
                 if answer.startswith(proto.RETURN_MESSAGE):
                     return answer[1:]
@@ -206,13 +204,6 @@ class ClientServerConnection(object):
             raise Py4JNetworkError("Error while sending or receiving", e)
 
     def close(self):
-        """For backward compatibility.
-
-        :return:
-        """
-        self.close_client()
-
-    def close_client(self):
         logger.info("Closing down client")
         quiet_close(self.stream)
         quiet_shutdown(self.socket)
@@ -251,7 +242,7 @@ class ClientServerConnection(object):
                 "Error while python server was waiting for"
                 "a message", exc_info=True)
 
-        self.close_client()
+        self.close()
 
     def _call_proxy(self, obj_id, input):
         return_message = proto.ERROR_RETURN_MESSAGE
