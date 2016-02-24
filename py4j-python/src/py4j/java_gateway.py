@@ -787,6 +787,8 @@ class GatewayConnection(object):
             self.socket.sendall(command.encode("utf-8"))
             answer = smart_decode(self.stream.readline()[:-1])
             logger.debug("Answer received: {0}".format(answer))
+            if answer.startswith(proto.RETURN_MESSAGE):
+                answer = answer[1:]
             # Happens when a the other end is dead. There might be an empty
             # answer before the socket raises an error.
             if answer.strip() == "":
