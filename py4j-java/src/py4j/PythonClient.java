@@ -17,23 +17,22 @@ public class PythonClient extends CallbackClient implements Py4JPythonClient {
 
 	private Gateway gateway;
 
-	private List<GatewayServerListener> listeners;
-
 	private List<Class<? extends Command>> customCommands;
 
 	protected final Logger logger = Logger.getLogger(PythonClient.class
 			.getName());
 
+	private Py4JJavaServer javaServer;
+
 	public PythonClient(Gateway gateway, List<Class<? extends Command>>
-			customCommands, List<GatewayServerListener> listeners,
-			int pythonPort, InetAddress
-			pythonAddress, long minConnectionTime, TimeUnit
-			minConnectionTimeUnit, SocketFactory socketFactory) {
+			customCommands, int pythonPort, InetAddress pythonAddress,
+			long minConnectionTime, TimeUnit minConnectionTimeUnit,
+			SocketFactory socketFactory, Py4JJavaServer javaServer) {
 		super(pythonPort, pythonAddress, minConnectionTime,
 				minConnectionTimeUnit,
 				socketFactory);
 		this.gateway = gateway;
-		this.listeners = listeners;
+		this.javaServer = javaServer;
 		this.customCommands = customCommands;
 	}
 
@@ -45,12 +44,12 @@ public class PythonClient extends CallbackClient implements Py4JPythonClient {
 		this.gateway = gateway;
 	}
 
-	public List<GatewayServerListener> getListeners() {
-		return listeners;
+	public Py4JJavaServer getJavaServer() {
+		return javaServer;
 	}
 
-	public void setListeners(List<GatewayServerListener> listeners) {
-		this.listeners = listeners;
+	public void setJavaServer(Py4JJavaServer javaServer) {
+		this.javaServer = javaServer;
 	}
 
 	@Override
@@ -72,7 +71,7 @@ public class PythonClient extends CallbackClient implements Py4JPythonClient {
 		if (connection == null || connection.getSocket() == null) {
 			Socket socket = startClientSocket();
 			connection = new ClientServerConnection(
-					gateway, socket, customCommands, listeners);
+					gateway, socket, customCommands, this, javaServer);
 			connection.setInitiatedFromClient(true);
 			connection.start();
 			// TODO Need to test that we are not creating a leak.
@@ -107,12 +106,12 @@ public class PythonClient extends CallbackClient implements Py4JPythonClient {
 		return new PythonClient(
 				gateway,
 				customCommands,
-				listeners,
 				pythonPort,
 				pythonAddress,
 				minConnectionTime,
 				minConnectionTimeUnit,
-				socketFactory);
+				socketFactory,
+				javaServer);
 	}
 
 }
