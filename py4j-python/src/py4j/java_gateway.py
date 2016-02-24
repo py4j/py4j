@@ -664,7 +664,9 @@ class GatewayClient(object):
             response = connection.send_command(command)
             self._give_back_connection(connection)
         except Py4JNetworkError:
-            if retry:
+            if connection:
+                connection.close()
+            if self._should_retry(retry, connection):
                 logging.info("Exception while sending command.", exc_info=True)
                 response = self.send_command(command)
             else:
@@ -673,6 +675,9 @@ class GatewayClient(object):
                 response = proto.ERROR
 
         return response
+
+    def _should_retry(self, retry, connection):
+        return retry
 
     def close(self):
         """Closes all currently opened connections.
