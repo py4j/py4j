@@ -43,6 +43,8 @@ class JavaClient(GatewayClient):
     def _get_connection(self):
         try:
             connection = thread_connection.connection
+            # TODO This is where new connections should be created
+            # not in send_command.
         except AttributeError:
             connection = self._create_new_connection()
         return connection
