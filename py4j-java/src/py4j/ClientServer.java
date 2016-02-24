@@ -50,29 +50,41 @@ public class ClientServer {
 
 
 	public ClientServer(Object entryPoint) {
-		// TODO NOT SURE WE NEED TO KEEP THESE PROPERTIES HERE
-		this.javaPort = GatewayServer.DEFAULT_PORT;
-		this.javaAddress = GatewayServer.defaultAddress();
-		this.pythonPort = GatewayServer.DEFAULT_PYTHON_PORT;
-		this.pythonAddress = GatewayServer.defaultAddress();
-		this.connectTimeout = GatewayServer.DEFAULT_CONNECT_TIMEOUT;
-		this.readTimeout = GatewayServer.DEFAULT_READ_TIMEOUT;
-		this.sSocketFactory = ServerSocketFactory.getDefault();
-		this.socketFactory = SocketFactory.getDefault();
+		this(
+				GatewayServer.DEFAULT_PORT, GatewayServer.defaultAddress(),
+				GatewayServer.DEFAULT_PYTHON_PORT,
+				GatewayServer.defaultAddress(),
+				GatewayServer.DEFAULT_CONNECT_TIMEOUT,
+				GatewayServer.DEFAULT_READ_TIMEOUT,
+				ServerSocketFactory.getDefault(),
+				SocketFactory.getDefault(), entryPoint);
+	}
+
+	public ClientServer(int javaPort, InetAddress javaAddress, int
+			pythonPort, InetAddress pythonAddress, int connectTimeout, int
+			readTimeout, ServerSocketFactory sSocketFactory, SocketFactory
+			socketFactory, Object entryPoint) {
+		this.javaPort = javaPort;
+		this.javaAddress = javaAddress;
+		this.pythonPort = pythonPort;
+		this.pythonAddress = pythonAddress;
+		this.connectTimeout = connectTimeout;
+		this.readTimeout = readTimeout;
+		this.sSocketFactory = sSocketFactory;
+		this.socketFactory = socketFactory;
+
 		this.pythonClient = new PythonClient(
-				null, null, null, pythonPort, pythonAddress,
+				null, null, pythonPort, pythonAddress,
 				CallbackClient.DEFAULT_MIN_CONNECTION_TIME, TimeUnit.SECONDS,
-				SocketFactory.getDefault());
+				SocketFactory.getDefault(), null);
 		this.javaServer = new JavaServer(
 				entryPoint, this.javaPort, this.connectTimeout,
 				this.readTimeout, null, pythonClient);
 		this.gateway = javaServer.getGateway();
+		pythonClient.setGateway(gateway);
+		pythonClient.setJavaServer(javaServer);
 		// XXX Force gateway startup here
 		this.gateway.startup();
-		pythonClient.setGateway(gateway);
-		// TODO Not very reliable because listeners added to GatewayServer
-		// won't be added here.
-		pythonClient.setListeners(javaServer.getListeners());
 	}
 
 	public Py4JJavaServer getJavaServer() {

@@ -27,11 +27,13 @@ public class ClientServerConnection implements Py4JServerConnection,
 	protected final Map<String, Command> commands;
 	protected final Logger logger = Logger.getLogger(
 			ClientServerConnection.class.getName());
-	protected final List<GatewayServerListener> listeners;
+	protected final Py4JJavaServer javaServer;
+	protected final Py4JPythonClient pythonClient;
 
 	public ClientServerConnection(Gateway gateway, Socket socket,
 			List<Class<? extends Command>> customCommands,
-			List<GatewayServerListener> listeners) throws IOException {
+			Py4JPythonClient pythonClient, Py4JJavaServer javaServer) throws
+			IOException {
 		super();
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(
@@ -43,7 +45,8 @@ public class ClientServerConnection implements Py4JServerConnection,
 		if (customCommands != null) {
 			initCommands(gateway, customCommands);
 		}
-		this.listeners = listeners;
+		this.javaServer = javaServer;
+		this.pythonClient = pythonClient;
 	}
 
 
@@ -72,6 +75,7 @@ public class ClientServerConnection implements Py4JServerConnection,
 	 * </p>
 	 *
 	 * @param gateway
+	 * @param commandsClazz
 	 */
 	protected void initCommands(Gateway gateway,
 			List<Class<? extends Command>> commandsClazz) {
@@ -94,7 +98,7 @@ public class ClientServerConnection implements Py4JServerConnection,
 	protected void fireConnectionStopped() {
 		logger.info("Connection Stopped");
 
-		for (GatewayServerListener listener : listeners) {
+		for (GatewayServerListener listener : javaServer.getListeners()) {
 			try {
 				listener.connectionStopped(this);
 			} catch (Exception e) {
@@ -144,8 +148,7 @@ public class ClientServerConnection implements Py4JServerConnection,
 				quietSendError(writer, e);
 			}
 		} finally {
-			NetworkUtil.quietlyClose(socket);
-			fireConnectionStopped();
+			shutdown();
 		}
 	}
 
@@ -201,6 +204,7 @@ public class ClientServerConnection implements Py4JServerConnection,
 		socket = null;
 		writer = null;
 		reader = null;
+		fireConnectionStopped();
 	}
 
 	@Override

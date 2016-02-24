@@ -22,7 +22,7 @@ public class JavaServer extends GatewayServer {
 	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket)
 			throws IOException {
 		ClientServerConnection connection = new ClientServerConnection(gateway,
-				socket, getCustomCommands(), getListeners());
+				socket, getCustomCommands(), getCallbackClient(), this);
 		connection.startServerConnection();
 		return connection;
 	}
