@@ -43,8 +43,8 @@ class JavaClient(GatewayClient):
     def _get_connection(self):
         try:
             connection = thread_connection.connection
-            # TODO This is where new connections should be created
-            # not in send_command.
+            if connection.socket is None:
+                connection = self._create_new_connection()
         except AttributeError:
             connection = self._create_new_connection()
         return connection
@@ -53,6 +53,7 @@ class JavaClient(GatewayClient):
         connection = ClientServerConnection(
             self.java_parameters, self.python_parameters,
             self.gateway_property, self)
+        connection.connect_to_java_server()
         thread_connection.connection = connection
         self.deque.append(connection)
         return connection
@@ -116,7 +117,6 @@ class ClientServerConnection(object):
         self._listening_address = self._listening_port = None
         self.is_connected = False
 
-        # TODO
         self.gateway_client = gateway_client
 
     def connect_to_java_server(self):
@@ -170,9 +170,6 @@ class ClientServerConnection(object):
         self.wait_for_commands()
 
     def send_command(self, command):
-        if not self.socket:
-            self.connect_to_java_server()
-
         logger.debug("Command to send: {0}".format(command))
         try:
             self.socket.sendall(command.encode("utf-8"))
