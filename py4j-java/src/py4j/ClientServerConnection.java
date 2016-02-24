@@ -18,6 +18,7 @@ public class ClientServerConnection implements Py4JServerConnection,
 		Py4JClientConnection, Runnable {
 
 	private boolean used = false;
+	private boolean initiatedFromClient = false;
 	private static ThreadLocal<ClientServerConnection> threadConnections =
 			new ThreadLocal<ClientServerConnection>();
 	protected Socket socket;
@@ -215,6 +216,14 @@ public class ClientServerConnection implements Py4JServerConnection,
 	@Override
 	public boolean wasUsed() {
 		return used;
+	}
+
+	public boolean isInitiatedFromClient() {
+		return initiatedFromClient;
+	}
+
+	public void setInitiatedFromClient(boolean initiatedFromClient) {
+		this.initiatedFromClient = initiatedFromClient;
 	}
 
 	protected String readBlockingResponse(BufferedReader reader) throws
