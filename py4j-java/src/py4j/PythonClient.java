@@ -70,13 +70,11 @@ public class PythonClient extends CallbackClient implements Py4JPythonClient {
 
 		connection = ClientServerConnection.getThreadConnection();
 		if (connection == null || connection.getSocket() == null) {
-			// TODO Refactor to be similar to Python:
-			// This is done in ClientServerConnection.sendCommand on the Python
-			// side.
 			Socket socket = startClientSocket();
 			connection = new ClientServerConnection(
 					gateway, socket, customCommands, listeners);
 			connection.start();
+			// TODO Need to test that we are not creating a leak.
 			ClientServerConnection.setThreadConnection(connection);
 			connections.addLast(connection);
 		}
