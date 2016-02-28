@@ -746,3 +746,11 @@ takes a `SSLSocketFactory`. You can get an instance of this via `getDefault()`
 or a `SSLContext` instance similarly.
 
 A runnable example is in `py4j.examples.ExampleSSLApplication`.
+
+Boxing
+------
+
+Boxed Java primitives, such as `java.lang.Integer` are unboxed in the JVM and
+transmitted as primitives, so they will appear as Python `int`s, not
+`JavaObjects`.
+

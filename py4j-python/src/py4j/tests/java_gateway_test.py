@@ -99,10 +99,11 @@ def get_socket():
 
 
 def safe_shutdown(instance):
-    try:
-        instance.gateway.shutdown()
-    except Exception:
-        print_exc()
+    if hasattr(instance, 'gateway'):
+        try:
+            instance.gateway.shutdown()
+        except Exception:
+            print_exc()
 
 
 @contextmanager
@@ -495,6 +496,9 @@ class TypeConversionTest(unittest.TestCase):
         java_nan = self.gateway.jvm.java.lang.Double.parseDouble("NaN")
         self.assertTrue(math.isnan(java_nan))
 
+    def testUnboxingInt(self):
+        ex = self.gateway.getNewExample()
+        self.assertEqual(4, ex.getInteger(4))
 
 class UnicodeTest(unittest.TestCase):
     def setUp(self):
