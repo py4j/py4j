@@ -31,6 +31,12 @@ package py4j;
 
 import java.net.InetAddress;
 
+/**
+ * <p>
+ * Interface that describes the operations a client must support to make
+ * requests to the Python side.
+ * </p>
+ */
 public interface Py4JPythonClient {
 
 	/**
@@ -63,8 +69,34 @@ public interface Py4JPythonClient {
 	 */
 	String sendCommand(String command, boolean blocking);
 
+	/**
+	 * <p>
+	 * Closes all active channels, stops the periodic cleanup of channels and
+	 * mark the client as shutting down.
+	 *
+	 * No more commands can be sent after this method has been called,
+	 * <em>except</em> commands that were initiated before the shutdown method
+	 * was called..
+	 * </p>
+	 */
 	void shutdown();
 
+	/**
+	 * <p>
+	 * Creates a callback client which connects to the given address and port,
+	 * but retains all the other settings (like the minConnectionTime
+	 * and the socketFactory). This method is useful if for some reason
+	 * your CallbackServer changes its address or you come to know of the
+	 * address after Gateway has already instantiated.
+	 * </p>
+	 *
+	 * @param pythonAddress
+	 *            The address used by a PythonProxyHandler to connect to a
+	 *            Python gateway.
+	 * @param pythonPort
+	 *            The port used by a PythonProxyHandler to connect to a Python
+	 *            gateway. Essentially the port used for Python callbacks.
+	 */
 	Py4JPythonClient copyWith(InetAddress pythonAddress, int pythonPort);
 
 	int getPort();

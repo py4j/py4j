@@ -31,12 +31,28 @@ package py4j;
 
 import java.util.List;
 
+/**
+ * <p>
+ * Interface that describes the operations a server must support to receive
+ * requests from the Python side.
+ * </p>
+ */
 public interface Py4JJavaServer {
 
+	/**
+	 *
+	 * @return An unmodifiable list of listeners
+	 */
 	List<GatewayServerListener> getListeners();
 
 	Gateway getGateway();
 
+	/**
+	 * <p>
+	 * Stops accepting connections, closes all current connections, and calls
+	 * {@link py4j.Gateway#shutdown() Gateway.shutdown()}
+	 * </p>
+	 */
 	void shutdown();
 
 	void addListener(GatewayServerListener listener);

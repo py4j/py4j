@@ -29,22 +29,18 @@
 
 package py4j;
 
-import py4j.commands.Command;
-
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
-import java.io.*;
 import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * <p>
+ * This class creates the JavaServer and the PythonClient necessary to
+ * communicate with a Python virtual machine with the new threading model.
+ * </p>
+ */
 public class ClientServer {
 
 	private final int javaPort;
@@ -75,6 +71,10 @@ public class ClientServer {
 			.getName());
 
 
+	/**
+	 *
+	 * @param entryPoint
+	 */
 	public ClientServer(Object entryPoint) {
 		this(
 				GatewayServer.DEFAULT_PORT, GatewayServer.defaultAddress(),
@@ -86,6 +86,18 @@ public class ClientServer {
 				SocketFactory.getDefault(), entryPoint);
 	}
 
+	/**
+	 *
+	 * @param javaPort
+	 * @param javaAddress
+	 * @param pythonPort
+	 * @param pythonAddress
+	 * @param connectTimeout
+	 * @param readTimeout
+	 * @param sSocketFactory
+	 * @param socketFactory
+	 * @param entryPoint
+	 */
 	public ClientServer(int javaPort, InetAddress javaAddress, int
 			pythonPort, InetAddress pythonAddress, int connectTimeout, int
 			readTimeout, ServerSocketFactory sSocketFactory, SocketFactory
@@ -121,14 +133,36 @@ public class ClientServer {
 		return pythonClient;
 	}
 
+	/**
+	 * <p>
+	 * Starts the JavaServer, which will handle requests from the Python side.
+	 * </p>
+	 *
+	 * @param fork If the JavaServer is started in this thread or in its own
+	 *                thread.
+	 */
 	public void startServer(boolean fork) {
 		javaServer.start(fork);
 	}
 
+	/**
+	 * Shuts down the Java Server so that it stops accepting requests and it
+	 * closes existing connections.
+	 */
 	public void shutdown() {
 		this.javaServer.shutdown(true);
 	}
 
+	/**
+	 * <p>
+	 * Gets a reference to the entry point on the Python side. This is often
+	 * necessary if Java is driving the communication because Java cannot call
+	 * static methods, initialize Python objects or load Python modules yet.
+	 * </p>
+	 *
+	 * @param interfacesToImplement
+	 * @return
+	 */
 	public Object getPythonServerEntryPoint(Class[] interfacesToImplement) {
 		Object proxy = Protocol.getPythonProxyHandler(gateway.getClass()
 				.getClassLoader(), interfacesToImplement, Protocol.ENTRY_POINT_OBJECT_ID,

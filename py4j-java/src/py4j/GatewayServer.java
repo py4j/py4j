@@ -396,6 +396,16 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	}
 
+	/**
+	 * <p>
+	 * Creates a server connection from a Python call to the Java side.
+	 * </p>
+	 *
+	 * @param gateway
+	 * @param socket
+	 * @return
+	 * @throws IOException
+	 */
 	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket)
 			throws IOException {
 		return new GatewayConnection(gateway, socket, customCommands, listeners);
