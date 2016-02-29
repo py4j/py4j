@@ -321,7 +321,7 @@ class ClientServerConnection(object):
 
 class ClientServer(JavaGateway):
     """Subclass of JavaGateway that implements a different threading model: a
-    thread always use the same connection to the other side so call back are
+    thread always use the same connection to the other side so callbacks are
     executed in the calling thread.
 
     For example, if Python thread 1 calls Java, and Java calls Python, the

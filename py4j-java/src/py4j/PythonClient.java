@@ -39,6 +39,12 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+/**
+ * <p>
+ * Subclass of CallbackClient that implements the new threading model,
+ * ensuring that each thread uses its own connection.
+ * </p>
+ */
 public class PythonClient extends CallbackClient implements Py4JPythonClient {
 
 	private Gateway gateway;

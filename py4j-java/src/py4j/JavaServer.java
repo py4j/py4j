@@ -35,8 +35,43 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 
+/**
+ * <p>
+ * This class extends GatewayServer by implementing a new threading model:
+ * a thread always use the same connection to the other side so callbacks are
+ * executed in the calling thread.
+ * </p>
+ *
+ * <p>
+ * For example, if Java thread 1 calls Python, and Python calls Java, the
+ * callback (from Python to Java) will be executed in Java thread 1.
+ * </p>
+ *
+ */
 public class JavaServer extends GatewayServer {
 
+	/**
+	 *
+	 * @param entryPoint
+	 *            The entry point of this Gateway. Can be null.
+	 * @param port
+	 *            The port the GatewayServer is listening to.
+	 * @param connectTimeout
+	 *            Time in milliseconds (0 = infinite). If a GatewayServer does
+	 *            not receive a connection request after this time, it closes
+	 *            the server socket and no other connection is accepted.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once a Python program is
+	 *            connected, if a GatewayServer does not receive a request
+	 *            (e.g., a method call) after this time, the connection with the
+	 *            Python program is closed.
+	 * @param customCommands
+	 *            A list of custom Command classes to augment the Server
+	 *            features. These commands will be accessible from Python
+	 *            programs. Can be null.
+	 * @param pythonClient
+	 * 			  The Py4JPythonClient used to call Python.
+	 */
 	public JavaServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout, List<Class<? extends Command>> customCommands,
 			Py4JPythonClient pythonClient) {
