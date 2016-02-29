@@ -29,37 +29,38 @@
 
 package py4j.examples;
 
-import py4j.ClientServer;
-import py4j.GatewayServer;
+public class PingPong implements IPong {
+	private boolean fail;
 
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+	public PingPong() {
+		this(false);
 
-public class SingleThreadApplication {
+	}
 
-	public static void main(String[] args) {
-		GatewayServer.turnAllLoggingOn();
-		Logger logger = Logger.getLogger("py4j");
-		logger.setLevel(Level.ALL);
-		ConsoleHandler handler = new ConsoleHandler();
-		handler.setLevel(Level.FINEST);
-		logger.addHandler(handler);
-		System.out.println("Starting");
-		ExampleEntryPoint point = new ExampleEntryPoint();
-		ClientServer clientServer = new ClientServer(point);
-		// Wait for Python side to shut down Java side
-		clientServer.startServer(true);
+	public PingPong(boolean fail) {
+		this.fail = fail;
+	}
 
-		// Shut down after 5 seconds
-//		clientServer.startServer(true);
-//		try {
-//			Thread.currentThread().sleep(5000);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		clientServer.shutdown();
-//
-//		System.out.println("Stopping");
+	public int start(IPing ping) {
+		return ping.ping1(this);
+	}
+
+	@Override
+	public int pong1(IPing ping) {
+		return ping.ping2(this);
+	}
+
+	@Override
+	public int pong2(IPing ping) {
+		return ping.ping3(this);
+	}
+
+	@Override
+	public int pong3(IPing ping) {
+		if (fail) {
+			return 1 / 0;
+		} else {
+			return 2;
+		}
 	}
 }
