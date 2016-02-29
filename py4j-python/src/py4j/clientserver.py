@@ -1,14 +1,19 @@
 # -*- coding: UTF-8 -*-
+"""Module that implements a different threading model between
+a Java Virtual Machine a Python interpreter.
+
+In this model, Java and Python can exchange resquests and responses in the same
+thread. For example, if a request is started in a Java UI thread and the Python
+code calls some Java code, the Java code will be executed in the UI thread.
+"""
 
 from __future__ import unicode_literals, absolute_import
 
 import logging
-import select
 import socket
 from threading import local, Thread
 
 from py4j.java_gateway import (
-    DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT,
     quiet_close, quiet_shutdown, GatewayClient, JavaGateway,
     CallbackServerParameters, GatewayParameters, CallbackServer)
 from py4j import protocol as proto
@@ -28,9 +33,24 @@ PythonParameters = CallbackServerParameters
 
 
 class JavaClient(GatewayClient):
+    """Responsible for managing requests from Python to Java.
+
+    This implementation is thread-safe because it always use only one
+    ClientServerConnection per thread.
+    """
 
     def __init__(
             self, java_parameters, python_parameters, gateway_property=None):
+        """
+        :param java_parameters: collection of parameters and flags used to
+            configure the JavaGateway (Java client)
+
+        :param python_parameters: collection of parameters and flags used to
+            configure the CallbackServer (Python server)
+
+        :param gateway_property: used to keep gateway preferences without a
+            cycle with the JavaGateway
+        """
         super(JavaClient, self).__init__(
             address=java_parameters.address,
             port=java_parameters.port,
@@ -68,10 +88,23 @@ class JavaClient(GatewayClient):
 
 
 class PythonServer(CallbackServer):
+    """Responsible for managing requests from Java to Python.
+    """
 
     def __init__(
             self, java_client, java_parameters, python_parameters,
             gateway_property):
+        """
+        :param java_client: the gateway client used to call Java objects.
+
+        :param java_parameters: collection of parameters and flags used to
+            configure the JavaGateway (Java client)
+
+        :param python_parameters: collection of parameters and flags used to
+            configure the CallbackServer (Python server)
+
+        :param gateway_property: used to keep gateway preferences.
+        """
         super(PythonServer, self).__init__(
             pool=gateway_property.pool,
             gateway_client=java_client,
@@ -89,9 +122,25 @@ class PythonServer(CallbackServer):
 
 
 class ClientServerConnection(object):
+    """Default connection for a ClientServer instance
+    (socket-based, one per thread) responsible for communicating
+    with the Java Virtual Machine.
+    """
+
     def __init__(
             self, java_parameters, python_parameters, gateway_property,
-            gateway_client):
+            java_client):
+        """
+        :param java_parameters: collection of parameters and flags used to
+            configure the JavaGateway (Java client)
+
+        :param python_parameters: collection of parameters and flags used to
+            configure the CallbackServer (Python server)
+
+        :param gateway_property: used to keep gateway preferences.
+
+        :param java_client: the gateway client used to call Java objects.
+        """
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
 
@@ -113,7 +162,7 @@ class ClientServerConnection(object):
         self._listening_address = self._listening_port = None
         self.is_connected = False
 
-        self.gateway_client = gateway_client
+        self.java_client = java_client
         self.initiated_from_client = False
 
     def connect_to_java_server(self):
@@ -140,10 +189,11 @@ class ClientServerConnection(object):
         self.is_connected = True
 
     def shutdown_gateway(self):
-        """Sends a shutdown command to the gateway. This will close the gateway
-           server: all active connections will be closed. This may be useful
-           if the lifecycle of the Java program must be tied to the Python
-           program.
+        """Sends a shutdown command to the Java side.
+
+        This will close the ClientServer on the Java side: all active
+        connections will be closed. This may be useful if the lifecycle
+        of the Java program must be tied to the Python program.
         """
         if not self.is_connected:
             raise Py4JError("Gateway must be connected to send shutdown cmd.")
@@ -168,6 +218,7 @@ class ClientServerConnection(object):
         self.wait_for_commands()
 
     def send_command(self, command):
+        # TODO At some point extract common code from wait_for_commands
         logger.debug("Command to send: {0}".format(command))
         try:
             self.socket.sendall(command.encode("utf-8"))
@@ -262,17 +313,34 @@ class ClientServerConnection(object):
         params = []
         temp = smart_decode(input.readline())[:-1]
         while temp != proto.END:
-            param = get_return_value("y" + temp, self.gateway_client)
+            param = get_return_value("y" + temp, self.java_client)
             params.append(param)
             temp = smart_decode(input.readline())[:-1]
         return params
 
 
 class ClientServer(JavaGateway):
+    """Subclass of JavaGateway that implements a different threading model: a
+    thread always use the same connection to the other side so call back are
+    executed in the calling thread.
+
+    For example, if Python thread 1 calls Java, and Java calls Python, the
+    callback (from Java to Python) will be executed in Python thread 1.
+    """
 
     def __init__(
             self, java_parameters, python_parameters,
             python_server_entry_point=None):
+        """
+        :param java_parameters: collection of parameters and flags used to
+            configure the JavaGateway (Java client)
+
+        :param python_parameters: collection of parameters and flags used to
+            configure the CallbackServer (Python server)
+
+        :param python_server_entry_point: can be requested by the Java side if
+            Java is driving the communication.
+        """
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
         self.python_server_entry_point = python_server_entry_point
