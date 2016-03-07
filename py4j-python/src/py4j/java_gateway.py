@@ -568,6 +568,7 @@ class DummyRLock(object):
     def __exit__(self, type, value, tb):
         pass
 
+
 class GatewayConnectionGuard(object):
     def __init__(self, client, connection):
         self._client = client
@@ -584,6 +585,7 @@ class GatewayConnectionGuard(object):
             self._client._give_back_connection(self._connection)
         else:
             self._connection.close()
+
 
 class GatewayClient(object):
     """Responsible for managing connections to the JavaGateway.
@@ -893,7 +895,8 @@ class JavaMember(object):
             command, binary=True)
 
         # parse the return value to throw an exception if necessary
-        get_return_value(answer, self.gateway_client, self.target_id, self.name)
+        get_return_value(
+            answer, self.gateway_client, self.target_id, self.name)
 
         for temp_arg in temp_args:
             temp_arg._detach()

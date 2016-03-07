@@ -528,6 +528,7 @@ class UnicodeTest(unittest.TestCase):
         self.assertEqual(ord(s1[0]), array1[0])
         self.assertEqual(ord(s2[4]), array2[4])
 
+
 class StreamTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
@@ -539,26 +540,30 @@ class StreamTest(unittest.TestCase):
 
     def testBinarySuccess(self):
         e = self.gateway.getNewExample()
-        
+
         # not binary - just get the Java object
         v1 = e.getStream()
-        self.assertTrue(is_instance_of(self.gateway, v1, "java.nio.channels.ReadableByteChannel"))
-        
+        self.assertTrue(
+            is_instance_of(
+                self.gateway, v1, "java.nio.channels.ReadableByteChannel"))
+
         # pull it as a binary stream
         with e.getStream.stream() as conn:
             self.assertTrue(isinstance(conn, GatewayConnectionGuard))
-            expected = u'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+            expected =\
+                u'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
             self.assertEqual(expected, smart_decode(conn.read(len(expected))))
 
     def testBinaryFailure(self):
-        e = self.gateway.getNewExample()        
+        e = self.gateway.getNewExample()
         self.assertRaises(Py4JError, lambda: e.getBrokenStream())
         self.assertRaises(Py4JError, lambda: e.getBrokenStream.stream())
 
     def testNotAStream(self):
-        e = self.gateway.getNewExample()        
+        e = self.gateway.getNewExample()
         self.assertEqual(1, e.method1())
         self.assertRaises(Py4JError, lambda: e.method1.stream())
+
 
 class ByteTest(unittest.TestCase):
     def setUp(self):
