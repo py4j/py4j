@@ -500,6 +500,7 @@ class TypeConversionTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         self.assertEqual(4, ex.getInteger(4))
 
+
 class UnicodeTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()

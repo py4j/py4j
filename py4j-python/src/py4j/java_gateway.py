@@ -502,8 +502,8 @@ class GatewayParameters(object):
          by calling System.currentTimeMillis. If the gateway cannot connect to
          the JVM, it shuts down itself and raises an exception.
 
-        :param ssl_context: if not None, SSL connections will be made using this
-         this SSLContext
+        :param ssl_context: if not None, SSL connections will be made using
+        this SSLContext
         """
         self.address = address
         self.port = port
@@ -596,7 +596,7 @@ class GatewayClient(object):
         :param gateway_property: used to keep gateway preferences without a
          cycle with the gateway
 
-        :param ssl_context: if not None, SSL connections will be made using this
+        :param ssl_context: if not None, SSL connections will be made using
          this SSLContext
         """
         self.address = address
@@ -710,14 +710,15 @@ class GatewayConnection(object):
         :param gateway_property: contains gateway preferences to avoid a cycle
          with gateway
 
-        :param ssl_context: if not None, SSL connections will be made using this
+        :param ssl_context: if not None, SSL connections will be made using
          this SSLContext
         """
         self.address = address
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if ssl_context:
-            self.socket = ssl_context.wrap_socket(self.socket, server_hostname=address)
+            self.socket = ssl_context.wrap_socket(
+                self.socket, server_hostname=address)
         self.is_connected = False
         self.auto_close = auto_close
         self.gateway_property = gateway_property
