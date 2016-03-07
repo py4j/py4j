@@ -38,6 +38,8 @@ ExampleClassMethods = sorted([
     "callHello2",
     "static_method",
     "getInteger",
+    "getBrokenStream",
+    "getStream",
 
     # From Object
     "getClass",

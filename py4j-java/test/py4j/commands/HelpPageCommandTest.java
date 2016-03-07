@@ -58,7 +58,7 @@ public class HelpPageCommandTest {
 		gateway = new Gateway(entryPoint);
 		gateway.startup();
 		command = new HelpPageCommand();
-		command.init(gateway);
+		command.init(gateway, null);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
 		target = gateway.getReturnObject(entryPoint.getNewExample()).getName();
