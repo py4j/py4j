@@ -1,7 +1,7 @@
 /*******************************************************************************
  *
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- *  
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
@@ -62,7 +62,7 @@ public class ArrayCommandTest {
 		gateway = new Gateway(new ExampleEntryPoint());
 		gateway.startup();
 		command = new ArrayCommand();
-		command.init(gateway);
+		command.init(gateway, null);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
 		array1 = new String[] { "222", "111" };
