@@ -556,8 +556,8 @@ class StreamTest(unittest.TestCase):
 
     def testBinaryFailure(self):
         e = self.gateway.getNewExample()
-        self.assertRaises(Py4JError, lambda: e.getBrokenStream())
-        self.assertRaises(Py4JError, lambda: e.getBrokenStream.stream())
+        self.assertRaises(Py4JJavaError, lambda: e.getBrokenStream())
+        self.assertRaises(Py4JJavaError, lambda: e.getBrokenStream.stream())
 
     def testNotAStream(self):
         e = self.gateway.getNewExample()
