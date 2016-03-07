@@ -703,6 +703,7 @@ class GatewayConnection(object):
         self.wr = weakref.ref(
             self,
             lambda wr, socket_instance=self.socket:
+            _garbage_collect_connection and
             _garbage_collect_connection(socket_instance))
 
     def start(self):
@@ -867,7 +868,7 @@ class JavaObject(object):
         value = weakref.ref(
             self,
             lambda wr, cc=self._gateway_client, id=self._target_id:
-            _garbage_collect_object(cc, id))
+            _garbage_collect_object and _garbage_collect_object(cc, id))
 
         ThreadSafeFinalizer.add_finalizer(key, value)
 
