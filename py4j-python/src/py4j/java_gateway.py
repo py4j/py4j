@@ -569,6 +569,24 @@ class DummyRLock(object):
         pass
 
 
+class GatewayConnectionGuard(object):
+    def __init__(self, client, connection):
+        self._client = client
+        self._connection = connection
+
+    def __enter__(self):
+        return self
+
+    def read(self, hint=-1):
+        return self._connection.stream.read(hint)
+
+    def __exit__(self, type, value, traceback):
+        if value is None:
+            self._client._give_back_connection(self._connection)
+        else:
+            self._connection.close()
+
+
 class GatewayClient(object):
     """Responsible for managing connections to the JavaGateway.
 
@@ -645,7 +663,7 @@ class GatewayClient(object):
             logger.debug("Error while shutting down gateway.", exc_info=True)
             self.shutdown_gateway()
 
-    def send_command(self, command, retry=True):
+    def send_command(self, command, retry=True, binary=False):
         """Sends a command to the JVM. This method is not intended to be
            called directly by Py4J users. It is usually called by
            :class:`JavaMember` instances.
@@ -656,17 +674,27 @@ class GatewayClient(object):
         :param retry: if `True`, the GatewayClient tries to resend a message
          if it fails.
 
-        :rtype: the `string` answer received from the JVM. The answer follows
-         the Py4J protocol.
+        :param binary: if `True`, we won't wait for a Py4J-protocol response
+         from the other end; we'll just return the raw connection to the
+         caller. The caller becomes the owner of the connection, and is
+         responsible for closing the connection (or returning it this
+         `GatewayClient` pool using `_give_back_connection`).
+
+        :rtype: the `string` answer received from the JVM (The answer follows
+         the Py4J protocol). The guarded `GatewayConnection` is also returned
+         if `binary` is `True`.
         """
         connection = self._get_connection()
         try:
             response = connection.send_command(command)
-            self._give_back_connection(connection)
+            if binary:
+                return response, GatewayConnectionGuard(self, connection)
+            else:
+                self._give_back_connection(connection)
         except Py4JNetworkError:
             if retry:
                 logging.info("Exception while sending command.", exc_info=True)
-                response = self.send_command(command)
+                response = self.send_command(command, binary=binary)
             else:
                 logging.exception(
                     "Exception while sending command.")
@@ -775,12 +803,13 @@ class GatewayConnection(object):
         :param command: the `string` command to send to the JVM. The command
          must follow the Py4J protocol.
 
-        :rtype: the `string` answer received from the JVM. The answer follows
-         the Py4J protocol.
+        :rtype: the `string` answer received from the JVM (The answer follows
+         the Py4J protocol).
         """
         logger.debug("Command to send: {0}".format(command))
         try:
             self.socket.sendall(command.encode("utf-8"))
+
             answer = smart_decode(self.stream.readline()[:-1])
             logger.debug("Answer received: {0}".format(answer))
             # Happens when a the other end is dead. There might be an empty
@@ -837,7 +866,7 @@ class JavaMember(object):
 
         return (new_args, temp_args)
 
-    def __call__(self, *args):
+    def _build_args(self, *args):
         if self.converters is not None and len(self.converters) > 0:
             (new_args, temp_args) = self._get_args(args)
         else:
@@ -846,6 +875,36 @@ class JavaMember(object):
 
         args_command = "".join(
             [get_command_part(arg, self.pool) for arg in new_args])
+
+        return args_command, temp_args
+
+    def stream(self, *args):
+        """
+        Call the method using the 'binary' protocol.
+
+        :rtype: The `GatewayConnection` that the call command was sent to.
+        """
+
+        args_command, temp_args = self._build_args(*args)
+
+        command = proto.STREAM_COMMAND_NAME +\
+            self.command_header +\
+            args_command +\
+            proto.END_COMMAND_PART
+        answer, connection = self.gateway_client.send_command(
+            command, binary=True)
+
+        # parse the return value to throw an exception if necessary
+        get_return_value(
+            answer, self.gateway_client, self.target_id, self.name)
+
+        for temp_arg in temp_args:
+            temp_arg._detach()
+
+        return connection
+
+    def __call__(self, *args):
+        args_command, temp_args = self._build_args(*args)
 
         command = proto.CALL_COMMAND_NAME +\
             self.command_header +\

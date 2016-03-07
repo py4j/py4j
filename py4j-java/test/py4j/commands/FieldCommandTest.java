@@ -58,7 +58,7 @@ public class FieldCommandTest {
 		gateway = new Gateway(entryPoint);
 		gateway.startup();
 		command = new FieldCommand();
-		command.init(gateway);
+		command.init(gateway, null);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
 		target = gateway.putNewObject(entryPoint.getNewExample());
