@@ -29,10 +29,10 @@ from py4j.java_gateway import (
     JavaGateway, JavaMember, get_field, get_method,
     GatewayClient, set_field, java_import, JavaObject, is_instance_of,
     GatewayParameters, CallbackServerParameters, quiet_close, DEFAULT_PORT,
-    set_default_callback_accept_timeout)
+    set_default_callback_accept_timeout, GatewayConnectionGuard)
 from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
-    encode_bytearray, escape_new_line, unescape_new_line)
+    encode_bytearray, escape_new_line, unescape_new_line, smart_decode)
 
 
 SERVER_PORT = 25333
@@ -528,6 +528,37 @@ class UnicodeTest(unittest.TestCase):
         self.assertEqual(ord(s1[0]), array1[0])
         self.assertEqual(ord(s2[4]), array2[4])
 
+class StreamTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        self.gateway = JavaGateway()
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+
+    def testBinarySuccess(self):
+        e = self.gateway.getNewExample()
+        
+        # not binary - just get the Java object
+        v1 = e.getStream()
+        self.assertTrue(is_instance_of(self.gateway, v1, "java.nio.channels.ReadableByteChannel"))
+        
+        # pull it as a binary stream
+        with e.getStream.stream() as conn:
+            self.assertTrue(isinstance(conn, GatewayConnectionGuard))
+            expected = u'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+            self.assertEqual(expected, smart_decode(conn.read(len(expected))))
+
+    def testBinaryFailure(self):
+        e = self.gateway.getNewExample()        
+        self.assertRaises(Py4JError, lambda: e.getBrokenStream())
+        self.assertRaises(Py4JError, lambda: e.getBrokenStream.stream())
+
+    def testNotAStream(self):
+        e = self.gateway.getNewExample()        
+        self.assertEqual(1, e.method1())
+        self.assertRaises(Py4JError, lambda: e.method1.stream())
 
 class ByteTest(unittest.TestCase):
     def setUp(self):

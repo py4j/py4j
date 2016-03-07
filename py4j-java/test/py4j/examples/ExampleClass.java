@@ -29,8 +29,13 @@
 
 package py4j.examples;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -182,5 +187,14 @@ public class ExampleClass {
 
 	public static class StaticClass {
 
+	}
+
+	public ReadableByteChannel getStream() throws IOException {
+		byte[] bytes = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.".getBytes("UTF-8");
+		return Channels.newChannel(new ByteArrayInputStream(bytes));
+	}
+
+	public ReadableByteChannel getBrokenStream() throws IOException {
+		throw new NotSerializableException("...or some other expected failure");
 	}
 }

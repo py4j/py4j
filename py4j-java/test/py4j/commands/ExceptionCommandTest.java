@@ -25,7 +25,7 @@ public class ExceptionCommandTest {
 		gateway = new Gateway(null);
 		gateway.startup();
 		command = new ExceptionCommand();
-		command.init(gateway);
+		command.init(gateway, null);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
 	}
