@@ -7,8 +7,8 @@ Installing Python 2.6+ or 3.4
 -----------------------------
 
 Py4J is a library written in Python and Java. Currently, Py4J has been tested
-with Python 2.6, 2.7, and 3.4, but it should also be compatible with Python 3.3.
-You can install Python by going to the `official Python download page
+with Python 2.6, 2.7, 3.4, and 3.5 but it should also be compatible with Python
+3.3.  You can install Python by going to the `official Python download page
 <http://www.python.org/download/>`_.
 
 
