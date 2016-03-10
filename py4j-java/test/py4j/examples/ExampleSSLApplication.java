@@ -79,7 +79,7 @@ public class ExampleSSLApplication {
 		GatewayServer server = new GatewayServer(
 			new ExampleEntryPoint(),
 			GatewayServer.DEFAULT_PORT,
-			InetAddress.getLocalHost(),
+			InetAddress.getByName("localhost"),
 			GatewayServer.DEFAULT_CONNECT_TIMEOUT,
 			GatewayServer.DEFAULT_READ_TIMEOUT,
 			null,

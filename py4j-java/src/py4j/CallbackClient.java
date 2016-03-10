@@ -54,16 +54,17 @@ import javax.net.SocketFactory;
  * @author Barthelemy Dagenais
  *
  */
-public class CallbackClient {
+public class CallbackClient implements Py4JPythonClient {
 	public final static String DEFAULT_ADDRESS = "127.0.0.1";
 
-	private final int port;
+	protected final int port;
 
-	private final InetAddress address;
+	protected final InetAddress address;
 
-	private final SocketFactory socketFactory;
+	protected final SocketFactory socketFactory;
 
-	private final Deque<CallbackConnection> connections = new ArrayDeque<CallbackConnection>();
+	protected final Deque<Py4JClientConnection> connections = new
+			ArrayDeque<Py4JClientConnection>();
 
 	private final Lock lock = new ReentrantLock(true);
 
@@ -77,9 +78,9 @@ public class CallbackClient {
 	private final ScheduledExecutorService executor = Executors
 			.newScheduledThreadPool(1);
 
-	private final long minConnectionTime;
+	protected final long minConnectionTime;
 
-	private final TimeUnit minConnectionTimeUnit;
+	protected final TimeUnit minConnectionTimeUnit;
 
 	public CallbackClient(int port) {
 		super();
@@ -135,8 +136,8 @@ public class CallbackClient {
 		return address;
 	}
 
-	private CallbackConnection getConnection() throws IOException {
-		CallbackConnection connection = null;
+	protected Py4JClientConnection getConnection() throws IOException {
+		Py4JClientConnection connection = null;
 
 		connection = connections.pollLast();
 		if (connection == null) {
@@ -147,8 +148,8 @@ public class CallbackClient {
 		return connection;
 	}
 
-	private CallbackConnection getConnectionLock() {
-		CallbackConnection cc = null;
+	protected Py4JClientConnection getConnectionLock() {
+		Py4JClientConnection cc = null;
 		try {
 			logger.log(Level.INFO, "Getting CB Connection");
 			lock.lock();
@@ -191,7 +192,8 @@ public class CallbackClient {
 	 *            The port used by a PythonProxyHandler to connect to a Python
 	 *            gateway. Essentially the port used for Python callbacks.
 	 */
-	public CallbackClient copyWith(InetAddress pythonAddress, int pythonPort) {
+	@Override
+	public Py4JPythonClient copyWith(InetAddress pythonAddress, int pythonPort) {
 		return new CallbackClient(
 			pythonPort,
 			pythonAddress,
@@ -200,9 +202,11 @@ public class CallbackClient {
 			socketFactory);
 	}
 
-	private void giveBackConnection(CallbackConnection cc) {
+	protected void giveBackConnection(Py4JClientConnection cc) {
 		try {
 			lock.lock();
+			// TODO Does not make sense for PythonClient... the list will
+			// just grow.
 			if (cc != null) {
 				if (!isShutdown) {
 					connections.addLast(cc);
@@ -233,7 +237,7 @@ public class CallbackClient {
 			if (!isShutdown) {
 				int size = connections.size();
 				for (int i = 0; i < size; i++) {
-					CallbackConnection cc = connections.pollLast();
+					Py4JClientConnection cc = connections.pollLast();
 					if (cc.wasUsed()) {
 						cc.setUsed(false);
 						connections.addFirst(cc);
@@ -259,6 +263,7 @@ public class CallbackClient {
 	 *            The command to send.
 	 * @return The response.
 	 */
+	@Override
 	public String sendCommand(String command) {
 		return sendCommand(command, true);
 	}
@@ -278,9 +283,10 @@ public class CallbackClient {
 	 * 			  finalizer sending a command).
 	 * @return The response.
 	 */
+	@Override
 	public String sendCommand(String command, boolean blocking) {
 		String returnCommand = null;
-		CallbackConnection cc = getConnectionLock();
+		Py4JClientConnection cc = getConnectionLock();
 
 		if (cc == null) {
 			throw new Py4JException("Cannot obtain a new communication channel");
@@ -288,22 +294,31 @@ public class CallbackClient {
 
 		try {
 			returnCommand = cc.sendCommand(command, blocking);
+			giveBackConnection(cc);
 		} catch (Py4JNetworkException pe) {
 			logger.log(Level.WARNING, "Error while sending a command", pe);
-			// Retry in case the channel was dead.
-			returnCommand = sendCommand(command, blocking);
+			cc.shutdown();
+			if (shouldRetrySendCommand(cc, pe)) {
+				// Retry in case the channel was dead.
+				returnCommand = sendCommand(command, blocking);
+			} else {
+				throw new Py4JException("Error while sending a command.", pe);
+			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Critical error while sending a command",
 					e);
 			throw new Py4JException("Error while sending a command.");
 		}
 
-		giveBackConnection(cc);
-
 		return returnCommand;
 	}
 
-	private void setupCleaner() {
+	protected boolean shouldRetrySendCommand(Py4JClientConnection cc,
+			Py4JException pe) {
+		return true;
+	}
+
+	protected void setupCleaner() {
 		executor.scheduleAtFixedRate(new Runnable() {
 			public void run() {
 				periodicCleanup();
@@ -321,12 +336,13 @@ public class CallbackClient {
 	 * was called..
 	 * </p>
 	 */
+	@Override
 	public void shutdown() {
 		logger.info("Shutting down Callback Client");
 		try {
 			lock.lock();
 			isShutdown = true;
-			for (CallbackConnection cc : connections) {
+			for (Py4JClientConnection cc : connections) {
 				cc.shutdown();
 			}
 			executor.shutdownNow();

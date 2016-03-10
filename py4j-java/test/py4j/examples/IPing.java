@@ -1,4 +1,4 @@
-/*******************************************************************************
+/**
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,47 +25,13 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
-package py4j.commands;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-
-import py4j.*;
-
-/**
- * <p>
- * The ShutdownGatewayServerCommand is responsible for shutting down the
- * GatewayServer. This command is useful to shut down the server remotely, i.e.,
- * from the Python side.
- * </p>
- *
- * @author Barthelemy Dagenais
- *
  */
-public class ShutdownGatewayServerCommand extends AbstractCommand {
 
-	private Py4JJavaServer gatewayServer;
+package py4j.examples;
 
-	public static final String SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME = "s";
+public interface IPing {
 
-	public ShutdownGatewayServerCommand() {
-		super();
-		this.commandName = SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME;
-	}
-
-	@Override
-	public void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException {
-		this.gatewayServer.shutdown();
-	}
-
-	@Override
-	public void init(Gateway gateway, Py4JServerConnection connection) {
-		super.init(gateway, connection);
-		this.gatewayServer = (Py4JJavaServer) gateway
-				.getObject(GatewayServer.GATEWAY_SERVER_ID);
-	}
-
+	int ping1(IPong pong);
+	int ping2(IPong pong);
+	int ping3(IPong pong);
 }

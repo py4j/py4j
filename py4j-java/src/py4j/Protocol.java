@@ -107,6 +107,8 @@ public class Protocol {
 	public final static char NO_MEMBER = 'o';
 	public final static char VOID = 'v';
 
+	public final static char RETURN_MESSAGE = '!';
+
 	// END OF COMMAND MARKER
 	public final static char END = 'e';
 	public final static char END_OUTPUT = '\n';
@@ -116,10 +118,12 @@ public class Protocol {
 	public final static char SUCCESS = 'y';
 
 	// SHORTCUT
-	public final static String ERROR_COMMAND = "" + ERROR + END_OUTPUT;
-	public final static String VOID_COMMAND = "" + SUCCESS + VOID + END_OUTPUT;
-	public final static String NO_SUCH_FIELD = "" + SUCCESS + NO_MEMBER
-			+ END_OUTPUT;
+	public final static String ERROR_COMMAND = "" + RETURN_MESSAGE + ERROR +
+			END_OUTPUT;
+	public final static String VOID_COMMAND = "" + RETURN_MESSAGE + SUCCESS +
+			VOID + END_OUTPUT;
+	public final static String NO_SUCH_FIELD = "" + RETURN_MESSAGE + SUCCESS +
+			NO_MEMBER + END_OUTPUT;
 
 	// ENTRY POINT
 	public final static String ENTRY_POINT_OBJECT_ID = "t";
@@ -236,6 +240,7 @@ public class Protocol {
 	public final static String getMemberOutputCommand(char memberType) {
 		StringBuilder builder = new StringBuilder();
 
+		builder.append(RETURN_MESSAGE);
 		builder.append(SUCCESS);
 		builder.append(memberType);
 		builder.append(END_OUTPUT);
@@ -247,6 +252,7 @@ public class Protocol {
 			String fqn) {
 		StringBuilder builder = new StringBuilder();
 
+		builder.append(RETURN_MESSAGE);
 		builder.append(SUCCESS);
 		builder.append(memberType);
 		builder.append(fqn);
@@ -313,6 +319,10 @@ public class Protocol {
 	public final static String getOutputCommand(ReturnObject rObject) {
 		StringBuilder builder = new StringBuilder();
 
+		// TODO Should be configurable
+		// TODO ADD RETURN MESSAGE TO OTHER OUTPUT COMMAND
+		builder.append(RETURN_MESSAGE);
+
 		if (rObject.isError()) {
 			builder.append(rObject.getCommandPart());
 		} else {
@@ -330,6 +340,7 @@ public class Protocol {
 
 	public final static String getOutputErrorCommand(String errorMessage) {
 		StringBuilder builder = new StringBuilder();
+		builder.append(RETURN_MESSAGE);
 		builder.append(ERROR);
 		builder.append(Protocol.STRING_TYPE);
 		builder.append(StringUtil.escape(errorMessage));
@@ -339,6 +350,7 @@ public class Protocol {
 
 	public final static String getOutputErrorCommand(Throwable throwable) {
 		StringBuilder builder = new StringBuilder();
+		builder.append(RETURN_MESSAGE);
 		builder.append(ERROR);
 		builder.append(Protocol.STRING_TYPE);
 		builder.append(StringUtil.escape(getThrowableAsString(throwable)));
@@ -401,11 +413,17 @@ public class Protocol {
 			}
 		}
 
-		Object proxy = Proxy.newProxyInstance(gateway.getClass()
-				.getClassLoader(), interfaces, new PythonProxyHandler(parts[0],
-				gateway));
+		Object proxy = getPythonProxyHandler(gateway.getClass()
+				.getClassLoader(), interfaces, parts[0], gateway);
 
 		return proxy;
+	}
+
+	public static Object getPythonProxyHandler(ClassLoader classLoader,
+			Class[] interfacesToImplement, String objectId, Gateway gateway) {
+		return Proxy.newProxyInstance(gateway.getClass()
+				.getClassLoader(), interfacesToImplement, new PythonProxyHandler
+				(objectId, gateway));
 	}
 
 	/**
@@ -496,6 +514,16 @@ public class Protocol {
 	 */
 	public final static boolean isBoolean(String commandPart) {
 		return commandPart.charAt(0) == BOOLEAN_TYPE;
+	}
+
+	/**
+	 *
+	 * @param commandPart
+	 * @return True if the command part is a return message
+	 */
+	public final static boolean isReturnMessage(String commandPart) {
+		return commandPart != null && commandPart.length() > 1 && commandPart
+				.charAt(0) == RETURN_MESSAGE;
 	}
 
 	/**

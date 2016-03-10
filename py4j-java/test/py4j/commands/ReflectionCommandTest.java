@@ -86,30 +86,31 @@ public class ReflectionCommandTest {
 			this.gateway.getDefaultJVMView().addStarImport("java.io.*");
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand1)), writer);
-			assertEquals("yp\n", sWriter.toString());
+			assertEquals("!yp\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand2)), writer);
-			assertEquals("yp\nyp\n", sWriter.toString());
+			assertEquals("!yp\n!yp\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand3)), writer);
-			assertEquals("yp\nyp\nycjava.lang.String\n", sWriter.toString());
+			assertEquals("!yp\n!yp\n!ycjava.lang.String\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand4)), writer);
-			assertEquals("yp\nyp\nycjava.lang.String\nycp1.Cat\n",
+			assertEquals("!yp\n!yp\n!ycjava.lang.String\n!ycp1.Cat\n",
 					sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand5)), writer);
-			assertEquals("yp\nyp\nycjava.lang.String\nycp1.Cat\nycbyte\n",
+			assertEquals("!yp\n!yp\n!ycjava.lang.String\n!ycp1.Cat\n!ycbyte\n",
 					sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand6)), writer);
 			assertEquals(
-					"yp\nyp\nycjava.lang.String\nycp1.Cat\nycbyte\nycjava.lang.System\n",
+					"!yp\n!yp\n!ycjava.lang.String\n!ycp1.Cat\n!ycbyte\n!ycjava.lang.System\n",
 					sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand7)), writer);
 			assertEquals(
-					"yp\nyp\nycjava.lang.String\nycp1.Cat\nycbyte\nycjava.lang.System\nycjava.io.File\n",
+					"!yp\n!yp\n!ycjava.lang.String\n!ycp1" +
+							".Cat\n!ycbyte\n!ycjava.lang.System\n!ycjava.io.File\n",
 					sWriter.toString());
 
 		} catch (Exception e) {
@@ -135,31 +136,32 @@ public class ReflectionCommandTest {
 		try {
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand1)), writer);
-			assertEquals("ym\n", sWriter.toString());
+			assertEquals("!ym\n", sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand2)), writer);
 			assertEquals(
-					"ym\nxsTrying to access a non-static member from a static context.\n",
+					"!ym\n!xsTrying to access a non-static member from a " +
+							"static context.\n",
 					sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand3)), writer);
 			assertEquals(
-					"ym\nxsTrying to access a non-static member from a static context.\nxsTrying to access a non-static member from a static context.\n",
+					"!ym\n!xsTrying to access a non-static member from a static context.\n!xsTrying to access a non-static member from a static context.\n",
 					sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand4)), writer);
 			assertEquals(
-					"ym\nxsTrying to access a non-static member from a static context.\nxsTrying to access a non-static member from a static context.\nx\n",
+					"!ym\n!xsTrying to access a non-static member from a static context.\n!xsTrying to access a non-static member from a static context.\n!x\n",
 					sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand5)), writer);
 			assertEquals(
-					"ym\nxsTrying to access a non-static member from a static context.\nxsTrying to access a non-static member from a static context.\nx\nym\n",
+					"!ym\n!xsTrying to access a non-static member from a static context.\n!xsTrying to access a non-static member from a static context.\n!x\n!ym\n",
 					sWriter.toString());
 			command.execute("r", new BufferedReader(new StringReader(
 					inputCommand6)), writer);
 			assertEquals(
-					"ym\nxsTrying to access a non-static member from a static context.\nxsTrying to access a non-static member from a static context.\nx\nym\nysSalut!\n",
+					"!ym\n!xsTrying to access a non-static member from a static context.\n!xsTrying to access a non-static member from a static context.\n!x\n!ym\n!ysSalut!\n",
 					sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();

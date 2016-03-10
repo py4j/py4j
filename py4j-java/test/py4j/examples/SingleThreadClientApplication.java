@@ -1,4 +1,4 @@
-/*******************************************************************************
+/**
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,43 +25,66 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
-package py4j;
+ */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+package py4j.examples;
 
-import org.junit.Test;
+import py4j.ClientServer;
+import py4j.GatewayServer;
 
-import py4j.examples.BufferGenerator;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class BufferGatewayTest {
+public class SingleThreadClientApplication {
 
-	@Test
-	public void testBufferedGateway1() {
-        EchoClient client = new EchoClient();
-
-        try {
-            Thread.sleep(500);
-            BufferGenerator.main(null);
-
-
-			Thread.sleep(500);
-			client.connect();
-
-			client.write("c\nt\ngetStringBuffer\ne\n");
-			assertEquals(client.getResponse(), "!yro0\n");
-			client.write("c\no0\nappend\nd1.1\ne\n");
-			assertEquals(client.getResponse(), "!yro1\n");
-			client.write("c\no0\ntoString\ne\n");
-			assertEquals(client.getResponse(), "!ysFromJava1.1\n");
+	public static void main(String[] args) {
+		GatewayServer.turnAllLoggingOn();
+		Logger logger = Logger.getLogger("py4j");
+		logger.setLevel(Level.ALL);
+		ConsoleHandler handler = new ConsoleHandler();
+		handler.setLevel(Level.FINEST);
+		logger.addHandler(handler);
+		System.out.println("Starting");
+		ClientServer clientServer = new ClientServer(null);
+		IHello hello = (IHello) clientServer.getPythonServerEntryPoint
+				(new Class[] {IHello.class});
+		try {
+			hello.sayHello();
+			hello.sayHello(2, "Hello World");
 		} catch (Exception e) {
 			e.printStackTrace();
-			fail();
-		} finally {
-			client.close();
-			BufferGenerator.shutdownGateway();
 		}
-	}
 
+		// This is to test connecting again if there was no successful
+		// initial connection.
+//		try {
+//			Thread.currentThread().sleep(5000);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//
+//		try {
+//			hello.sayHello();
+//			hello.sayHello(2, "Hello World");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+
+		// This is to manually test reconnecting to the Python side after
+		// graceful shutdown.
+//		clientServer.shutdown();
+//
+//		try {
+//			Thread.currentThread().sleep(1000);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//
+//		clientServer = new ClientServer(null);
+//		hello = (IHello) clientServer.getPythonServerEntryPoint
+//				(new Class[] {IHello.class});
+//		hello.sayHello();
+//		hello.sayHello(2, "Hello World");
+	}
 }

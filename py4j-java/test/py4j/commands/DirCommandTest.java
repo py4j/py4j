@@ -183,9 +183,9 @@ public class DirCommandTest {
 	}
 
 	private Set<String> convertResponse(String protocolReturn) {
-		assertTrue(protocolReturn.startsWith("y"));
+		assertTrue(protocolReturn.startsWith("!y"));
 		String fieldsJoined = (String) Protocol.getObject(
-				protocolReturn.substring(1), gateway);
+				protocolReturn.substring(2), gateway);
 		return new HashSet<String>(Arrays.asList(fieldsJoined.split("\n")));
 	}
 
@@ -195,9 +195,9 @@ public class DirCommandTest {
 	}
 
 	private JvmViewRet convertResponseJvmView(String protocolReturn) {
-		assertTrue(protocolReturn.startsWith("y"));
+		assertTrue(protocolReturn.startsWith("!y"));
 		String fieldsJoined = (String) Protocol.getObject(
-				protocolReturn.substring(1), gateway);
+				protocolReturn.substring(2), gateway);
 		if (fieldsJoined == null) {
 			return null;
 		}

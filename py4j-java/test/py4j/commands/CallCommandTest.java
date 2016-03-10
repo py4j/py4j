@@ -78,7 +78,7 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ys123\n", sWriter.toString());
+			assertEquals("!ys123\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -91,7 +91,8 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertTrue(sWriter.toString().startsWith("xspy4j.Py4JException: "));
+			assertTrue(sWriter.toString().startsWith(
+					"!xspy4j.Py4JException: "));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -104,7 +105,8 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertTrue(sWriter.toString().startsWith("xspy4j.Py4JException: "));
+			assertTrue(sWriter.toString().startsWith(
+					"!xspy4j.Py4JException: "));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -117,7 +119,7 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("xro1\n", sWriter.toString());
+			assertEquals("!xro1\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -130,7 +132,7 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yi1\n", sWriter.toString());
+			assertEquals("!yi1\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -143,7 +145,7 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\n", sWriter.toString());
+			assertEquals("!yv\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -156,19 +158,19 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\n", sWriter.toString());
+			assertEquals("!yv\n", sWriter.toString());
 
 			inputCommand = target + "\nmethod4\nn\ne\n";
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\nyro1\n", sWriter.toString());
+			assertEquals("!yv\n!yro1\n", sWriter.toString());
 			assertEquals(((ExampleClass) gateway.getObject("o1")).getField1(),
 					3);
 
 			inputCommand = target + "\nmethod7\nn\ne\n";
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yv\nyro1\nyi2\n", sWriter.toString());
+			assertEquals("!yv\n!yro1\n!yi2\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -181,7 +183,7 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("ysHello World\n", sWriter.toString());
+			assertEquals("!ysHello World\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -194,7 +196,7 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yro1\n", sWriter.toString());
+			assertEquals("!yro1\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -207,7 +209,7 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yro1\n", sWriter.toString());
+			assertEquals("!yro1\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -220,7 +222,7 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yro1\n", sWriter.toString());
+			assertEquals("!yro1\n", sWriter.toString());
 			assertEquals(3,
 					((ExampleClass) gateway.getObject("o1")).getField1());
 		} catch (Exception e) {
@@ -235,7 +237,7 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yro1\n", sWriter.toString());
+			assertEquals("!yro1\n", sWriter.toString());
 			assertEquals(3,
 					((ExampleClass) gateway.getObject("o1")).getField1());
 		} catch (Exception e) {
@@ -251,10 +253,10 @@ public class CallCommandTest {
 		try {
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yro1\n", sWriter.toString());
+			assertEquals("!yro1\n", sWriter.toString());
 			command.execute("c", new BufferedReader(new StringReader(
 					inputCommand2)), writer);
-			assertEquals("yro1\nyi2\n", sWriter.toString());
+			assertEquals("!yro1\n!yi2\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

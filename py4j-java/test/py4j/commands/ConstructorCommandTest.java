@@ -74,7 +74,7 @@ public class ConstructorCommandTest {
 		try {
 			command.execute("i", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yro0\n", sWriter.toString());
+			assertEquals("!yro0\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -87,7 +87,7 @@ public class ConstructorCommandTest {
 		try {
 			command.execute("i", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yro0\n", sWriter.toString());
+			assertEquals("!yro0\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -100,7 +100,7 @@ public class ConstructorCommandTest {
 		try {
 			command.execute("i", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertEquals("yro0\n", sWriter.toString());
+			assertEquals("!yro0\n", sWriter.toString());
 			assertTrue(gateway.getObject("o0") instanceof Stack);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -114,7 +114,7 @@ public class ConstructorCommandTest {
 		try {
 			command.execute("i", new BufferedReader(new StringReader(
 					inputCommand)), writer);
-			assertTrue(sWriter.toString().startsWith("x"));
+			assertTrue(sWriter.toString().startsWith("!x"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

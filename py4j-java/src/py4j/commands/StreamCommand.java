@@ -64,6 +64,7 @@ public class StreamCommand extends AbstractCommand {
 	}
 
 	private void feedException(BufferedWriter writer, ReturnObject e) throws IOException {
+		writer.write(Protocol.RETURN_MESSAGE);
 		writer.write(e.getCommandPart());
 		writer.write(Protocol.END_OUTPUT);
 		writer.flush();
@@ -102,9 +103,7 @@ public class StreamCommand extends AbstractCommand {
 			return;
 		}
 
-		writer.write(Protocol.SUCCESS);
-		writer.write(Protocol.VOID);
-		writer.write(Protocol.END_OUTPUT);
+		writer.write(Protocol.VOID_COMMAND);
 		writer.flush();
 
 		// just dump the contents into the Socket

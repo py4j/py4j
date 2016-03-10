@@ -61,7 +61,8 @@ public class ArrayCommand extends AbstractCommand {
 	public static final char ARRAY_LEN_SUB_COMMAND_NAME = 'e';
 	public static final char ARRAY_CREATE_SUB_COMMAND_NAME = 'c';
 
-	public static final String RETURN_VOID = Protocol.SUCCESS + ""
+	public static final String RETURN_VOID = Protocol.RETURN_MESSAGE + "" +
+			Protocol.SUCCESS + ""
 			+ Protocol.VOID + Protocol.END_OUTPUT;
 
 	public ArrayCommand() {

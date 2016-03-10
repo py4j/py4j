@@ -36,6 +36,7 @@ import java.io.IOException;
 import py4j.Gateway;
 import py4j.GatewayConnection;
 import py4j.Py4JException;
+import py4j.Py4JServerConnection;
 
 /**
  * <p>
@@ -90,8 +91,8 @@ public interface Command {
 	 * </p>
 	 *
 	 * @param gateway
-	 * @param connection the {@link GatewayConnection} this socket is assigned to
+	 * @param connection the {@link Py4JServerConnection} this socket is assigned to
 	 */
-	public void init(Gateway gateway, GatewayConnection connection);
+	public void init(Gateway gateway, Py4JServerConnection connection);
 
 }

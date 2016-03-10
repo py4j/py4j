@@ -688,11 +688,13 @@ class GatewayClient(object):
         try:
             response = connection.send_command(command)
             if binary:
-                return response, GatewayConnectionGuard(self, connection)
+                return response, self._create_connection_guard(connection)
             else:
                 self._give_back_connection(connection)
         except Py4JNetworkError:
-            if retry:
+            if connection:
+                connection.close()
+            if self._should_retry(retry, connection):
                 logging.info("Exception while sending command.", exc_info=True)
                 response = self.send_command(command, binary=binary)
             else:
@@ -701,6 +703,12 @@ class GatewayClient(object):
                 response = proto.ERROR
 
         return response
+
+    def _create_connection_guard(self, connection):
+        return GatewayConnectionGuard(self, connection)
+
+    def _should_retry(self, retry, connection):
+        return retry
 
     def close(self):
         """Closes all currently opened connections.
@@ -782,7 +790,7 @@ class GatewayConnection(object):
            if the lifecycle of the Java program must be tied to the Python
            program.
         """
-        if (not self.is_connected):
+        if not self.is_connected:
             raise Py4JError("Gateway must be connected to send shutdown cmd.")
 
         try:
@@ -813,6 +821,8 @@ class GatewayConnection(object):
 
             answer = smart_decode(self.stream.readline()[:-1])
             logger.debug("Answer received: {0}".format(answer))
+            if answer.startswith(proto.RETURN_MESSAGE):
+                answer = answer[1:]
             # Happens when a the other end is dead. There might be an empty
             # answer before the socket raises an error.
             if answer.strip() == "":
@@ -1375,14 +1385,9 @@ class JavaGateway(object):
             deprecated("JavaGateway.gateway_client", "1.0",
                        "GatewayParameters")
         else:
-            gateway_client = GatewayClient(
-                address=self.gateway_parameters.address,
-                port=self.gateway_parameters.port,
-                auto_close=self.gateway_parameters.auto_close,
-                ssl_context=self.gateway_parameters.ssl_context)
+            gateway_client = self._create_gateway_client()
 
-        self.gateway_property = GatewayProperty(
-            self.gateway_parameters.auto_field, PythonProxyPool())
+        self.gateway_property = self._create_gateway_property()
         self._python_proxy_port = python_proxy_port
 
         # Setup gateway client
@@ -1395,6 +1400,19 @@ class JavaGateway(object):
             self._eager_load()
         if self.callback_server_parameters.eager_load:
             self.start_callback_server(self.callback_server_parameters)
+
+    def _create_gateway_client(self):
+        gateway_client = GatewayClient(
+            address=self.gateway_parameters.address,
+            port=self.gateway_parameters.port,
+            auto_close=self.gateway_parameters.auto_close,
+            ssl_context=self.gateway_parameters.ssl_context)
+        return gateway_client
+
+    def _create_gateway_property(self):
+        gateway_property = GatewayProperty(
+            self.gateway_parameters.auto_field, PythonProxyPool())
+        return gateway_property
 
     def set_gateway_client(self, gateway_client):
         """Sets the gateway client for this JavaGateway. This sets the
@@ -1450,9 +1468,9 @@ class JavaGateway(object):
         if not callback_server_parameters:
             callback_server_parameters = self.callback_server_parameters
 
-        self._callback_server = CallbackServer(
-            self.gateway_property.pool, self._gateway_client,
-            callback_server_parameters=callback_server_parameters)
+        self._callback_server = self._create_callback_server(
+            callback_server_parameters)
+
         try:
             self._callback_server.start()
         except Py4JNetworkError:
@@ -1462,6 +1480,12 @@ class JavaGateway(object):
             raise
 
         return True
+
+    def _create_callback_server(self, callback_server_parameters):
+        callback_server = CallbackServer(
+            self.gateway_property.pool, self._gateway_client,
+            callback_server_parameters=callback_server_parameters)
+        return callback_server
 
     def new_jvm_view(self, name="custom jvm"):
         """Creates a new JVM view with its own imports. A JVM view ensures
@@ -1765,9 +1789,8 @@ class CallbackServer(object):
                         socket_instance = self.ssl_context.wrap_socket(
                             socket_instance, server_side=True)
                     input = socket_instance.makefile("rb", 0)
-                    connection = CallbackConnection(
-                        self.pool, input, socket_instance, self.gateway_client,
-                        self.callback_server_parameters)
+                    connection = self._create_connection(
+                        socket_instance, input)
                     with self.lock:
                         if not self.is_shutdown:
                             self.connections.add(connection)
@@ -1780,6 +1803,12 @@ class CallbackServer(object):
                 logger.info("Error while waiting for a connection.")
             else:
                 logger.exception("Error while waiting for a connection.")
+
+    def _create_connection(self, socket_instance, stream):
+        connection = CallbackConnection(
+            self.pool, stream, socket_instance, self.gateway_client,
+            self.callback_server_parameters)
+        return connection
 
     def shutdown(self):
         """Stops listening and accepting connection requests. All live
@@ -1900,15 +1929,18 @@ class PythonProxyPool(object):
         self.dict = {}
         self.next_id = 0
 
-    def put(self, object):
+    def put(self, object, force_id=None):
         """Adds a proxy to the pool.
 
         :param object: The proxy to add to the pool.
         :rtype: A unique identifier associated with the object.
         """
         with self.lock:
-            id = proto.PYTHON_PROXY_PREFIX + smart_decode(self.next_id)
-            self.next_id += 1
+            if force_id:
+                id = force_id
+            else:
+                id = proto.PYTHON_PROXY_PREFIX + smart_decode(self.next_id)
+                self.next_id += 1
             self.dict[id] = object
         return id
 
