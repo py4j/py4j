@@ -183,20 +183,20 @@ class ProtocolTest(unittest.TestCase):
         p = start_echo_server_process()
         try:
             testSocket = get_socket()
-            testSocket.sendall("yo\n".encode("utf-8"))
-            testSocket.sendall("yro0\n".encode("utf-8"))
-            testSocket.sendall("yo\n".encode("utf-8"))
-            testSocket.sendall("ysHello World\n".encode("utf-8"))
+            testSocket.sendall("!yo\n".encode("utf-8"))
+            testSocket.sendall("!yro0\n".encode("utf-8"))
+            testSocket.sendall("!yo\n".encode("utf-8"))
+            testSocket.sendall("!ysHello World\n".encode("utf-8"))
             # No extra echange (method3) because it is already cached.
-            testSocket.sendall("yi123\n".encode("utf-8"))
-            testSocket.sendall("yd1.25\n".encode("utf-8"))
-            testSocket.sendall("yo\n".encode("utf-8"))
-            testSocket.sendall("yn\n".encode("utf-8"))
-            testSocket.sendall("yo\n".encode("utf-8"))
-            testSocket.sendall("ybTrue\n".encode("utf-8"))
-            testSocket.sendall("yo\n".encode("utf-8"))
-            testSocket.sendall("yL123\n".encode("utf-8"))
-            testSocket.sendall("ydinf\n".encode("utf-8"))
+            testSocket.sendall("!yi123\n".encode("utf-8"))
+            testSocket.sendall("!yd1.25\n".encode("utf-8"))
+            testSocket.sendall("!yo\n".encode("utf-8"))
+            testSocket.sendall("!yn\n".encode("utf-8"))
+            testSocket.sendall("!yo\n".encode("utf-8"))
+            testSocket.sendall("!ybTrue\n".encode("utf-8"))
+            testSocket.sendall("!yo\n".encode("utf-8"))
+            testSocket.sendall("!yL123\n".encode("utf-8"))
+            testSocket.sendall("!ydinf\n".encode("utf-8"))
             testSocket.close()
             sleep()
 
@@ -231,13 +231,13 @@ class IntegrationTest(unittest.TestCase):
     def testIntegration(self):
         try:
             testSocket = get_socket()
-            testSocket.sendall("yo\n".encode("utf-8"))
-            testSocket.sendall("yro0\n".encode("utf-8"))
-            testSocket.sendall("yo\n".encode("utf-8"))
-            testSocket.sendall("ysHello World\n".encode("utf-8"))
-            testSocket.sendall("yro1\n".encode("utf-8"))
-            testSocket.sendall("yo\n".encode("utf-8"))
-            testSocket.sendall("ysHello World2\n".encode("utf-8"))
+            testSocket.sendall("!yo\n".encode("utf-8"))
+            testSocket.sendall("!yro0\n".encode("utf-8"))
+            testSocket.sendall("!yo\n".encode("utf-8"))
+            testSocket.sendall("!ysHello World\n".encode("utf-8"))
+            testSocket.sendall("!yro1\n".encode("utf-8"))
+            testSocket.sendall("!yo\n".encode("utf-8"))
+            testSocket.sendall("!ysHello World2\n".encode("utf-8"))
             testSocket.close()
             sleep()
 
@@ -256,10 +256,10 @@ class IntegrationTest(unittest.TestCase):
     def testException(self):
         try:
             testSocket = get_socket()
-            testSocket.sendall("yo\n".encode("utf-8"))
-            testSocket.sendall("yro0\n".encode("utf-8"))
-            testSocket.sendall("yo\n".encode("utf-8"))
-            testSocket.sendall(b"x\n")
+            testSocket.sendall("!yo\n".encode("utf-8"))
+            testSocket.sendall("!yro0\n".encode("utf-8"))
+            testSocket.sendall("!yo\n".encode("utf-8"))
+            testSocket.sendall(b"!x\n")
             testSocket.close()
             sleep()
 
@@ -551,7 +551,7 @@ class StreamTest(unittest.TestCase):
         with e.getStream.stream() as conn:
             self.assertTrue(isinstance(conn, GatewayConnectionGuard))
             expected =\
-                u'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+                u"Lorem ipsum dolor sit amet, consectetur adipiscing elit."
             self.assertEqual(expected, smart_decode(conn.read(len(expected))))
 
     def testBinaryFailure(self):

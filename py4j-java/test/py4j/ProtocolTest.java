@@ -334,23 +334,23 @@ public class ProtocolTest {
 		ReturnObject rObject17 = ReturnObject
 				.getDecimalReturnObject(new BigDecimal("-14.532"));
 
-		assertEquals("x\n", Protocol.getOutputCommand(rObject1));
-		assertEquals("yi2\n", Protocol.getOutputCommand(rObject2));
-		assertEquals("yd2.2\n", Protocol.getOutputCommand(rObject3));
-		assertEquals("yd2.2\n", Protocol.getOutputCommand(rObject4));
-		assertEquals("ysc\n", Protocol.getOutputCommand(rObject5));
-		assertEquals("ysHello\\nWorld\n", Protocol.getOutputCommand(rObject6));
-		assertEquals("yL5\n", Protocol.getOutputCommand(rObject7));
-		assertEquals("ybtrue\n", Protocol.getOutputCommand(rObject8));
-		assertEquals("ybfalse\n", Protocol.getOutputCommand(rObject9));
-		assertEquals("yn\n", Protocol.getOutputCommand(rObject10));
-		assertEquals("yro123\n", Protocol.getOutputCommand(rObject11));
-		assertEquals("ylo123\n", Protocol.getOutputCommand(rObject12));
-		assertEquals("yao124\n", Protocol.getOutputCommand(rObject13));
-		assertEquals("yho125\n", Protocol.getOutputCommand(rObject14));
-		assertEquals("yto126\n", Protocol.getOutputCommand(rObject15));
-		assertEquals("ygo127\n", Protocol.getOutputCommand(rObject16));
-		assertEquals("yD-14.532\n", Protocol.getOutputCommand(rObject17));
+		assertEquals("!x\n", Protocol.getOutputCommand(rObject1));
+		assertEquals("!yi2\n", Protocol.getOutputCommand(rObject2));
+		assertEquals("!yd2.2\n", Protocol.getOutputCommand(rObject3));
+		assertEquals("!yd2.2\n", Protocol.getOutputCommand(rObject4));
+		assertEquals("!ysc\n", Protocol.getOutputCommand(rObject5));
+		assertEquals("!ysHello\\nWorld\n", Protocol.getOutputCommand(rObject6));
+		assertEquals("!yL5\n", Protocol.getOutputCommand(rObject7));
+		assertEquals("!ybtrue\n", Protocol.getOutputCommand(rObject8));
+		assertEquals("!ybfalse\n", Protocol.getOutputCommand(rObject9));
+		assertEquals("!yn\n", Protocol.getOutputCommand(rObject10));
+		assertEquals("!yro123\n", Protocol.getOutputCommand(rObject11));
+		assertEquals("!ylo123\n", Protocol.getOutputCommand(rObject12));
+		assertEquals("!yao124\n", Protocol.getOutputCommand(rObject13));
+		assertEquals("!yho125\n", Protocol.getOutputCommand(rObject14));
+		assertEquals("!yto126\n", Protocol.getOutputCommand(rObject15));
+		assertEquals("!ygo127\n", Protocol.getOutputCommand(rObject16));
+		assertEquals("!yD-14.532\n", Protocol.getOutputCommand(rObject17));
 	}
 
 }

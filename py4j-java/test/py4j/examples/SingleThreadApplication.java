@@ -1,4 +1,4 @@
-/*******************************************************************************
+/**
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,47 +25,41 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
-package py4j.commands;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-
-import py4j.*;
-
-/**
- * <p>
- * The ShutdownGatewayServerCommand is responsible for shutting down the
- * GatewayServer. This command is useful to shut down the server remotely, i.e.,
- * from the Python side.
- * </p>
- *
- * @author Barthelemy Dagenais
- *
  */
-public class ShutdownGatewayServerCommand extends AbstractCommand {
 
-	private Py4JJavaServer gatewayServer;
+package py4j.examples;
 
-	public static final String SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME = "s";
+import py4j.ClientServer;
+import py4j.GatewayServer;
 
-	public ShutdownGatewayServerCommand() {
-		super();
-		this.commandName = SHUTDOWN_GATEWAY_SERVER_COMMAND_NAME;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class SingleThreadApplication {
+
+	public static void main(String[] args) {
+		GatewayServer.turnAllLoggingOn();
+		Logger logger = Logger.getLogger("py4j");
+		logger.setLevel(Level.ALL);
+		ConsoleHandler handler = new ConsoleHandler();
+		handler.setLevel(Level.FINEST);
+		logger.addHandler(handler);
+		System.out.println("Starting");
+		ExampleEntryPoint point = new ExampleEntryPoint();
+		ClientServer clientServer = new ClientServer(point);
+		// Wait for Python side to shut down Java side
+		clientServer.startServer(true);
+
+		// Shut down after 5 seconds
+//		clientServer.startServer(true);
+//		try {
+//			Thread.currentThread().sleep(5000);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		clientServer.shutdown();
+//
+//		System.out.println("Stopping");
 	}
-
-	@Override
-	public void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException {
-		this.gatewayServer.shutdown();
-	}
-
-	@Override
-	public void init(Gateway gateway, Py4JServerConnection connection) {
-		super.init(gateway, connection);
-		this.gatewayServer = (Py4JJavaServer) gateway
-				.getObject(GatewayServer.GATEWAY_SERVER_ID);
-	}
-
 }

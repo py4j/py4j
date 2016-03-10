@@ -82,7 +82,7 @@ import py4j.commands.Command;
  *
  */
 public class GatewayServer extends DefaultGatewayServerListener implements
-		Runnable {
+		Py4JJavaServer, Runnable {
 
 	public static final String DEFAULT_ADDRESS = "127.0.0.1";
 
@@ -160,7 +160,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		GatewayServer.turnLoggingOff();
 	}
 
-	private static InetAddress defaultAddress() {
+	public static InetAddress defaultAddress() {
 		try {
 			return InetAddress.getByName(DEFAULT_ADDRESS);
 		} catch (UnknownHostException e) {
@@ -321,7 +321,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	public GatewayServer(Object entryPoint, int port, int connectTimeout,
 			int readTimeout, List<Class<? extends Command>> customCommands,
-			CallbackClient cbClient) {
+			Py4JPythonClient cbClient) {
 		this(
 			entryPoint,
 			port,
@@ -359,7 +359,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 */
 	public GatewayServer(Object entryPoint, int port, InetAddress address, int connectTimeout,
 			int readTimeout, List<Class<? extends Command>> customCommands,
-			CallbackClient cbClient, ServerSocketFactory sSocketFactory) {
+			Py4JPythonClient cbClient, ServerSocketFactory sSocketFactory) {
 		super();
 		this.port = port;
 		this.address = address;
@@ -368,8 +368,12 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		this.gateway = new Gateway(entryPoint, cbClient);
 		this.pythonPort = cbClient.getPort();
 		this.pythonAddress = cbClient.getAddress();
-		this.gateway.getBindings().put(GATEWAY_SERVER_ID, this);
-		this.customCommands = customCommands;
+		this.gateway.putObject(GATEWAY_SERVER_ID, this);
+		if (customCommands != null) {
+			this.customCommands = customCommands;
+		} else {
+			this.customCommands = new ArrayList<Class<? extends Command>>();
+		}
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 		this.sSocketFactory = sSocketFactory;
 	}
@@ -380,7 +384,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		}
 	}
 
-	public void connectionStopped(GatewayConnection gatewayConnection) {
+	public void connectionStopped(Py4JServerConnection gatewayConnection) {
 		try {
 			lock.lock();
 			if (!isShutdown) {
@@ -392,7 +396,17 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	}
 
-	protected GatewayConnection createConnection(Gateway gateway, Socket socket)
+	/**
+	 * <p>
+	 * Creates a server connection from a Python call to the Java side.
+	 * </p>
+	 *
+	 * @param gateway
+	 * @param socket
+	 * @return
+	 * @throws IOException
+	 */
+	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket)
 			throws IOException {
 		return new GatewayConnection(gateway, socket, customCommands, listeners);
 	}
@@ -408,7 +422,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		}
 	}
 
-	protected void fireConnectionStarted(GatewayConnection gatewayConnection) {
+	protected void fireConnectionStarted(Py4JServerConnection gatewayConnection) {
 		logger.info("Connection Started");
 		for (GatewayServerListener listener : listeners) {
 			try {
@@ -482,12 +496,16 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		return address;
 	}
 
-	public CallbackClient getCallbackClient() {
+	public Py4JPythonClient getCallbackClient() {
 		return gateway.getCallbackClient();
 	}
 
 	public int getConnectTimeout() {
 		return connectTimeout;
+	}
+
+	public Gateway getGateway() {
+		return gateway;
 	}
 
 	/**
@@ -530,13 +548,13 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		return readTimeout;
 	}
 
-	private void processSocket(Socket socket) {
+	protected void processSocket(Socket socket) {
 		try {
 			lock.lock();
 			if (!isShutdown) {
 				connections.add(socket);
 				socket.setSoTimeout(readTimeout);
-				GatewayConnection gatewayConnection = createConnection(gateway,
+				Py4JServerConnection gatewayConnection = createConnection(gateway,
 						socket);
 				fireConnectionStarted(gatewayConnection);
 			}

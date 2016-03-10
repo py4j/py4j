@@ -37,11 +37,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import py4j.Gateway;
-import py4j.GatewayConnection;
-import py4j.Protocol;
-import py4j.Py4JException;
-import py4j.ReturnObject;
+import py4j.*;
 
 /**
  * <p>
@@ -61,7 +57,7 @@ public abstract class AbstractCommand implements Command {
 	private final Logger logger = Logger.getLogger(AbstractCommand.class
 			.getName());
 
-	protected GatewayConnection connection;
+	protected Py4JServerConnection connection;
 
 	@Override
 	public abstract void execute(String commandName, BufferedReader reader,
@@ -114,7 +110,7 @@ public abstract class AbstractCommand implements Command {
 	}
 
 	@Override
-	public void init(Gateway gateway, GatewayConnection connection) {
+	public void init(Gateway gateway, Py4JServerConnection connection) {
 		this.gateway = gateway;
 		this.connection = connection;
 	}

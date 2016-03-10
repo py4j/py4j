@@ -41,9 +41,9 @@ public interface GatewayServerListener {
 
 	void connectionError(Exception e);
 
-	void connectionStarted(GatewayConnection gatewayConnection);
+	void connectionStarted(Py4JServerConnection gatewayConnection);
 
-	void connectionStopped(GatewayConnection gatewayConnection);
+	void connectionStopped(Py4JServerConnection gatewayConnection);
 
 	/**
 	 * <p>

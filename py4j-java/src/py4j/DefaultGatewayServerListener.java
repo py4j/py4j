@@ -47,11 +47,11 @@ public class DefaultGatewayServerListener implements GatewayServerListener {
 	}
 
 	@Override
-	public void connectionStarted(GatewayConnection gatewayConnection) {
+	public void connectionStarted(Py4JServerConnection gatewayConnection) {
 	}
 
 	@Override
-	public void connectionStopped(GatewayConnection gatewayConnection) {
+	public void connectionStopped(Py4JServerConnection gatewayConnection) {
 	}
 
 	@Override

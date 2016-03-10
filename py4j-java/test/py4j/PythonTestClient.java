@@ -37,7 +37,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class PythonClient implements Runnable {
+public class PythonTestClient implements Runnable {
 
 	public volatile String lastProxyMessage;
 	public volatile String lastReturnMessage;

@@ -34,11 +34,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
-import py4j.Gateway;
-import py4j.GatewayConnection;
-import py4j.Protocol;
-import py4j.Py4JException;
-import py4j.ReturnObject;
+import py4j.*;
 import py4j.reflection.ReflectionEngine;
 
 /**
@@ -103,7 +99,7 @@ public class FieldCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void init(Gateway gateway, GatewayConnection connection) {
+	public void init(Gateway gateway, Py4JServerConnection connection) {
 		super.init(gateway, connection);
 		reflectionEngine = gateway.getReflectionEngine();
 	}
