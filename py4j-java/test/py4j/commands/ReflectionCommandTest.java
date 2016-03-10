@@ -54,7 +54,7 @@ public class ReflectionCommandTest {
 		gateway = new Gateway(new ExampleEntryPoint());
 		gateway.startup();
 		command = new ReflectionCommand();
-		command.init(gateway);
+		command.init(gateway, null);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
 

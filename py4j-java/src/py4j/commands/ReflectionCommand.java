@@ -36,11 +36,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.logging.Logger;
 
-import py4j.Gateway;
-import py4j.JVMView;
-import py4j.Protocol;
-import py4j.Py4JException;
-import py4j.ReturnObject;
+import py4j.*;
 import py4j.reflection.ReflectionEngine;
 import py4j.reflection.TypeUtil;
 
@@ -50,9 +46,9 @@ import py4j.reflection.TypeUtil;
  * static members. This is the command invoked when using the jvm property of a
  * JavaGateway on the Python side.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class ReflectionCommand extends AbstractCommand {
 
@@ -93,7 +89,7 @@ public class ReflectionCommand extends AbstractCommand {
 	 * 1- Try fields. 2- If no static field, try methods. 3- If method and
 	 * static, return method. 4- If method and not static, then class is
 	 * impossible so return exception. 5- If no method, try class.
-	 * 
+	 *
 	 * @param reader
 	 * @return
 	 * @throws IOException
@@ -163,8 +159,8 @@ public class ReflectionCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void init(Gateway gateway) {
-		super.init(gateway);
+	public void init(Gateway gateway, Py4JServerConnection connection) {
+		super.init(gateway, connection);
 		rEngine = gateway.getReflectionEngine();
 	}
 

@@ -31,6 +31,9 @@ package py4j;
 
 import java.net.Socket;
 
+/**
+ *
+ */
 public interface Py4JServerConnection {
 
 	/**

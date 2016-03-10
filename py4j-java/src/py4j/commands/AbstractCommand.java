@@ -37,19 +37,16 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import py4j.Gateway;
-import py4j.Protocol;
-import py4j.Py4JException;
-import py4j.ReturnObject;
+import py4j.*;
 
 /**
  * <p>
  * Abstract base class for commands. Provides useful methods allowing the
  * parsing of command arguments.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public abstract class AbstractCommand implements Command {
 
@@ -60,12 +57,14 @@ public abstract class AbstractCommand implements Command {
 	private final Logger logger = Logger.getLogger(AbstractCommand.class
 			.getName());
 
+	protected Py4JServerConnection connection;
+
 	@Override
 	public abstract void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException;
 
 	/**
-	 * 
+	 *
 	 * @param reader
 	 * @return A list of the remaining arguments (converted using
 	 *         Protocol.getObject) in the reader. Consumes the end of command
@@ -90,7 +89,7 @@ public abstract class AbstractCommand implements Command {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param reader
 	 * @return A list of the remaining arguments (as strings) in the reader.
 	 *         Consumes the end of command part.
@@ -111,15 +110,16 @@ public abstract class AbstractCommand implements Command {
 	}
 
 	@Override
-	public void init(Gateway gateway) {
+	public void init(Gateway gateway, Py4JServerConnection connection) {
 		this.gateway = gateway;
+		this.connection = connection;
 	}
 
 	/**
 	 * <p>
 	 * Convenient shortcut to invoke a method dynamically.
 	 * </p>
-	 * 
+	 *
 	 * @param methodName
 	 * @param targetObjectId
 	 * @param arguments

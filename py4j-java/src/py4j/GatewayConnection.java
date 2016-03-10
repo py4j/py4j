@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * 
+ *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -56,6 +56,7 @@ import py4j.commands.ListCommand;
 import py4j.commands.MemoryCommand;
 import py4j.commands.ReflectionCommand;
 import py4j.commands.ShutdownGatewayServerCommand;
+import py4j.commands.StreamCommand;
 
 /**
  * <p>
@@ -63,19 +64,19 @@ import py4j.commands.ShutdownGatewayServerCommand;
  * GatewayConnection lives in its own thread and is created on demand (e.g., one
  * per concurrent thread).
  * </p>
- * 
+ *
  * <p>
  * The request to connect to the JVM goes through the {@link py4j.GatewayServer
  * GatewayServer} first and is then passed to a GatewayConnection.
  * </p>
- * 
+ *
  * <p>
  * This class is not intended to be directly accessed by users.
  * </p>
- * 
- * 
+ *
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class GatewayConnection implements Runnable, Py4JServerConnection {
 
@@ -102,10 +103,11 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		baseCommands.add(JVMViewCommand.class);
 		baseCommands.add(ExceptionCommand.class);
 		baseCommands.add(DirCommand.class);
+		baseCommands.add(StreamCommand.class);
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The list of base commands that are provided by default. Can be
 	 *         hidden by custom commands with the same command id by passing a
 	 *         list of custom commands to the {@link py4j.GatewayServer
@@ -151,7 +153,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The socket used by this gateway connection.
 	 */
 	public Socket getSocket() {
@@ -162,7 +164,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 	 * <p>
 	 * Override this method to initialize custom commands.
 	 * </p>
-	 * 
+	 *
 	 * @param gateway
 	 */
 	protected void initCommands(Gateway gateway,
@@ -170,7 +172,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		for (Class<? extends Command> clazz : commandsClazz) {
 			try {
 				Command cmd = clazz.newInstance();
-				cmd.init(gateway);
+				cmd.init(gateway, this);
 				commands.put(cmd.getCommandName(), cmd);
 			} catch (Exception e) {
 				String name = "null";

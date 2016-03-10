@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * - Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- * 
+ *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,6 +36,7 @@ import java.io.IOException;
 import py4j.Gateway;
 import py4j.GatewayConnection;
 import py4j.Py4JException;
+import py4j.Py4JServerConnection;
 
 /**
  * <p>
@@ -45,25 +46,25 @@ import py4j.Py4JException;
  * Typically, each command will define a public constant field that contains the
  * command name, i.e., a String that uniquely identifies the command.
  * </p>
- * 
+ *
  * <p>
  * The command name can be a String of any length, but it must not contain an
  * end of line character and it cannot be the End of Command character,
  * {@link py4j.Protocol#END}.
  * </p>
- * 
+ *
  * <p>
  * There is a command instance per {@link GatewayConnection}: this ensures that
  * each command instance is accessed by only one thread/connection at a time.
  * </p>
- * 
+ *
  * @author barthelemy
- * 
+ *
  */
 public interface Command {
 
 	/**
-	 * 
+	 *
 	 * @param commandName
 	 *            The command name that was extracted of the command.
 	 * @param reader
@@ -88,9 +89,10 @@ public interface Command {
 	 * <p>
 	 * Called when a command instance is created and assigned to a connection.
 	 * </p>
-	 * 
+	 *
 	 * @param gateway
+	 * @param connection the {@link Py4JServerConnection} this socket is assigned to
 	 */
-	public void init(Gateway gateway);
+	public void init(Gateway gateway, Py4JServerConnection connection);
 
 }
