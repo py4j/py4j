@@ -15,7 +15,8 @@ from threading import local, Thread
 
 from py4j.java_gateway import (
     quiet_close, quiet_shutdown, GatewayClient, JavaGateway,
-    CallbackServerParameters, GatewayParameters, CallbackServer)
+    CallbackServerParameters, GatewayParameters, CallbackServer,
+    GatewayConnectionGuard)
 from py4j import protocol as proto
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
@@ -85,6 +86,18 @@ class JavaClient(GatewayClient):
     def _should_retry(self, retry, connection):
         # Only retry if Python was driving the communication.
         return retry and connection and connection.initiated_from_client
+
+    def _create_connection_guard(self, connection):
+        return ClientServerConnectionGuard(self, connection)
+
+
+class ClientServerConnectionGuard(GatewayConnectionGuard):
+    """Connection guard that does nothing on exit because there is no need to
+    close or give back a connection.
+    """
+
+    def __exit__(self, type, value, traceback):
+        pass
 
 
 class PythonServer(CallbackServer):

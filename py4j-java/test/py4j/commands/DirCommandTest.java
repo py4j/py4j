@@ -70,7 +70,8 @@ public class DirCommandTest {
 				"method2", "method3", "method4", "method5", "method6",
 				"method7", "method8", "method9", "method10", "method11",
 				"getList", "getField1", "setField1", "getStringArray",
-				"getIntArray", "callHello", "callHello2", "static_method" }));
+				"getIntArray", "callHello", "callHello2", "static_method",
+				"getInteger", "getBrokenStream", "getStream" }));
 		// Defined in Object
 		ExampleClassMethods.addAll(Arrays
 				.asList(new String[] { "getClass", "hashCode", "equals",
@@ -88,7 +89,7 @@ public class DirCommandTest {
 		gateway = new Gateway(entryPoint);
 		gateway.startup();
 		command = new DirCommand();
-		command.init(gateway);
+		command.init(gateway, null);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
 		target = gateway.getReturnObject(entryPoint.getNewExample()).getName();

@@ -58,7 +58,7 @@ public class ConstructorCommandTest {
 		gateway = new Gateway(entryPoint);
 		gateway.startup();
 		command = new ConstructorCommand();
-		command.init(gateway);
+		command.init(gateway, null);
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
 	}

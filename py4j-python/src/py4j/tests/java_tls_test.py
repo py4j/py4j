@@ -7,32 +7,32 @@ from __future__ import unicode_literals, absolute_import
 
 from multiprocessing import Process
 import subprocess
-from threading import Thread
-from traceback import print_exc
 import unittest
 import ssl
 import os
 import sys
 
-from py4j.compat import range
 from py4j.java_gateway import (
-    JavaGateway, PythonProxyPool, CallbackServerParameters,
+    JavaGateway, CallbackServerParameters,
     set_default_callback_accept_timeout, GatewayParameters)
 from py4j.tests.java_gateway_test import (
-    PY4J_JAVA_PATH, safe_shutdown, sleep, test_gateway_connection)
+    PY4J_JAVA_PATH, safe_shutdown, sleep)
 
 set_default_callback_accept_timeout(0.125)
+
 
 def start_example_tls_server():
     subprocess.call([
         "java", "-cp", PY4J_JAVA_PATH,
         "py4j.examples.ExampleSSLApplication"])
 
+
 def start_example_tls_process():
     p = Process(target=start_example_tls_server)
     p.start()
     sleep()
     return p
+
 
 class Adder(object):
     def doOperation(self, i, j):
@@ -44,8 +44,8 @@ class Adder(object):
 if sys.version_info >= (2, 7):
     # ssl.SSLContext introduced in Python 2.7
     class TestIntegration(unittest.TestCase):
-        """
-        Tests cases borrowed from other files, but executed over a TLS connection.
+        """Tests cases borrowed from other files, but executed over a
+        TLS connection.
         """
         def setUp(self):
             key_file = os.path.join(
@@ -60,9 +60,11 @@ if sys.version_info >= (2, 7):
             server_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
             server_ssl_context.load_cert_chain(key_file, password='password')
 
-            callback_server_parameters=CallbackServerParameters(ssl_context=server_ssl_context)
+            callback_server_parameters = CallbackServerParameters(
+                ssl_context=server_ssl_context)
+            # address must match cert, because we're checking hostnames
             gateway_parameters = GatewayParameters(
-                address='localhost', # must match cert, as we're checking hostnames
+                address='localhost',
                 ssl_context=client_ssl_context)
 
             self.p = start_example_tls_process()

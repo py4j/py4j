@@ -33,12 +33,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import py4j.Gateway;
-import py4j.JVMView;
-import py4j.Protocol;
-import py4j.Py4JException;
-import py4j.ReturnObject;
-import py4j.StringUtil;
+import py4j.*;
 import py4j.reflection.ReflectionEngine;
 
 /**
@@ -46,9 +41,9 @@ import py4j.reflection.ReflectionEngine;
  * A JVMViewCommand is responsible for managing JVM views: creating views,
  * adding imports, searching for fully qualified names.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class JVMViewCommand extends AbstractCommand {
 
@@ -119,8 +114,8 @@ public class JVMViewCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void init(Gateway gateway) {
-		super.init(gateway);
+	public void init(Gateway gateway, Py4JServerConnection connection) {
+		super.init(gateway, connection);
 		rEngine = gateway.getReflectionEngine();
 	}
 

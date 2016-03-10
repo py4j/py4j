@@ -34,19 +34,16 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
-import py4j.Gateway;
-import py4j.Protocol;
-import py4j.Py4JException;
-import py4j.ReturnObject;
+import py4j.*;
 import py4j.reflection.ReflectionEngine;
 
 /**
  * <p>
  * A FieldCommand is responsible for accessing and setting fields of objects.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class FieldCommand extends AbstractCommand {
 
@@ -102,8 +99,8 @@ public class FieldCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void init(Gateway gateway) {
-		super.init(gateway);
+	public void init(Gateway gateway, Py4JServerConnection connection) {
+		super.init(gateway, connection);
 		reflectionEngine = gateway.getReflectionEngine();
 	}
 

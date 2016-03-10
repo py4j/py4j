@@ -4,9 +4,10 @@ from multiprocessing import Process
 import subprocess
 import unittest
 
+from py4j.java_gateway import GatewayConnectionGuard, is_instance_of
 from py4j.clientserver import (
     ClientServer, JavaParameters, PythonParameters)
-from py4j.protocol import Py4JJavaError
+from py4j.protocol import Py4JJavaError, smart_decode
 
 from py4j.tests.java_callback_test import IHelloImpl
 from py4j.tests.java_gateway_test import (
@@ -71,6 +72,27 @@ class IntegrationTest(unittest.TestCase):
                 JavaParameters(), PythonParameters())
             ms = client_server.jvm.System.currentTimeMillis()
             self.assertTrue(ms > 0)
+            client_server.shutdown()
+
+    def testStream(self):
+        with clientserver_example_app_process():
+            client_server = ClientServer(
+                JavaParameters(), PythonParameters())
+            e = client_server.entry_point.getNewExample()
+
+            # not binary - just get the Java object
+            v1 = e.getStream()
+            self.assertTrue(
+                is_instance_of(
+                    client_server, v1, "java.nio.channels.ReadableByteChannel"))
+
+            # pull it as a binary stream
+            with e.getStream.stream() as conn:
+                self.assertTrue(isinstance(conn, GatewayConnectionGuard))
+                expected =\
+                    u"Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                self.assertEqual(
+                    expected, smart_decode(conn.read(len(expected))))
             client_server.shutdown()
 
     def testRecursion(self):
