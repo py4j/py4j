@@ -84,7 +84,8 @@ class IntegrationTest(unittest.TestCase):
             v1 = e.getStream()
             self.assertTrue(
                 is_instance_of(
-                    client_server, v1, "java.nio.channels.ReadableByteChannel"))
+                    client_server, v1,
+                    "java.nio.channels.ReadableByteChannel"))
 
             # pull it as a binary stream
             with e.getStream.stream() as conn:
