@@ -38,6 +38,7 @@ import py4j.Py4JException;
 import py4j.ReturnObject;
 import py4j.model.HelpPageGenerator;
 import py4j.model.Py4JClass;
+import py4j.reflection.ReflectionUtils;
 
 /**
  * <p>
@@ -90,8 +91,8 @@ public class HelpPageCommand extends AbstractCommand {
 		String returnCommand = Protocol.getOutputErrorCommand();
 
 		try {
-			Py4JClass clazz = Py4JClass.buildClass(Class.forName(className),
-					true);
+			Py4JClass clazz = Py4JClass.buildClass(
+					ReflectionUtils.classForName(className), true);
 			boolean isShortName = Protocol.getBoolean(shortName);
 			String helpPage = HelpPageGenerator.getHelpPage(clazz, pattern,
 					isShortName);
