@@ -36,6 +36,7 @@ import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 
 import py4j.reflection.PythonProxyHandler;
+import py4j.reflection.ReflectionUtils;
 
 /**
  * <p>
@@ -389,7 +390,7 @@ public class Protocol {
 
 		for (int i = 1; i < length; i++) {
 			try {
-				interfaces[i - 1] = Class.forName(parts[i]);
+				interfaces[i - 1] = ReflectionUtils.classForName(parts[i]);
 				if (!interfaces[i - 1].isInterface()) {
 					throw new Py4JException(
 							"This class "
