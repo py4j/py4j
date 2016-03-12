@@ -503,7 +503,7 @@ class GatewayParameters(object):
          the JVM, it shuts down itself and raises an exception.
 
         :param ssl_context: if not None, SSL connections will be made using
-        this SSLContext
+         this SSLContext
         """
         self.address = address
         self.port = port
