@@ -31,10 +31,10 @@ documentation fixes. Please visit the `contributing guide
 information.
 
 .. image:: https://img.shields.io/circleci/project/bartdag/py4j.svg
-    :target: https://circleci.com/gh/bartdag/py4
+    :target: https://circleci.com/gh/bartdag/py4j
 
 .. image:: https://img.shields.io/pypi/v/py4j.svg
-    :target: https://pypi.python.org/pypi/py4
+    :target: https://pypi.python.org/pypi/py4j
 
 .. image:: https://img.shields.io/pypi/l/py4j.svg
 
