@@ -165,128 +165,120 @@ Implementing Java interfaces from Python (callback)
 ---------------------------------------------------
 
 Since version 0.3, Py4J allows Python classes to implement Java interfaces so
-that the JVM can call back Python objects.  In the following example, you will
-play the role of a Mad Scientist :sup:`TM` and you will create a Java program
-that invokes an operator with two or three random integers. The operators will
-be implemented by a Python class.
+that the JVM can call back Python objects. In the following example, a Python
+class implements a Java listener interface.
 
-Here is the code of the main Java program:
+Here is the code of listener interface:
 
 .. code-block:: java
 
+  // py4j/examples/ExampleListener.java
   package py4j.examples;
 
-  import java.util.ArrayList;
-  import java.util.List;
-  import java.util.Random;
+  public interface ExampleListener {
+
+      Object notify(Object source);
+
+  }
+
+
+Here is the code of the main Java application.  The program has a main method
+starting a `GatewayServer`. The entry point, a `ListenerApplication` instance,
+has two methods, one to register listeners, the other to notify all listeners.
+Start this program before running the Python code below.
+
+.. code-block:: java
+
+  // py4j/examples/ListenerApplication.java
+  package py4j.examples;
 
   import py4j.GatewayServer;
 
-  public class OperatorExample {
+  import java.util.ArrayList;
+  import java.util.List;
 
-        // To prevent integer overflow
-        private final static int MAX = 1000;
+  public class ListenerApplication {
 
-        public List<Integer> randomBinaryOperator(Operator op) {
-            Random random = new Random();
-            List<Integer> numbers = new ArrayList<Integer>();
-            numbers.add(random.nextInt(MAX));
-            numbers.add(random.nextInt(MAX));
-            numbers.add(op.doOperation(numbers.get(0), numbers.get(1)));
-            return numbers;
-        }
+      List<ExampleListener> listeners = new ArrayList<ExampleListener>();
 
-        public List<Integer> randomTernaryOperator(Operator op) {
-            Random random = new Random();
-            List<Integer> numbers = new ArrayList<Integer>();
-            numbers.add(random.nextInt(MAX));
-            numbers.add(random.nextInt(MAX));
-            numbers.add(random.nextInt(MAX));
-            numbers.add(op.doOperation(numbers.get(0), numbers.get(1), numbers.get(2)));
-            return numbers;
-        }
+      public void registerListener(ExampleListener listener) {
+          listeners.add(listener);
+      }
 
-        public static void main(String[] args) {
-            GatewayServer server = new GatewayServer(new OperatorExample());
-            server.start();
-        }
+      public void notifyAllListeners() {
+          for (ExampleListener listener: listeners) {
+              Object returnValue = listener.notify(this);
+              System.out.println(returnValue);
+          }
+      }
 
+      @Override
+      public String toString() {
+          return "<ListenerApplication> instance";
+      }
+
+      public static void main(String[] args) {
+          ListenerApplication application = new ListenerApplication();
+          GatewayServer server = new GatewayServer(application);
+          server.start(true);
+      }
   }
 
 
-The program has a main method starting a `GatewayServer`. The entry point, a
-`OperatorExample` instance, offers two methods that take as a parameter an
-`Operator` instance. Each method calls the operator with two or three random
-integers and save the integers and the result in a list. Here is the
-declaration of `Operator`:
-
-
-.. code-block:: java
-
-  package py4j.examples;
-
-  public interface Operator {
-
-        public int doOperation(int i, int j);
-
-        public int doOperation(int i, int j, int k);
-
-  }
-
-
-Now, because the Mad Scientist :sup:`TM` is, well, mad, he wants to define an
-Operator in Python. Here is his little Python program:
+Here is the Python program that implements the Java interface and calls the
+ListenerApplication to notify all listeners. Then multiple exchanges between
+Java and Python occurs (e.g., Python calls System.out.println on the Java
+side).
 
 ::
 
-  from py4j.java_gateway import JavaGateway
 
-  class Addition(object):
-      def doOperation(self, i, j, k = None):
-        if k == None:
-            return i + j
-        else:
-            return i + j + k
+  from py4j.java_gateway import JavaGateway, CallbackServerParameters
 
-        class Java:
-        implements = ['py4j.examples.Operator']
 
-  if __name__ == '__main__':
-      # The callback server parameters is optional, but it tells to start the
-      # callback server automatically.
-      gateway = JavaGateway(CallbackServerParameters())
-      operator = Addition()
-      numbers = gateway.entry_point.randomBinaryOperator(operator)
-      print(numbers)
-      numbers = gateway.entry_point.randomTernaryOperator(operator)
-      print(numbers)
+  class PythonListener(object):
+
+      def __init__(self, gateway):
+          self.gateway = gateway
+
+      def notify(self, obj):
+          print("Notified by Java")
+          print(obj)
+          gateway.jvm.System.out.println("Hello from python!")
+
+          return "A Return Value"
+
+      class Java:
+          implements = ["py4j.examples.ExampleListener"]
+
+  if __name__ == "__main__":
+      gateway = JavaGateway(
+          callback_server_parameters=CallbackServerParameters())
+      listener = PythonListener(gateway)
+      gateway.entry_point.registerListener(listener)
+      gateway.entry_point.notifyAllListeners()
       gateway.shutdown()
 
 
-The `Addition` class is a standard Python class that has one method,
-`doOperation`. The signature of the method contains two parameters and an
-optional third parameter: this maps with the two overloaded methods in the
-`Operator` Java interface. Each method implementing an overloaded method in a
-Java interface should accept all possible combinations of parameters,
-otherwise, an exception will be thrown if the Java program tries to call an
-unsupported method.
+The `PythonListener` class is a standard Python class that has one method,
+`notify`. The signature of the method contains one parameter. When interfaces
+contain overloaded methods, the python method must accept all possible
+combinations of parameters (with `*args` and `**kwargs` or with default
+parameters).
 
-Py4J recognizes that the `Addition` class implements a Java interface because
-it declares an internal class called `Java`, which has a member named
+Py4J recognizes that the `PythonListener` class implements a Java interface
+because it declares an internal class called `Java`, which has a member named
 `implements`. This member is a list of string representing the fully qualified
 name of implemented Java interfaces.
 
 Finally, the Python program contains a main method that starts a gateway,
-initializes an Addition operator and sends it to the `OperatorExample` instance
-on the Java side. Py4J takes care of creating the necessary proxies: the
-`doOperation` method of the `Addition` class is called in the Java VM, but the
-method is executed in the Python interpreter.
+initializes a PythonListener instance and registers it to the
+`ListenerApplication` instance on the Java side. Then, it calls the
+`notifyAllListeners()` method, which will notify all listeners. Py4J takes care
+of creating the necessary proxies: the `notify` method of the `PythonListener`
+class is called in the Java VM, but the method is executed in the Python
+interpreter.
 
-Note that to enable the Python program to receive callbacks, the JavaGateway
-instance must be created with `start_callback_server=True`. Otherwise, the
-callback server must be started manually by calling
-:func:`restart_callback_server
-<py4j.java_gateway.JavaGateway.restart_callback_server>`
 
 .. warning::
 
