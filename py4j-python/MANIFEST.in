@@ -1,3 +1,4 @@
+include README.rst
 include setup.py
 include LICENSE.txt
 include nose.cfg
