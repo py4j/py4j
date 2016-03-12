@@ -194,7 +194,7 @@ public class ReflectionEngine {
 		Class<?> clazz = null;
 
 		try {
-			clazz = Class.forName(classFQN);
+			clazz = ReflectionUtils.classForName(classFQN);
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
 					e);
@@ -257,7 +257,7 @@ public class ReflectionEngine {
 		Class<?> clazz = null;
 
 		try {
-			clazz = Class.forName(classFQN);
+			clazz = ReflectionUtils.classForName(classFQN);
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
 					e);
@@ -350,7 +350,7 @@ public class ReflectionEngine {
 		Class<?> clazz = null;
 
 		try {
-			clazz = Class.forName(classFQN);
+			clazz = ReflectionUtils.classForName(classFQN);
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
 					e);
