@@ -16,6 +16,8 @@ Py4J 0.9.2
   @JoshRosen.
 - Documentation: made a simpler and easier to understand example of callback
   (Java calling Python)
+- `tickets closed for 0.9.2 release
+  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.9.2>`_
 
 Py4J 0.9.1
 ----------
