@@ -104,6 +104,11 @@ public class CallbackConnection implements Py4JClientConnection {
 			throw new Py4JNetworkException("Error while sending a command: "
 					+ command, e);
 		}
+
+		if (Protocol.isReturnMessage(returnCommand)) {
+			returnCommand = returnCommand.substring(1);
+		}
+
 		logger.log(Level.INFO, "Returning CB command: " + returnCommand);
 		return returnCommand;
 	}

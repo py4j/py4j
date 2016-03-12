@@ -1893,7 +1893,7 @@ class CallbackConnection(Thread):
                 method = smart_decode(input.readline())[:-1]
                 params = self._get_params(input)
                 return_value = getattr(self.pool[obj_id], method)(*params)
-                return_message = "y" +\
+                return_message = proto.RETURN_MESSAGE + proto.SUCCESS +\
                     get_command_part(return_value, self.pool)
             except Exception:
                 logger.exception("There was an exception while executing the "
