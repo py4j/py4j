@@ -232,7 +232,7 @@ public class TypeUtil {
 	public static Class<?> forName(String fqn) throws ClassNotFoundException {
 		Class<?> clazz = primitiveClasses.get(fqn);
 		if (clazz == null) {
-			clazz = ReflectionUtils.classForName(fqn);
+			clazz = ReflectionUtil.classForName(fqn);
 		}
 		return clazz;
 	}
@@ -244,7 +244,7 @@ public class TypeUtil {
 			if (fqn.indexOf('.') < 0) {
 				clazz = getClass(fqn, view);
 			} else {
-				clazz = ReflectionUtils.classForName(fqn);
+				clazz = ReflectionUtil.classForName(fqn);
 			}
 		}
 		return clazz;
@@ -256,18 +256,18 @@ public class TypeUtil {
 
 		try {
 			// First, try the fqn
-			clazz = ReflectionUtils.classForName(simpleName);
+			clazz = ReflectionUtil.classForName(simpleName);
 		} catch (Exception e) {
 			// Then try the single import
 			Map<String, String> singleImportsMap = view.getSingleImportsMap();
 			String newFQN = singleImportsMap.get(simpleName);
 			if (newFQN != null) {
-				clazz = ReflectionUtils.classForName(newFQN);
+				clazz = ReflectionUtil.classForName(newFQN);
 			} else {
 				// Or try star imports
 				for (String starImport : view.getStarImports()) {
 					try {
-						clazz = ReflectionUtils.classForName(
+						clazz = ReflectionUtil.classForName(
 								starImport + "." + simpleName);
 						break;
 					} catch (Exception e2) {
@@ -410,7 +410,7 @@ public class TypeUtil {
 	public static boolean isInstanceOf(String classFQN, Object object) {
 		Class<?> clazz = null;
 		try {
-			clazz = ReflectionUtils.classForName(classFQN);
+			clazz = ReflectionUtil.classForName(classFQN);
 		} catch (Exception e) {
 			throw new Py4JException(e);
 		}
