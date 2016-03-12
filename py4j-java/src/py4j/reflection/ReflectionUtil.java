@@ -1,19 +1,19 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- *
+ * <p/>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * <p/>
  * - Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *
+ * <p/>
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- *
+ * <p/>
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- *
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,14 +29,27 @@
 
 package py4j.reflection;
 
-public class ReflectionUtils {
-  /**
-   * Preferred alternative to {@link Class#forName(String)}, which uses the
-   * current thread's context classloader instead of the root classloader.
-   */
-  public static Class<?> classForName(String className)
-      throws ClassNotFoundException {
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    return Class.forName(className, true, classLoader);
-  }
+/**
+ * <p>
+ * Global utility to load classes and perform general reflection operations
+ * that can be customized by Strategy classes.
+ * </p>
+ */
+public class ReflectionUtil {
+
+	private static ClassLoadingStrategy classLoadingStrategy = new
+			CurrentThreadClassLoadingStrategy();
+
+	public static ClassLoadingStrategy getClassLoadingStrategy() {
+		return classLoadingStrategy;
+	}
+
+	public static void setClassLoadingStrategy(ClassLoadingStrategy classLoadingStrategy) {
+		ReflectionUtil.classLoadingStrategy = classLoadingStrategy;
+	}
+
+	public static Class<?> classForName(String className)
+			throws ClassNotFoundException {
+		return classLoadingStrategy.classForName(className);
+	}
 }
