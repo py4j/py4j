@@ -4,6 +4,19 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.9.2
+----------
+
+- Release date: March 12th 2016
+- Python side: added a guard condition in object finalization to prevent
+  exceptions when the program exits (long standing bug!).
+- Java side: Py4J will use the current thread's classloader instead of the root
+  classloader to load a class from a fully qualified name. This behavior is
+  configurable globally in py4j.reflection.ReflectionUtil. thanks to
+  @JoshRosen.
+- Documentation: made a simpler and easier to understand example of callback
+  (Java calling Python)
+
 Py4J 0.9.1
 ----------
 
