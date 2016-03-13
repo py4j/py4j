@@ -1,3 +1,6 @@
+global:
+  artifacts:
+    - "py4j-python/cover"
 dependencies:
   override:
     - pyenv global 2.6.8; sudo update-alternatives --set java /usr/lib/jvm/jdk1.6.0/bin/java; sudo update-alternatives --set javac /usr/lib/jvm/java-6-openjdk-amd64/bin/javac; echo 'export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64' >> ~/.circlerc;
@@ -8,5 +11,5 @@ test:
   override:
     - if [ $CIRCLE_NODE_INDEX == "1" ] ; then pip install flake8; cd py4j-python; flake8; fi:
         parallel: true
-    - deactivate; echo `java -version` && echo `javac -version` && echo `python --version` && cd py4j-java && ant cleanall && ant jar && ant java-test && sleep 1 && cd ../py4j-python && nosetests -w src -c nose.cfg:
+    - deactivate; echo `java -version` && echo `javac -version` && echo `python --version` && cd py4j-java && ant cleanall && ant jar && ant java-test && sleep 1 && cd ../py4j-python && pip install coveralls && nosetests --coverage-report=term-missing --with-coverage --cover-package=py4j -w src -c nose.cfg; coveralls:
         parallel: true
