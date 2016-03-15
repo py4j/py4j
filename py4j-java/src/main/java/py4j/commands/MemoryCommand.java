@@ -36,6 +36,8 @@ import java.util.logging.Logger;
 import py4j.Protocol;
 import py4j.Py4JException;
 
+import static py4j.NetworkUtil.safeReadLine;
+
 /**
  * <p>
  * The MemoryCommand is responsible for handling garbage collection requests
@@ -74,10 +76,14 @@ public class MemoryCommand extends AbstractCommand {
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
 		String returnCommand = null;
-		String subCommand = reader.readLine();
+		String subCommand = safeReadLine(reader);
 
 		if (subCommand.equals(MEMORY_DEL_SUB_COMMAND_NAME)) {
 			returnCommand = deleteObject(reader);
+		} else {
+			returnCommand = Protocol
+					.getOutputErrorCommand("Unknown Memory SubCommand Name: "
+							+ subCommand);
 		}
 		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);

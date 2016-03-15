@@ -32,11 +32,14 @@ package py4j.commands;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import py4j.*;
 import py4j.reflection.ReflectionEngine;
 import py4j.reflection.TypeUtil;
+
+import static py4j.NetworkUtil.safeReadLine;
 
 public class DirCommand extends AbstractCommand {
 
@@ -57,10 +60,11 @@ public class DirCommand extends AbstractCommand {
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
-		String subCommand = reader.readLine();
+		String subCommand = safeReadLine(reader);
 
+		boolean unknownSubCommand = false;
 		String param = reader.readLine();
-		String returnCommand;
+		String returnCommand = null;
 		try {
 			final String[] names;
 			if (subCommand.equals(DIR_FIELDS_SUBCOMMAND_NAME)) {
@@ -72,14 +76,21 @@ public class DirCommand extends AbstractCommand {
 			} else if (subCommand.equals(DIR_STATIC_SUBCOMMAND_NAME)) {
 				Class<?> clazz = TypeUtil.forName(param);
 				names = reflectionEngine.getPublicStaticNames(clazz);
-			} else { // if (subCommand.equals(DIR_JVMVIEW_SUBCOMMAND_NAME)) {
+			} else if (subCommand.equals(DIR_JVMVIEW_SUBCOMMAND_NAME)) {
 				names = getJvmViewNames(param, reader);
+			} else {
+				names = null;
+				unknownSubCommand = true;
 			}
 
 			// Read and discard end of command
 			reader.readLine();
 
-			if (names == null) {
+			if (unknownSubCommand) {
+				returnCommand = Protocol
+						.getOutputErrorCommand("Unknown Array SubCommand Name: "
+								+ subCommand);
+			} else if (names == null) {
 				ReturnObject returnObject = gateway.getReturnObject(null);
 				returnCommand = Protocol.getOutputCommand(returnObject);
 			} else {
@@ -101,6 +112,7 @@ public class DirCommand extends AbstractCommand {
 				returnCommand = Protocol.getOutputCommand(returnObject);
 			}
 		} catch (Exception e) {
+			logger.log(Level.FINEST, "Error in a dir subcommand", e);
 			returnCommand = Protocol.getOutputErrorCommand();
 		}
 

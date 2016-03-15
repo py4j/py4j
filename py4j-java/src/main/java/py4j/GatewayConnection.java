@@ -192,7 +192,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 			writer.write(returnCommand);
 			writer.flush();
 		} catch (Exception e) {
-
+			logger.log(Level.FINEST, "Error in quiet send.", e);
 		}
 	}
 

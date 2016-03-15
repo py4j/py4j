@@ -91,7 +91,10 @@ public class TypeConverter {
 		case NUM_TO_LONG:
 			newObject = Long.parseLong(obj.toString());
 			break;
+		default:
+			newObject = null;
 		}
+
 
 		return newObject;
 	}

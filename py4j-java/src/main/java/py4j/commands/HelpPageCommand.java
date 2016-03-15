@@ -40,6 +40,8 @@ import py4j.model.HelpPageGenerator;
 import py4j.model.Py4JClass;
 import py4j.reflection.ReflectionUtil;
 
+import static py4j.NetworkUtil.safeReadLine;
+
 /**
  * <p>
  * A HelpPageCommand is responsible for generating a help page for a Java object
@@ -69,12 +71,16 @@ public class HelpPageCommand extends AbstractCommand {
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
 		String returnCommand = null;
-		String subCommand = reader.readLine();
+		String subCommand = safeReadLine(reader, false);
 
 		if (subCommand.equals(HELP_OBJECT_SUB_COMMAND_NAME)) {
 			returnCommand = getHelpObject(reader);
-		} else {
+		} else if (subCommand.equals(HELP_CLASS_SUB_COMMAND_NAME)) {
 			returnCommand = getHelpClass(reader);
+		} else {
+			returnCommand = Protocol
+					.getOutputErrorCommand("Unknown Help SubCommand Name: "
+							+ subCommand);
 		}
 		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
@@ -85,7 +91,7 @@ public class HelpPageCommand extends AbstractCommand {
 		String className = reader.readLine();
 		String pattern = (String) Protocol.getObject(reader.readLine(),
 				this.gateway);
-		String shortName = reader.readLine();
+		String shortName = safeReadLine(reader, false);
 		// EoC
 		reader.readLine();
 		String returnCommand = Protocol.getOutputErrorCommand();
@@ -109,7 +115,7 @@ public class HelpPageCommand extends AbstractCommand {
 		String objectId = reader.readLine();
 		String pattern = (String) Protocol.getObject(reader.readLine(),
 				this.gateway);
-		String shortName = reader.readLine();
+		String shortName = safeReadLine(reader, false);
 		// EoC
 		reader.readLine();
 		String returnCommand = Protocol.getOutputErrorCommand();
