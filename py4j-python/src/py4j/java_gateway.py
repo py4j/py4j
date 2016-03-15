@@ -96,9 +96,15 @@ def find_jar_path():
     """
     paths = []
     jar_file = "py4j{0}.jar".format(__version__)
+    maven_jar_file = "py4j-{0}.jar".format(__version__)
     paths.append(jar_file)
+    # ant
     paths.append(os.path.join(os.path.dirname(
         os.path.realpath(__file__)), "../../../py4j-java/" + jar_file))
+    # maven
+    paths.append(os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "../../../py4j-java/target" + maven_jar_file))
     paths.append(os.path.join(os.path.dirname(
         os.path.realpath(__file__)), "../share/py4j/" + jar_file))
     paths.append("../../../current-release/" + jar_file)
