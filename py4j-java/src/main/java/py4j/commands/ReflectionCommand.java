@@ -40,6 +40,8 @@ import py4j.*;
 import py4j.reflection.ReflectionEngine;
 import py4j.reflection.TypeUtil;
 
+import static py4j.NetworkUtil.safeReadLine;
+
 /**
  * <p>
  * The ReflectionCommand is responsible for accessing packages, classes, and
@@ -71,7 +73,7 @@ public class ReflectionCommand extends AbstractCommand {
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
-		char subCommand = reader.readLine().charAt(0);
+		char subCommand = safeReadLine(reader).charAt(0);
 		String returnCommand = null;
 
 		if (subCommand == GET_UNKNOWN_SUB_COMMAND_NAME) {

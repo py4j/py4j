@@ -28,7 +28,9 @@
  *******************************************************************************/
 package py4j;
 
+import java.io.BufferedReader;
 import java.io.Closeable;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -46,6 +48,37 @@ public class NetworkUtil {
 
 	private final static Logger logger = Logger.getLogger(NetworkUtil.class
 			.getName());
+
+
+	/**
+	 *
+	 * @param reader
+	 * @param addSpace
+	 * @return A non-null String with an optional space if it is empty.
+	 * @throws IOException
+	 */
+	public static String safeReadLine(BufferedReader reader, boolean addSpace)
+			throws IOException {
+		String line = reader.readLine();
+		if (line == null || (line.length() == 0 && addSpace)) {
+			if (addSpace) {
+				line = " ";
+			} else {
+				line = "";
+			}
+		}
+
+		return line;
+	}
+	/**
+	 *
+	 * @param reader
+	 * @return A String of at least one character (space if null or empty).
+	 * @throws IOException
+	 */
+	public static String safeReadLine(BufferedReader reader) throws IOException {
+		return safeReadLine(reader, true);
+	}
 
 	public static void quietlyClose(Closeable closeable) {
 		try {

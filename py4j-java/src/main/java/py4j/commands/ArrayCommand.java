@@ -40,6 +40,8 @@ import py4j.Protocol;
 import py4j.Py4JException;
 import py4j.ReturnObject;
 
+import static py4j.NetworkUtil.safeReadLine;
+
 /**
  * <p>
  * A ArrayCommand is responsible for handling operations on arrays.
@@ -87,7 +89,7 @@ public class ArrayCommand extends AbstractCommand {
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
-		char subCommand = reader.readLine().charAt(0);
+		char subCommand = safeReadLine(reader).charAt(0);
 		String returnCommand = null;
 		if (subCommand == ARRAY_GET_SUB_COMMAND_NAME) {
 			returnCommand = getArray(reader);

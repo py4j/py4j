@@ -36,6 +36,8 @@ import java.util.logging.Logger;
 import py4j.*;
 import py4j.reflection.ReflectionEngine;
 
+import static py4j.NetworkUtil.safeReadLine;
+
 /**
  * <p>
  * A JVMViewCommand is responsible for managing JVM views: creating views,
@@ -96,7 +98,7 @@ public class JVMViewCommand extends AbstractCommand {
 	@Override
 	public void execute(String commandName, BufferedReader reader,
 			BufferedWriter writer) throws Py4JException, IOException {
-		char subCommand = reader.readLine().charAt(0);
+		char subCommand = safeReadLine(reader).charAt(0);
 		String returnCommand = null;
 
 		if (subCommand == CREATE_VIEW_SUB_COMMAND_NAME) {
@@ -105,8 +107,12 @@ public class JVMViewCommand extends AbstractCommand {
 			returnCommand = doImport(reader);
 		} else if (subCommand == REMOVE_IMPORT_SUB_COMMAND_NAME) {
 			returnCommand = removeImport(reader);
-		} else {
+		} else if (subCommand == SEARCH_SUB_COMMAND_NAME){
 			returnCommand = search(reader);
+		} else {
+			returnCommand = Protocol
+					.getOutputErrorCommand("Unknown JVM View SubCommand Name: "
+							+ subCommand);
 		}
 		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);

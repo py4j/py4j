@@ -36,6 +36,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -706,9 +707,10 @@ public class GatewayServer extends DefaultGatewayServerListener implements
         if (dieOnBrokenPipe) {
             /* Exit on EOF or broken pipe.  This ensures that the server dies
              * if its parent program dies. */
-            BufferedReader stdin = new BufferedReader(
-                                   new InputStreamReader(System.in));
             try {
+				BufferedReader stdin = new BufferedReader(
+						new InputStreamReader(
+								System.in, Charset.forName("UTF-8")));
                 stdin.readLine();
                 System.exit(0);
             } catch (java.io.IOException e) {
