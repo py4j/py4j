@@ -409,7 +409,10 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 */
 	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket)
 			throws IOException {
-		return new GatewayConnection(gateway, socket, customCommands, listeners);
+		GatewayConnection connection = new GatewayConnection(gateway, socket,
+				customCommands, listeners);
+		connection.startConnection();
+		return connection;
 	}
 
 	protected void fireConnectionError(Exception e) {

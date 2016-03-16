@@ -45,7 +45,7 @@ import java.util.logging.Logger;
  * ensuring that each thread uses its own connection.
  * </p>
  */
-public class PythonClient extends CallbackClient implements Py4JPythonClient {
+public class PythonClient extends CallbackClient {
 
 	private Gateway gateway;
 
