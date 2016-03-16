@@ -82,7 +82,8 @@ public class Py4JClass extends Py4JMember {
 		}
 
 		Class<?>[] interfaces = clazz.getInterfaces();
-		String[] implementTypes = interfaces != null && interfaces.length > 0 ? TypeUtil
+		List<String> implementTypes = interfaces != null && interfaces
+				.length > 0 ? TypeUtil
 				.getNames(interfaces) : null;
 
 		if (sort) {
@@ -91,15 +92,8 @@ public class Py4JClass extends Py4JMember {
 			Collections.sort(fields);
 		}
 
-		List<String> implementTypesList = null;
-
-		if (implementTypes != null) {
-			implementTypesList = Collections.unmodifiableList(Arrays.asList
-					(implementTypes));
-		}
-
 		return new Py4JClass(clazz.getCanonicalName(), null, extend,
-				implementTypesList,
+				implementTypes,
 				Collections.unmodifiableList
 				(methods),
 				Collections.unmodifiableList(fields),

@@ -28,13 +28,7 @@
  *******************************************************************************/
 package py4j.reflection;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import py4j.JVMView;
 import py4j.Py4JException;
@@ -301,14 +295,14 @@ public class TypeUtil {
 		}
 	}
 
-	public static String[] getNames(Class<?>[] classes) {
-		String[] names = new String[classes.length];
+	public static List<String> getNames(Class<?>[] classes) {
+		List<String> names = new ArrayList<String>();
 
 		for (int i = 0; i < classes.length; i++) {
-			names[i] = classes[i].getCanonicalName();
+			names.add(classes[i].getCanonicalName());
 		}
 
-		return names;
+		return Collections.unmodifiableList(names);
 	}
 
 	private static void getNextInterfaces(Class<?> clazz,

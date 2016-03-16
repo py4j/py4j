@@ -29,6 +29,7 @@
 package py4j.model;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -52,20 +53,24 @@ public class Py4JMethod extends Py4JMember {
 				.getCanonicalName());
 	}
 
-	private final String[] parameterTypes;
+	private final List<String> parameterTypes;
 
 	// Currently not supported.
-	private final String[] parameterNames;
+	private final List<String> parameterNames;
 
 	private final String returnType;
 
 	private final String container;
 
-	public Py4JMethod(String name, String javadoc, String[] parameterTypes,
-			String[] parameterNames, String returnType, String container) {
+	public Py4JMethod(String name, String javadoc, List<String>
+			parameterTypes,
+			List<String> parameterNames, String returnType, String
+			container) {
 		super(name, javadoc);
-		this.parameterTypes = parameterTypes;
+
 		this.parameterNames = parameterNames;
+		this.parameterTypes = parameterTypes;
+
 		this.returnType = returnType;
 		this.container = container;
 	}
@@ -75,11 +80,11 @@ public class Py4JMethod extends Py4JMember {
 	}
 
 	public List<String> getParameterNames() {
-		return Collections.unmodifiableList(Arrays.asList(parameterNames));
+		return parameterNames;
 	}
 
 	public List<String> getParameterTypes() {
-		return Collections.unmodifiableList(Arrays.asList(parameterTypes));
+		return parameterTypes;
 	}
 
 	public String getReturnType() {
@@ -89,15 +94,15 @@ public class Py4JMethod extends Py4JMember {
 	@Override
 	public String getSignature(boolean shortName) {
 		StringBuilder builder = new StringBuilder();
-		int length = parameterTypes.length;
+		int length = parameterTypes.size();
 		builder.append(getName());
 		builder.append('(');
 		for (int i = 0; i < length - 1; i++) {
-			builder.append(TypeUtil.getName(parameterTypes[i], shortName));
+			builder.append(TypeUtil.getName(parameterTypes.get(i), shortName));
 			builder.append(", ");
 		}
 		if (length > 0) {
-			builder.append(TypeUtil.getName(parameterTypes[length - 1],
+			builder.append(TypeUtil.getName(parameterTypes.get(length - 1),
 					shortName));
 		}
 		builder.append(") : ");
