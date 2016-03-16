@@ -54,7 +54,7 @@ import py4j.Py4JException;
  */
 public class ReflectionEngine {
 
-	public static int cacheSize = 100;
+	public final static int cacheSize = 100;
 
 	private final Logger logger = Logger.getLogger(ReflectionEngine.class
 			.getName());

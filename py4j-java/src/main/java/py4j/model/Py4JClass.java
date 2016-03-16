@@ -32,6 +32,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -117,24 +118,24 @@ public class Py4JClass extends Py4JMember {
 		this.classes = classes;
 	}
 
-	public Py4JClass[] getClasses() {
-		return classes;
+	public List<Py4JClass> getClasses() {
+		return Collections.unmodifiableList(Arrays.asList(classes));
 	}
 
 	public String getExtendType() {
 		return extendType;
 	}
 
-	public Py4JField[] getFields() {
-		return fields;
+	public List<Py4JField> getFields() {
+		return Collections.unmodifiableList(Arrays.asList(fields));
 	}
 
-	public String[] getImplementTypes() {
-		return implementTypes;
+	public List<String> getImplementTypes() {
+		return Collections.unmodifiableList(Arrays.asList(implementTypes));
 	}
 
-	public Py4JMethod[] getMethods() {
-		return methods;
+	public List<Py4JMethod> getMethods() {
+		return Collections.unmodifiableList(Arrays.asList(methods));
 	}
 
 	@Override

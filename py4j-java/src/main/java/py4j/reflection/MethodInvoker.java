@@ -32,6 +32,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,7 +87,8 @@ public class MethodInvoker {
 				if (parameters[i].isPrimitive()) {
 					tempCost = -1;
 				} else {
-					int distance = TypeUtil.computeDistance(new Object().getClass(), parameters[i]);
+					int distance = TypeUtil.computeDistance(Object.class,
+							parameters[i]);
 					tempCost = Math.abs(MAX_DISTANCE - distance);
 					converters.add(TypeConverter.NO_CONVERTER);
 				}
@@ -120,8 +123,12 @@ public class MethodInvoker {
 	public static MethodInvoker buildInvoker(Constructor<?> constructor,
 			Class<?>[] arguments) {
 		MethodInvoker invoker = null;
-		int size = arguments.length;
+		int size = 0;
 		int cost = 0;
+
+		if (arguments != null) {
+			size = arguments.length;
+		}
 
 		List<TypeConverter> converters = new ArrayList<TypeConverter>();
 		if (arguments == null || size == 0) {
@@ -145,8 +152,12 @@ public class MethodInvoker {
 
 	public static MethodInvoker buildInvoker(Method method, Class<?>[] arguments) {
 		MethodInvoker invoker = null;
-		int size = arguments.length;
+		int size = 0;
 		int cost = 0;
+
+		if (arguments != null) {
+			size = arguments.length;
+		}
 
 		List<TypeConverter> converters = new ArrayList<TypeConverter>();
 		if (arguments == null || size == 0) {
@@ -170,7 +181,7 @@ public class MethodInvoker {
 
 	private int cost;
 
-	private TypeConverter[] converters;
+	private List<TypeConverter> converters;
 
 	private Method method;
 
@@ -186,14 +197,20 @@ public class MethodInvoker {
 			TypeConverter[] converters, int cost) {
 		super();
 		this.constructor = constructor;
-		this.converters = converters;
+		if (converters != null) {
+			this.converters = Collections.unmodifiableList(Arrays.asList
+					(converters));
+		}
 		this.cost = cost;
 	}
 
 	public MethodInvoker(Method method, TypeConverter[] converters, int cost) {
 		super();
 		this.method = method;
-		this.converters = converters;
+		if (converters != null) {
+			this.converters = Collections.unmodifiableList(Arrays.asList
+					(converters));
+		}
 		this.cost = cost;
 	}
 
@@ -201,7 +218,7 @@ public class MethodInvoker {
 		return constructor;
 	}
 
-	public TypeConverter[] getConverters() {
+	public List<TypeConverter> getConverters() {
 		return converters;
 	}
 
@@ -223,7 +240,7 @@ public class MethodInvoker {
 				int size = arguments.length;
 				newArguments = new Object[size];
 				for (int i = 0; i < size; i++) {
-					newArguments[i] = converters[i].convert(arguments[i]);
+					newArguments[i] = converters.get(i).convert(arguments[i]);
 				}
 			}
 			if (method != null) {
@@ -250,8 +267,10 @@ public class MethodInvoker {
 	public boolean isVoid() {
 		if (constructor != null) {
 			return false;
-		} else {
+		} else if (method != null){
 			return method.getReturnType().equals(void.class);
+		} else {
+			throw new Py4JException("Null method or constructor");
 		}
 	}
 

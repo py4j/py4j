@@ -44,13 +44,13 @@ public class ModelTester {
 		Py4JClass clazz = Py4JClass.buildClass(AnObject.class, true);
 		assertEquals(clazz.getSignature(false), "p1.AnObject");
 		assertEquals(clazz.getSignature(true), "AnObject");
-		assertEquals(1, clazz.getClasses().length);
-		assertEquals(2, clazz.getMethods().length);
-		assertEquals(1, clazz.getFields().length);
-		Py4JMethod m1 = clazz.getMethods()[0];
-		Py4JMethod m2 = clazz.getMethods()[1];
-		Py4JField f1 = clazz.getFields()[0];
-		Py4JClass clazz2 = clazz.getClasses()[0];
+		assertEquals(1, clazz.getClasses().size());
+		assertEquals(2, clazz.getMethods().size());
+		assertEquals(1, clazz.getFields().size());
+		Py4JMethod m1 = clazz.getMethods().get(0);
+		Py4JMethod m2 = clazz.getMethods().get(1);
+		Py4JField f1 = clazz.getFields().get(0);
+		Py4JClass clazz2 = clazz.getClasses().get(0);
 		assertEquals(m1.getSignature(false),
 				"m1(java.lang.String, p1.AnObject) : void");
 		assertEquals(m1.getSignature(true), "m1(String, AnObject) : void");
@@ -95,7 +95,8 @@ public class ModelTester {
 	public void testMethodHelpPage() {
 		// This is manual testing, to see how it will look like.
 		Py4JClass clazz = Py4JClass.buildClass(AnObject.class, true);
-		String helpPage = HelpPageGenerator.getHelpPage(clazz.getMethods()[0],
+		String helpPage = HelpPageGenerator.getHelpPage(clazz.getMethods()
+				.get(0),
 				false);
 		System.out.println("BEGIN");
 		System.out.println(helpPage);

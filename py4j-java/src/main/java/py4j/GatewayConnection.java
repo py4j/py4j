@@ -80,7 +80,7 @@ import py4j.commands.StreamCommand;
  */
 public class GatewayConnection implements Runnable, Py4JServerConnection {
 
-	protected final static List<Class<? extends Command>> baseCommands;
+	private final static List<Class<? extends Command>> baseCommands;
 	protected final Socket socket;
 	protected final BufferedWriter writer;
 	protected final BufferedReader reader;
