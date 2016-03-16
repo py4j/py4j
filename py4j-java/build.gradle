@@ -22,8 +22,6 @@ buildscript {
 	}
 }
 
-sourceCompatibility = 1.6
-
 repositories {
 	mavenCentral()
 }
@@ -43,6 +41,10 @@ spotless {
 }
 */
 
+// For now, tests are not clean and that's fine because we want to test many
+// unclean scenarios.
+findbugsTest.enabled = false
+
 jacocoTestReport {
     reports {
         xml.enabled false
@@ -50,6 +52,7 @@ jacocoTestReport {
         html.enabled true
     }
 }
+
 
 // Backward compatibility with previous versions of Py4J
 task copyMainJar(type: Copy, dependsOn: jar) {
@@ -73,23 +76,7 @@ task jarTests(type: Jar) {
 	from sourceSets.main.output
 }
 
-// Build the py4j-tests jar
-assemble {
-	dependsOn jarTests
-	dependsOn copyMainJar
-}
-
-clean {
-	dependsOn cleanMainJar
-}
-
-if (jdk6BootClasspath) {
-	tasks.withType(JavaCompile) {
-		options.fork = true
-		options.bootClasspath = "$jdk6BootClasspath"
-	}
-}
-
+// Maven support
 task createPom << {
     pom {
         project {
@@ -121,4 +108,21 @@ task createPom << {
 			}
         }
     }.writeTo("pom.xml")
+}
+
+if (jdk6BootClasspath) {
+	tasks.withType(JavaCompile) {
+		options.fork = true
+		options.bootClasspath = "$jdk6BootClasspath"
+	}
+}
+
+// Build the py4j-tests jar
+assemble {
+	dependsOn jarTests
+	dependsOn copyMainJar
+}
+
+clean {
+	dependsOn cleanMainJar
 }

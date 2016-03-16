@@ -97,6 +97,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	public static final String GATEWAY_SERVER_ID = "GATEWAY_SERVER";
 
+	public static final Logger PY4J_LOGGER = Logger.getLogger("py4j");
+
 	/**
 	 * <p>
 	 * Utility method to turn logging on. Logging is turned off by default. All
@@ -104,7 +106,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 * </p>
 	 */
 	public static void turnAllLoggingOn() {
-		Logger.getLogger("py4j").setLevel(Level.ALL);
+		PY4J_LOGGER.setLevel(Level.ALL);
 	}
 
 	/**
@@ -113,7 +115,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 * </p>
 	 */
 	public static void turnLoggingOff() {
-		Logger.getLogger("py4j").setLevel(Level.OFF);
+		PY4J_LOGGER.setLevel(Level.OFF);
 	}
 
 	/**
@@ -123,7 +125,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 * </p>
 	 */
 	public static void turnLoggingOn() {
-		Logger.getLogger("py4j").setLevel(Level.INFO);
+		PY4J_LOGGER.setLevel(Level.INFO);
 	}
 
 	private final InetAddress address;
