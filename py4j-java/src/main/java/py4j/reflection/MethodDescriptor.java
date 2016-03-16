@@ -28,6 +28,10 @@
  *******************************************************************************/
 package py4j.reflection;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * <p>
  * A MethodDescriptor wraps the signature of a method (name, container,
@@ -46,21 +50,22 @@ public class MethodDescriptor {
 
 	private Class container;
 
-	private Class[] parameters;
+	private List<Class> parameters;
 
-	private final char DOT = '.';
+	private final static char DOT = '.';
 
 	public MethodDescriptor(String name, Class container, Class[] parameters) {
 		super();
 		this.name = name;
 		this.container = container;
-		this.parameters = parameters;
+		this.parameters = Collections.unmodifiableList(Arrays.asList
+				(parameters));
 		this.internalRepresentation = buildInternalRepresentation(container,
-				name, parameters);
+				name, this.parameters);
 	}
 
 	private String buildInternalRepresentation(Class container, String name,
-			Class[] params) {
+			List<Class> params) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(container.getName());
@@ -102,7 +107,7 @@ public class MethodDescriptor {
 		return name;
 	}
 
-	public Class[] getParameters() {
+	public List<Class> getParameters() {
 		return parameters;
 	}
 

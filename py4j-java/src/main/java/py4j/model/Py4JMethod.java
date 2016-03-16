@@ -29,6 +29,9 @@
 package py4j.model;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import py4j.reflection.TypeUtil;
 
@@ -71,12 +74,12 @@ public class Py4JMethod extends Py4JMember {
 		return container;
 	}
 
-	public String[] getParameterNames() {
-		return parameterNames;
+	public List<String> getParameterNames() {
+		return Collections.unmodifiableList(Arrays.asList(parameterNames));
 	}
 
-	public String[] getParameterTypes() {
-		return parameterTypes;
+	public List<String> getParameterTypes() {
+		return Collections.unmodifiableList(Arrays.asList(parameterTypes));
 	}
 
 	public String getReturnType() {

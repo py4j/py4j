@@ -133,9 +133,9 @@ public class MethodInvokerTest {
 							short.class, byte.class, Float.class, float.class,
 							Boolean.class, String.class, Character.class });
 			assertEquals(4, invoker.getCost());
-			assertEquals(9, invoker.getConverters().length);
+			assertEquals(9, invoker.getConverters().size());
 			assertEquals(TypeConverter.NUM_TO_LONG,
-					invoker.getConverters()[0].getConversion());
+					invoker.getConverters().get(0).getConversion());
 
 			// Distance greater than 0, but only long conversion required.
 			invoker = MethodInvoker
@@ -143,9 +143,9 @@ public class MethodInvokerTest {
 							short.class, byte.class, Float.class, float.class,
 							Boolean.class, String.class, Character.class });
 			assertEquals(4, invoker.getCost());
-			assertEquals(9, invoker.getConverters().length);
+			assertEquals(9, invoker.getConverters().size());
 			assertEquals(TypeConverter.NUM_TO_LONG,
-					invoker.getConverters()[0].getConversion());
+					invoker.getConverters().get(0).getConversion());
 
 			// Invalid.
 			invoker = MethodInvoker
@@ -160,7 +160,7 @@ public class MethodInvokerTest {
 					int.class, short.class, byte.class, double.class,
 					float.class, boolean.class, String.class, String.class });
 			assertEquals(1, invoker.getCost());
-			assertEquals(9, invoker.getConverters().length);
+			assertEquals(9, invoker.getConverters().size());
 			assertEquals(
 					10,
 					invoker.invoke(cat, new Object[] { 1l, 2, (short) 3,
@@ -171,7 +171,7 @@ public class MethodInvokerTest {
 					int.class, Integer.class, int.class, double.class,
 					float.class, boolean.class, String.class, char.class });
 			assertEquals(3, invoker.getCost());
-			assertEquals(9, invoker.getConverters().length);
+			assertEquals(9, invoker.getConverters().size());
 			assertEquals(
 					10,
 					invoker.invoke(cat, new Object[] { 1l, 2, 3, 4, 1.2, 1.2f,
