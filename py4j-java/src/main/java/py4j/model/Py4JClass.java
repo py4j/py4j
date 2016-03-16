@@ -91,25 +91,36 @@ public class Py4JClass extends Py4JMember {
 			Collections.sort(fields);
 		}
 
+		List<String> implementTypesList = null;
+
+		if (implementTypes != null) {
+			implementTypesList = Collections.unmodifiableList(Arrays.asList
+					(implementTypes));
+		}
+
 		return new Py4JClass(clazz.getCanonicalName(), null, extend,
-				implementTypes, methods.toArray(new Py4JMethod[0]),
-				fields.toArray(new Py4JField[0]),
-				classes.toArray(new Py4JClass[0]));
+				implementTypesList,
+				Collections.unmodifiableList
+				(methods),
+				Collections.unmodifiableList(fields),
+				Collections.unmodifiableList(classes));
 	}
 
 	private final String extendType;
 
-	private final String[] implementTypes;
+	private final List<String> implementTypes;
 
-	private final Py4JMethod[] methods;
+	private final List<Py4JMethod> methods;
 
-	private final Py4JField[] fields;
+	private final List<Py4JField> fields;
 
-	private final Py4JClass[] classes;
+	private final List<Py4JClass> classes;
 
 	public Py4JClass(String name, String javadoc, String extendType,
-			String[] implementTypes, Py4JMethod[] methods, Py4JField[] fields,
-			Py4JClass[] classes) {
+			List<String> implementTypes, List<Py4JMethod> methods,
+			List<Py4JField>
+			fields,
+			List<Py4JClass> classes) {
 		super(name, javadoc);
 		this.extendType = extendType;
 		this.implementTypes = implementTypes;
@@ -119,7 +130,7 @@ public class Py4JClass extends Py4JMember {
 	}
 
 	public List<Py4JClass> getClasses() {
-		return Collections.unmodifiableList(Arrays.asList(classes));
+		return classes;
 	}
 
 	public String getExtendType() {
@@ -127,15 +138,15 @@ public class Py4JClass extends Py4JMember {
 	}
 
 	public List<Py4JField> getFields() {
-		return Collections.unmodifiableList(Arrays.asList(fields));
+		return fields;
 	}
 
 	public List<String> getImplementTypes() {
-		return Collections.unmodifiableList(Arrays.asList(implementTypes));
+		return implementTypes;
 	}
 
 	public List<Py4JMethod> getMethods() {
-		return Collections.unmodifiableList(Arrays.asList(methods));
+		return methods;
 	}
 
 	@Override
@@ -150,12 +161,12 @@ public class Py4JClass extends Py4JMember {
 
 		if (implementTypes != null) {
 			builder.append(" implements ");
-			int length = implementTypes.length;
+			int length = implementTypes.size();
 			for (int i = 0; i < length - 1; i++) {
-				builder.append(implementTypes[i]);
+				builder.append(implementTypes.get(i));
 				builder.append(", ");
 			}
-			builder.append(implementTypes[length - 1]);
+			builder.append(implementTypes.get(length - 1));
 		}
 		return builder.toString();
 	}

@@ -136,6 +136,12 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 			initCommands(gateway, customCommands);
 		}
 		this.listeners = listeners;
+	}
+
+	/**
+	 * <p>Wraps the GatewayConnection in a thread and start the thread.</p>
+	 */
+	public void startConnection() {
 		Thread t = new Thread(this);
 		t.start();
 	}

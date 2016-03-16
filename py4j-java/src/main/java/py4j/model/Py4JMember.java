@@ -54,6 +54,20 @@ public abstract class Py4JMember implements Comparable<Py4JMember> {
 		return this.getName().compareTo(o.getName());
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof Py4JMember)) {
+			return false;
+		}
+		return this.getSignature(false).equals(((Py4JMember)obj).getSignature
+				(false));
+	}
+
+	@Override
+	public int hashCode() {
+		return getSignature(false).hashCode();
+	}
+
 	public String getJavadoc() {
 		return javadoc;
 	}

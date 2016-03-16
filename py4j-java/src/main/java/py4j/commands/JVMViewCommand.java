@@ -140,7 +140,7 @@ public class JVMViewCommand extends AbstractCommand {
 		}
 
 		return Protocol.getOutputCommand(ReturnObject
-				.getPrimitiveReturnObject(new Boolean(removed)));
+				.getPrimitiveReturnObject(removed));
 	}
 
 	private String search(BufferedReader reader) {

@@ -94,7 +94,7 @@ public class HelpPageCommand extends AbstractCommand {
 		String shortName = safeReadLine(reader, false);
 		// EoC
 		reader.readLine();
-		String returnCommand = Protocol.getOutputErrorCommand();
+		String returnCommand;
 
 		try {
 			Py4JClass clazz = Py4JClass.buildClass(
@@ -118,7 +118,7 @@ public class HelpPageCommand extends AbstractCommand {
 		String shortName = safeReadLine(reader, false);
 		// EoC
 		reader.readLine();
-		String returnCommand = Protocol.getOutputErrorCommand();
+		String returnCommand;
 
 		try {
 			Object obj = gateway.getObject(objectId);

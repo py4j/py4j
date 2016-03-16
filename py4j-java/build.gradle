@@ -1,7 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-// apply plugin: 'findbugs'
+apply plugin: 'findbugs'
 apply plugin: 'jacoco'
 apply plugin: 'maven'
 

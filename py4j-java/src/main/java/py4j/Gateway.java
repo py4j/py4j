@@ -104,10 +104,11 @@ public class Gateway {
 	 *            gateway. Essentially the port used for Python callbacks.
 	 */
 	public void resetCallbackClient(InetAddress pythonAddress, int pythonPort) {
-		if (cbClient != null) {
-			cbClient.shutdown();
+		if (cbClient == null) {
+			throw new Py4JException(
+					"Callback Client is already null and cannot be reset");
 		}
-
+		cbClient.shutdown();
 		this.cbClient = cbClient.copyWith(pythonAddress, pythonPort);
 	}
 

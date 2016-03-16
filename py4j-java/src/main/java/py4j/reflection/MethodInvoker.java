@@ -31,6 +31,8 @@ package py4j.reflection;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -131,9 +133,7 @@ public class MethodInvoker {
 		}
 
 		List<TypeConverter> converters = new ArrayList<TypeConverter>();
-		if (arguments == null || size == 0) {
-			invoker = new MethodInvoker(constructor, null, 0);
-		} else {
+		if (arguments != null && size > 0) {
 			cost = buildConverters(converters, constructor.getParameterTypes(),
 					arguments);
 		}
@@ -160,9 +160,7 @@ public class MethodInvoker {
 		}
 
 		List<TypeConverter> converters = new ArrayList<TypeConverter>();
-		if (arguments == null || size == 0) {
-			invoker = new MethodInvoker(method, null, 0);
-		} else {
+		if (arguments != null && size > 0) {
 			cost = buildConverters(converters, method.getParameterTypes(),
 					arguments);
 		}
@@ -244,7 +242,12 @@ public class MethodInvoker {
 				}
 			}
 			if (method != null) {
-				method.setAccessible(true);
+				AccessController.doPrivileged(new PrivilegedAction<Object>() {
+					public Object run() {
+						method.setAccessible(true);
+						return null;
+					}
+				});
 				returnObject = method.invoke(obj, newArguments);
 			} else if (constructor != null) {
 				constructor.setAccessible(true);
