@@ -11,5 +11,9 @@ test:
   override:
     - if [ $CIRCLE_NODE_INDEX == "1" ] ; then pip install flake8; cd py4j-python; flake8; fi:
         parallel: true
-    - deactivate; echo `java -version` && echo `javac -version` && echo `python --version` && cd py4j-java && ant cleanall && ant jar && ant java-test && sleep 1 && cd ../py4j-python && pip install codecov && nosetests --with-coverage --cover-html --cover-package=py4j -w src -c nose.cfg; if [ $CIRCLE_NODE_INDEX != "0" ] ; then codecov; fi:
+    - deactivate; echo `java -version` && echo `javac -version` && echo `python --version`:
+        parallel: true
+    - deactivate; cd py4j-java && ant cleanall && ant jar && ant java-test && sleep 1:
+        parallel: true
+    - deactivate; cd py4j-python && pip install codecov && nosetests --with-coverage --cover-html --cover-package=py4j -w src -c nose.cfg; if [ $CIRCLE_NODE_INDEX != "0" ] ; then codecov; fi:
         parallel: true
