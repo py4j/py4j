@@ -74,9 +74,15 @@
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
+            <!-- Include if someday we ship resources.
+            <fileset dir="src/main/resources">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+            -->
         </copy>
         <copy includeemptydirs="false" todir="${build.dir}">
-            <fileset dir="src/test/java">
+            <fileset dir="src/test/resources">
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
