@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.model;
 
 import java.lang.reflect.Method;
@@ -47,10 +48,8 @@ import py4j.reflection.TypeUtil;
 public class Py4JMethod extends Py4JMember {
 
 	public final static Py4JMethod buildMethod(Method method) {
-		return new Py4JMethod(method.getName(), null, TypeUtil.getNames(method
-				.getParameterTypes()), null, method.getReturnType()
-				.getCanonicalName(), method.getDeclaringClass()
-				.getCanonicalName());
+		return new Py4JMethod(method.getName(), null, TypeUtil.getNames(method.getParameterTypes()), null,
+				method.getReturnType().getCanonicalName(), method.getDeclaringClass().getCanonicalName());
 	}
 
 	private final List<String> parameterTypes;
@@ -62,10 +61,8 @@ public class Py4JMethod extends Py4JMember {
 
 	private final String container;
 
-	public Py4JMethod(String name, String javadoc, List<String>
-			parameterTypes,
-			List<String> parameterNames, String returnType, String
-			container) {
+	public Py4JMethod(String name, String javadoc, List<String> parameterTypes, List<String> parameterNames,
+			String returnType, String container) {
 		super(name, javadoc);
 
 		this.parameterNames = parameterNames;
@@ -102,8 +99,7 @@ public class Py4JMethod extends Py4JMember {
 			builder.append(", ");
 		}
 		if (length > 0) {
-			builder.append(TypeUtil.getName(parameterTypes.get(length - 1),
-					shortName));
+			builder.append(TypeUtil.getName(parameterTypes.get(length - 1), shortName));
 		}
 		builder.append(") : ");
 		builder.append(TypeUtil.getName(returnType, shortName));

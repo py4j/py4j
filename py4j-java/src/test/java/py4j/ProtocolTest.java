@@ -1,20 +1,20 @@
-/*******************************************************************************
- * 
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- * 
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- * 
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -26,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -197,10 +197,9 @@ public class ProtocolTest {
 		} catch (Exception e) {
 			assertTrue(true);
 		}
-		assertTrue(Protocol.getPythonProxy("fp123;java.lang.CharSequence",
-				gateway) instanceof CharSequence);
-		assertTrue(Protocol.getPythonProxy(
-				"fp1;java.lang.CharSequence;java.lang.Runnable", gateway) instanceof Runnable);
+		assertTrue(Protocol.getPythonProxy("fp123;java.lang.CharSequence", gateway) instanceof CharSequence);
+		assertTrue(
+				Protocol.getPythonProxy("fp1;java.lang.CharSequence;java.lang.Runnable", gateway) instanceof Runnable);
 	}
 
 	@Test
@@ -228,11 +227,9 @@ public class ProtocolTest {
 		assertEquals(1.25, Protocol.getDouble("d1.25"), 0.001);
 		assertEquals(0.0, Protocol.getDouble("d0"), 0.001);
 		assertEquals(1234.567, Protocol.getDouble("d1234.567"), 0.001);
-        assertEquals(Double.NaN, Protocol.getDouble("dnan"), 0.001);
-        assertEquals(Double.POSITIVE_INFINITY, Protocol.getDouble("dinf"),
-                0.001);
-        assertEquals(Double.NEGATIVE_INFINITY, Protocol.getDouble("d-inf"),
-                0.001);
+		assertEquals(Double.NaN, Protocol.getDouble("dnan"), 0.001);
+		assertEquals(Double.POSITIVE_INFINITY, Protocol.getDouble("dinf"), 0.001);
+		assertEquals(Double.NEGATIVE_INFINITY, Protocol.getDouble("d-inf"), 0.001);
 	}
 
 	@Test
@@ -280,11 +277,9 @@ public class ProtocolTest {
 		assertEquals(true, Protocol.getObject("bTrue", null));
 		assertEquals(1.234, (Double) Protocol.getObject("d1.234", null), 0.001);
 		assertEquals(obj1, Protocol.getObject("ro123", gateway));
-		assertEquals("Hello\nWorld\t",
-				Protocol.getObject("sHello\\nWorld\t", null));
+		assertEquals("Hello\nWorld\t", Protocol.getObject("sHello\\nWorld\t", null));
 		assertEquals(123l, Protocol.getObject("L123", null));
-		assertEquals(new BigDecimal("-14.456"),
-				Protocol.getObject("D-14.456", null));
+		assertEquals(new BigDecimal("-14.456"), Protocol.getObject("D-14.456", null));
 		assertNull(Protocol.getObject("n", null));
 		try {
 			Protocol.getObject(null, null);
@@ -319,8 +314,7 @@ public class ProtocolTest {
 		ReturnObject rObject3 = ReturnObject.getPrimitiveReturnObject(2.2);
 		ReturnObject rObject4 = ReturnObject.getPrimitiveReturnObject(2.2f);
 		ReturnObject rObject5 = ReturnObject.getPrimitiveReturnObject('c');
-		ReturnObject rObject6 = ReturnObject
-				.getPrimitiveReturnObject("Hello\nWorld");
+		ReturnObject rObject6 = ReturnObject.getPrimitiveReturnObject("Hello\nWorld");
 		ReturnObject rObject7 = ReturnObject.getPrimitiveReturnObject(5L);
 		ReturnObject rObject8 = ReturnObject.getPrimitiveReturnObject(true);
 		ReturnObject rObject9 = ReturnObject.getPrimitiveReturnObject(false);
@@ -331,8 +325,7 @@ public class ProtocolTest {
 		ReturnObject rObject14 = ReturnObject.getSetReturnObject("o125", 3);
 		ReturnObject rObject15 = ReturnObject.getArrayReturnObject("o126", 3);
 		ReturnObject rObject16 = ReturnObject.getIteratorReturnObject("o127");
-		ReturnObject rObject17 = ReturnObject
-				.getDecimalReturnObject(new BigDecimal("-14.532"));
+		ReturnObject rObject17 = ReturnObject.getDecimalReturnObject(new BigDecimal("-14.532"));
 
 		assertEquals("!x\n", Protocol.getOutputCommand(rObject1));
 		assertEquals("!yi2\n", Protocol.getOutputCommand(rObject2));

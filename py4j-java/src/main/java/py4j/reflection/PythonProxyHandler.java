@@ -1,12 +1,12 @@
-/*******************************************************************************
- *
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -26,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.reflection;
 
 import java.lang.reflect.InvocationHandler;
@@ -52,8 +52,7 @@ public class PythonProxyHandler implements InvocationHandler {
 
 	private final Gateway gateway;
 
-	private final Logger logger = Logger.getLogger(PythonProxyHandler.class
-			.getName());
+	private final Logger logger = Logger.getLogger(PythonProxyHandler.class.getName());
 
 	private final String finalizeCommand;
 
@@ -65,8 +64,7 @@ public class PythonProxyHandler implements InvocationHandler {
 		super();
 		this.id = id;
 		this.gateway = gateway;
-		this.finalizeCommand = GARBAGE_COLLECT_PROXY_COMMAND_NAME + id
-				+ "\ne\n";
+		this.finalizeCommand = GARBAGE_COLLECT_PROXY_COMMAND_NAME + id + "\ne\n";
 	}
 
 	@Override
@@ -75,18 +73,15 @@ public class PythonProxyHandler implements InvocationHandler {
 			logger.fine("Finalizing python proxy id " + this.id);
 			gateway.getCallbackClient().sendCommand(finalizeCommand, false);
 		} catch (Exception e) {
-			logger.warning("Python Proxy ID could not send a finalize message: "
-					+ this.id);
+			logger.warning("Python Proxy ID could not send a finalize message: " + this.id);
 		} finally {
 			super.finalize();
 		}
 	}
 
 	@Override
-	public Object invoke(Object proxy, Method method, Object[] args)
-			throws Throwable {
-		logger.fine("Method " + method.getName() + " called on Python object "
-				+ id);
+	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		logger.fine("Method " + method.getName() + " called on Python object " + id);
 		StringBuilder sBuilder = new StringBuilder();
 		sBuilder.append(CALL_PROXY_COMMAND_NAME);
 		sBuilder.append(id);

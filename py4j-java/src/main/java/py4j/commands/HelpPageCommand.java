@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,8 +26,10 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.commands;
+
+import static py4j.NetworkUtil.safeReadLine;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -40,8 +43,6 @@ import py4j.model.HelpPageGenerator;
 import py4j.model.Py4JClass;
 import py4j.reflection.ReflectionUtil;
 
-import static py4j.NetworkUtil.safeReadLine;
-
 /**
  * <p>
  * A HelpPageCommand is responsible for generating a help page for a Java object
@@ -53,8 +54,7 @@ import static py4j.NetworkUtil.safeReadLine;
  * 
  */
 public class HelpPageCommand extends AbstractCommand {
-	private final Logger logger = Logger.getLogger(HelpPageCommand.class
-			.getName());
+	private final Logger logger = Logger.getLogger(HelpPageCommand.class.getName());
 
 	public final static String HELP_COMMAND_NAME = "h";
 
@@ -68,8 +68,8 @@ public class HelpPageCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException {
+	public void execute(String commandName, BufferedReader reader, BufferedWriter writer)
+			throws Py4JException, IOException {
 		String returnCommand = null;
 		String subCommand = safeReadLine(reader, false);
 
@@ -78,9 +78,7 @@ public class HelpPageCommand extends AbstractCommand {
 		} else if (subCommand.equals(HELP_CLASS_SUB_COMMAND_NAME)) {
 			returnCommand = getHelpClass(reader);
 		} else {
-			returnCommand = Protocol
-					.getOutputErrorCommand("Unknown Help SubCommand Name: "
-							+ subCommand);
+			returnCommand = Protocol.getOutputErrorCommand("Unknown Help SubCommand Name: " + subCommand);
 		}
 		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
@@ -89,19 +87,16 @@ public class HelpPageCommand extends AbstractCommand {
 
 	private String getHelpClass(BufferedReader reader) throws IOException {
 		String className = reader.readLine();
-		String pattern = (String) Protocol.getObject(reader.readLine(),
-				this.gateway);
+		String pattern = (String) Protocol.getObject(reader.readLine(), this.gateway);
 		String shortName = safeReadLine(reader, false);
 		// EoC
 		reader.readLine();
 		String returnCommand;
 
 		try {
-			Py4JClass clazz = Py4JClass.buildClass(
-					ReflectionUtil.classForName(className), true);
+			Py4JClass clazz = Py4JClass.buildClass(ReflectionUtil.classForName(className), true);
 			boolean isShortName = Protocol.getBoolean(shortName);
-			String helpPage = HelpPageGenerator.getHelpPage(clazz, pattern,
-					isShortName);
+			String helpPage = HelpPageGenerator.getHelpPage(clazz, pattern, isShortName);
 			ReturnObject rObject = gateway.getReturnObject(helpPage);
 			returnCommand = Protocol.getOutputCommand(rObject);
 		} catch (Exception e) {
@@ -113,8 +108,7 @@ public class HelpPageCommand extends AbstractCommand {
 
 	private String getHelpObject(BufferedReader reader) throws IOException {
 		String objectId = reader.readLine();
-		String pattern = (String) Protocol.getObject(reader.readLine(),
-				this.gateway);
+		String pattern = (String) Protocol.getObject(reader.readLine(), this.gateway);
 		String shortName = safeReadLine(reader, false);
 		// EoC
 		reader.readLine();
@@ -124,8 +118,7 @@ public class HelpPageCommand extends AbstractCommand {
 			Object obj = gateway.getObject(objectId);
 			Py4JClass clazz = Py4JClass.buildClass(obj.getClass(), true);
 			boolean isShortName = Protocol.getBoolean(shortName);
-			String helpPage = HelpPageGenerator.getHelpPage(clazz, pattern,
-					isShortName);
+			String helpPage = HelpPageGenerator.getHelpPage(clazz, pattern, isShortName);
 			ReturnObject rObject = gateway.getReturnObject(helpPage);
 			returnCommand = Protocol.getOutputCommand(rObject);
 		} catch (Exception e) {

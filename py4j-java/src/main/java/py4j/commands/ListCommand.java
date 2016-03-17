@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,8 +26,10 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.commands;
+
+import static py4j.NetworkUtil.safeReadLine;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -39,8 +42,6 @@ import java.util.logging.Logger;
 import py4j.Protocol;
 import py4j.Py4JException;
 import py4j.ReturnObject;
-
-import static py4j.NetworkUtil.safeReadLine;
 
 /**
  * <p>
@@ -68,8 +69,8 @@ public class ListCommand extends AbstractCommand {
 	public static final char LIST_IMULT_SUB_COMMAND_NAME = 'i';
 	public static final char LIST_COUNT_SUB_COMMAND_NAME = 'f';
 
-	public static final String RETURN_VOID = Protocol.RETURN_MESSAGE + "" +
-			Protocol.SUCCESS + "" + Protocol.VOID + Protocol.END_OUTPUT;
+	public static final String RETURN_VOID = Protocol.RETURN_MESSAGE + "" + Protocol.SUCCESS + "" + Protocol.VOID
+			+ Protocol.END_OUTPUT;
 
 	public ListCommand() {
 		super();
@@ -77,8 +78,7 @@ public class ListCommand extends AbstractCommand {
 	}
 
 	@SuppressWarnings({ "rawtypes" })
-	private String call_collections_method(BufferedReader reader,
-			char listCommand) throws IOException {
+	private String call_collections_method(BufferedReader reader, char listCommand) throws IOException {
 		String returnCommand;
 		String list_id = reader.readLine();
 
@@ -131,8 +131,8 @@ public class ListCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException {
+	public void execute(String commandName, BufferedReader reader, BufferedWriter writer)
+			throws Py4JException, IOException {
 		char subCommand = safeReadLine(reader).charAt(0);
 		String returnCommand = null;
 		if (subCommand == LIST_SLICE_SUB_COMMAND_NAME) {

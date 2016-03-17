@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,8 +26,10 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.commands;
+
+import static py4j.NetworkUtil.safeReadLine;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -40,8 +43,6 @@ import py4j.*;
 import py4j.reflection.ReflectionEngine;
 import py4j.reflection.TypeUtil;
 
-import static py4j.NetworkUtil.safeReadLine;
-
 /**
  * <p>
  * The ReflectionCommand is responsible for accessing packages, classes, and
@@ -54,8 +55,7 @@ import static py4j.NetworkUtil.safeReadLine;
  */
 public class ReflectionCommand extends AbstractCommand {
 
-	private final Logger logger = Logger.getLogger(ReflectionCommand.class
-			.getName());
+	private final Logger logger = Logger.getLogger(ReflectionCommand.class.getName());
 
 	public final static char GET_UNKNOWN_SUB_COMMAND_NAME = 'u';
 
@@ -71,8 +71,8 @@ public class ReflectionCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException {
+	public void execute(String commandName, BufferedReader reader, BufferedWriter writer)
+			throws Py4JException, IOException {
 		char subCommand = safeReadLine(reader).charAt(0);
 		String returnCommand = null;
 
@@ -114,8 +114,7 @@ public class ReflectionCommand extends AbstractCommand {
 				Method m = rEngine.getMethod(clazz, member);
 				if (m != null) {
 					if (Modifier.isStatic(m.getModifiers())) {
-						returnCommand = Protocol
-								.getMemberOutputCommand(Protocol.METHOD_TYPE);
+						returnCommand = Protocol.getMemberOutputCommand(Protocol.METHOD_TYPE);
 					} else {
 						returnCommand = Protocol
 								.getOutputErrorCommand("Trying to access a non-static member from a static context.");
@@ -126,8 +125,7 @@ public class ReflectionCommand extends AbstractCommand {
 			if (returnCommand == null) {
 				Class<?> c = rEngine.getClass(clazz, member);
 				if (c != null) {
-					returnCommand = Protocol
-							.getMemberOutputCommand(Protocol.CLASS_TYPE);
+					returnCommand = Protocol.getMemberOutputCommand(Protocol.CLASS_TYPE);
 				} else {
 					returnCommand = Protocol.getOutputErrorCommand();
 				}
@@ -149,11 +147,9 @@ public class ReflectionCommand extends AbstractCommand {
 			// TODO APPEND CLASS NAME, because it might not be the fqn, but a
 			// new one because of imports!
 			String fullyQualifiedName = TypeUtil.forName(fqn, view).getName();
-			returnCommand = Protocol.getMemberOutputCommand(
-					Protocol.CLASS_TYPE, fullyQualifiedName);
+			returnCommand = Protocol.getMemberOutputCommand(Protocol.CLASS_TYPE, fullyQualifiedName);
 		} catch (ClassNotFoundException e) {
-			returnCommand = Protocol
-					.getMemberOutputCommand(Protocol.PACKAGE_TYPE);
+			returnCommand = Protocol.getMemberOutputCommand(Protocol.PACKAGE_TYPE);
 		} catch (Exception e) {
 			returnCommand = Protocol.getOutputErrorCommand(e);
 		}

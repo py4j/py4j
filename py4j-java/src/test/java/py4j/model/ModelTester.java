@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.model;
 
 import static org.junit.Assert.assertEquals;
@@ -51,8 +52,7 @@ public class ModelTester {
 		Py4JMethod m2 = clazz.getMethods().get(1);
 		Py4JField f1 = clazz.getFields().get(0);
 		Py4JClass clazz2 = clazz.getClasses().get(0);
-		assertEquals(m1.getSignature(false),
-				"m1(java.lang.String, p1.AnObject) : void");
+		assertEquals(m1.getSignature(false), "m1(java.lang.String, p1.AnObject) : void");
 		assertEquals(m1.getSignature(true), "m1(String, AnObject) : void");
 		assertEquals(m2.getSignature(false), "m2(int) : java.lang.String");
 		assertEquals(m2.getSignature(true), "m2(int) : String");
@@ -68,12 +68,9 @@ public class ModelTester {
 		Py4JClass clazz3 = Py4JClass.buildClass(AnObject3.class, true);
 		Py4JClass clazz4 = Py4JClass.buildClass(AnObject4.class, true);
 
-		assertEquals(clazz2.getSignature(false),
-				"p1.AnObject2 extends p1.AnObject");
-		assertEquals(clazz3.getSignature(false),
-				"p1.AnObject3 implements java.lang.Runnable, java.io.Serializable");
-		assertEquals(clazz4.getSignature(false),
-				"p1.AnObject4 extends p1.AnObject3 implements java.lang.Cloneable");
+		assertEquals(clazz2.getSignature(false), "p1.AnObject2 extends p1.AnObject");
+		assertEquals(clazz3.getSignature(false), "p1.AnObject3 implements java.lang.Runnable, java.io.Serializable");
+		assertEquals(clazz4.getSignature(false), "p1.AnObject4 extends p1.AnObject3 implements java.lang.Cloneable");
 	}
 
 	@Test
@@ -95,9 +92,7 @@ public class ModelTester {
 	public void testMethodHelpPage() {
 		// This is manual testing, to see how it will look like.
 		Py4JClass clazz = Py4JClass.buildClass(AnObject.class, true);
-		String helpPage = HelpPageGenerator.getHelpPage(clazz.getMethods()
-				.get(0),
-				false);
+		String helpPage = HelpPageGenerator.getHelpPage(clazz.getMethods().get(0), false);
 		System.out.println("BEGIN");
 		System.out.println(helpPage);
 		System.out.println("END");

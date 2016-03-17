@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.reflection;
 
 import java.util.*;
@@ -74,8 +75,7 @@ public class TypeUtil {
 		primitiveClasses.put("char", char.class);
 	}
 
-	public static int computeCharacterConversion(Class<?> parent,
-		Class<?> child, List<TypeConverter> converters) {
+	public static int computeCharacterConversion(Class<?> parent, Class<?> child, List<TypeConverter> converters) {
 		int cost = -1;
 
 		if (isCharacter(child)) {
@@ -102,8 +102,8 @@ public class TypeUtil {
 
 		// Search through interfaces (costly)
 		if (distance == -1) {
-			distance = computeInterfaceDistance(parent, child,
-				new HashSet<String>(), Arrays.asList(child.getInterfaces()));
+			distance = computeInterfaceDistance(parent, child, new HashSet<String>(),
+					Arrays.asList(child.getInterfaces()));
 		}
 
 		if (distance != -1) {
@@ -113,9 +113,8 @@ public class TypeUtil {
 		return distance;
 	}
 
-	private static int computeInterfaceDistance(Class<?> parent,
-		Class<?> child, Set<String> visitedInterfaces,
-		List<Class<?>> interfacesToVisit) {
+	private static int computeInterfaceDistance(Class<?> parent, Class<?> child, Set<String> visitedInterfaces,
+			List<Class<?>> interfacesToVisit) {
 		int distance = -1;
 		List<Class<?>> nextInterfaces = new ArrayList<Class<?>>();
 		for (Class<?> clazz : interfacesToVisit) {
@@ -138,8 +137,7 @@ public class TypeUtil {
 			}
 
 			if (nextInterfaces.size() > 0) {
-				int newDistance = computeInterfaceDistance(parent, grandChild,
-					visitedInterfaces, nextInterfaces);
+				int newDistance = computeInterfaceDistance(parent, grandChild, visitedInterfaces, nextInterfaces);
 				if (newDistance != -1) {
 					distance = newDistance + 1;
 				}
@@ -149,8 +147,7 @@ public class TypeUtil {
 		return distance;
 	}
 
-	public static int computeNumericConversion(Class<?> parent, Class<?> child,
-		List<TypeConverter> converters) {
+	public static int computeNumericConversion(Class<?> parent, Class<?> child, List<TypeConverter> converters) {
 		int cost = -1;
 
 		// XXX This is not complete. Certain cases are not considered like from
@@ -166,8 +163,7 @@ public class TypeUtil {
 			} else {
 				converters.add(TypeConverter.LONG_CONVERTER);
 			}
-		} else if (isInteger(parent)
-				&& (isInteger(child) || isShort(child) || isByte(child))) {
+		} else if (isInteger(parent) && (isInteger(child) || isShort(child) || isByte(child))) {
 			cost = getCost(parent, child);
 			converters.add(TypeConverter.NO_CONVERTER);
 		} else if (isShort(parent)) {
@@ -231,8 +227,7 @@ public class TypeUtil {
 		return clazz;
 	}
 
-	public static Class<?> forName(String fqn, JVMView view)
-		throws ClassNotFoundException {
+	public static Class<?> forName(String fqn, JVMView view) throws ClassNotFoundException {
 		Class<?> clazz = primitiveClasses.get(fqn);
 		if (clazz == null) {
 			if (fqn.indexOf('.') < 0) {
@@ -244,8 +239,7 @@ public class TypeUtil {
 		return clazz;
 	}
 
-	public static Class<?> getClass(String simpleName, JVMView view)
-		throws ClassNotFoundException {
+	public static Class<?> getClass(String simpleName, JVMView view) throws ClassNotFoundException {
 		Class<?> clazz = null;
 
 		try {
@@ -261,8 +255,7 @@ public class TypeUtil {
 				// Or try star imports
 				for (String starImport : view.getStarImports()) {
 					try {
-						clazz = ReflectionUtil.classForName(
-								starImport + "." + simpleName);
+						clazz = ReflectionUtil.classForName(starImport + "." + simpleName);
 						break;
 					} catch (Exception e2) {
 						// Ignore
@@ -305,8 +298,8 @@ public class TypeUtil {
 		return Collections.unmodifiableList(names);
 	}
 
-	private static void getNextInterfaces(Class<?> clazz,
-		List<Class<?>> nextInterfaces, Set<String> visitedInterfaces) {
+	private static void getNextInterfaces(Class<?> clazz, List<Class<?>> nextInterfaces,
+			Set<String> visitedInterfaces) {
 		if (clazz != null) {
 			for (Class<?> nextClazz : clazz.getInterfaces()) {
 				if (!visitedInterfaces.contains(nextClazz.getName())) {

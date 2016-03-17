@@ -1,3 +1,32 @@
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * - The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
 package py4j;
 
 import java.util.Arrays;
@@ -82,9 +111,9 @@ import java.util.Arrays;
  */
 
 public class Base64 {
-	private static final char[] CA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-			.toCharArray();
+	private static final char[] CA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
 	private static final int[] IA = new int[256];
+
 	static {
 		Arrays.fill(IA, -1);
 		for (int i = 0, iS = CA.length; i < iS; i++)
@@ -361,8 +390,7 @@ public class Base64 {
 		int d = 0;
 		for (int cc = 0, eLen = (len / 3) * 3; d < eLen;) {
 			// Assemble three bytes into an int from four "valid" characters.
-			int i = IA[sArr[sIx++]] << 18 | IA[sArr[sIx++]] << 12
-					| IA[sArr[sIx++]] << 6 | IA[sArr[sIx++]];
+			int i = IA[sArr[sIx++]] << 18 | IA[sArr[sIx++]] << 12 | IA[sArr[sIx++]] << 6 | IA[sArr[sIx++]];
 
 			// Add the bytes
 			dArr[d++] = (byte) (i >> 16);
@@ -437,8 +465,7 @@ public class Base64 {
 		int d = 0;
 		for (int cc = 0, eLen = (len / 3) * 3; d < eLen;) {
 			// Assemble three bytes into an int from four "valid" characters.
-			int i = IA[sArr[sIx++]] << 18 | IA[sArr[sIx++]] << 12
-					| IA[sArr[sIx++]] << 6 | IA[sArr[sIx++]];
+			int i = IA[sArr[sIx++]] << 18 | IA[sArr[sIx++]] << 12 | IA[sArr[sIx++]] << 6 | IA[sArr[sIx++]];
 
 			// Add the bytes
 			dArr[d++] = (byte) (i >> 16);
@@ -503,8 +530,7 @@ public class Base64 {
 																					// at
 																					// end.
 		int cCnt = eIx - sIx + 1; // Content count including possible separators
-		int sepCnt = sLen > 76 ? (s.charAt(76) == '\r' ? cCnt / 78 : 0) << 1
-				: 0;
+		int sepCnt = sLen > 76 ? (s.charAt(76) == '\r' ? cCnt / 78 : 0) << 1 : 0;
 
 		int len = ((cCnt - sepCnt) * 6 >> 3) - pad; // The number of decoded
 													// bytes
@@ -514,8 +540,8 @@ public class Base64 {
 		int d = 0;
 		for (int cc = 0, eLen = (len / 3) * 3; d < eLen;) {
 			// Assemble three bytes into an int from four "valid" characters.
-			int i = IA[s.charAt(sIx++)] << 18 | IA[s.charAt(sIx++)] << 12
-					| IA[s.charAt(sIx++)] << 6 | IA[s.charAt(sIx++)];
+			int i = IA[s.charAt(sIx++)] << 18 | IA[s.charAt(sIx++)] << 12 | IA[s.charAt(sIx++)] << 6
+					| IA[s.charAt(sIx++)];
 
 			// Add the bytes
 			dArr[d++] = (byte) (i >> 16);
@@ -581,8 +607,7 @@ public class Base64 {
 	 *            specifies max 76 per line but will be a little faster.
 	 * @return A BASE64 encoded array. Never <code>null</code>.
 	 */
-	public final static byte[] encodeToByte(byte[] sArr, int sOff, int sLen,
-			boolean lineSep) {
+	public final static byte[] encodeToByte(byte[] sArr, int sOff, int sLen, boolean lineSep) {
 		// Check special case
 		if (sArr == null || sLen == 0)
 			return new byte[0];
@@ -598,8 +623,7 @@ public class Base64 {
 		for (int s = sOff, d = 0, cc = 0; s < sOff + eLen;) {
 			// Copy next three bytes into lower 24 bits of int, paying attension
 			// to sign.
-			int i = (sArr[s++] & 0xff) << 16 | (sArr[s++] & 0xff) << 8
-					| (sArr[s++] & 0xff);
+			int i = (sArr[s++] & 0xff) << 16 | (sArr[s++] & 0xff) << 8 | (sArr[s++] & 0xff);
 
 			// Encode the int into four chars
 			dArr[d++] = (byte) CA[(i >>> 18) & 0x3f];
@@ -619,8 +643,7 @@ public class Base64 {
 		int left = sLen - eLen; // 0 - 2.
 		if (left > 0) {
 			// Prepare the int
-			int i = ((sArr[sOff + eLen] & 0xff) << 10)
-					| (left == 2 ? ((sArr[sOff + sLen - 1] & 0xff) << 2) : 0);
+			int i = ((sArr[sOff + eLen] & 0xff) << 10) | (left == 2 ? ((sArr[sOff + sLen - 1] & 0xff) << 2) : 0);
 
 			// Set last four chars
 			dArr[dLen - 4] = (byte) CA[i >> 12];
@@ -661,8 +684,7 @@ public class Base64 {
 		for (int s = 0, d = 0, cc = 0; s < eLen;) {
 			// Copy next three bytes into lower 24 bits of int, paying attension
 			// to sign.
-			int i = (sArr[s++] & 0xff) << 16 | (sArr[s++] & 0xff) << 8
-					| (sArr[s++] & 0xff);
+			int i = (sArr[s++] & 0xff) << 16 | (sArr[s++] & 0xff) << 8 | (sArr[s++] & 0xff);
 
 			// Encode the int into four chars
 			dArr[d++] = CA[(i >>> 18) & 0x3f];
@@ -682,8 +704,7 @@ public class Base64 {
 		int left = sLen - eLen; // 0 - 2.
 		if (left > 0) {
 			// Prepare the int
-			int i = ((sArr[eLen] & 0xff) << 10)
-					| (left == 2 ? ((sArr[sLen - 1] & 0xff) << 2) : 0);
+			int i = ((sArr[eLen] & 0xff) << 10) | (left == 2 ? ((sArr[sLen - 1] & 0xff) << 2) : 0);
 
 			// Set last four chars
 			dArr[dLen - 4] = CA[i >> 12];

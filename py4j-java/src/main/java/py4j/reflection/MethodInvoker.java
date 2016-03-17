@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.reflection;
 
 import java.lang.reflect.Constructor;
@@ -63,7 +64,7 @@ import py4j.Py4JJavaException;
 public class MethodInvoker {
 
 	public final static int INVALID_INVOKER_COST = -1;
-	
+
 	public final static int MAX_DISTANCE = 100000000;
 
 	private static boolean allNoConverter(List<TypeConverter> converters) {
@@ -79,8 +80,7 @@ public class MethodInvoker {
 		return allNo;
 	}
 
-	private static int buildConverters(List<TypeConverter> converters,
-			Class<?>[] parameters, Class<?>[] arguments) {
+	private static int buildConverters(List<TypeConverter> converters, Class<?>[] parameters, Class<?>[] arguments) {
 		int cost = 0;
 		int tempCost = -1;
 		int size = arguments.length;
@@ -89,24 +89,18 @@ public class MethodInvoker {
 				if (parameters[i].isPrimitive()) {
 					tempCost = -1;
 				} else {
-					int distance = TypeUtil.computeDistance(Object.class,
-							parameters[i]);
+					int distance = TypeUtil.computeDistance(Object.class, parameters[i]);
 					tempCost = Math.abs(MAX_DISTANCE - distance);
 					converters.add(TypeConverter.NO_CONVERTER);
 				}
 			} else if (parameters[i].isAssignableFrom(arguments[i])) {
-				tempCost = TypeUtil
-						.computeDistance(parameters[i], arguments[i]);
+				tempCost = TypeUtil.computeDistance(parameters[i], arguments[i]);
 				converters.add(TypeConverter.NO_CONVERTER);
-			} else if (TypeUtil.isNumeric(parameters[i])
-					&& TypeUtil.isNumeric(arguments[i])) {
-				tempCost = TypeUtil.computeNumericConversion(parameters[i],
-						arguments[i], converters);
+			} else if (TypeUtil.isNumeric(parameters[i]) && TypeUtil.isNumeric(arguments[i])) {
+				tempCost = TypeUtil.computeNumericConversion(parameters[i], arguments[i], converters);
 			} else if (TypeUtil.isCharacter(parameters[i])) {
-				tempCost = TypeUtil.computeCharacterConversion(parameters[i],
-						arguments[i], converters);
-			} else if (TypeUtil.isBoolean(parameters[i])
-					&& TypeUtil.isBoolean(arguments[i])) {
+				tempCost = TypeUtil.computeCharacterConversion(parameters[i], arguments[i], converters);
+			} else if (TypeUtil.isBoolean(parameters[i]) && TypeUtil.isBoolean(arguments[i])) {
 				tempCost = 0;
 				converters.add(TypeConverter.NO_CONVERTER);
 			}
@@ -122,8 +116,7 @@ public class MethodInvoker {
 		return cost;
 	}
 
-	public static MethodInvoker buildInvoker(Constructor<?> constructor,
-			Class<?>[] arguments) {
+	public static MethodInvoker buildInvoker(Constructor<?> constructor, Class<?>[] arguments) {
 		MethodInvoker invoker = null;
 		int size = 0;
 		int cost = 0;
@@ -134,8 +127,7 @@ public class MethodInvoker {
 
 		List<TypeConverter> converters = new ArrayList<TypeConverter>();
 		if (arguments != null && size > 0) {
-			cost = buildConverters(converters, constructor.getParameterTypes(),
-					arguments);
+			cost = buildConverters(converters, constructor.getParameterTypes(), arguments);
 		}
 		if (cost == -1) {
 			invoker = INVALID_INVOKER;
@@ -161,8 +153,7 @@ public class MethodInvoker {
 
 		List<TypeConverter> converters = new ArrayList<TypeConverter>();
 		if (arguments != null && size > 0) {
-			cost = buildConverters(converters, method.getParameterTypes(),
-					arguments);
+			cost = buildConverters(converters, method.getParameterTypes(), arguments);
 		}
 		if (cost == -1) {
 			invoker = INVALID_INVOKER;
@@ -185,19 +176,15 @@ public class MethodInvoker {
 
 	private Constructor<?> constructor;
 
-	private final Logger logger = Logger.getLogger(MethodInvoker.class
-			.getName());
+	private final Logger logger = Logger.getLogger(MethodInvoker.class.getName());
 
-	public static final MethodInvoker INVALID_INVOKER = new MethodInvoker(
-			(Method) null, null, INVALID_INVOKER_COST);
+	public static final MethodInvoker INVALID_INVOKER = new MethodInvoker((Method) null, null, INVALID_INVOKER_COST);
 
-	public MethodInvoker(Constructor<?> constructor,
-			TypeConverter[] converters, int cost) {
+	public MethodInvoker(Constructor<?> constructor, TypeConverter[] converters, int cost) {
 		super();
 		this.constructor = constructor;
 		if (converters != null) {
-			this.converters = Collections.unmodifiableList(Arrays.asList
-					(converters));
+			this.converters = Collections.unmodifiableList(Arrays.asList(converters));
 		}
 		this.cost = cost;
 	}
@@ -206,8 +193,7 @@ public class MethodInvoker {
 		super();
 		this.method = method;
 		if (converters != null) {
-			this.converters = Collections.unmodifiableList(Arrays.asList
-					(converters));
+			this.converters = Collections.unmodifiableList(Arrays.asList(converters));
 		}
 		this.cost = cost;
 	}
@@ -257,10 +243,7 @@ public class MethodInvoker {
 			logger.log(Level.WARNING, "Exception occurred in client code.", ie);
 			throw new Py4JJavaException(ie.getCause());
 		} catch (Exception e) {
-			logger.log(
-					Level.WARNING,
-					"Could not invoke method or received an exception while invoking.",
-					e);
+			logger.log(Level.WARNING, "Could not invoke method or received an exception while invoking.", e);
 			throw new Py4JException(e);
 		}
 
@@ -270,7 +253,7 @@ public class MethodInvoker {
 	public boolean isVoid() {
 		if (constructor != null) {
 			return false;
-		} else if (method != null){
+		} else if (method != null) {
 			return method.getReturnType().equals(void.class);
 		} else {
 			throw new Py4JException("Null method or constructor");

@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,8 +26,10 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.commands;
+
+import static py4j.NetworkUtil.safeReadLine;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -35,8 +38,6 @@ import java.util.logging.Logger;
 
 import py4j.Protocol;
 import py4j.Py4JException;
-
-import static py4j.NetworkUtil.safeReadLine;
 
 /**
  * <p>
@@ -50,8 +51,7 @@ import static py4j.NetworkUtil.safeReadLine;
  */
 public class MemoryCommand extends AbstractCommand {
 
-	private final Logger logger = Logger.getLogger(MemoryCommand.class
-			.getName());
+	private final Logger logger = Logger.getLogger(MemoryCommand.class.getName());
 
 	public final static String MEMORY_COMMAND_NAME = "m";
 
@@ -73,17 +73,15 @@ public class MemoryCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException {
+	public void execute(String commandName, BufferedReader reader, BufferedWriter writer)
+			throws Py4JException, IOException {
 		String returnCommand = null;
 		String subCommand = safeReadLine(reader);
 
 		if (subCommand.equals(MEMORY_DEL_SUB_COMMAND_NAME)) {
 			returnCommand = deleteObject(reader);
 		} else {
-			returnCommand = Protocol
-					.getOutputErrorCommand("Unknown Memory SubCommand Name: "
-							+ subCommand);
+			returnCommand = Protocol.getOutputErrorCommand("Unknown Memory SubCommand Name: " + subCommand);
 		}
 		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);

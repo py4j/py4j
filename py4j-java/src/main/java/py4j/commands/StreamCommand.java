@@ -1,11 +1,12 @@
-/**
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,8 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j.commands;
 
 import java.io.BufferedReader;
@@ -71,17 +71,13 @@ public class StreamCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void execute(String commandName,
-						BufferedReader reader,
-						BufferedWriter writer) throws Py4JException, IOException {
+	public void execute(String commandName, BufferedReader reader, BufferedWriter writer)
+			throws Py4JException, IOException {
 		String targetObjectId = reader.readLine();
 		String methodName = reader.readLine();
 		List<Object> arguments = getArguments(reader);
 
-		ReturnObject returnObject = invokeMethod(
-			methodName,
-			targetObjectId,
-			arguments);
+		ReturnObject returnObject = invokeMethod(methodName, targetObjectId, arguments);
 		if (returnObject.isError()) {
 			feedException(writer, returnObject);
 			return;
@@ -90,16 +86,14 @@ public class StreamCommand extends AbstractCommand {
 		if (!returnObject.isReference()) {
 			// No point putting a Py4J protocol message down the socket if the caller
 			// is expecting a binary blob.
-			feedException(
-				writer,
-				ReturnObject.getErrorReturnObject(new ClassCastException("expected the method to return an Object")));
+			feedException(writer, ReturnObject
+					.getErrorReturnObject(new ClassCastException("expected the method to return an Object")));
 			return;
 		}
 		Object obj = gateway.getObject(returnObject.getName());
 		if (!(obj instanceof ReadableByteChannel)) {
-			feedException(
-				writer,
-				ReturnObject.getErrorReturnObject(new ClassCastException("expected the method to return a ReadableByteChannel")));
+			feedException(writer, ReturnObject.getErrorReturnObject(
+					new ClassCastException("expected the method to return a ReadableByteChannel")));
 			return;
 		}
 

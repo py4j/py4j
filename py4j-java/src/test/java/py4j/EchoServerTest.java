@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j;
 
 import static org.junit.Assert.assertEquals;
@@ -47,10 +48,8 @@ public class EchoServerTest {
 			Thread.sleep(250);
 			EchoServer.main(null);
 			Thread.sleep(250);
-			Socket testSocket = new Socket(GatewayServer.DEFAULT_ADDRESS,
-					EchoServer.TEST_PORT);
-			BufferedWriter testWriter = new BufferedWriter(
-					new OutputStreamWriter(testSocket.getOutputStream()));
+			Socket testSocket = new Socket(GatewayServer.DEFAULT_ADDRESS, EchoServer.TEST_PORT);
+			BufferedWriter testWriter = new BufferedWriter(new OutputStreamWriter(testSocket.getOutputStream()));
 			// EchoServer requires end of line character to delimit commands.
 			// Otherwise, it sometimes gets confused and can join two commands
 			// together which is bad. I (bart) don't know why this happens.
@@ -62,12 +61,9 @@ public class EchoServerTest {
 			testSocket.close();
 
 			char[] buffer = new char[4092];
-			Socket clientSocket = new Socket(GatewayServer.DEFAULT_ADDRESS,
-					EchoServer.SERVER_PORT);
-			Reader clientReader = new InputStreamReader(
-					clientSocket.getInputStream());
-			BufferedWriter clientWriter = new BufferedWriter(
-					new OutputStreamWriter(clientSocket.getOutputStream()));
+			Socket clientSocket = new Socket(GatewayServer.DEFAULT_ADDRESS, EchoServer.SERVER_PORT);
+			Reader clientReader = new InputStreamReader(clientSocket.getInputStream());
+			BufferedWriter clientWriter = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 
 			clientWriter.write("c\nt\ngetExample\ne\n");
 			clientWriter.flush();

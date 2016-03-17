@@ -1,12 +1,12 @@
-/*******************************************************************************
- *
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -26,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j;
 
 import java.io.PrintWriter;
@@ -119,12 +119,9 @@ public class Protocol {
 	public final static char SUCCESS = 'y';
 
 	// SHORTCUT
-	public final static String ERROR_COMMAND = "" + RETURN_MESSAGE + ERROR +
-			END_OUTPUT;
-	public final static String VOID_COMMAND = "" + RETURN_MESSAGE + SUCCESS +
-			VOID + END_OUTPUT;
-	public final static String NO_SUCH_FIELD = "" + RETURN_MESSAGE + SUCCESS +
-			NO_MEMBER + END_OUTPUT;
+	public final static String ERROR_COMMAND = "" + RETURN_MESSAGE + ERROR + END_OUTPUT;
+	public final static String VOID_COMMAND = "" + RETURN_MESSAGE + SUCCESS + VOID + END_OUTPUT;
+	public final static String NO_SUCH_FIELD = "" + RETURN_MESSAGE + SUCCESS + NO_MEMBER + END_OUTPUT;
 
 	// ENTRY POINT
 	public final static String ENTRY_POINT_OBJECT_ID = "t";
@@ -135,10 +132,10 @@ public class Protocol {
 	// STATIC REFERENCES
 	public final static String STATIC_PREFIX = "z:";
 
-    // PYTHON CONSTANTS
-    public final static String PYTHON_NAN = "nan";
-    public final static String PYTHON_INFINITY = "inf";
-    public final static String PYTHON_NEGATIVE_INFINITY = "-inf";
+	// PYTHON CONSTANTS
+	public final static String PYTHON_NAN = "nan";
+	public final static String PYTHON_INFINITY = "inf";
+	public final static String PYTHON_NEGATIVE_INFINITY = "-inf";
 
 	/**
 	 * <p>
@@ -161,8 +158,7 @@ public class Protocol {
 	 * @return The boolean value corresponding to this command part.
 	 */
 	public final static boolean getBoolean(String commandPart) {
-		return Boolean.parseBoolean(commandPart.substring(1,
-				commandPart.length()));
+		return Boolean.parseBoolean(commandPart.substring(1, commandPart.length()));
 	}
 
 	/**
@@ -198,20 +194,20 @@ public class Protocol {
 	 * @return The double value corresponding to this command part.
 	 */
 	public final static double getDouble(String commandPart) {
-        String doubleValue = commandPart.substring(1, commandPart.length());
-        try {
-            return Double.parseDouble(doubleValue);
-        } catch (NumberFormatException e) {
-            if (doubleValue.equals(PYTHON_INFINITY)) {
-                return Double.POSITIVE_INFINITY;
-            } else if (doubleValue.equals(PYTHON_NEGATIVE_INFINITY)) {
-                return Double.NEGATIVE_INFINITY;
-            } else if (doubleValue.equals(PYTHON_NAN)) {
-                return Double.NaN;
-            } else {
-                throw e;
-            }
-        }
+		String doubleValue = commandPart.substring(1, commandPart.length());
+		try {
+			return Double.parseDouble(doubleValue);
+		} catch (NumberFormatException e) {
+			if (doubleValue.equals(PYTHON_INFINITY)) {
+				return Double.POSITIVE_INFINITY;
+			} else if (doubleValue.equals(PYTHON_NEGATIVE_INFINITY)) {
+				return Double.NEGATIVE_INFINITY;
+			} else if (doubleValue.equals(PYTHON_NAN)) {
+				return Double.NaN;
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	/**
@@ -249,8 +245,7 @@ public class Protocol {
 		return builder.toString();
 	}
 
-	public final static String getMemberOutputCommand(char memberType,
-			String fqn) {
+	public final static String getMemberOutputCommand(char memberType, String fqn) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append(RETURN_MESSAGE);
@@ -280,8 +275,7 @@ public class Protocol {
 
 	public final static Object getObject(String commandPart, Gateway gateway) {
 		if (isEmpty(commandPart) || isEnd(commandPart)) {
-			throw new Py4JException(
-					"Command Part is Empty or is the End of Command Part");
+			throw new Py4JException("Command Part is Empty or is the End of Command Part");
 		} else {
 			switch (commandPart.charAt(0)) {
 			case BOOLEAN_TYPE:
@@ -311,8 +305,7 @@ public class Protocol {
 			case PYTHON_PROXY_TYPE:
 				return getPythonProxy(commandPart, gateway);
 			default:
-				throw new Py4JException("Command Part is unknown: "
-						+ commandPart);
+				throw new Py4JException("Command Part is unknown: " + commandPart);
 			}
 		}
 	}
@@ -366,13 +359,11 @@ public class Protocol {
 	public static char getPrimitiveType(Object primitiveObject) {
 		char c = INTEGER_TYPE;
 
-		if (primitiveObject instanceof String
-				|| primitiveObject instanceof Character) {
+		if (primitiveObject instanceof String || primitiveObject instanceof Character) {
 			c = STRING_TYPE;
 		} else if (primitiveObject instanceof Long) {
 			c = LONG_TYPE;
-		} else if (primitiveObject instanceof Double
-				|| primitiveObject instanceof Float) {
+		} else if (primitiveObject instanceof Double || primitiveObject instanceof Float) {
 			c = DOUBLE_TYPE;
 		} else if (primitiveObject instanceof Boolean) {
 			c = BOOLEAN_TYPE;
@@ -405,26 +396,22 @@ public class Protocol {
 				interfaces[i - 1] = ReflectionUtil.classForName(parts[i]);
 				if (!interfaces[i - 1].isInterface()) {
 					throw new Py4JException(
-							"This class "
-									+ parts[i]
-									+ " is not an interface and cannot be used as a Python Proxy.");
+							"This class " + parts[i] + " is not an interface and cannot be used as a Python Proxy.");
 				}
 			} catch (ClassNotFoundException e) {
 				throw new Py4JException("Invalid interface name: " + parts[i]);
 			}
 		}
 
-		Object proxy = getPythonProxyHandler(gateway.getClass()
-				.getClassLoader(), interfaces, parts[0], gateway);
+		Object proxy = getPythonProxyHandler(gateway.getClass().getClassLoader(), interfaces, parts[0], gateway);
 
 		return proxy;
 	}
 
-	public static Object getPythonProxyHandler(ClassLoader classLoader,
-			Class[] interfacesToImplement, String objectId, Gateway gateway) {
-		return Proxy.newProxyInstance(gateway.getClass()
-				.getClassLoader(), interfacesToImplement, new PythonProxyHandler
-				(objectId, gateway));
+	public static Object getPythonProxyHandler(ClassLoader classLoader, Class[] interfacesToImplement, String objectId,
+			Gateway gateway) {
+		return Proxy.newProxyInstance(gateway.getClass().getClassLoader(), interfacesToImplement,
+				new PythonProxyHandler(objectId, gateway));
 	}
 
 	/**
@@ -445,14 +432,11 @@ public class Protocol {
 		return gateway.getObject(reference);
 	}
 
-	public final static Object getReturnValue(String returnMessage,
-			Gateway gateway) {
+	public final static Object getReturnValue(String returnMessage, Gateway gateway) {
 		Object returnValue = null;
 
 		if (isError(returnMessage)) {
-			throw new Py4JException(
-					"An exception was raised by the Python Proxy. Return Message: "
-							+ returnMessage);
+			throw new Py4JException("An exception was raised by the Python Proxy. Return Message: " + returnMessage);
 		} else {
 			returnValue = getObject(returnMessage.substring(1), gateway);
 		}
@@ -460,14 +444,12 @@ public class Protocol {
 		return returnValue;
 	}
 
-	public final static Throwable getRootThrowable(Throwable throwable,
-			boolean skipInvocation) {
+	public final static Throwable getRootThrowable(Throwable throwable, boolean skipInvocation) {
 		Throwable child = throwable;
 		if (!skipInvocation && child instanceof InvocationTargetException) {
 			child = throwable.getCause();
 			skipInvocation = true;
-		} else if (child instanceof Py4JException
-				|| child instanceof Py4JNetworkException) {
+		} else if (child instanceof Py4JException || child instanceof Py4JNetworkException) {
 			child = throwable.getCause();
 		} else {
 			return child;
@@ -491,8 +473,7 @@ public class Protocol {
 	public final static String getString(String commandPart) {
 		String toReturn = "";
 		if (commandPart.length() >= 2) {
-			toReturn = StringUtil.unescape(commandPart.substring(1,
-					commandPart.length()));
+			toReturn = StringUtil.unescape(commandPart.substring(1, commandPart.length()));
 		}
 		return toReturn;
 	}
@@ -523,8 +504,7 @@ public class Protocol {
 	 * @return True if the command part is a return message
 	 */
 	public final static boolean isReturnMessage(String commandPart) {
-		return commandPart != null && commandPart.length() > 1 && commandPart
-				.charAt(0) == RETURN_MESSAGE;
+		return commandPart != null && commandPart.length() > 1 && commandPart.charAt(0) == RETURN_MESSAGE;
 	}
 
 	/**
@@ -588,8 +568,7 @@ public class Protocol {
 	 * @return True if the return message is an error
 	 */
 	public final static boolean isError(String returnMessage) {
-		return returnMessage == null || returnMessage.length() == 0
-				|| returnMessage.charAt(0) == ERROR;
+		return returnMessage == null || returnMessage.length() == 0 || returnMessage.charAt(0) == ERROR;
 	}
 
 	/**

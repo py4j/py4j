@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j;
 
 import java.io.BufferedReader;
@@ -46,9 +47,7 @@ import java.util.logging.Logger;
  */
 public class NetworkUtil {
 
-	private final static Logger logger = Logger.getLogger(NetworkUtil.class
-			.getName());
-
+	private final static Logger logger = Logger.getLogger(NetworkUtil.class.getName());
 
 	/**
 	 *
@@ -57,8 +56,7 @@ public class NetworkUtil {
 	 * @return A non-null String with an optional space if it is empty.
 	 * @throws IOException
 	 */
-	public static String safeReadLine(BufferedReader reader, boolean addSpace)
-			throws IOException {
+	public static String safeReadLine(BufferedReader reader, boolean addSpace) throws IOException {
 		String line = reader.readLine();
 		if (line == null || (line.length() == 0 && addSpace)) {
 			if (addSpace) {
@@ -70,6 +68,7 @@ public class NetworkUtil {
 
 		return line;
 	}
+
 	/**
 	 *
 	 * @param reader

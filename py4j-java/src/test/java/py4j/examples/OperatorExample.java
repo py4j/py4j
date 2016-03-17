@@ -1,12 +1,12 @@
-/*******************************************************************************
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- *  
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -26,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.examples;
 
 import java.util.ArrayList;
@@ -39,13 +39,13 @@ public class OperatorExample {
 
 	private final static int MAX = 1000;
 
-    public OperatorExample() {
+	public OperatorExample() {
 
-    }
+	}
 
-    public OperatorExample(Operator op) {
-        this.randomBinaryOperator(op);
-    }
+	public OperatorExample(Operator op) {
+		this.randomBinaryOperator(op);
+	}
 
 	public byte[] callBytesOperator(BytesOperator op) {
 		byte[] input = { 1, 2, 3, 4, 5 };
@@ -68,8 +68,7 @@ public class OperatorExample {
 		numbers.add(random.nextInt(MAX));
 		numbers.add(random.nextInt(MAX));
 		numbers.add(random.nextInt(MAX));
-		numbers.add(op.doOperation(numbers.get(0), numbers.get(1),
-				numbers.get(2)));
+		numbers.add(op.doOperation(numbers.get(0), numbers.get(1), numbers.get(2)));
 		return numbers;
 	}
 

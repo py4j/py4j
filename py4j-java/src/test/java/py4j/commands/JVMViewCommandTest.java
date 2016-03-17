@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.commands;
 
 import static org.junit.Assert.assertEquals;
@@ -70,89 +71,65 @@ public class JVMViewCommandTest {
 
 	@Test
 	public void testSubCommands() {
-		String inputCommand1 = JVMViewCommand.CREATE_VIEW_SUB_COMMAND_NAME
-				+ "\n" + "custom" + "\ne\n";
-		String inputCommand2 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME
-				+ "\nro0\n" + "java.util.*" + "\ne\n";
-		String inputCommand3 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME
-				+ "\nro0\n" + "java.io.File" + "\ne\n";
-		String inputCommand4 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME
-				+ "\nro0\n" + "java.io.File" + "\ne\n";
-		String inputCommand5 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME
-				+ "\nro0\n" + "java.lang.*" + "\ne\n";
-		String inputCommand6 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME
-				+ "\nrj\n" + "java.util.*" + "\ne\n";
+		String inputCommand1 = JVMViewCommand.CREATE_VIEW_SUB_COMMAND_NAME + "\n" + "custom" + "\ne\n";
+		String inputCommand2 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.util.*" + "\ne\n";
+		String inputCommand3 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.io.File" + "\ne\n";
+		String inputCommand4 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.io.File" + "\ne\n";
+		String inputCommand5 = JVMViewCommand.REMOVE_IMPORT_SUB_COMMAND_NAME + "\nro0\n" + "java.lang.*" + "\ne\n";
+		String inputCommand6 = JVMViewCommand.IMPORT_SUB_COMMAND_NAME + "\nrj\n" + "java.util.*" + "\ne\n";
 		try {
-			command.execute("r", new BufferedReader(new StringReader(
-					inputCommand1)), writer);
+			command.execute("r", new BufferedReader(new StringReader(inputCommand1)), writer);
 			assertEquals("!yro0\n", sWriter.toString());
 			JVMView view = (JVMView) gateway.getObject("o0");
 
-			command.execute("r", new BufferedReader(new StringReader(
-					inputCommand2)), writer);
+			command.execute("r", new BufferedReader(new StringReader(inputCommand2)), writer);
 			assertEquals("!yro0\n!yv\n", sWriter.toString());
 			assertEquals(2, view.getStarImports().size()); // 1 for java.lang, 1
 															// for java.util
 			assertTrue(view.getStarImports().contains("java.util"));
 
-			command.execute("r", new BufferedReader(new StringReader(
-					inputCommand3)), writer);
+			command.execute("r", new BufferedReader(new StringReader(inputCommand3)), writer);
 			assertEquals("!yro0\n!yv\n!yv\n", sWriter.toString());
 			assertTrue(view.getSingleImportsMap().containsKey("File"));
 			assertEquals(1, view.getSingleImportsMap().size()); // 1 for
 																// java.io.File
 
 			// Duplicate
-			command.execute("r", new BufferedReader(new StringReader(
-					inputCommand2)), writer);
+			command.execute("r", new BufferedReader(new StringReader(inputCommand2)), writer);
 			assertEquals("!yro0\n!yv\n!yv\n!yv\n", sWriter.toString());
 			assertEquals(2, view.getStarImports().size());
 
-			command.execute("r", new BufferedReader(new StringReader(
-					inputCommand3)), writer);
+			command.execute("r", new BufferedReader(new StringReader(inputCommand3)), writer);
 			assertEquals("!yro0\n!yv\n!yv\n!yv\n!yv\n", sWriter.toString());
 			assertTrue(view.getSingleImportsMap().containsKey("File"));
 			assertEquals(1, view.getSingleImportsMap().size()); // 1 for
 																// java.io.File
 
-			command.execute("r", new BufferedReader(new StringReader(
-					inputCommand4)), writer);
-			assertEquals("!yro0\n!yv\n!yv\n!yv\n!yv\n!ybtrue\n",
-					sWriter.toString());
+			command.execute("r", new BufferedReader(new StringReader(inputCommand4)), writer);
+			assertEquals("!yro0\n!yv\n!yv\n!yv\n!yv\n!ybtrue\n", sWriter.toString());
 			assertFalse(view.getSingleImportsMap().containsKey("File"));
 			assertEquals(0, view.getSingleImportsMap().size()); // 1 for
 																// java.io.File
 
-			command.execute("r", new BufferedReader(new StringReader(
-					inputCommand4)), writer);
-			assertEquals("!yro0\n!yv\n!yv\n!yv\n!yv\n!ybtrue\n!ybfalse\n",
-					sWriter.toString());
+			command.execute("r", new BufferedReader(new StringReader(inputCommand4)), writer);
+			assertEquals("!yro0\n!yv\n!yv\n!yv\n!yv\n!ybtrue\n!ybfalse\n", sWriter.toString());
 			assertFalse(view.getSingleImportsMap().containsKey("File"));
 			assertEquals(0, view.getSingleImportsMap().size()); // 1 for
 																// java.io.File
 
-			command.execute("r", new BufferedReader(new StringReader(
-					inputCommand5)), writer);
-			assertEquals("!yro0\n!yv\n!yv\n!yv\n!yv\n!ybtrue\n!ybfalse\n!ybtrue\n",
-					sWriter.toString());
+			command.execute("r", new BufferedReader(new StringReader(inputCommand5)), writer);
+			assertEquals("!yro0\n!yv\n!yv\n!yv\n!yv\n!ybtrue\n!ybfalse\n!ybtrue\n", sWriter.toString());
 			assertFalse(view.getStarImports().contains("java.lang.*"));
 			assertEquals(1, view.getStarImports().size()); // 1 for java.io.File
 
-			command.execute("r", new BufferedReader(new StringReader(
-					inputCommand5)), writer);
-			assertEquals(
-					"!yro0\n!yv\n!yv\n!yv\n!yv\n!ybtrue\n!ybfalse\n!ybtrue\n!ybfalse\n",
-					sWriter.toString());
+			command.execute("r", new BufferedReader(new StringReader(inputCommand5)), writer);
+			assertEquals("!yro0\n!yv\n!yv\n!yv\n!yv\n!ybtrue\n!ybfalse\n!ybtrue\n!ybfalse\n", sWriter.toString());
 			assertFalse(view.getStarImports().contains("java.lang.*"));
 			assertEquals(1, view.getStarImports().size()); // 1 for java.io.File
 
-			command.execute("r", new BufferedReader(new StringReader(
-					inputCommand6)), writer);
-			assertEquals(
-					"!yro0\n!yv\n!yv\n!yv\n!yv\n!ybtrue\n!ybfalse\n!ybtrue\n!ybfalse\n!yv\n",
-					sWriter.toString());
-			assertFalse(gateway.getDefaultJVMView().getStarImports()
-					.contains("java.util.*"));
+			command.execute("r", new BufferedReader(new StringReader(inputCommand6)), writer);
+			assertEquals("!yro0\n!yv\n!yv\n!yv\n!yv\n!ybtrue\n!ybfalse\n!ybtrue\n!ybfalse\n!yv\n", sWriter.toString());
+			assertFalse(gateway.getDefaultJVMView().getStarImports().contains("java.util.*"));
 			assertEquals(2, gateway.getDefaultJVMView().getStarImports().size()); // 1
 																					// for
 																					// java.io.File

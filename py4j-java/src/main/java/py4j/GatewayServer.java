@@ -1,11 +1,12 @@
-/**
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,8 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j;
 
 import java.io.BufferedReader;
@@ -82,8 +82,7 @@ import py4j.commands.Command;
  * @author Barthelemy Dagenais
  *
  */
-public class GatewayServer extends DefaultGatewayServerListener implements
-		Py4JJavaServer, Runnable {
+public class GatewayServer extends DefaultGatewayServerListener implements Py4JJavaServer, Runnable {
 
 	public static final String DEFAULT_ADDRESS = "127.0.0.1";
 
@@ -142,8 +141,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 
 	private final int readTimeout;
 
-	private final Logger logger = Logger.getLogger(GatewayServer.class
-			.getName());
+	private final Logger logger = Logger.getLogger(GatewayServer.class.getName());
 
 	private final List<Socket> connections = new ArrayList<Socket>();
 
@@ -181,8 +179,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 *            The entry point of this Gateway. Can be null.
 	 */
 	public GatewayServer(Object entryPoint) {
-		this(entryPoint, DEFAULT_PORT, DEFAULT_CONNECT_TIMEOUT,
-				DEFAULT_READ_TIMEOUT);
+		this(entryPoint, DEFAULT_PORT, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
 	}
 
 	/**
@@ -224,18 +221,10 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 *            features. These commands will be accessible from Python
 	 *            programs. Can be null.
 	 */
-	public GatewayServer(Object entryPoint, int port, int pythonPort,
-			InetAddress address, InetAddress pythonAddress, int connectTimeout,
-			int readTimeout, List<Class<? extends Command>> customCommands) {
-		this(
-			entryPoint,
-			port,
-			address,
-			connectTimeout,
-			readTimeout,
-			customCommands,
-			new CallbackClient(pythonPort, pythonAddress),
-			ServerSocketFactory.getDefault());
+	public GatewayServer(Object entryPoint, int port, int pythonPort, InetAddress address, InetAddress pythonAddress,
+			int connectTimeout, int readTimeout, List<Class<? extends Command>> customCommands) {
+		this(entryPoint, port, address, connectTimeout, readTimeout, customCommands,
+				new CallbackClient(pythonPort, pythonAddress), ServerSocketFactory.getDefault());
 	}
 
 	/**
@@ -279,10 +268,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 *            (e.g., a method call) after this time, the connection with the
 	 *            Python program is closed.
 	 */
-	public GatewayServer(Object entryPoint, int port, int connectTimeout,
-			int readTimeout) {
-		this(entryPoint, port, DEFAULT_PYTHON_PORT, connectTimeout,
-				readTimeout, null);
+	public GatewayServer(Object entryPoint, int port, int connectTimeout, int readTimeout) {
+		this(entryPoint, port, DEFAULT_PYTHON_PORT, connectTimeout, readTimeout, null);
 	}
 
 	/**
@@ -308,32 +295,16 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 *            features. These commands will be accessible from Python
 	 *            programs. Can be null.
 	 */
-	public GatewayServer(Object entryPoint, int port, int pythonPort,
-			int connectTimeout, int readTimeout,
+	public GatewayServer(Object entryPoint, int port, int pythonPort, int connectTimeout, int readTimeout,
 			List<Class<? extends Command>> customCommands) {
-		this(
-			entryPoint,
-			port,
-			defaultAddress(),
-			connectTimeout,
-			readTimeout,
-			customCommands,
-			new CallbackClient(pythonPort, defaultAddress()),
-			ServerSocketFactory.getDefault());
+		this(entryPoint, port, defaultAddress(), connectTimeout, readTimeout, customCommands,
+				new CallbackClient(pythonPort, defaultAddress()), ServerSocketFactory.getDefault());
 	}
 
-	public GatewayServer(Object entryPoint, int port, int connectTimeout,
-			int readTimeout, List<Class<? extends Command>> customCommands,
-			Py4JPythonClient cbClient) {
-		this(
-			entryPoint,
-			port,
-			defaultAddress(),
-			connectTimeout,
-			readTimeout,
-			customCommands,
-			cbClient,
-			ServerSocketFactory.getDefault());
+	public GatewayServer(Object entryPoint, int port, int connectTimeout, int readTimeout,
+			List<Class<? extends Command>> customCommands, Py4JPythonClient cbClient) {
+		this(entryPoint, port, defaultAddress(), connectTimeout, readTimeout, customCommands, cbClient,
+				ServerSocketFactory.getDefault());
 	}
 
 	/**
@@ -360,9 +331,9 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 * @param sSocketFactory
 	 *        A factory that creates the server sockets that we listen on.
 	 */
-	public GatewayServer(Object entryPoint, int port, InetAddress address, int connectTimeout,
-			int readTimeout, List<Class<? extends Command>> customCommands,
-			Py4JPythonClient cbClient, ServerSocketFactory sSocketFactory) {
+	public GatewayServer(Object entryPoint, int port, InetAddress address, int connectTimeout, int readTimeout,
+			List<Class<? extends Command>> customCommands, Py4JPythonClient cbClient,
+			ServerSocketFactory sSocketFactory) {
 		super();
 		this.port = port;
 		this.address = address;
@@ -409,10 +380,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 	 * @return
 	 * @throws IOException
 	 */
-	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket)
-			throws IOException {
-		GatewayConnection connection = new GatewayConnection(gateway, socket,
-				customCommands, listeners);
+	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket) throws IOException {
+		GatewayConnection connection = new GatewayConnection(gateway, socket, customCommands, listeners);
 		connection.startConnection();
 		return connection;
 	}
@@ -560,8 +529,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 			if (!isShutdown) {
 				connections.add(socket);
 				socket.setSoTimeout(readTimeout);
-				Py4JServerConnection gatewayConnection = createConnection(gateway,
-						socket);
+				Py4JServerConnection gatewayConnection = createConnection(gateway, socket);
 				fireConnectionStarted(gatewayConnection);
 			}
 		} catch (Exception e) {
@@ -681,53 +649,51 @@ public class GatewayServer extends DefaultGatewayServerListener implements
 		}
 	}
 
-    /**
-     * <p>
-     * Main method to start a local GatewayServer on a given port.
-     * The listening port is printed to stdout so that clients can start
-     * servers on ephemeral ports.
-     * </p>
-     */
-    public static void main(String[] args) {
-        int port;
-        boolean dieOnBrokenPipe = false;
-        String usage = "usage: [--die-on-broken-pipe] port";
-        if (args.length == 0) {
-            System.err.println(usage);
-            System.exit(1);
-        } else if (args.length == 2) {
-            if (!args[0].equals("--die-on-broken-pipe")) {
-                System.err.println(usage);
-                System.exit(1);
-            }
-            dieOnBrokenPipe = true;
-        }
-        port = Integer.parseInt(args[args.length - 1]);
-        GatewayServer gatewayServer = new GatewayServer(null, port);
-        gatewayServer.start();
-        /* Print out the listening port so that clients can discover it. */
-        int listening_port = gatewayServer.getListeningPort();
-        System.out.println("" + listening_port);
+	/**
+	 * <p>
+	 * Main method to start a local GatewayServer on a given port.
+	 * The listening port is printed to stdout so that clients can start
+	 * servers on ephemeral ports.
+	 * </p>
+	 */
+	public static void main(String[] args) {
+		int port;
+		boolean dieOnBrokenPipe = false;
+		String usage = "usage: [--die-on-broken-pipe] port";
+		if (args.length == 0) {
+			System.err.println(usage);
+			System.exit(1);
+		} else if (args.length == 2) {
+			if (!args[0].equals("--die-on-broken-pipe")) {
+				System.err.println(usage);
+				System.exit(1);
+			}
+			dieOnBrokenPipe = true;
+		}
+		port = Integer.parseInt(args[args.length - 1]);
+		GatewayServer gatewayServer = new GatewayServer(null, port);
+		gatewayServer.start();
+		/* Print out the listening port so that clients can discover it. */
+		int listening_port = gatewayServer.getListeningPort();
+		System.out.println("" + listening_port);
 
-        if (dieOnBrokenPipe) {
-            /* Exit on EOF or broken pipe.  This ensures that the server dies
-             * if its parent program dies. */
-            try {
-				BufferedReader stdin = new BufferedReader(
-						new InputStreamReader(
-								System.in, Charset.forName("UTF-8")));
-                stdin.readLine();
-                System.exit(0);
-            } catch (java.io.IOException e) {
-                System.exit(1);
-            }
-        }
-    }
+		if (dieOnBrokenPipe) {
+			/* Exit on EOF or broken pipe.  This ensures that the server dies
+			 * if its parent program dies. */
+			try {
+				BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in, Charset.forName("UTF-8")));
+				stdin.readLine();
+				System.exit(0);
+			} catch (java.io.IOException e) {
+				System.exit(1);
+			}
+		}
+	}
 
-    /**
-     *
-     * @return An unmodifiable list of custom commands
-     */
+	/**
+	 *
+	 * @return An unmodifiable list of custom commands
+	 */
 	public List<Class<? extends Command>> getCustomCommands() {
 		return Collections.unmodifiableList(customCommands);
 	}

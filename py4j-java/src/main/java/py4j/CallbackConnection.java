@@ -1,12 +1,12 @@
-/*******************************************************************************
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- *  
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -26,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j;
 
 import java.io.BufferedReader;
@@ -68,8 +68,7 @@ public class CallbackConnection implements Py4JClientConnection {
 
 	private BufferedWriter writer;
 
-	private final Logger logger = Logger.getLogger(CallbackConnection.class
-			.getName());
+	private final Logger logger = Logger.getLogger(CallbackConnection.class.getName());
 
 	public CallbackConnection(int port, InetAddress address) {
 		this(port, address, SocketFactory.getDefault());
@@ -97,12 +96,10 @@ public class CallbackConnection implements Py4JClientConnection {
 			if (blocking) {
 				returnCommand = this.readBlockingResponse(this.reader);
 			} else {
-				returnCommand = this.readNonBlockingResponse(this.socket, this
-						.reader);
+				returnCommand = this.readNonBlockingResponse(this.socket, this.reader);
 			}
 		} catch (Exception e) {
-			throw new Py4JNetworkException("Error while sending a command: "
-					+ command, e);
+			throw new Py4JNetworkException("Error while sending a command: " + command, e);
 		}
 
 		if (Protocol.isReturnMessage(returnCommand)) {
@@ -113,14 +110,11 @@ public class CallbackConnection implements Py4JClientConnection {
 		return returnCommand;
 	}
 
-	protected String readBlockingResponse(BufferedReader reader) throws
-			IOException {
+	protected String readBlockingResponse(BufferedReader reader) throws IOException {
 		return reader.readLine();
 	}
 
-	protected String readNonBlockingResponse(Socket socket, BufferedReader
-			reader)
-	throws IOException {
+	protected String readNonBlockingResponse(Socket socket, BufferedReader reader) throws IOException {
 		String returnCommand = null;
 
 		socket.setSoTimeout(DEFAULT_NONBLOCKING_SO_TIMEOUT);
@@ -142,7 +136,6 @@ public class CallbackConnection implements Py4JClientConnection {
 		return returnCommand;
 	}
 
-
 	public void setUsed(boolean used) {
 		this.used = used;
 	}
@@ -154,13 +147,10 @@ public class CallbackConnection implements Py4JClientConnection {
 	}
 
 	public void start() throws IOException {
-		logger.info("Starting Communication Channel on " + address + " at "
-				+ port);
+		logger.info("Starting Communication Channel on " + address + " at " + port);
 		socket = socketFactory.createSocket(address, port);
-		reader = new BufferedReader(new InputStreamReader(
-				socket.getInputStream(), Charset.forName("UTF-8")));
-		writer = new BufferedWriter(new OutputStreamWriter(
-				socket.getOutputStream(), Charset.forName("UTF-8")));
+		reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
+		writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 	}
 
 	public boolean wasUsed() {

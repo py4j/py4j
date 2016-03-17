@@ -1,12 +1,12 @@
-/*******************************************************************************
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- *  
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -26,8 +26,10 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.commands;
+
+import static py4j.NetworkUtil.safeReadLine;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -40,8 +42,6 @@ import py4j.Protocol;
 import py4j.Py4JException;
 import py4j.ReturnObject;
 
-import static py4j.NetworkUtil.safeReadLine;
-
 /**
  * <p>
  * A ArrayCommand is responsible for handling operations on arrays.
@@ -52,8 +52,7 @@ import static py4j.NetworkUtil.safeReadLine;
  */
 public class ArrayCommand extends AbstractCommand {
 
-	private final Logger logger = Logger
-			.getLogger(ArrayCommand.class.getName());
+	private final Logger logger = Logger.getLogger(ArrayCommand.class.getName());
 
 	public static final String ARRAY_COMMAND_NAME = "a";
 
@@ -63,9 +62,8 @@ public class ArrayCommand extends AbstractCommand {
 	public static final char ARRAY_LEN_SUB_COMMAND_NAME = 'e';
 	public static final char ARRAY_CREATE_SUB_COMMAND_NAME = 'c';
 
-	public static final String RETURN_VOID = Protocol.RETURN_MESSAGE + "" +
-			Protocol.SUCCESS + ""
-			+ Protocol.VOID + Protocol.END_OUTPUT;
+	public static final String RETURN_VOID = Protocol.RETURN_MESSAGE + "" + Protocol.SUCCESS + "" + Protocol.VOID
+			+ Protocol.END_OUTPUT;
 
 	public ArrayCommand() {
 		super();
@@ -80,15 +78,14 @@ public class ArrayCommand extends AbstractCommand {
 		for (int i = 0; i < size; i++) {
 			dimensionsInt[i] = (Integer) dimensions.get(i);
 		}
-		Object newArray = gateway.getReflectionEngine().createArray(fqn,
-				dimensionsInt);
+		Object newArray = gateway.getReflectionEngine().createArray(fqn, dimensionsInt);
 		ReturnObject returnObject = gateway.getReturnObject(newArray);
 		return Protocol.getOutputCommand(returnObject);
 	}
 
 	@Override
-	public void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException {
+	public void execute(String commandName, BufferedReader reader, BufferedWriter writer)
+			throws Py4JException, IOException {
 		char subCommand = safeReadLine(reader).charAt(0);
 		String returnCommand = null;
 		if (subCommand == ARRAY_GET_SUB_COMMAND_NAME) {
@@ -102,9 +99,7 @@ public class ArrayCommand extends AbstractCommand {
 		} else if (subCommand == ARRAY_CREATE_SUB_COMMAND_NAME) {
 			returnCommand = createArray(reader);
 		} else {
-			returnCommand = Protocol
-					.getOutputErrorCommand("Unknown Array SubCommand Name: "
-							+ subCommand);
+			returnCommand = Protocol.getOutputErrorCommand("Unknown Array SubCommand Name: " + subCommand);
 		}
 
 		logger.finest("Returning command: " + returnCommand);
@@ -151,8 +146,7 @@ public class ArrayCommand extends AbstractCommand {
 		Object arrayObject = gateway.getObject(reader.readLine());
 		List<Object> indices = getArguments(reader);
 		int size = indices.size();
-		Object newArray = gateway.getReflectionEngine().createArray(
-				arrayObject.getClass().getComponentType().getName(),
+		Object newArray = gateway.getReflectionEngine().createArray(arrayObject.getClass().getComponentType().getName(),
 				new int[] { size });
 		for (int i = 0; i < size; i++) {
 			int index = (Integer) indices.get(i);

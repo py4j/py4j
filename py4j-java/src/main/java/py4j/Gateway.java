@@ -1,11 +1,12 @@
-/**
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,8 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j;
 
 import java.lang.reflect.Array;
@@ -81,8 +81,7 @@ public class Gateway {
 	public Gateway(Object entryPoint, Py4JPythonClient cbClient) {
 		this.entryPoint = entryPoint;
 		this.cbClient = cbClient;
-		this.defaultJVMView = new JVMView("default",
-				Protocol.DEFAULT_JVM_OBJECT_ID);
+		this.defaultJVMView = new JVMView("default", Protocol.DEFAULT_JVM_OBJECT_ID);
 	}
 
 	/**
@@ -105,8 +104,7 @@ public class Gateway {
 	 */
 	public void resetCallbackClient(InetAddress pythonAddress, int pythonPort) {
 		if (cbClient == null) {
-			throw new Py4JException(
-					"Callback Client is already null and cannot be reset");
+			throw new Py4JException("Callback Client is already null and cannot be reset");
 		}
 		cbClient.shutdown();
 		this.cbClient = cbClient.copyWith(pythonAddress, pythonPort);
@@ -192,20 +190,16 @@ public class Gateway {
 				returnObject = ReturnObject.getDecimalReturnObject(object);
 			} else if (isList(object)) {
 				String objectId = putNewObject(object);
-				returnObject = ReturnObject.getListReturnObject(objectId,
-						((List) object).size());
+				returnObject = ReturnObject.getListReturnObject(objectId, ((List) object).size());
 			} else if (isMap(object)) {
 				String objectId = putNewObject(object);
-				returnObject = ReturnObject.getMapReturnObject(objectId,
-						((Map) object).size());
+				returnObject = ReturnObject.getMapReturnObject(objectId, ((Map) object).size());
 			} else if (isArray(object)) {
 				String objectId = putNewObject(object);
-				returnObject = ReturnObject.getArrayReturnObject(objectId,
-						Array.getLength(object));
+				returnObject = ReturnObject.getArrayReturnObject(objectId, Array.getLength(object));
 			} else if (isSet(object)) {
 				String objectId = putNewObject(object);
-				returnObject = ReturnObject.getSetReturnObject(objectId,
-						((Set) object).size());
+				returnObject = ReturnObject.getSetReturnObject(objectId, ((Set) object).size());
 			} else if (isIterator(object)) {
 				String objectId = putNewObject(object);
 				returnObject = ReturnObject.getIteratorReturnObject(objectId);
@@ -263,8 +257,7 @@ public class Gateway {
 	 * @param args
 	 * @return
 	 */
-	public ReturnObject invoke(String methodName, String targetObjectId,
-			List<Object> args) {
+	public ReturnObject invoke(String methodName, String targetObjectId, List<Object> args) {
 		if (args == null) {
 			args = new ArrayList<Object>();
 		}
@@ -276,16 +269,12 @@ public class Gateway {
 
 			MethodInvoker method = null;
 			if (targetObject != null) {
-				method = rEngine
-						.getMethod(targetObject, methodName, parameters);
+				method = rEngine.getMethod(targetObject, methodName, parameters);
 			} else if (targetObjectId.startsWith(Protocol.STATIC_PREFIX)) {
-				method = rEngine.getMethod(targetObjectId
-						.substring(Protocol.STATIC_PREFIX.length()),
-						methodName, parameters);
+				method = rEngine.getMethod(targetObjectId.substring(Protocol.STATIC_PREFIX.length()), methodName,
+						parameters);
 			} else {
-				throw new Py4JException(
-						"Target Object ID does not exist for this gateway :" +
-						targetObjectId);
+				throw new Py4JException("Target Object ID does not exist for this gateway :" + targetObjectId);
 			}
 
 			Object object = rEngine.invoke(targetObject, method, parameters);
@@ -323,8 +312,7 @@ public class Gateway {
 	}
 
 	protected boolean isPrimitiveObject(Object object) {
-		return object instanceof Boolean
-				|| object instanceof String
+		return object instanceof Boolean || object instanceof String
 				|| (object instanceof Number && !(object instanceof BigDecimal || object instanceof BigInteger))
 				|| object instanceof Character || object instanceof byte[];
 	}

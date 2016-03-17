@@ -1,11 +1,12 @@
-/**
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,11 +26,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j;
-
-import py4j.commands.Command;
 
 import java.io.*;
 import java.net.Socket;
@@ -40,32 +38,27 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ClientServerConnection implements Py4JServerConnection,
-		Py4JClientConnection, Runnable {
+import py4j.commands.Command;
+
+public class ClientServerConnection implements Py4JServerConnection, Py4JClientConnection, Runnable {
 
 	private boolean used = false;
 	private boolean initiatedFromClient = false;
-	private static ThreadLocal<ClientServerConnection> threadConnections =
-			new ThreadLocal<ClientServerConnection>();
+	private static ThreadLocal<ClientServerConnection> threadConnections = new ThreadLocal<ClientServerConnection>();
 	protected Socket socket;
 	protected BufferedWriter writer;
 	protected BufferedReader reader;
 	protected final Map<String, Command> commands;
-	protected final Logger logger = Logger.getLogger(
-			ClientServerConnection.class.getName());
+	protected final Logger logger = Logger.getLogger(ClientServerConnection.class.getName());
 	protected final Py4JJavaServer javaServer;
 	protected final Py4JPythonClient pythonClient;
 
-	public ClientServerConnection(Gateway gateway, Socket socket,
-			List<Class<? extends Command>> customCommands,
-			Py4JPythonClient pythonClient, Py4JJavaServer javaServer) throws
-			IOException {
+	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
+			Py4JPythonClient pythonClient, Py4JJavaServer javaServer) throws IOException {
 		super();
 		this.socket = socket;
-		this.reader = new BufferedReader(new InputStreamReader(
-				socket.getInputStream(), Charset.forName("UTF-8")));
-		this.writer = new BufferedWriter(new OutputStreamWriter(
-				socket.getOutputStream(), Charset.forName("UTF-8")));
+		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
+		this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String, Command>();
 		initCommands(gateway, GatewayConnection.getBaseCommands());
 		if (customCommands != null) {
@@ -74,7 +67,6 @@ public class ClientServerConnection implements Py4JServerConnection,
 		this.javaServer = javaServer;
 		this.pythonClient = pythonClient;
 	}
-
 
 	public void startServerConnection() {
 		Thread t = new Thread(this);
@@ -85,8 +77,7 @@ public class ClientServerConnection implements Py4JServerConnection,
 		return threadConnections.get();
 	}
 
-	public static void setThreadConnection(ClientServerConnection
-			clientServerConnection) {
+	public static void setThreadConnection(ClientServerConnection clientServerConnection) {
 		threadConnections.set(clientServerConnection);
 	}
 
@@ -103,8 +94,7 @@ public class ClientServerConnection implements Py4JServerConnection,
 	 * @param gateway
 	 * @param commandsClazz
 	 */
-	protected void initCommands(Gateway gateway,
-			List<Class<? extends Command>> commandsClazz) {
+	protected void initCommands(Gateway gateway, List<Class<? extends Command>> commandsClazz) {
 		for (Class<? extends Command> clazz : commandsClazz) {
 			try {
 				Command cmd = clazz.newInstance();
@@ -115,8 +105,7 @@ public class ClientServerConnection implements Py4JServerConnection,
 				if (clazz != null) {
 					name = clazz.getName();
 				}
-				logger.log(Level.SEVERE,
-						"Could not initialize command " + name, e);
+				logger.log(Level.SEVERE, "Could not initialize command " + name, e);
 			}
 		}
 	}
@@ -168,8 +157,7 @@ public class ClientServerConnection implements Py4JServerConnection,
 				}
 			} while (commandLine != null && !commandLine.equals("q"));
 		} catch (Exception e) {
-			logger.log(Level.WARNING,
-					"Error occurred while waiting for a command.", e);
+			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
 			if (executing && writer != null) {
 				quietSendError(writer, e);
 			}
@@ -194,8 +182,7 @@ public class ClientServerConnection implements Py4JServerConnection,
 				if (blocking) {
 					returnCommand = this.readBlockingResponse(this.reader);
 				} else {
-					returnCommand = this.readNonBlockingResponse(this.socket, this
-							.reader);
+					returnCommand = this.readNonBlockingResponse(this.socket, this.reader);
 				}
 
 				if (returnCommand == null || returnCommand.trim().equals("")) {
@@ -217,8 +204,7 @@ public class ClientServerConnection implements Py4JServerConnection,
 
 			}
 		} catch (Exception e) {
-			throw new Py4JNetworkException("Error while sending a command: "
-					+ command, e);
+			throw new Py4JNetworkException("Error while sending a command: " + command, e);
 		}
 	}
 
@@ -256,14 +242,11 @@ public class ClientServerConnection implements Py4JServerConnection,
 		this.initiatedFromClient = initiatedFromClient;
 	}
 
-	protected String readBlockingResponse(BufferedReader reader) throws
-			IOException {
+	protected String readBlockingResponse(BufferedReader reader) throws IOException {
 		return reader.readLine();
 	}
 
-	protected String readNonBlockingResponse(Socket socket, BufferedReader
-			reader)
-			throws IOException {
+	protected String readNonBlockingResponse(Socket socket, BufferedReader reader) throws IOException {
 		String returnCommand = null;
 
 		socket.setSoTimeout(CallbackConnection.DEFAULT_NONBLOCKING_SO_TIMEOUT);
