@@ -1,12 +1,12 @@
-/*******************************************************************************
- *
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -26,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j;
 
 import java.io.IOException;
@@ -63,20 +63,17 @@ public class CallbackClient implements Py4JPythonClient {
 
 	protected final SocketFactory socketFactory;
 
-	protected final Deque<Py4JClientConnection> connections = new
-			ArrayDeque<Py4JClientConnection>();
+	protected final Deque<Py4JClientConnection> connections = new ArrayDeque<Py4JClientConnection>();
 
 	private final Lock lock = new ReentrantLock(true);
 
-	private final Logger logger = Logger.getLogger(CallbackClient.class
-			.getName());
+	private final Logger logger = Logger.getLogger(CallbackClient.class.getName());
 
 	private boolean isShutdown = false;
 
 	public final static long DEFAULT_MIN_CONNECTION_TIME = 30;
 
-	private final ScheduledExecutorService executor = Executors
-			.newScheduledThreadPool(1);
+	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
 	protected final long minConnectionTime;
 
@@ -101,8 +98,7 @@ public class CallbackClient implements Py4JPythonClient {
 		this(port, address, DEFAULT_MIN_CONNECTION_TIME, TimeUnit.SECONDS);
 	}
 
-	public CallbackClient(int port, InetAddress address,
-			long minConnectionTime, TimeUnit minConnectionTimeUnit) {
+	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit) {
 		this(port, address, minConnectionTime, minConnectionTimeUnit, SocketFactory.getDefault());
 	}
 
@@ -120,8 +116,7 @@ public class CallbackClient implements Py4JPythonClient {
 	 * @param socketFactory
 	 *            The non-{@code null} factory to make {@link Socket}s.
 	 */
-	public CallbackClient(int port, InetAddress address,
-			long minConnectionTime, TimeUnit minConnectionTimeUnit,
+	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory) {
 		super();
 		this.port = port;
@@ -157,14 +152,11 @@ public class CallbackClient implements Py4JPythonClient {
 				cc = getConnection();
 				logger.log(Level.INFO, "Acquired CB Connection");
 			} else {
-				logger.log(Level.INFO,
-						"Shuting down, no connection can be created.");
+				logger.log(Level.INFO, "Shuting down, no connection can be created.");
 			}
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Critical error while sending a command",
-					e);
-			throw new Py4JException(
-					"Error while obtaining a new communication channel", e);
+			logger.log(Level.SEVERE, "Critical error while sending a command", e);
+			throw new Py4JException("Error while obtaining a new communication channel", e);
 		} finally {
 			lock.unlock();
 		}
@@ -194,12 +186,7 @@ public class CallbackClient implements Py4JPythonClient {
 	 */
 	@Override
 	public Py4JPythonClient copyWith(InetAddress pythonAddress, int pythonPort) {
-		return new CallbackClient(
-			pythonPort,
-			pythonAddress,
-			minConnectionTime,
-			minConnectionTimeUnit,
-			socketFactory);
+		return new CallbackClient(pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit, socketFactory);
 	}
 
 	protected void giveBackConnection(Py4JClientConnection cc) {
@@ -305,16 +292,14 @@ public class CallbackClient implements Py4JPythonClient {
 				throw new Py4JException("Error while sending a command.", pe);
 			}
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Critical error while sending a command",
-					e);
+			logger.log(Level.SEVERE, "Critical error while sending a command", e);
 			throw new Py4JException("Error while sending a command.");
 		}
 
 		return returnCommand;
 	}
 
-	protected boolean shouldRetrySendCommand(Py4JClientConnection cc,
-			Py4JException pe) {
+	protected boolean shouldRetrySendCommand(Py4JClientConnection cc, Py4JException pe) {
 		return true;
 	}
 

@@ -1,11 +1,12 @@
-/**
- * Copyright (c) 2015, Jonah Graham All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,9 +26,10 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j.commands;
+
+import static py4j.NetworkUtil.safeReadLine;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -38,8 +40,6 @@ import java.util.logging.Logger;
 import py4j.*;
 import py4j.reflection.ReflectionEngine;
 import py4j.reflection.TypeUtil;
-
-import static py4j.NetworkUtil.safeReadLine;
 
 public class DirCommand extends AbstractCommand {
 
@@ -58,8 +58,8 @@ public class DirCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException {
+	public void execute(String commandName, BufferedReader reader, BufferedWriter writer)
+			throws Py4JException, IOException {
 		String subCommand = safeReadLine(reader);
 
 		boolean unknownSubCommand = false;
@@ -87,9 +87,7 @@ public class DirCommand extends AbstractCommand {
 			reader.readLine();
 
 			if (unknownSubCommand) {
-				returnCommand = Protocol
-						.getOutputErrorCommand("Unknown Array SubCommand Name: "
-								+ subCommand);
+				returnCommand = Protocol.getOutputErrorCommand("Unknown Array SubCommand Name: " + subCommand);
 			} else if (names == null) {
 				ReturnObject returnObject = gateway.getReturnObject(null);
 				returnCommand = Protocol.getOutputCommand(returnObject);
@@ -101,14 +99,12 @@ public class DirCommand extends AbstractCommand {
 				}
 				final String namesJoined;
 				if (namesJoinedBuilder.length() > 0) {
-					namesJoined = namesJoinedBuilder.substring(0,
-							namesJoinedBuilder.length() - 1);
+					namesJoined = namesJoinedBuilder.substring(0, namesJoinedBuilder.length() - 1);
 				} else {
 					namesJoined = "";
 				}
 
-				ReturnObject returnObject = gateway
-						.getReturnObject(namesJoined);
+				ReturnObject returnObject = gateway.getReturnObject(namesJoined);
 				returnCommand = Protocol.getOutputCommand(returnObject);
 			}
 		} catch (Exception e) {
@@ -121,10 +117,8 @@ public class DirCommand extends AbstractCommand {
 		writer.flush();
 	}
 
-	private String[] getJvmViewNames(String jvmId, BufferedReader reader)
-			throws IOException {
-		String lastSequenceIdString = (String) Protocol.getObject(
-				reader.readLine(), gateway);
+	private String[] getJvmViewNames(String jvmId, BufferedReader reader) throws IOException {
+		String lastSequenceIdString = (String) Protocol.getObject(reader.readLine(), gateway);
 		final int lastSequenceId;
 		if (lastSequenceIdString == null) {
 			lastSequenceId = 0;

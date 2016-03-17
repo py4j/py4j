@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,8 +26,10 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.commands;
+
+import static py4j.NetworkUtil.safeReadLine;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -35,8 +38,6 @@ import java.util.logging.Logger;
 
 import py4j.*;
 import py4j.reflection.ReflectionEngine;
-
-import static py4j.NetworkUtil.safeReadLine;
 
 /**
  * <p>
@@ -49,8 +50,7 @@ import static py4j.NetworkUtil.safeReadLine;
  */
 public class JVMViewCommand extends AbstractCommand {
 
-	private final Logger logger = Logger.getLogger(JVMViewCommand.class
-			.getName());
+	private final Logger logger = Logger.getLogger(JVMViewCommand.class.getName());
 
 	public final static char CREATE_VIEW_SUB_COMMAND_NAME = 'c';
 
@@ -96,8 +96,8 @@ public class JVMViewCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException {
+	public void execute(String commandName, BufferedReader reader, BufferedWriter writer)
+			throws Py4JException, IOException {
 		char subCommand = safeReadLine(reader).charAt(0);
 		String returnCommand = null;
 
@@ -107,12 +107,10 @@ public class JVMViewCommand extends AbstractCommand {
 			returnCommand = doImport(reader);
 		} else if (subCommand == REMOVE_IMPORT_SUB_COMMAND_NAME) {
 			returnCommand = removeImport(reader);
-		} else if (subCommand == SEARCH_SUB_COMMAND_NAME){
+		} else if (subCommand == SEARCH_SUB_COMMAND_NAME) {
 			returnCommand = search(reader);
 		} else {
-			returnCommand = Protocol
-					.getOutputErrorCommand("Unknown JVM View SubCommand Name: "
-							+ subCommand);
+			returnCommand = Protocol.getOutputErrorCommand("Unknown JVM View SubCommand Name: " + subCommand);
 		}
 		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
@@ -139,8 +137,7 @@ public class JVMViewCommand extends AbstractCommand {
 			removed = view.removeSingleImport(importString);
 		}
 
-		return Protocol.getOutputCommand(ReturnObject
-				.getPrimitiveReturnObject(removed));
+		return Protocol.getOutputCommand(ReturnObject.getPrimitiveReturnObject(removed));
 	}
 
 	private String search(BufferedReader reader) {

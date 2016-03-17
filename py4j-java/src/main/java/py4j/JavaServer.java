@@ -1,11 +1,12 @@
-/**
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,15 +26,14 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j;
-
-import py4j.commands.Command;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
+
+import py4j.commands.Command;
 
 /**
  * <p>
@@ -72,18 +72,15 @@ public class JavaServer extends GatewayServer {
 	 * @param pythonClient
 	 * 			  The Py4JPythonClient used to call Python.
 	 */
-	public JavaServer(Object entryPoint, int port, int connectTimeout,
-			int readTimeout, List<Class<? extends Command>> customCommands,
-			Py4JPythonClient pythonClient) {
-		super(entryPoint, port, connectTimeout, readTimeout, customCommands,
-				pythonClient);
+	public JavaServer(Object entryPoint, int port, int connectTimeout, int readTimeout,
+			List<Class<? extends Command>> customCommands, Py4JPythonClient pythonClient) {
+		super(entryPoint, port, connectTimeout, readTimeout, customCommands, pythonClient);
 	}
 
 	@Override
-	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket)
-			throws IOException {
-		ClientServerConnection connection = new ClientServerConnection(gateway,
-				socket, getCustomCommands(), getCallbackClient(), this);
+	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket) throws IOException {
+		ClientServerConnection connection = new ClientServerConnection(gateway, socket, getCustomCommands(),
+				getCallbackClient(), this);
 		connection.startServerConnection();
 		return connection;
 	}

@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.commands;
 
 import static org.junit.Assert.assertEquals;
@@ -75,12 +76,10 @@ public class MemoryCommandTest {
 		String inputCommand = "d\n" + target + "\ne\n";
 		try {
 			assertTrue(gateway.getBindings().containsKey(target));
-			command.execute("m", new BufferedReader(new StringReader(
-					inputCommand)), writer);
+			command.execute("m", new BufferedReader(new StringReader(inputCommand)), writer);
 			assertEquals("!yv\n", sWriter.toString());
 			assertFalse(gateway.getBindings().containsKey(target));
-			command.execute("m", new BufferedReader(new StringReader(
-					inputCommand)), writer);
+			command.execute("m", new BufferedReader(new StringReader(inputCommand)), writer);
 			assertEquals("!yv\n!yv\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();

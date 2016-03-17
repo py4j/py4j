@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.reflection;
 
 import java.lang.reflect.Array;
@@ -56,8 +57,7 @@ public class ReflectionEngine {
 
 	public final static int cacheSize = 100;
 
-	private final Logger logger = Logger.getLogger(ReflectionEngine.class
-			.getName());
+	private final Logger logger = Logger.getLogger(ReflectionEngine.class.getName());
 
 	public final static Object RETURN_VOID = new Object();
 
@@ -83,13 +83,11 @@ public class ReflectionEngine {
 		return returnObject;
 	}
 
-	private MethodInvoker getBestConstructor(
-			List<Constructor<?>> acceptableConstructors, Class<?>[] parameters) {
+	private MethodInvoker getBestConstructor(List<Constructor<?>> acceptableConstructors, Class<?>[] parameters) {
 		MethodInvoker lowestCost = null;
 
 		for (Constructor<?> constructor : acceptableConstructors) {
-			MethodInvoker temp = MethodInvoker.buildInvoker(constructor,
-					parameters);
+			MethodInvoker temp = MethodInvoker.buildInvoker(constructor, parameters);
 			int cost = temp.getCost();
 			if (cost == -1) {
 				continue;
@@ -104,8 +102,7 @@ public class ReflectionEngine {
 		return lowestCost;
 	}
 
-	private MethodInvoker getBestMethod(List<Method> acceptableMethods,
-			Class<?>[] parameters) {
+	private MethodInvoker getBestMethod(List<Method> acceptableMethods, Class<?>[] parameters) {
 		MethodInvoker lowestCost = null;
 
 		for (Method method : acceptableMethods) {
@@ -157,8 +154,7 @@ public class ReflectionEngine {
 	}
 
 	public MethodInvoker getConstructor(Class<?> clazz, Class<?>[] parameters) {
-		MethodDescriptor mDescriptor = new MethodDescriptor(clazz.getName(),
-				clazz, parameters);
+		MethodDescriptor mDescriptor = new MethodDescriptor(clazz.getName(), clazz, parameters);
 		MethodInvoker mInvoker = null;
 		List<Constructor<?>> acceptableConstructors = null;
 		LRUCache<MethodDescriptor, MethodInvoker> cache = cacheHolder.get();
@@ -166,22 +162,19 @@ public class ReflectionEngine {
 		mInvoker = cache.get(mDescriptor);
 
 		if (mInvoker == null) {
-			acceptableConstructors = getConstructorsByLength(clazz,
-					parameters.length);
+			acceptableConstructors = getConstructorsByLength(clazz, parameters.length);
 
 			if (acceptableConstructors.size() == 1) {
-				mInvoker = MethodInvoker.buildInvoker(
-						acceptableConstructors.get(0), parameters);
+				mInvoker = MethodInvoker.buildInvoker(acceptableConstructors.get(0), parameters);
 			} else {
-				mInvoker = getBestConstructor(acceptableConstructors,
-						parameters);
+				mInvoker = getBestConstructor(acceptableConstructors, parameters);
 			}
 
 			if (mInvoker != null && mInvoker.getCost() != -1) {
 				cache.put(mDescriptor, mInvoker);
 			} else {
-				String errorMessage = "Constructor " + clazz.getName() + "("
-						+ Arrays.toString(parameters) + ") does not exist";
+				String errorMessage = "Constructor " + clazz.getName() + "(" + Arrays.toString(parameters)
+						+ ") does not exist";
 				logger.log(Level.WARNING, errorMessage);
 				throw new Py4JException(errorMessage);
 			}
@@ -196,16 +189,14 @@ public class ReflectionEngine {
 		try {
 			clazz = ReflectionUtil.classForName(classFQN);
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
-					e);
+			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN, e);
 			throw new Py4JException(e);
 		}
 
 		return getConstructor(clazz, getClassParameters(parameters));
 	}
 
-	private List<Constructor<?>> getConstructorsByLength(Class<?> clazz,
-			int length) {
+	private List<Constructor<?>> getConstructorsByLength(Class<?> clazz, int length) {
 		List<Constructor<?>> methods = new ArrayList<Constructor<?>>();
 
 		for (Constructor<?> constructor : clazz.getConstructors()) {
@@ -229,8 +220,7 @@ public class ReflectionEngine {
 
 		try {
 			field = clazz.getField(name);
-			if (!Modifier.isPublic(field.getModifiers())
-					&& !field.isAccessible()) {
+			if (!Modifier.isPublic(field.getModifiers()) && !field.isAccessible()) {
 				field = null;
 			}
 		} catch (NoSuchFieldException e) {
@@ -259,8 +249,7 @@ public class ReflectionEngine {
 		try {
 			clazz = ReflectionUtil.classForName(classFQN);
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
-					e);
+			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN, e);
 			throw new Py4JException(e);
 		}
 
@@ -283,8 +272,7 @@ public class ReflectionEngine {
 		try {
 			fieldValue = field.get(obj);
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error while fetching field value of "
-					+ field, e);
+			logger.log(Level.SEVERE, "Error while fetching field value of " + field, e);
 			throw new Py4JException(e);
 		}
 		return fieldValue;
@@ -305,10 +293,8 @@ public class ReflectionEngine {
 		return m;
 	}
 
-	public MethodInvoker getMethod(Class<?> clazz, String name,
-			Class<?>[] parameters) {
-		MethodDescriptor mDescriptor = new MethodDescriptor(name, clazz,
-				parameters);
+	public MethodInvoker getMethod(Class<?> clazz, String name, Class<?>[] parameters) {
+		MethodDescriptor mDescriptor = new MethodDescriptor(name, clazz, parameters);
 		MethodInvoker mInvoker = null;
 		List<Method> acceptableMethods = null;
 		LRUCache<MethodDescriptor, MethodInvoker> cache = cacheHolder.get();
@@ -316,12 +302,10 @@ public class ReflectionEngine {
 		mInvoker = cache.get(mDescriptor);
 
 		if (mInvoker == null) {
-			acceptableMethods = getMethodsByNameAndLength(clazz, name,
-					parameters.length);
+			acceptableMethods = getMethodsByNameAndLength(clazz, name, parameters.length);
 
 			if (acceptableMethods.size() == 1) {
-				mInvoker = MethodInvoker.buildInvoker(acceptableMethods.get(0),
-						parameters);
+				mInvoker = MethodInvoker.buildInvoker(acceptableMethods.get(0), parameters);
 			} else {
 				mInvoker = getBestMethod(acceptableMethods, parameters);
 			}
@@ -329,8 +313,7 @@ public class ReflectionEngine {
 			if (mInvoker != null && mInvoker.getCost() != -1) {
 				cache.put(mDescriptor, mInvoker);
 			} else {
-				String errorMessage = "Method " + name + "("
-						+ Arrays.toString(parameters) + ") does not exist";
+				String errorMessage = "Method " + name + "(" + Arrays.toString(parameters) + ") does not exist";
 				logger.log(Level.WARNING, errorMessage);
 				throw new Py4JException(errorMessage);
 			}
@@ -339,34 +322,28 @@ public class ReflectionEngine {
 		return mInvoker;
 	}
 
-	public MethodInvoker getMethod(Object object, String name,
-			Object[] parameters) {
-		return getMethod(object.getClass(), name,
-				getClassParameters(parameters));
+	public MethodInvoker getMethod(Object object, String name, Object[] parameters) {
+		return getMethod(object.getClass(), name, getClassParameters(parameters));
 	}
 
-	public MethodInvoker getMethod(String classFQN, String name,
-			Object[] parameters) {
+	public MethodInvoker getMethod(String classFQN, String name, Object[] parameters) {
 		Class<?> clazz = null;
 
 		try {
 			clazz = ReflectionUtil.classForName(classFQN);
 		} catch (Exception e) {
-			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN,
-					e);
+			logger.log(Level.WARNING, "Class FQN does not exist: " + classFQN, e);
 			throw new Py4JException(e);
 		}
 
 		return getMethod(clazz, name, getClassParameters(parameters));
 	}
 
-	private List<Method> getMethodsByNameAndLength(Class<?> clazz, String name,
-			int length) {
+	private List<Method> getMethodsByNameAndLength(Class<?> clazz, String name, int length) {
 		List<Method> methods = new ArrayList<Method>();
 
 		for (Method method : clazz.getMethods()) {
-			if (method.getName().equals(name)
-					&& method.getParameterTypes().length == length) {
+			if (method.getName().equals(name) && method.getParameterTypes().length == length) {
 				methods.add(method);
 			}
 		}
@@ -374,8 +351,7 @@ public class ReflectionEngine {
 		return methods;
 	}
 
-	public Object invoke(Object object, MethodInvoker invoker,
-			Object[] parameters) {
+	public Object invoke(Object object, MethodInvoker invoker, Object[] parameters) {
 		Object returnObject = null;
 
 		returnObject = invoker.invoke(object, parameters);
@@ -399,8 +375,7 @@ public class ReflectionEngine {
 		try {
 			field.set(obj, value);
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error while setting field value of "
-					+ field, e);
+			logger.log(Level.SEVERE, "Error while setting field value of " + field, e);
 			throw new Py4JException(e);
 		}
 	}
@@ -448,8 +423,7 @@ public class ReflectionEngine {
 		Field[] fields = clazz.getFields();
 		Set<String> fieldNames = new HashSet<String>();
 		for (Field field : fields) {
-			if (Modifier.isPublic(field.getModifiers())
-					&& Modifier.isStatic(field.getModifiers())) {
+			if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers())) {
 				fieldNames.add(field.getName());
 			}
 		}
@@ -465,8 +439,7 @@ public class ReflectionEngine {
 		Method[] methods = clazz.getMethods();
 		Set<String> methodNames = new HashSet<String>();
 		for (Method method : methods) {
-			if (Modifier.isPublic(method.getModifiers())
-					&& Modifier.isStatic(method.getModifiers())) {
+			if (Modifier.isPublic(method.getModifiers()) && Modifier.isStatic(method.getModifiers())) {
 				methodNames.add(method.getName());
 			}
 		}
@@ -482,8 +455,7 @@ public class ReflectionEngine {
 		Class<?>[] classes = clazz.getClasses();
 		Set<String> classNames = new HashSet<String>();
 		for (Class<?> clazz2 : classes) {
-			if (Modifier.isPublic(clazz2.getModifiers())
-					&& Modifier.isStatic(clazz2.getModifiers())) {
+			if (Modifier.isPublic(clazz2.getModifiers()) && Modifier.isStatic(clazz2.getModifiers())) {
 				classNames.add(clazz2.getSimpleName());
 			}
 		}

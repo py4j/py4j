@@ -1,11 +1,12 @@
-/**
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,8 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j;
 
 import java.io.BufferedReader;
@@ -85,8 +85,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 	protected final BufferedWriter writer;
 	protected final BufferedReader reader;
 	protected final Map<String, Command> commands;
-	protected final Logger logger = Logger.getLogger(GatewayConnection.class
-			.getName());
+	protected final Logger logger = Logger.getLogger(GatewayConnection.class.getName());
 	protected final List<GatewayServerListener> listeners;
 
 	static {
@@ -121,15 +120,12 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		this(gateway, socket, null, new ArrayList<GatewayServerListener>());
 	}
 
-	public GatewayConnection(Gateway gateway, Socket socket,
-			List<Class<? extends Command>> customCommands,
+	public GatewayConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
 			List<GatewayServerListener> listeners) throws IOException {
 		super();
 		this.socket = socket;
-		this.reader = new BufferedReader(new InputStreamReader(
-				socket.getInputStream(), Charset.forName("UTF-8")));
-		this.writer = new BufferedWriter(new OutputStreamWriter(
-				socket.getOutputStream(), Charset.forName("UTF-8")));
+		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
+		this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String, Command>();
 		initCommands(gateway, baseCommands);
 		if (customCommands != null) {
@@ -173,8 +169,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 	 *
 	 * @param gateway
 	 */
-	protected void initCommands(Gateway gateway,
-			List<Class<? extends Command>> commandsClazz) {
+	protected void initCommands(Gateway gateway, List<Class<? extends Command>> commandsClazz) {
 		for (Class<? extends Command> clazz : commandsClazz) {
 			try {
 				Command cmd = clazz.newInstance();
@@ -185,8 +180,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 				if (clazz != null) {
 					name = clazz.getName();
 				}
-				logger.log(Level.SEVERE,
-						"Could not initialize command " + name, e);
+				logger.log(Level.SEVERE, "Could not initialize command " + name, e);
 			}
 		}
 	}
@@ -221,8 +215,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 				}
 			} while (commandLine != null && !commandLine.equals("q"));
 		} catch (Exception e) {
-			logger.log(Level.WARNING,
-					"Error occurred while waiting for a command.", e);
+			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
 			if (executing && writer != null) {
 				quietSendError(writer, e);
 			}

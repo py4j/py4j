@@ -1,19 +1,20 @@
-/**
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
- * 
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- * 
+ *
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
- * 
+ *
  * - The name of the author may not be used to endorse or promote products
  * derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -25,8 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j;
 
 import static org.junit.Assert.assertEquals;
@@ -97,8 +97,7 @@ public class GatewayTest {
 
 		// In practice, the argument is a string when it comes from python
 		// So String parameters ALWAYS hide chars.
-		assertEquals(1,
-				((ExampleClass) gateway.getObject(obj2.getName())).getField1());
+		assertEquals(1, ((ExampleClass) gateway.getObject(obj2.getName())).getField1());
 	}
 
 	@Test
@@ -107,8 +106,7 @@ public class GatewayTest {
 		List<Object> args = new ArrayList<Object>();
 		args.add(new Character('c'));
 		ReturnObject obj2 = gateway.invoke("method6", name, args);
-		assertEquals(4,
-				((ExampleClass) gateway.getObject(obj2.getName())).getField1());
+		assertEquals(4, ((ExampleClass) gateway.getObject(obj2.getName())).getField1());
 	}
 
 	@Test
@@ -117,8 +115,7 @@ public class GatewayTest {
 		List<Object> args = new ArrayList<Object>();
 		args.add(new String("c"));
 		ReturnObject obj2 = gateway.invoke("method4", name, args);
-		assertEquals(3,
-				((ExampleClass) gateway.getObject(obj2.getName())).getField1());
+		assertEquals(3, ((ExampleClass) gateway.getObject(obj2.getName())).getField1());
 	}
 
 	@Test
@@ -153,8 +150,7 @@ public class GatewayTest {
 	public void testUniqueCommands() {
 		Set<String> commandNames = new HashSet<String>();
 		try {
-			for (Class<? extends Command> clazz : GatewayConnection
-					.getBaseCommands()) {
+			for (Class<? extends Command> clazz : GatewayConnection.getBaseCommands()) {
 				Command command = clazz.newInstance();
 				String commandName = command.getCommandName();
 				if (commandNames.contains(commandName)) {
@@ -174,7 +170,7 @@ public class GatewayTest {
 		try {
 			gateway.invoke("method1", name + "bob", null);
 			fail();
-		} catch(Py4JException pe) {
+		} catch (Py4JException pe) {
 			assertTrue(true);
 		}
 	}

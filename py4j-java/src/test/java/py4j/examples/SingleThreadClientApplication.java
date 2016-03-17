@@ -1,11 +1,12 @@
-/**
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,16 +26,15 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j.examples;
-
-import py4j.ClientServer;
-import py4j.GatewayServer;
 
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import py4j.ClientServer;
+import py4j.GatewayServer;
 
 public class SingleThreadClientApplication {
 
@@ -47,8 +47,7 @@ public class SingleThreadClientApplication {
 		logger.addHandler(handler);
 		System.out.println("Starting");
 		ClientServer clientServer = new ClientServer(null);
-		IHello hello = (IHello) clientServer.getPythonServerEntryPoint
-				(new Class[] {IHello.class});
+		IHello hello = (IHello) clientServer.getPythonServerEntryPoint(new Class[] { IHello.class });
 		try {
 			hello.sayHello();
 			hello.sayHello(2, "Hello World");
@@ -58,33 +57,33 @@ public class SingleThreadClientApplication {
 
 		// This is to test connecting again if there was no successful
 		// initial connection.
-//		try {
-//			Thread.currentThread().sleep(5000);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//
-//		try {
-//			hello.sayHello();
-//			hello.sayHello(2, "Hello World");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
+		//		try {
+		//			Thread.currentThread().sleep(5000);
+		//		} catch (Exception e) {
+		//			e.printStackTrace();
+		//		}
+		//
+		//		try {
+		//			hello.sayHello();
+		//			hello.sayHello(2, "Hello World");
+		//		} catch (Exception e) {
+		//			e.printStackTrace();
+		//		}
 
 		// This is to manually test reconnecting to the Python side after
 		// graceful shutdown.
-//		clientServer.shutdown();
-//
-//		try {
-//			Thread.currentThread().sleep(1000);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//
-//		clientServer = new ClientServer(null);
-//		hello = (IHello) clientServer.getPythonServerEntryPoint
-//				(new Class[] {IHello.class});
-//		hello.sayHello();
-//		hello.sayHello(2, "Hello World");
+		//		clientServer.shutdown();
+		//
+		//		try {
+		//			Thread.currentThread().sleep(1000);
+		//		} catch (Exception e) {
+		//			e.printStackTrace();
+		//		}
+		//
+		//		clientServer = new ClientServer(null);
+		//		hello = (IHello) clientServer.getPythonServerEntryPoint
+		//				(new Class[] {IHello.class});
+		//		hello.sayHello();
+		//		hello.sayHello(2, "Hello World");
 	}
 }

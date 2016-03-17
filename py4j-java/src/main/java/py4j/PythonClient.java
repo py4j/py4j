@@ -1,11 +1,12 @@
-/**
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,19 +26,19 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j;
 
-import py4j.commands.Command;
-
-import javax.net.SocketFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
+import javax.net.SocketFactory;
+
+import py4j.commands.Command;
 
 /**
  * <p>
@@ -51,18 +52,14 @@ public class PythonClient extends CallbackClient {
 
 	private List<Class<? extends Command>> customCommands;
 
-	protected final Logger logger = Logger.getLogger(PythonClient.class
-			.getName());
+	protected final Logger logger = Logger.getLogger(PythonClient.class.getName());
 
 	private Py4JJavaServer javaServer;
 
-	public PythonClient(Gateway gateway, List<Class<? extends Command>>
-			customCommands, int pythonPort, InetAddress pythonAddress,
-			long minConnectionTime, TimeUnit minConnectionTimeUnit,
+	public PythonClient(Gateway gateway, List<Class<? extends Command>> customCommands, int pythonPort,
+			InetAddress pythonAddress, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory, Py4JJavaServer javaServer) {
-		super(pythonPort, pythonAddress, minConnectionTime,
-				minConnectionTimeUnit,
-				socketFactory);
+		super(pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit, socketFactory);
 		this.gateway = gateway;
 		this.javaServer = javaServer;
 		this.customCommands = customCommands;
@@ -90,8 +87,7 @@ public class PythonClient extends CallbackClient {
 	}
 
 	private Socket startClientSocket() throws IOException {
-		logger.info("Starting Python Client connection on " + address + " at "
-				+ port);
+		logger.info("Starting Python Client connection on " + address + " at " + port);
 		return socketFactory.createSocket(address, port);
 	}
 
@@ -102,8 +98,7 @@ public class PythonClient extends CallbackClient {
 		connection = ClientServerConnection.getThreadConnection();
 		if (connection == null || connection.getSocket() == null) {
 			Socket socket = startClientSocket();
-			connection = new ClientServerConnection(
-					gateway, socket, customCommands, this, javaServer);
+			connection = new ClientServerConnection(gateway, socket, customCommands, this, javaServer);
 			connection.setInitiatedFromClient(true);
 			connection.start();
 			// TODO Need to test that we are not creating a leak.
@@ -115,8 +110,7 @@ public class PythonClient extends CallbackClient {
 	}
 
 	@Override
-	protected boolean shouldRetrySendCommand(Py4JClientConnection cc,
-			Py4JException pe) {
+	protected boolean shouldRetrySendCommand(Py4JClientConnection cc, Py4JException pe) {
 		boolean shouldRetry = false;
 
 		if (cc instanceof ClientServerConnection) {
@@ -135,15 +129,8 @@ public class PythonClient extends CallbackClient {
 
 	@Override
 	public Py4JPythonClient copyWith(InetAddress pythonAddress, int pythonPort) {
-		return new PythonClient(
-				gateway,
-				customCommands,
-				pythonPort,
-				pythonAddress,
-				minConnectionTime,
-				minConnectionTimeUnit,
-				socketFactory,
-				javaServer);
+		return new PythonClient(gateway, customCommands, pythonPort, pythonAddress, minConnectionTime,
+				minConnectionTimeUnit, socketFactory, javaServer);
 	}
 
 }

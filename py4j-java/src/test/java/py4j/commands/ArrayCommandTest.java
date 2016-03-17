@@ -1,12 +1,12 @@
-/*******************************************************************************
- *
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -26,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.commands;
 
 import static org.junit.Assert.assertEquals;
@@ -78,11 +78,9 @@ public class ArrayCommandTest {
 
 	@Test
 	public void testGet() {
-		String inputCommand = ArrayCommand.ARRAY_GET_SUB_COMMAND_NAME + "\n"
-				+ target + "\ni1\ne\n";
+		String inputCommand = ArrayCommand.ARRAY_GET_SUB_COMMAND_NAME + "\n" + target + "\ni1\ne\n";
 		try {
-			command.execute("a", new BufferedReader(new StringReader(
-					inputCommand)), writer);
+			command.execute("a", new BufferedReader(new StringReader(inputCommand)), writer);
 			assertEquals("!ys111\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -92,11 +90,9 @@ public class ArrayCommandTest {
 
 	@Test
 	public void testSet() {
-		String inputCommand = ArrayCommand.ARRAY_SET_SUB_COMMAND_NAME + "\n"
-				+ target2 + "\ni1\ni555\ne\n";
+		String inputCommand = ArrayCommand.ARRAY_SET_SUB_COMMAND_NAME + "\n" + target2 + "\ni1\ni555\ne\n";
 		try {
-			command.execute("a", new BufferedReader(new StringReader(
-					inputCommand)), writer);
+			command.execute("a", new BufferedReader(new StringReader(inputCommand)), writer);
 			assertEquals("!yv\n", sWriter.toString());
 			assertEquals(Array.getInt(array2, 1), 555);
 		} catch (Exception e) {
@@ -107,11 +103,9 @@ public class ArrayCommandTest {
 
 	@Test
 	public void testLength() {
-		String inputCommand = ArrayCommand.ARRAY_LEN_SUB_COMMAND_NAME + "\n"
-				+ target + "\ne\n";
+		String inputCommand = ArrayCommand.ARRAY_LEN_SUB_COMMAND_NAME + "\n" + target + "\ne\n";
 		try {
-			command.execute("a", new BufferedReader(new StringReader(
-					inputCommand)), writer);
+			command.execute("a", new BufferedReader(new StringReader(inputCommand)), writer);
 			assertEquals("!yi2\n", sWriter.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -121,18 +115,14 @@ public class ArrayCommandTest {
 
 	@Test
 	public void testCreateArray() {
-		String inputCommand = ArrayCommand.ARRAY_CREATE_SUB_COMMAND_NAME
-				+ "\nsint\ni3\ne\n";
+		String inputCommand = ArrayCommand.ARRAY_CREATE_SUB_COMMAND_NAME + "\nsint\ni3\ne\n";
 		try {
-			command.execute("a", new BufferedReader(new StringReader(
-					inputCommand)), writer);
+			command.execute("a", new BufferedReader(new StringReader(inputCommand)), writer);
 			int[] intarray = (int[]) gateway.getObject("o2");
 			assertEquals(3, intarray.length);
 
-			inputCommand = ArrayCommand.ARRAY_CREATE_SUB_COMMAND_NAME
-					+ "\nsjava.lang.String\ni3\ni5\ne\n";
-			command.execute("a", new BufferedReader(new StringReader(
-					inputCommand)), writer);
+			inputCommand = ArrayCommand.ARRAY_CREATE_SUB_COMMAND_NAME + "\nsjava.lang.String\ni3\ni5\ne\n";
+			command.execute("a", new BufferedReader(new StringReader(inputCommand)), writer);
 			String[][] stringarray = (String[][]) gateway.getObject("o3");
 			assertEquals(3, stringarray.length);
 			assertEquals(5, stringarray[0].length);
@@ -145,24 +135,19 @@ public class ArrayCommandTest {
 	@Test
 	public void testSlice() {
 		int[] array3 = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-		String[][] array4 = new String[][] { { "111", "222" },
-				{ "aaa", "bbb" }, { "88", "99" } };
+		String[][] array4 = new String[][] { { "111", "222" }, { "aaa", "bbb" }, { "88", "99" } };
 		gateway.putNewObject(array3);
 		gateway.putNewObject(array4);
-		String inputCommand = ArrayCommand.ARRAY_SLICE_SUB_COMMAND_NAME + "\n"
-				+ "o2" + "\ni1\ni5\ne\n";
+		String inputCommand = ArrayCommand.ARRAY_SLICE_SUB_COMMAND_NAME + "\n" + "o2" + "\ni1\ni5\ne\n";
 		try {
-			command.execute("a", new BufferedReader(new StringReader(
-					inputCommand)), writer);
+			command.execute("a", new BufferedReader(new StringReader(inputCommand)), writer);
 			assertEquals("!yto4\n", sWriter.toString());
 			int[] intarray = (int[]) gateway.getObject("o4");
 			assertEquals(2, intarray.length);
 			assertEquals(6, intarray[1]);
 
-			inputCommand = ArrayCommand.ARRAY_SLICE_SUB_COMMAND_NAME + "\n"
-					+ "o3" + "\ni2\ne\n";
-			command.execute("a", new BufferedReader(new StringReader(
-					inputCommand)), writer);
+			inputCommand = ArrayCommand.ARRAY_SLICE_SUB_COMMAND_NAME + "\n" + "o3" + "\ni2\ne\n";
+			command.execute("a", new BufferedReader(new StringReader(inputCommand)), writer);
 			assertEquals("!yto4\n!yto5\n", sWriter.toString());
 			String[][] stringarray = (String[][]) gateway.getObject("o5");
 			assertEquals(1, stringarray.length);

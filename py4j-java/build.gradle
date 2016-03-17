@@ -7,7 +7,7 @@ apply plugin: 'maven'
 
 // Only add spotless for JDK >= 1.8
 if (JavaVersion.current().isJava8Compatible()) {
-	// apply plugin: 'com.diffplug.gradle.spotless'
+	apply plugin: 'com.diffplug.gradle.spotless'
 }
 
 buildscript {
@@ -16,9 +16,9 @@ buildscript {
 	}
 	dependencies {
 		// Only add spotless for JDK >= 1.8
-		//if (JavaVersion.current().isJava8Compatible()) {
-			//classpath group: 'com.diffplug.gradle.spotless', name: 'spotless', version: '1.3.2'
-		//}
+		if (JavaVersion.current().isJava8Compatible()) {
+			classpath group: 'com.diffplug.gradle.spotless', name: 'spotless', version: '1.3.2'
+		}
 	}
 }
 
@@ -31,7 +31,7 @@ dependencies {
 }
 
 
-/*
+
 spotless {
 	java {
 		licenseHeaderFile 'py4j.license.java'
@@ -39,7 +39,7 @@ spotless {
 		importOrderFile 'py4j.importorder'
 	}
 }
-*/
+
 
 // For now, tests are not clean and that's fine because we want to test many
 // unclean scenarios.

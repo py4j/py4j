@@ -1,11 +1,12 @@
-/**
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,15 +26,15 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j;
 
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
 import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
 
 /**
  * <p>
@@ -67,23 +68,17 @@ public class ClientServer {
 
 	private final PythonClient pythonClient;
 
-	protected final Logger logger = Logger.getLogger(ClientServer.class
-			.getName());
-
+	protected final Logger logger = Logger.getLogger(ClientServer.class.getName());
 
 	/**
 	 *
 	 * @param entryPoint
 	 */
 	public ClientServer(Object entryPoint) {
-		this(
-				GatewayServer.DEFAULT_PORT, GatewayServer.defaultAddress(),
-				GatewayServer.DEFAULT_PYTHON_PORT,
-				GatewayServer.defaultAddress(),
-				GatewayServer.DEFAULT_CONNECT_TIMEOUT,
-				GatewayServer.DEFAULT_READ_TIMEOUT,
-				ServerSocketFactory.getDefault(),
-				SocketFactory.getDefault(), entryPoint);
+		this(GatewayServer.DEFAULT_PORT, GatewayServer.defaultAddress(), GatewayServer.DEFAULT_PYTHON_PORT,
+				GatewayServer.defaultAddress(), GatewayServer.DEFAULT_CONNECT_TIMEOUT,
+				GatewayServer.DEFAULT_READ_TIMEOUT, ServerSocketFactory.getDefault(), SocketFactory.getDefault(),
+				entryPoint);
 	}
 
 	/**
@@ -98,10 +93,9 @@ public class ClientServer {
 	 * @param socketFactory
 	 * @param entryPoint
 	 */
-	public ClientServer(int javaPort, InetAddress javaAddress, int
-			pythonPort, InetAddress pythonAddress, int connectTimeout, int
-			readTimeout, ServerSocketFactory sSocketFactory, SocketFactory
-			socketFactory, Object entryPoint) {
+	public ClientServer(int javaPort, InetAddress javaAddress, int pythonPort, InetAddress pythonAddress,
+			int connectTimeout, int readTimeout, ServerSocketFactory sSocketFactory, SocketFactory socketFactory,
+			Object entryPoint) {
 		this.javaPort = javaPort;
 		this.javaAddress = javaAddress;
 		this.pythonPort = pythonPort;
@@ -111,13 +105,10 @@ public class ClientServer {
 		this.sSocketFactory = sSocketFactory;
 		this.socketFactory = socketFactory;
 
-		this.pythonClient = new PythonClient(
-				null, null, pythonPort, pythonAddress,
-				CallbackClient.DEFAULT_MIN_CONNECTION_TIME, TimeUnit.SECONDS,
-				SocketFactory.getDefault(), null);
-		this.javaServer = new JavaServer(
-				entryPoint, this.javaPort, this.connectTimeout,
-				this.readTimeout, null, pythonClient);
+		this.pythonClient = new PythonClient(null, null, pythonPort, pythonAddress,
+				CallbackClient.DEFAULT_MIN_CONNECTION_TIME, TimeUnit.SECONDS, SocketFactory.getDefault(), null);
+		this.javaServer = new JavaServer(entryPoint, this.javaPort, this.connectTimeout, this.readTimeout, null,
+				pythonClient);
 		this.gateway = javaServer.getGateway();
 		pythonClient.setGateway(gateway);
 		pythonClient.setJavaServer(javaServer);
@@ -164,9 +155,8 @@ public class ClientServer {
 	 * @return
 	 */
 	public Object getPythonServerEntryPoint(Class[] interfacesToImplement) {
-		Object proxy = Protocol.getPythonProxyHandler(gateway.getClass()
-				.getClassLoader(), interfacesToImplement, Protocol.ENTRY_POINT_OBJECT_ID,
-				gateway);
+		Object proxy = Protocol.getPythonProxyHandler(gateway.getClass().getClassLoader(), interfacesToImplement,
+				Protocol.ENTRY_POINT_OBJECT_ID, gateway);
 		return proxy;
 	}
 

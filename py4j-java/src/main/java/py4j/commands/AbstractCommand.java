@@ -1,12 +1,12 @@
-/*******************************************************************************
- *
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -26,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.commands;
 
 import java.io.BufferedReader;
@@ -54,14 +54,13 @@ public abstract class AbstractCommand implements Command {
 
 	protected String commandName;
 
-	private final Logger logger = Logger.getLogger(AbstractCommand.class
-			.getName());
+	private final Logger logger = Logger.getLogger(AbstractCommand.class.getName());
 
 	protected Py4JServerConnection connection;
 
 	@Override
-	public abstract void execute(String commandName, BufferedReader reader,
-			BufferedWriter writer) throws Py4JException, IOException;
+	public abstract void execute(String commandName, BufferedReader reader, BufferedWriter writer)
+			throws Py4JException, IOException;
 
 	/**
 	 *
@@ -71,8 +70,7 @@ public abstract class AbstractCommand implements Command {
 	 *         part.
 	 * @throws IOException
 	 */
-	protected List<Object> getArguments(BufferedReader reader)
-			throws IOException {
+	protected List<Object> getArguments(BufferedReader reader) throws IOException {
 		List<Object> arguments = new ArrayList<Object>();
 		List<String> stringArguments = getStringArguments(reader);
 
@@ -95,8 +93,7 @@ public abstract class AbstractCommand implements Command {
 	 *         Consumes the end of command part.
 	 * @throws IOException
 	 */
-	protected List<String> getStringArguments(BufferedReader reader)
-			throws IOException {
+	protected List<String> getStringArguments(BufferedReader reader) throws IOException {
 		List<String> arguments = new ArrayList<String>();
 		String line = reader.readLine();
 
@@ -125,16 +122,12 @@ public abstract class AbstractCommand implements Command {
 	 * @param arguments
 	 * @return
 	 */
-	protected ReturnObject invokeMethod(String methodName,
-			String targetObjectId, List<Object> arguments) {
+	protected ReturnObject invokeMethod(String methodName, String targetObjectId, List<Object> arguments) {
 		ReturnObject returnObject = null;
 		try {
-			returnObject = gateway
-					.invoke(methodName, targetObjectId, arguments);
+			returnObject = gateway.invoke(methodName, targetObjectId, arguments);
 		} catch (Exception e) {
-			logger.log(Level.FINE,
-					"Received exception while executing this command: "
-							+ methodName, e);
+			logger.log(Level.FINE, "Received exception while executing this command: " + methodName, e);
 			returnObject = ReturnObject.getErrorReturnObject(e);
 		}
 		return returnObject;

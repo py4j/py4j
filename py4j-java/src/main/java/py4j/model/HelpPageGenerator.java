@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2010, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.model;
 
 import java.util.regex.Pattern;
@@ -48,8 +49,7 @@ public class HelpPageGenerator {
 	public final static String PREFIX_INDENT = PREFIX + INDENT;
 	public final static String DOUBLE_LINES = "\n" + PREFIX_INDENT + "\n";
 	public final static String SEPARATOR = "------------------------------------------------------------";
-	public final static String PREFIX_SEPARATOR = PREFIX + INDENT + SEPARATOR
-			+ "\n";
+	public final static String PREFIX_SEPARATOR = PREFIX + INDENT + SEPARATOR + "\n";
 
 	/**
 	 * 
@@ -59,8 +59,7 @@ public class HelpPageGenerator {
 	 * @param shortName
 	 * @return
 	 */
-	public final static String getHelpPage(Py4JClass clazz, String pattern,
-			boolean shortName) {
+	public final static String getHelpPage(Py4JClass clazz, String pattern, boolean shortName) {
 		Pattern regex = getRegex(pattern);
 
 		StringBuilder builder = new StringBuilder();
@@ -132,10 +131,8 @@ public class HelpPageGenerator {
 		if (pattern == null) {
 			return Pattern.compile(".*");
 		} else {
-			String newPattern = "^"
-					+ pattern.trim().replace(".", "\\.").replace("*", ".*")
-							.replace("?", ".?").replace("(", "\\(")
-							.replace(")", "\\)");
+			String newPattern = "^" + pattern.trim().replace(".", "\\.").replace("*", ".*").replace("?", ".?")
+					.replace("(", "\\(").replace(")", "\\)");
 			return Pattern.compile(newPattern);
 		}
 	}

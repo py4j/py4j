@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.reflection;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -105,53 +106,37 @@ public class ReflectionEngineTest {
 	public void testGetFieldValue() {
 		Cat cat = new Cat();
 
-		assertEquals(rEngine.getFieldValue(cat, rEngine.getField(cat, "age2")),
-				2);
-		assertEquals(
-				rEngine.getFieldValue(cat, rEngine.getField(cat, "CONSTANT")),
-				"Salut!");
-		assertEquals(
-				rEngine.getFieldValue(null, rEngine.getField(cat, "CONSTANT")),
-				"Salut!");
+		assertEquals(rEngine.getFieldValue(cat, rEngine.getField(cat, "age2")), 2);
+		assertEquals(rEngine.getFieldValue(cat, rEngine.getField(cat, "CONSTANT")), "Salut!");
+		assertEquals(rEngine.getFieldValue(null, rEngine.getField(cat, "CONSTANT")), "Salut!");
 	}
 
 	@Test
 	public void testGetConstructor() {
 		ReflectionEngine engine = new ReflectionEngine();
-		MethodInvoker mInvoker = engine.getConstructor("p1.Cat",
-				new Object[] {});
-		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] {});
+		MethodInvoker mInvoker = engine.getConstructor("p1.Cat", new Object[] {});
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(), new Class[] {});
 
 		// Test cache:
 		mInvoker = engine.getConstructor("p1.Cat", new Object[] {});
-		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] {});
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(), new Class[] {});
 
 		// Test one only
-		mInvoker = engine.getConstructor("p1.Cat",
-				new Object[] { new Integer(2) });
-		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] { int.class });
+		mInvoker = engine.getConstructor("p1.Cat", new Object[] { new Integer(2) });
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(), new Class[] { int.class });
 
 		// Test cost computation
-		mInvoker = engine.getConstructor("p1.Cat", new Object[] {
-				new ArrayList<String>(), new String() });
-		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] { Object.class, String.class });
+		mInvoker = engine.getConstructor("p1.Cat", new Object[] { new ArrayList<String>(), new String() });
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(), new Class[] { Object.class, String.class });
 
-		mInvoker = engine.getConstructor("p1.Cat", new Object[] { "",
-				new String() });
-		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] { String.class, String.class });
+		mInvoker = engine.getConstructor("p1.Cat", new Object[] { "", new String() });
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(), new Class[] { String.class, String.class });
 
 		mInvoker = engine.getConstructor("p1.Cat", new Object[] { "a", 2 });
-		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] { char.class, int.class });
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(), new Class[] { char.class, int.class });
 
 		mInvoker = engine.getConstructor("p1.Cat", new Object[] { true, 2 });
-		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(),
-				new Class[] { boolean.class, short.class });
+		assertArrayEquals(mInvoker.getConstructor().getParameterTypes(), new Class[] { boolean.class, short.class });
 
 		// Test invokation
 		mInvoker = engine.getConstructor("p1.Cat", new Object[] { "a", 2 });
@@ -164,75 +149,58 @@ public class ReflectionEngineTest {
 		try {
 			ReflectionEngine engine = new ReflectionEngine();
 			TestEngine2 tEngine = new TestEngine2();
-			MethodInvoker mInvoker = engine.getMethod(tEngine, "method1",
-					new Object[] { new Object(), new Object() });
-			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
-					new Class[] { Object.class, Object.class });
+			MethodInvoker mInvoker = engine.getMethod(tEngine, "method1", new Object[] { new Object(), new Object() });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { Object.class, Object.class });
 
 			// Test cache:
-			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
-					new Object(), new Object() });
-			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
-					new Class[] { Object.class, Object.class });
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] { new Object(), new Object() });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { Object.class, Object.class });
 
 			// Test one only
-			mInvoker = engine.getMethod(tEngine, "method2",
-					new Object[] { new Object() });
-			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
-					new Class[] { Object.class });
+			mInvoker = engine.getMethod(tEngine, "method2", new Object[] { new Object() });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { Object.class });
 
 			// Test no param
 			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {});
-			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
-					new Class[] {});
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] {});
 
 			// Test no match
 			try {
-				mInvoker = engine.getMethod(tEngine, "method3",
-						new Object[] { new Object() });
+				mInvoker = engine.getMethod(tEngine, "method3", new Object[] { new Object() });
 				fail();
 			} catch (Exception e) {
 			}
 
 			// Test one invalid
 			try {
-				mInvoker = engine.getMethod(tEngine, "method2", new Object[] {
-						new Object(), new Object() });
+				mInvoker = engine.getMethod(tEngine, "method2", new Object[] { new Object(), new Object() });
 				fail();
 			} catch (Exception e) {
 			}
 
 			// Test many, but invalid
 			try {
-				mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
-						new Object(), new Object(), new Object() });
+				mInvoker = engine.getMethod(tEngine, "method1",
+						new Object[] { new Object(), new Object(), new Object() });
 				fail();
 			} catch (Exception e) {
 			}
 
 			// Test many
-			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
-					new String(), new ArrayList<String>() });
-			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
-					new Class[] { String.class, Object.class });
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] { new String(), new ArrayList<String>() });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { String.class, Object.class });
 
-			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {
-					new String(), new String() });
-			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
-					new Class[] { String.class, char.class });
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] { new String(), new String() });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { String.class, char.class });
 
-			mInvoker = engine.getMethod(tEngine, "method1", new Object[] { 2,
-					2.2 });
-			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
-					new Class[] { int.class, double.class });
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] { 2, 2.2 });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { int.class, double.class });
 
 			// Two methods are equal. Selected method will depend on how methods
 			// are given
 			// during reflection.
-			mInvoker = engine.getMethod(tEngine, "method1", new Object[] { "2",
-					true });
-			assertArrayEquals(mInvoker.getMethod().getParameterTypes(),
-					new Class[] { Object.class, Boolean.class });
+			mInvoker = engine.getMethod(tEngine, "method1", new Object[] { "2", true });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { Object.class, Boolean.class });
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

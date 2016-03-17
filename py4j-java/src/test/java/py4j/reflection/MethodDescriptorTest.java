@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j.reflection;
 
 import static org.junit.Assert.assertEquals;
@@ -40,16 +41,12 @@ public class MethodDescriptorTest {
 	@Test
 	public void testInternalRepresentation() {
 		try {
-			MethodDescriptor mDesc1 = new MethodDescriptor("meowmeow",
-					Cat.class, new Class[] { String.class });
-			MethodDescriptor mDesc2 = new MethodDescriptor("meowmeow",
-					Cat.class, new Class[] { String.class });
+			MethodDescriptor mDesc1 = new MethodDescriptor("meowmeow", Cat.class, new Class[] { String.class });
+			MethodDescriptor mDesc2 = new MethodDescriptor("meowmeow", Cat.class, new Class[] { String.class });
 			assertEquals(mDesc1, mDesc2);
 			assertEquals(mDesc1.hashCode(), mDesc2.hashCode());
-			assertEquals(mDesc1.getInternalRepresentation(),
-					"p1.Cat.meowmeow(java.lang.String.)");
-			assertEquals(mDesc1.toString(),
-					"p1.Cat.meowmeow(java.lang.String.)");
+			assertEquals(mDesc1.getInternalRepresentation(), "p1.Cat.meowmeow(java.lang.String.)");
+			assertEquals(mDesc1.toString(), "p1.Cat.meowmeow(java.lang.String.)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

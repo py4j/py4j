@@ -1,11 +1,12 @@
-/**
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,8 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- */
-
+ *****************************************************************************/
 package py4j.examples;
 
 import java.io.FileNotFoundException;
@@ -76,20 +76,13 @@ public class ExampleSSLApplication {
 		// Logger logger = Logger.getLogger("py4j");
 		// logger.setLevel(Level.ALL);
 
-		GatewayServer server = new GatewayServer(
-			new ExampleEntryPoint(),
-			GatewayServer.DEFAULT_PORT,
-			InetAddress.getByName("localhost"),
-			GatewayServer.DEFAULT_CONNECT_TIMEOUT,
-			GatewayServer.DEFAULT_READ_TIMEOUT,
-			null,
-			new CallbackClient(
-				GatewayServer.DEFAULT_PYTHON_PORT,
-				InetAddress.getByName(CallbackClient.DEFAULT_ADDRESS),
-				CallbackClient.DEFAULT_MIN_CONNECTION_TIME,
-				TimeUnit.SECONDS,
-				sslContext.getSocketFactory()),
-			sslContext.getServerSocketFactory());
+		GatewayServer server = new GatewayServer(new ExampleEntryPoint(), GatewayServer.DEFAULT_PORT,
+				InetAddress.getByName("localhost"), GatewayServer.DEFAULT_CONNECT_TIMEOUT,
+				GatewayServer.DEFAULT_READ_TIMEOUT, null,
+				new CallbackClient(GatewayServer.DEFAULT_PYTHON_PORT,
+						InetAddress.getByName(CallbackClient.DEFAULT_ADDRESS),
+						CallbackClient.DEFAULT_MIN_CONNECTION_TIME, TimeUnit.SECONDS, sslContext.getSocketFactory()),
+				sslContext.getServerSocketFactory());
 		server.start();
 	}
 

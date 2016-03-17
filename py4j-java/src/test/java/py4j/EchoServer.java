@@ -1,11 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2009, 2011, Barthelemy Dagenais All rights reserved.
+/******************************************************************************
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * - Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
  *
  * - Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -25,7 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
+ *****************************************************************************/
 package py4j;
 
 import java.io.BufferedReader;
@@ -79,8 +80,7 @@ public class EchoServer {
 					sSocket = new ServerSocket(testPort);
 					testSocket = sSocket.accept();
 					BufferedReader reader = new BufferedReader(
-							new InputStreamReader(testSocket.getInputStream(),
-									Charset.forName("UTF-8")));
+							new InputStreamReader(testSocket.getInputStream(), Charset.forName("UTF-8")));
 					while (true) {
 						System.out.println("Waiting for echo input.");
 						String command = reader.readLine();
@@ -114,13 +114,9 @@ public class EchoServer {
 					sSocket = new ServerSocket(serverPort);
 					clientSocket = sSocket.accept();
 					BufferedReader reader = new BufferedReader(
-							new InputStreamReader(
-									clientSocket.getInputStream(),
-									Charset.forName("UTF-8")));
+							new InputStreamReader(clientSocket.getInputStream(), Charset.forName("UTF-8")));
 					BufferedWriter writer = new BufferedWriter(
-							new OutputStreamWriter(
-									clientSocket.getOutputStream(),
-									Charset.forName("UTF-8")));
+							new OutputStreamWriter(clientSocket.getOutputStream(), Charset.forName("UTF-8")));
 					while (true) {
 						String command = readCommand(reader);
 						if (command == null) {
@@ -139,8 +135,7 @@ public class EchoServer {
 				}
 			}
 
-			private String readCommand(BufferedReader reader)
-					throws IOException {
+			private String readCommand(BufferedReader reader) throws IOException {
 				System.out.println("Reading commands");
 				StringBuilder commandBuilder = new StringBuilder();
 
