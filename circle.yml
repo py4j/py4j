@@ -1,6 +1,10 @@
+machine:
+  environment:
+    JDK6_BOOT_CLASSPATH: /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/jsse.jar
 general:
   artifacts:
     - "py4j-python/src/cover"
+    - "py4j-java/build/reports"
 dependencies:
   override:
     - pyenv global 2.6.8; sudo update-alternatives --set java /usr/lib/jvm/jdk1.6.0/bin/java; sudo update-alternatives --set javac /usr/lib/jvm/java-6-openjdk-amd64/bin/javac; echo 'export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64' >> ~/.circlerc;

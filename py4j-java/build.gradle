@@ -5,6 +5,8 @@ apply plugin: 'findbugs'
 apply plugin: 'jacoco'
 apply plugin: 'maven'
 
+def jdk6BootClasspathEnv = System.getenv("JDK6_BOOT_CLASSPATH")
+
 // Only add spotless for JDK >= 1.8
 if (JavaVersion.current().isJava8Compatible()) {
     apply plugin: 'com.diffplug.gradle.spotless'
@@ -19,7 +21,6 @@ buildscript {
         if (JavaVersion.current().isJava8Compatible()) {
             classpath group: 'com.diffplug.gradle.spotless', name: 'spotless', version: '1.3.2'
         }
-        classpath group: 'com.google.code.findbugs', name: 'findbugs', version: '3.0.+'
     }
 }
 
@@ -29,7 +30,8 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-
+    // For Java 8 Support
+    findbugs group: 'com.google.code.findbugs', name: 'findbugs', version: '3.0.+'
 }
 
 // Only add spotless for JDK >= 1.8
@@ -46,6 +48,11 @@ if (JavaVersion.current().isJava8Compatible()) {
 // For now, tests are not clean and that's fine because we want to test many
 // unclean scenarios.
 findbugsTest.enabled = false
+
+jacoco {
+    // For Java 8 Support
+    toolVersion = "0.7.6.201602180812"
+}
 
 jacocoTestReport {
     reports {
@@ -109,6 +116,10 @@ task createPom << {
             }
         }
     }.writeTo("pom.xml")
+}
+
+if (jdk6BootClasspathEnv && !jdk6BootClasspath) {
+    jdk6BootClasspath = jdk6BootClasspathEnv
 }
 
 if (jdk6BootClasspath) {
