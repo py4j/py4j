@@ -1,7 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
-apply plugin: 'findbugs'
 apply plugin: 'jacoco'
 apply plugin: 'maven'
 
@@ -10,6 +9,11 @@ def jdk6BootClasspathEnv = System.getenv("JDK6_BOOT_CLASSPATH")
 // Only add spotless for JDK >= 1.8
 if (JavaVersion.current().isJava8Compatible()) {
     apply plugin: 'com.diffplug.gradle.spotless'
+}
+
+// FindBugs require JDK >= 1.7
+if (JavaVersion.current().isJava7Compatible()) {
+    apply plugin: 'findbugs'
 }
 
 buildscript {
@@ -31,7 +35,9 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     // For Java 8 Support
-    findbugs group: 'com.google.code.findbugs', name: 'findbugs', version: '3.0.+'
+    if (JavaVersion.current().isJava7Compatible()) {
+        findbugs group: 'com.google.code.findbugs', name: 'findbugs', version: '3.0.+'
+    }
 }
 
 // Only add spotless for JDK >= 1.8
@@ -47,7 +53,9 @@ if (JavaVersion.current().isJava8Compatible()) {
 
 // For now, tests are not clean and that's fine because we want to test many
 // unclean scenarios.
-findbugsTest.enabled = false
+if (JavaVersion.current().isJava7Compatible()) {
+    findbugsTest.enabled = false
+}
 
 jacoco {
     // For Java 8 Support
