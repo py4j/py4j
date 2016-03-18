@@ -7,39 +7,41 @@ apply plugin: 'maven'
 
 // Only add spotless for JDK >= 1.8
 if (JavaVersion.current().isJava8Compatible()) {
-	apply plugin: 'com.diffplug.gradle.spotless'
+    apply plugin: 'com.diffplug.gradle.spotless'
 }
 
 buildscript {
-	repositories {
-		jcenter()
-	}
-	dependencies {
-		// Only add spotless for JDK >= 1.8
-		if (JavaVersion.current().isJava8Compatible()) {
-			classpath group: 'com.diffplug.gradle.spotless', name: 'spotless', version: '1.3.2'
-		}
-	}
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        // Only add spotless for JDK >= 1.8
+        if (JavaVersion.current().isJava8Compatible()) {
+            classpath group: 'com.diffplug.gradle.spotless', name: 'spotless', version: '1.3.2'
+        }
+        classpath group: 'com.google.code.findbugs', name: 'findbugs', version: '3.0.+'
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
 }
 
-
-
-spotless {
-	java {
-		licenseHeaderFile 'py4j.license.java'
-		eclipseFormatFile 'py4j.formatter.xml'
-		importOrderFile 'py4j.importorder'
-	}
+// Only add spotless for JDK >= 1.8
+if (JavaVersion.current().isJava8Compatible()) {
+    spotless {
+        java {
+            licenseHeaderFile 'py4j.license.java'
+            eclipseFormatFile 'py4j.formatter.xml'
+            importOrderFile 'py4j.importorder'
+        }
+    }
 }
-
 
 // For now, tests are not clean and that's fine because we want to test many
 // unclean scenarios.
@@ -53,27 +55,26 @@ jacocoTestReport {
     }
 }
 
-
 // Backward compatibility with previous versions of Py4J
 task copyMainJar(type: Copy, dependsOn: jar) {
-	from 'build/libs/'
-	into '.'
-	include "py4j-java-${version}.jar"
-	rename { String fileName ->
-		fileName.replace('-java-', '')
-	}
+    from 'build/libs/'
+    into '.'
+    include "py4j-java-${version}.jar"
+    rename { String fileName ->
+        fileName.replace('-java-', '')
+    }
 }
 
 task cleanMainJar(type: Delete) {
-	delete "./py4j${version}.jar"
+    delete "./py4j${version}.jar"
 }
 
 // If someone wants to access all examples
 task jarTests(type: Jar) {
-	description 'Creates a jar file with all test classes.'
-	baseName = 'py4j-tests'
-	from sourceSets.test.output
-	from sourceSets.main.output
+    description 'Creates a jar file with all test classes.'
+    baseName = 'py4j-tests'
+    from sourceSets.test.output
+    from sourceSets.main.output
 }
 
 // Maven support
@@ -85,44 +86,44 @@ task createPom << {
             version '0.10.0-SNAPSHOT'
             description 'Py4J enables Python programs running in a Python interpreter to dynamically access Java objects in a Java Virtual Machine. Methods are called as if the Java objects resided in the Python interpreter and Java collections can be accessed through standard Python collection methods. Py4J also enables Java programs to call back Python objects.'
             scm {
-            	connection 'scm:git:git@github.com:bartdag/py4j.git'
-            	developerConnection 'scm:git:git@github.com:bartdag/py4j.git'
-            	url 'git@github.com:bartdag/py4j.git'
-			}
-			developers {
-				developer {
-					id 'bartdag'
-					name 'Barthelemy Dagenais'
-					url 'http://infobart.com/'
-				}
-			}
+                connection 'scm:git:git@github.com:bartdag/py4j.git'
+                developerConnection 'scm:git:git@github.com:bartdag/py4j.git'
+                url 'git@github.com:bartdag/py4j.git'
+            }
+            developers {
+                developer {
+                    id 'bartdag'
+                    name 'Barthelemy Dagenais'
+                    url 'http://infobart.com/'
+                }
+            }
             licenses {
                 license {
                     name 'The New BSD License'
                     url 'http://www.opensource.org/licenses/bsd-license.html'
                 }
             }
-			properties {
-				project.build.sourceEncoding 'UTF-8'
-				project.build.outputEncoding 'UTF-8'
-			}
+            properties {
+                project.build.sourceEncoding 'UTF-8'
+                project.build.outputEncoding 'UTF-8'
+            }
         }
     }.writeTo("pom.xml")
 }
 
 if (jdk6BootClasspath) {
-	tasks.withType(JavaCompile) {
-		options.fork = true
-		options.bootClasspath = "$jdk6BootClasspath"
-	}
+    tasks.withType(JavaCompile) {
+        options.fork = true
+        options.bootClasspath = "$jdk6BootClasspath"
+    }
 }
 
 // Build the py4j-tests jar
 assemble {
-	dependsOn jarTests
-	dependsOn copyMainJar
+    dependsOn jarTests
+    dependsOn copyMainJar
 }
 
 clean {
-	dependsOn cleanMainJar
+    dependsOn cleanMainJar
 }
