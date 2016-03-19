@@ -174,11 +174,7 @@
 		<copy todir="${dist.dir}/${release.name}/src">
     		<fileset dir="src"/>
   		</copy>
-		<copy todir="${dist.dir}/${release.name}/test">
-    		<fileset dir="test"/>
-  		</copy>
 		<copy file="LICENSE.txt" tofile="${dist.dir}/py4j-${version}/LICENSE.txt"/>
-		<copy file="README.txt" tofile="${dist.dir}/py4j-${version}/README.txt"/>
 		<copy file="build.xml" tofile="${dist.dir}/py4j-${version}/build.xml"/>
 		<copy file="ant.properties" tofile="${dist.dir}/py4j-${version}/ant.properties"/>
 		<copy file="${jar.name}" tofile="${dist.dir}/py4j-${version}/${jar.name}"/>
