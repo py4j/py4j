@@ -4,7 +4,21 @@ apply plugin: 'idea'
 apply plugin: 'jacoco'
 apply plugin: 'maven'
 
-def jdk6BootClasspathEnv = System.getenv("JDK6_BOOT_CLASSPATH")
+
+// ====== CONFIGURATION ===== //
+
+ext {
+    // For CI environment. Optional.
+    jdk6BootClasspathEnv = System.getenv("JDK6_BOOT_CLASSPATH")
+    pythonDir = "../py4j-python/"
+    pythonDistDir = "${pythonDir}/dist"
+    webDir = "../py4j-web/"
+    pythonJavaDir = "${pythonDir}/py4j-java"
+    pythonWebDir = "${pythonDir}/doc"
+    pythonWebJavadocDir = "${pythonWebDir}/_static"
+}
+
+
 
 // Only add spotless for JDK >= 1.8
 if (JavaVersion.current().isJava8Compatible()) {
@@ -51,10 +65,16 @@ if (JavaVersion.current().isJava8Compatible()) {
     }
 }
 
-// For now, tests are not clean and that's fine because we want to test many
-// unclean scenarios.
-if (JavaVersion.current().isJava7Compatible()) {
-    findbugsTest.enabled = false
+// Use environment variable only if the property is not set
+if (jdk6BootClasspathEnv && !jdk6BootClasspath) {
+    jdk6BootClasspath = jdk6BootClasspathEnv
+}
+
+if (jdk6BootClasspath) {
+    tasks.withType(JavaCompile) {
+        options.fork = true
+        options.bootClasspath = "$jdk6BootClasspath"
+    }
 }
 
 jacoco {
@@ -70,35 +90,22 @@ jacocoTestReport {
     }
 }
 
-// Backward compatibility with previous versions of Py4J
-task copyMainJar(type: Copy, dependsOn: jar) {
-    from 'build/libs/'
-    into '.'
-    include "py4j-java-${version}.jar"
-    rename { String fileName ->
-        fileName.replace('-java-', '')
-    }
-}
-
-task cleanMainJar(type: Delete) {
-    delete "./py4j${version}.jar"
-}
-
-// If someone wants to access all examples
-task jarTests(type: Jar) {
-    description 'Creates a jar file with all test classes.'
-    baseName = 'py4j-tests'
-    from sourceSets.test.output
-    from sourceSets.main.output
-}
+// ====== CUSTOM TASKS ====== //
 
 // Maven support
 task createPom << {
     pom {
         project {
+            parent {
+                groupId 'org.sonatype.oss'
+                artifactId 'oss-parent'
+                version '7'
+            }
+            packaging 'jar'
             groupId 'net.sf.py4j'
             artifactId 'py4j'
             version '0.10.0-SNAPSHOT'
+            name 'Py4J'
             description 'Py4J enables Python programs running in a Python interpreter to dynamically access Java objects in a Java Virtual Machine. Methods are called as if the Java objects resided in the Python interpreter and Java collections can be accessed through standard Python collection methods. Py4J also enables Java programs to call back Python objects.'
             scm {
                 connection 'scm:git:git@github.com:bartdag/py4j.git'
@@ -119,22 +126,126 @@ task createPom << {
                 }
             }
             properties {
-                project.build.sourceEncoding 'UTF-8'
-                project.build.outputEncoding 'UTF-8'
+                'project.build.sourceEncoding' 'UTF-8'
+                'project.build.outputEncoding' 'UTF-8'
+            }
+        }
+    }.withXml {
+        asNode().appendNode('build').appendNode('plugins').appendNode('plugin').with {
+            appendNode('groupId', 'org.apache.maven.plugins')
+            appendNode('artifactId', 'maven-compiler-plugin')
+            appendNode('version', '3.3')
+            appendNode('configuration').with {
+                appendNode('source', '1.6')
+                appendNode('target', '1.6')
             }
         }
     }.writeTo("pom.xml")
 }
 
-if (jdk6BootClasspathEnv && !jdk6BootClasspath) {
-    jdk6BootClasspath = jdk6BootClasspathEnv
+// If someone wants to access all examples
+task jarTests(type: Jar) {
+    description 'Creates a jar file with all test classes.'
+    baseName = 'py4j-tests'
+    from sourceSets.test.output
+    from sourceSets.main.output
 }
 
-if (jdk6BootClasspath) {
-    tasks.withType(JavaCompile) {
-        options.fork = true
-        options.bootClasspath = "$jdk6BootClasspath"
+// Backward compatibility with previous versions of Py4J
+task copyMainJar(type: Copy, dependsOn: jar) {
+    from 'build/libs/'
+    into '.'
+    include "py4j-java-${version}.jar"
+    rename { String fileName ->
+        fileName.replace('-java-', '')
     }
+}
+
+// Make Py4J.org website and doc
+task buildWeb(type: Exec) {
+    workingDir webDir
+    executable 'make'
+    args 'html'
+}
+
+task copyWebPython(type: Copy, dependsOn: 'buildWeb') {
+    from("${webDir}/_build/html")
+    into pythonWebDir
+}
+
+task copyWebJavadocPython(type: Copy, dependsOn: ['javadoc', 'copyWebPython']) {
+    from "${buildDir}/docs"
+    into pythonWebJavadocDir
+}
+
+// Copy Java build to Python build for Python Source Build
+task copyJavaPython(type: Copy, dependsOn: ['copyMainJar', 'javadoc', 'createPom']) {
+    from(projectDir) {
+        include "src"
+        include "ant.properties"
+        include "build.xml"
+        include "gradle.properties"
+        include "build.gradle"
+        include "pom.xml"
+        include "LICENSE.txt"
+    }
+    from "py4j${version}.jar"
+    from "${buildDir}/docs"
+    into pythonJavaDir
+}
+
+// Python Source Dist
+task buildPythonSrc(type: Exec, dependsOn: ['copyWebJavadocPython', 'copyJavaPython']) {
+    workingDir pythonDir;
+    executable 'python'
+    args 'setup.py', 'sdist', '--formats=zip,gztar'
+}
+
+// Python Wheel Dist
+task buildPythonWheel(type: Exec, dependsOn: ['copyJavaPython']) {
+    workingDir pythonDir;
+    executable 'python'
+    args 'setup.py', 'bdist_wheel'
+}
+
+// Python Global Dist
+task buildPython(dependsOn: ['buildPythonSrc', 'buildPythonWheel'])
+
+// Clean Py4J backward compatibility jar
+task cleanMainJar(type: Delete) {
+    delete "./py4j${version}.jar"
+}
+
+// Clean web dist
+task cleanWeb(type: Exec) {
+    workingDir webDir
+    executable 'make'
+    args 'clean'
+}
+
+// Clean python java dir
+task cleanPythonWeb(type: Delete) {
+    delete pythonWebDir
+}
+
+// Clean python java dir
+task cleanPythonJava(type: Delete) {
+    delete pythonJavaDir
+}
+
+// Clean python dist
+task cleanPython(type: Delete) {
+    delete "${pythonDir}/build"
+    delete "${pythonDir}/dist"
+}
+
+
+// ====== TASK DEPENDENCIES AND DISABLING ===== //
+
+// For now, tests are not clean and that's fine because we want to test many
+// unclean scenarios.
+if (JavaVersion.current().isJava7Compatible()) {
+    findbugsTest.enabled = false
 }
 
 // Build the py4j-tests jar
@@ -145,4 +256,8 @@ assemble {
 
 clean {
     dependsOn cleanMainJar
+    dependsOn cleanPython
+    dependsOn cleanWeb
+    dependsOn cleanPythonJava
+    dependsOn cleanPythonWeb
 }
