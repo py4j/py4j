@@ -93,54 +93,57 @@ jacocoTestReport {
 // ====== CUSTOM TASKS ====== //
 
 // Maven support
-task createPom << {
-    pom {
-        project {
-            parent {
-                groupId 'org.sonatype.oss'
-                artifactId 'oss-parent'
-                version '7'
-            }
-            packaging 'jar'
-            groupId 'net.sf.py4j'
-            artifactId 'py4j'
-            version '0.10.0-SNAPSHOT'
-            name 'Py4J'
-            description 'Py4J enables Python programs running in a Python interpreter to dynamically access Java objects in a Java Virtual Machine. Methods are called as if the Java objects resided in the Python interpreter and Java collections can be accessed through standard Python collection methods. Py4J also enables Java programs to call back Python objects.'
-            scm {
-                connection 'scm:git:git@github.com:bartdag/py4j.git'
-                developerConnection 'scm:git:git@github.com:bartdag/py4j.git'
-                url 'git@github.com:bartdag/py4j.git'
-            }
-            developers {
-                developer {
-                    id 'bartdag'
-                    name 'Barthelemy Dagenais'
-                    url 'http://infobart.com/'
+task createPom {
+    description 'Creates Py4J maven build file.'
+    doLast {
+        pom {
+            project {
+                parent {
+                    groupId 'org.sonatype.oss'
+                    artifactId 'oss-parent'
+                    version '7'
+                }
+                packaging 'jar'
+                groupId 'net.sf.py4j'
+                artifactId 'py4j'
+                version '0.10.0-SNAPSHOT'
+                name 'Py4J'
+                description 'Py4J enables Python programs running in a Python interpreter to dynamically access Java objects in a Java Virtual Machine. Methods are called as if the Java objects resided in the Python interpreter and Java collections can be accessed through standard Python collection methods. Py4J also enables Java programs to call back Python objects.'
+                scm {
+                    connection 'scm:git:git@github.com:bartdag/py4j.git'
+                    developerConnection 'scm:git:git@github.com:bartdag/py4j.git'
+                    url 'git@github.com:bartdag/py4j.git'
+                }
+                developers {
+                    developer {
+                        id 'bartdag'
+                        name 'Barthelemy Dagenais'
+                        url 'http://infobart.com/'
+                    }
+                }
+                licenses {
+                    license {
+                        name 'The New BSD License'
+                        url 'http://www.opensource.org/licenses/bsd-license.html'
+                    }
+                }
+                properties {
+                    'project.build.sourceEncoding' 'UTF-8'
+                    'project.build.outputEncoding' 'UTF-8'
                 }
             }
-            licenses {
-                license {
-                    name 'The New BSD License'
-                    url 'http://www.opensource.org/licenses/bsd-license.html'
+        }.withXml {
+            asNode().appendNode('build').appendNode('plugins').appendNode('plugin').with {
+                appendNode('groupId', 'org.apache.maven.plugins')
+                appendNode('artifactId', 'maven-compiler-plugin')
+                appendNode('version', '3.3')
+                appendNode('configuration').with {
+                    appendNode('source', '1.6')
+                    appendNode('target', '1.6')
                 }
             }
-            properties {
-                'project.build.sourceEncoding' 'UTF-8'
-                'project.build.outputEncoding' 'UTF-8'
-            }
-        }
-    }.withXml {
-        asNode().appendNode('build').appendNode('plugins').appendNode('plugin').with {
-            appendNode('groupId', 'org.apache.maven.plugins')
-            appendNode('artifactId', 'maven-compiler-plugin')
-            appendNode('version', '3.3')
-            appendNode('configuration').with {
-                appendNode('source', '1.6')
-                appendNode('target', '1.6')
-            }
-        }
-    }.writeTo("pom.xml")
+        }.writeTo("pom.xml")
+    }
 }
 
 // If someone wants to access all examples
@@ -153,6 +156,7 @@ task jarTests(type: Jar) {
 
 // Backward compatibility with previous versions of Py4J
 task copyMainJar(type: Copy, dependsOn: jar) {
+    description 'Copies and rename Py4J main jar for backward compatibility.'
     from 'build/libs/'
     into '.'
     include "py4j-java-${version}.jar"
@@ -163,23 +167,27 @@ task copyMainJar(type: Copy, dependsOn: jar) {
 
 // Make Py4J.org website and doc
 task buildWeb(type: Exec) {
+    description 'Builds Py4J static web site and documentation.'
     workingDir webDir
     executable 'make'
     args 'html'
 }
 
 task copyWebPython(type: Copy, dependsOn: 'buildWeb') {
+    description 'Copies Py4J static web site to py4j-python directory.'
     from("${webDir}/_build/html")
     into pythonWebDir
 }
 
 task copyWebJavadocPython(type: Copy, dependsOn: ['javadoc', 'copyWebPython']) {
+    description 'Copies javadoc into Py4J static web site static directory.'
     from "${buildDir}/docs"
     into pythonWebJavadocDir
 }
 
 // Copy Java build to Python build for Python Source Build
 task copyJavaPython(type: Copy, dependsOn: ['copyMainJar', 'javadoc', 'createPom']) {
+    description 'Copies py4j-java source and build files to py4j-python directory.'
     from(projectDir) {
         include "src"
         include "ant.properties"
@@ -196,6 +204,7 @@ task copyJavaPython(type: Copy, dependsOn: ['copyMainJar', 'javadoc', 'createPom
 
 // Python Source Dist
 task buildPythonSrc(type: Exec, dependsOn: ['copyWebJavadocPython', 'copyJavaPython']) {
+    description 'Builds python source distribution.'
     workingDir pythonDir;
     executable 'python'
     args 'setup.py', 'sdist', '--formats=zip,gztar'
@@ -203,13 +212,17 @@ task buildPythonSrc(type: Exec, dependsOn: ['copyWebJavadocPython', 'copyJavaPyt
 
 // Python Wheel Dist
 task buildPythonWheel(type: Exec, dependsOn: ['copyJavaPython']) {
+    description 'Builds python wheel (binary) distribution.'
     workingDir pythonDir;
     executable 'python'
     args 'setup.py', 'bdist_wheel'
 }
 
 // Python Global Dist
-task buildPython(dependsOn: ['buildPythonSrc', 'buildPythonWheel'])
+task buildPython(dependsOn: ['buildPythonSrc', 'buildPythonWheel']) {
+    description 'Builds python distributions (source and wheel).'
+
+}
 
 // Clean Py4J backward compatibility jar
 task cleanMainJar(type: Delete) {
