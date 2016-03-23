@@ -28,6 +28,33 @@ if (JavaVersion.current().isJava8Compatible()) {
 // FindBugs require JDK >= 1.7
 if (JavaVersion.current().isJava7Compatible()) {
     apply plugin: 'findbugs'
+    apply plugin: 'org.standardout.bnd-platform'
+}
+
+platform {
+    fetchSources = true
+
+    eclipseHome = new File(eclipseHomePath)
+    featureId = 'org.py4j.feature'
+    featureName = 'Py4J Library'
+    featureVersion = bundleVersion
+    featureProvider = 'Py4J'
+    categoryId = 'py4j'
+    categoryName = 'Py4J'
+
+    bundle project
+    bnd(project) {
+        symbolicName = 'py4j-java'
+        bundleName = 'py4j-java'
+        version = bundleVersion
+        instruction 'Eclipse-BuddyPolicy', 'global'
+        instruction 'Import-Package', '!javax.net'
+        instruction 'Export-Package', 'py4j,py4j.commands,py4j.model,py4j.reflection'
+        instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.6'
+        instruction 'Bundle-Description', 'Bridge between Python and Java'
+        instruction 'Bundle-DocURL', 'http://www.py4j.org'
+        addQualifier = true
+    }
 }
 
 buildscript {
@@ -38,6 +65,9 @@ buildscript {
         // Only add spotless for JDK >= 1.8
         if (JavaVersion.current().isJava8Compatible()) {
             classpath group: 'com.diffplug.gradle.spotless', name: 'spotless', version: '1.3.2'
+        }
+        if (JavaVersion.current().isJava7Compatible()) {
+            classpath 'org.standardout:bnd-platform:1.3.0'
         }
     }
 }
@@ -154,6 +184,16 @@ task jarTests(type: Jar) {
     from sourceSets.main.output
 }
 
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
 // Backward compatibility with previous versions of Py4J
 task copyMainJar(type: Copy, dependsOn: jar) {
     description 'Copies and rename Py4J main jar for backward compatibility.'
@@ -261,9 +301,14 @@ if (JavaVersion.current().isJava7Compatible()) {
     findbugsTest.enabled = false
 }
 
-// Build the py4j-tests jar
+// Build all jars
+artifacts {
+    archives sourcesJar
+    archives jarTests
+    archives javadocJar
+}
+
 assemble {
-    dependsOn jarTests
     dependsOn copyMainJar
 }
 
