@@ -34,7 +34,7 @@
     <property name="debuglevel" value="source,lines,vars"/>
 	<property name="jar.name" value="py4j${version}.jar"/>
     <property name="release.name" value="py4j-${version}"/>
-    <property name="junit.src.tests" value="test"/>
+    <property name="junit.src.tests" value="src/test/java"/>
 
     <property name="py4jpy.dir" value="../py4j-python"/>
     <property name="py4jpy.dist.dir" value="${py4jpy.dir}/dist"/>
@@ -70,13 +70,19 @@
         <mkdir dir="${build.dir}"/>
 		<mkdir dir="${junit.output.dir}"/>
         <copy includeemptydirs="false" todir="${build.dir}">
-            <fileset dir="src">
+            <fileset dir="src/main/java">
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
+            <!-- Include if someday we ship resources.
+            <fileset dir="src/main/resources">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+            -->
         </copy>
         <copy includeemptydirs="false" todir="${build.dir}">
-            <fileset dir="test">
+            <fileset dir="src/test/resources">
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
@@ -117,13 +123,13 @@
         <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" encoding="UTF-8"
             source="1.6" target="1.6" bootclasspath="${env.JAVA6_BOOTCLASSPATH}"
             includeantruntime="false">
-            <src path="src"/>
+            <src path="src/main/java"/>
             <classpath refid="py4j.classpath"/>
         </javac>
         <javac debug="true" debuglevel="${debuglevel}" destdir="${build.dir}" encoding="UTF-8"
             source="1.6" target="1.6" bootclasspath="${env.JAVA6_BOOTCLASSPATH}"
             includeantruntime="false">
-            <src path="test"/>
+            <src path="src/test/java"/>
             <classpath refid="py4j.classpath"/>
         </javac>
     </target>
@@ -154,7 +160,7 @@
 
     <!-- JAVA - JAVADOC -->
 	<target name="javadoc">
-        <javadoc access="protected" author="true" classpath="" destdir="${javadoc.dir}" doctitle="Py4J" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="py4j,py4j.examples,py4j.commands,py4j.reflection,py4j.model" source="1.6" sourcepath="src:examples" splitindex="true" use="true" version="true">
+        <javadoc access="protected" author="true" classpath="" destdir="${javadoc.dir}" doctitle="Py4J" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="py4j,py4j.examples,py4j.commands,py4j.reflection,py4j.model" source="1.6" sourcepath="src/main/java:src/test/java" splitindex="true" use="true" version="true">
             <link href="http://java.sun.com/javase/6/docs/api/"/>
         </javadoc>
     </target>
@@ -168,11 +174,7 @@
 		<copy todir="${dist.dir}/${release.name}/src">
     		<fileset dir="src"/>
   		</copy>
-		<copy todir="${dist.dir}/${release.name}/test">
-    		<fileset dir="test"/>
-  		</copy>
 		<copy file="LICENSE.txt" tofile="${dist.dir}/py4j-${version}/LICENSE.txt"/>
-		<copy file="README.txt" tofile="${dist.dir}/py4j-${version}/README.txt"/>
 		<copy file="build.xml" tofile="${dist.dir}/py4j-${version}/build.xml"/>
 		<copy file="ant.properties" tofile="${dist.dir}/py4j-${version}/ant.properties"/>
 		<copy file="${jar.name}" tofile="${dist.dir}/py4j-${version}/${jar.name}"/>
