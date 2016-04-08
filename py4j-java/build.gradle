@@ -23,37 +23,39 @@ ext {
 // Only add spotless for JDK >= 1.8
 if (JavaVersion.current().isJava8Compatible()) {
     apply plugin: 'com.diffplug.gradle.spotless'
+    apply plugin: 'org.standardout.bnd-platform'
 }
 
 // FindBugs require JDK >= 1.7
 if (JavaVersion.current().isJava7Compatible()) {
     apply plugin: 'findbugs'
-    apply plugin: 'org.standardout.bnd-platform'
 }
 
-platform {
-    fetchSources = true
+if (JavaVersion.current().isJava8Compatible()) {
+    platform {
+        fetchSources = true
 
-    eclipseHome = new File(eclipseHomePath)
-    featureId = 'org.py4j.feature'
-    featureName = 'Py4J Library'
-    featureVersion = bundleVersion
-    featureProvider = 'Py4J'
-    categoryId = 'py4j'
-    categoryName = 'Py4J'
+        eclipseHome = new File(eclipseHomePath)
+        featureId = 'org.py4j.feature'
+        featureName = 'Py4J Library'
+        featureVersion = bundleVersion
+        featureProvider = 'Py4J'
+        categoryId = 'py4j'
+        categoryName = 'Py4J'
 
-    bundle project
-    bnd(project) {
-        symbolicName = 'py4j-java'
-        bundleName = 'py4j-java'
-        version = bundleVersion
-        instruction 'Eclipse-BuddyPolicy', 'global'
-        instruction 'Import-Package', '!javax.net'
-        instruction 'Export-Package', 'py4j,py4j.commands,py4j.model,py4j.reflection'
-        instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.6'
-        instruction 'Bundle-Description', 'Bridge between Python and Java'
-        instruction 'Bundle-DocURL', 'http://www.py4j.org'
-        addQualifier = true
+        bundle project
+        bnd(project) {
+            symbolicName = 'py4j-java'
+            bundleName = 'py4j-java'
+            version = bundleVersion
+            instruction 'Eclipse-BuddyPolicy', 'global'
+            instruction 'Import-Package', '!javax.net'
+            instruction 'Export-Package', 'py4j,py4j.commands,py4j.model,py4j.reflection'
+            instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.6'
+            instruction 'Bundle-Description', 'Bridge between Python and Java'
+            instruction 'Bundle-DocURL', 'http://www.py4j.org'
+            addQualifier = true
+        }
     }
 }
 
@@ -65,8 +67,6 @@ buildscript {
         // Only add spotless for JDK >= 1.8
         if (JavaVersion.current().isJava8Compatible()) {
             classpath group: 'com.diffplug.gradle.spotless', name: 'spotless', version: '1.3.2'
-        }
-        if (JavaVersion.current().isJava7Compatible()) {
             classpath 'org.standardout:bnd-platform:1.3.0'
         }
     }
