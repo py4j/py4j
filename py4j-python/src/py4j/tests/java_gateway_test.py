@@ -37,9 +37,24 @@ from py4j.protocol import (
 
 SERVER_PORT = 25333
 TEST_PORT = 25332
-PY4J_JAVA_PATH = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    "../../../../py4j-java/bin")
+PY4J_PREFIX_PATH = os.path.dirname(os.path.realpath(__file__))
+PY4J_JAVA_PATHS = [
+    os.path.join(PY4J_PREFIX_PATH,
+                 "../../../../py4j-java/build/classes/main"),  # gradle
+    os.path.join(PY4J_PREFIX_PATH,
+                 "../../../../py4j-java/build/classes/test"),  # gradle
+    os.path.join(PY4J_PREFIX_PATH,
+                 "../../../../py4j-java/build/resources/main"),  # gradle
+    os.path.join(PY4J_PREFIX_PATH,
+                 "../../../../py4j-java/build/resources/test"),  # gradle
+    os.path.join(PY4J_PREFIX_PATH,
+                 "../../../../py4j-java/target/classes/"),  # maven
+    os.path.join(PY4J_PREFIX_PATH,
+                 "../../../../py4j-java/target/test-classes/"),  # maven
+    os.path.join(PY4J_PREFIX_PATH,
+                 "../../../../py4j-java/bin"),  # ant
+]
+PY4J_JAVA_PATH = os.pathsep.join(PY4J_JAVA_PATHS)
 
 
 set_default_callback_accept_timeout(0.125)

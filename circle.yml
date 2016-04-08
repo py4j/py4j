@@ -1,6 +1,10 @@
+machine:
+  environment:
+    JDK6_BOOT_CLASSPATH: /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/jsse.jar
 general:
   artifacts:
-    - "py4j-python/cover"
+    - "py4j-python/src/cover"
+    - "py4j-java/build/reports"
 dependencies:
   override:
     - pyenv global 2.6.8; sudo update-alternatives --set java /usr/lib/jvm/jdk1.6.0/bin/java; sudo update-alternatives --set javac /usr/lib/jvm/java-6-openjdk-amd64/bin/javac; echo 'export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64' >> ~/.circlerc;
@@ -11,5 +15,9 @@ test:
   override:
     - if [ $CIRCLE_NODE_INDEX == "1" ] ; then pip install flake8; cd py4j-python; flake8; fi:
         parallel: true
-    - deactivate; echo `java -version` && echo `javac -version` && echo `python --version` && cd py4j-java && ant cleanall && ant jar && ant java-test && sleep 1 && cd ../py4j-python && pip install codecov && nosetests --with-coverage --cover-html --cover-package=py4j -w src -c nose.cfg; if [ $CIRCLE_NODE_INDEX != "0" ] ; then codecov; fi:
+    - deactivate; pip install codecov; echo `java -version` && echo `javac -version` && echo `python --version`:
+        parallel: true
+    - deactivate; cd py4j-java && gradle clean && gradle check && gradle assemble && if [ $CIRCLE_NODE_INDEX != "0" ] ; then gradle jacocoTestReport && codecov; fi && sleep 1:
+        parallel: true
+    - deactivate; cd py4j-python && nosetests --with-coverage --cover-html --cover-package=py4j -w src -c nose.cfg; if [ $CIRCLE_NODE_INDEX != "0" ] ; then codecov; fi:
         parallel: true
