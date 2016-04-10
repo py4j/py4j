@@ -302,6 +302,238 @@ interpreter.
    `implements = ['package1.MyClass$Operator']`
 
 
+.. _clientserver:
+
+Using Single Threading Model (pinned thread)
+--------------------------------------------
+
+The multi threading model
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When you use a `JavaGateway` and a `CallbackServer`, Py4J will create a new
+thread every time a command **is received** and **there is no thread
+available**.  This can lead to the creation of many threads if there are
+recursive calls between Python and Java. For example, let's consider this code:
+
+
+.. code-block:: python
+
+  class PythonPlayer(object):
+
+      def start(self, player):
+          return player.firstPing(self)
+
+      def firstPong(self, player):
+          return player.secondPing(self)
+
+      def secondPong(self, player):
+          return "Success"
+
+      class Java:
+          implements = ["py4j.examples.PongPlayer"]
+
+  # Start the JVM with "java -cp py4j.jar py4j.examples.ExampleApplication"
+  from py4j.java_gateway import JavaGateway, CallbackServerParameters
+  gateway = JavaGateway(
+      callback_server_parameters=CallbackServerParameters())
+  ping_player = java_gateway.jvm.py4j.examples.PingPlayer()
+  pong_player = PongPlayer()
+  print(pong_player.start(ping_player))
+
+
+.. code-block:: java
+
+  // PongPlayer.java
+  package py4j.examples;
+
+  public interface PongPlayer {
+
+      String firstPong(PingPlayer player);
+
+      String secondPong(PingPlayer player);
+
+  }
+
+  // PingPlayer.java
+  package py4j.examples;
+
+  public class PingPlayer {
+
+      public String firstPing(PongPlayer player) {
+          return player.firstPong(this);
+      }
+
+      public String secondPing(PongPlayer player) {
+          return player.secondPong(this);
+      }
+
+  }
+
+
+
+When this code is executed, the Python side creates 2 threads and the
+Java side creates two threads (note that the Java and Python sides both start
+with an implicit thread so there are a minimum of three threads on either
+side).
+
+1. The Python client initiates the conversation by calling firstPing()
+   and waits for a response.
+
+2. The Java server receives the call and creates Java Thread 1 to execute the
+   code. Java then calls firstPong and waits for a response.
+
+3. The Python server receives the call and creates Python Thread 1 to execute
+   the code. Python then calls secondPing and waits for a response.
+
+4. The Java server receives the call and creates Java Thread 2 to execute the
+   code. Java then calls secondPong and waits for a response.
+
+5. The Python server receives the call and creates Python Thread 2 to execute
+   the code. Python then returns the response ``"Success"``. Python Thread 2
+   can now be used to execute other calls.
+
+6. Java Thread 2 (secondPing) receives a response and sends back the
+   response to the Python side. Java Thread 2 can now be used to execute other
+   calls.
+
+7. Python Thread 1 (firstPong) receives a response and sends back the response
+   to the Java side. Python Thread 1 can now be used to execute other calls.
+
+8. Java Thread 1 (firstPing) receives a response and sends back the response to
+   the Python side. Java Thread 1 can now be used to execute other calls.
+
+9. The Python side receives the response and prints it.
+
+
+The single threading model
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Although the multi threading model is sound and has been used by many
+distributed systems (e.g., Java RMI), it has two main issues: (1) it creates a
+lot of threads when the Java and Python sides exchange many calls such as when
+there is indirect recursion between the two sides, and (2) it is not possible
+to control in which thread the code will be executed. The first issue can
+severely impact performance and the second issue limits the usefulness of Py4J
+in certain applications (e.g., GUI applications).
+
+To work around these limitations, the :mod:`py4j.clientserver` module
+implements a single threading model also called *pinned thread model* that
+ensures that callbacks received from the other side will be executed in the
+initiating thread. For example, if we modify the previous code with this one:
+
+
+.. code-block:: python
+
+  # Start the JVM with "java -cp py4j.jar py4j.examples.SingleThreadApplication"
+  from py4j.clientserver import ClientServer, JavaParameters, PythonParameters
+  gateway = ClientServer(
+      java_parameters=JavaParameters(),
+      python_parameters=PythonParameters())
+  ping_player = gateway.jvm.py4j.examples.PingPlayer()
+  pong_player = PongPlayer()
+  print(pong_player.start(ping_player))
+
+Only one Java Thread will be created and no Python thread will be created:
+
+1. The Python client initiates the conversation from Python Thread 1 by calling
+   firstPing() and waits for **either a response or a call to execute**.
+
+2. The Java server receives the call and creates Java Thread 1 to execute the
+   code. Java then calls firstPong and waits for a response or a call to
+   execute.
+
+3. Python Thread 1 receives the call and calls secondPing. It waits for a
+   response or a call.
+
+4. Java Thread 1 receives the call and then call secondPong.  It waits for a
+   response or a call.
+
+5. Python Thread 1 receives the call responds with ``"Success"``.
+
+6. Java Thread 1 (secondPing) receives the response and sends the response to the Python
+   side.
+
+7. Python Thread 1 (firstPong) receives the response and sends the response to
+   the Java side.
+
+8. Java Thread 1 (firstPing) receives the response and sends the response to
+   the Python side.
+
+9. Python Thread 1 (start) receives the response and prints it.
+
+In total, only one thread was created (on the Java side). If for whatever
+reason multiple threads are created on the Python side and they each call the
+Java side, a corresponding Java thread will be created. For example, if three
+threads from the Python side are calling the Java side, three Java threads will
+be created.
+
+
+Initiating the conversation from the Java side
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The previous example showed that you can control on which Python thread the
+code will be executed, but what if you want to control on which Java thread the
+code will be executed? For example, if you have a Java GUI application and you
+want to execute some Python code that will block and interact with the UI, you
+need to initiate the call to the Python side from the Java UI thread.
+
+This is now possible with the :mod:`py4j.clientserver` module:
+
+.. code-block:: java
+
+  // IHello.java
+  package py4j.examples;
+
+  public interface IHello {
+      public String sayHello();
+
+      public String sayHello(int i, String s);
+  }
+
+  // SingleThreadClientApplication.java
+  package py4j.examples;
+
+  import py4j.ClientServer;
+  import py4j.GatewayServer;
+
+  public class SingleThreadClientApplication {
+
+      public static void main(String[] args) {
+          ClientServer clientServer = new ClientServer(null);
+          // We get an entry point from the Python side
+          IHello hello = (IHello) clientServer.getPythonServerEntryPoint(new Class[] { IHello.class });
+          // Java calls Python without ever having been called from Python
+          System.out.println(hello.sayHello());
+          System.out.println(hello.sayHello(2, "Hello World"));
+      }
+  }
+
+
+.. code-block:: python
+
+  class SimpleHello(object):
+
+      def sayHello(self, int_value=None, string_value=None):
+          print(int_value, string_value)
+          return "Said hello to {0}".format(string_value)
+
+      class Java:
+          implements = ["py4j.examples.IHello"]
+
+  # Make sure that the python code is started first.
+  # Then execute: java -cp py4j.jar py4j.examples.SingleThreadClientApplication
+  from py4j.clientserver import ClientServer, JavaParameters, PythonParameters
+  simple_hello = SimpleHello()
+  gateway = ClientServer(
+      java_parameters=JavaParameters(),
+      python_parameters=PythonParameters(),
+      python_server_entry_point=simple_hello)
+
+As opposed to all previous examples, the Java side is initiating the
+conversation by making the first call to the Python side. If the call is
+initiated from a UI thread, then all subsequent call from Python to Java will
+be executed in the Java UI thread.
+
 
 .. _dynamic_ports:
 
@@ -634,12 +866,12 @@ finalizers (which are surprisingly worse than Python finalizer strategies).
 Py4J Threading and connection model
 -----------------------------------
 
-Py4J allocates one thread per connection. The design of Py4j is symmetrical on
-the Python and Java sides. A Python GatewayClient communicates with the Java
-GatewayServer and is then associated with a GatewayConnection. A Java
-CallbackClient (for callbacks) communicates with the Python CallbackServer and
-is then associated with a CallbackConnection. A connection runs in the calling
-thread.
+In its default mode, Py4J allocates one thread per connection. The design of
+Py4j is symmetrical on the Python and Java sides. A Python GatewayClient
+communicates with the Java GatewayServer and is then associated with a
+GatewayConnection. A Java CallbackClient (for callbacks) communicates with the
+Python CallbackServer and is then associated with a CallbackConnection. A
+connection runs in the calling thread.
 
 And now, for the details:
 
@@ -685,6 +917,13 @@ a Python object. When a callback is called, a connection to the CallbackServer
 is established in the calling thread. If **you created** multiple threads in
 Java to call back Python concurrently, Py4J will ensure that each thread has
 its own CallbackConnection.
+
+**Alternative threading model**
+
+If both sides are making multiple calls to each other (e.g., indirect
+recursion), or if you want to control which thread will execute the calls, you
+should use the :ref:`single threading model <clientserver>`, which provide a
+more efficient threading model.
 
 TLS
 ---
@@ -745,4 +984,3 @@ Boxing
 Boxed Java primitives, such as `java.lang.Integer` are unboxed in the JVM and
 transmitted as primitives, so they will appear as Python `int`s, not
 `JavaObjects`.
-
