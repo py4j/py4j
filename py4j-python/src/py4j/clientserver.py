@@ -16,7 +16,8 @@ from threading import local, Thread
 from py4j.java_gateway import (
     quiet_close, quiet_shutdown, GatewayClient, JavaGateway,
     CallbackServerParameters, GatewayParameters, CallbackServer,
-    GatewayConnectionGuard)
+    GatewayConnectionGuard, DEFAULT_ADDRESS, DEFAULT_PORT,
+    DEFAULT_PYTHON_PROXY_PORT)
 from py4j import protocol as proto
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
@@ -28,9 +29,82 @@ logger = logging.getLogger("py4j.clientserver")
 thread_connection = local()
 
 
-JavaParameters = GatewayParameters
+class JavaParameters(GatewayParameters):
+    """Wrapper class that contains all parameters that can be passed to
+    configure a `ClientServer`.`
+    """
+    def __init__(
+            self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
+            auto_close=True, auto_convert=False, eager_load=False,
+            ssl_context=None):
+        """
+        :param address: the address to which the client will request a
+         connection. If you're assing a `SSLContext` with `check_hostname=True`
+         then this address must match (one of) the hostname(s) in the
+         certificate the gateway server presents.
 
-PythonParameters = CallbackServerParameters
+        :param port: the port to which the client will request a connection.
+         Default is 25333.
+
+        :param auto_field: if `False`, each object accessed through this
+         gateway won"t try to lookup fields (they will be accessible only by
+         calling get_field). If `True`, fields will be automatically looked
+         up, possibly hiding methods of the same name and making method calls
+         less efficient.
+
+        :param auto_close: if `True`, the connections created by the client
+         close the socket when they are garbage collected.
+
+        :param auto_convert: if `True`, try to automatically convert Python
+         objects like sequences and maps to Java Objects. Default value is
+         `False` to improve performance and because it is still possible to
+         explicitly perform this conversion.
+
+        :param eager_load: if `True`, the gateway tries to connect to the JVM
+         by calling System.currentTimeMillis. If the gateway cannot connect to
+         the JVM, it shuts down itself and raises an exception.
+
+        :param ssl_context: if not None, SSL connections will be made using
+         this SSLContext
+        """
+        super(JavaParameters, self).__init__(
+            address, port, auto_field, auto_close, auto_convert, eager_load,
+            ssl_context)
+
+
+class PythonParameters(CallbackServerParameters):
+    """Wrapper class that contains all parameters that can be passed to
+    configure a `ClientServer`
+    """
+
+    def __init__(
+            self, address=DEFAULT_ADDRESS, port=DEFAULT_PYTHON_PROXY_PORT,
+            daemonize=False, daemonize_connections=False, eager_load=True,
+            ssl_context=None):
+        """
+        :param address: the address to which the client will request a
+            connection
+
+        :param port: the port to which the client will request a connection.
+            Default is 25333.
+
+        :param daemonize: If `True`, will set the daemon property of the server
+            thread to True. The callback server will exit automatically if all
+            the other threads exit.
+
+        :param daemonize_connections: If `True`, callback server connections
+            are executed in daemonized threads and will not block the exit of a
+            program if non daemonized threads are finished.
+
+        :param eager_load: If `True`, the callback server is automatically
+            started when the JavaGateway is created.
+
+        :param ssl_context: if not None, the SSLContext's certificate will be
+         presented to callback connections.
+        """
+        super(PythonParameters, self).__init__(
+            address, port, daemonize, daemonize_connections, eager_load,
+            ssl_context)
 
 
 class JavaClient(GatewayClient):

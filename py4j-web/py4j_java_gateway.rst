@@ -110,15 +110,6 @@ GatewayClient
    :undoc-members:
 
 
-
-..
-  Examples
-  ^^^^^^^^
-
-  ::
-
-    TBD
-
 .. _api_gatewayconnection:
 
 GatewayConnection
@@ -128,13 +119,6 @@ GatewayConnection
    :members:
    :undoc-members:
 
-..
-  Examples
-  ^^^^^^^^
-
-  ::
-
-    TBD
 
 .. _api_jvm:
 
@@ -145,13 +129,6 @@ JVMView
    :members:
    :undoc-members:
 
-..
-  Examples
-  ^^^^^^^^
-
-  ::
-
-    TBD
 
 .. _api_javaobject:
 
@@ -160,13 +137,6 @@ JavaObject
 
 Represents a Java object from which you can call methods or access fields.
 
-..
-  Examples
-  ^^^^^^^^
-
-  ::
-
-    TBD
 
 .. _api_javamember:
 
@@ -177,13 +147,6 @@ Represents a member (i.e., method) of a :class:`JavaObject`. For now, only
 methods are supported. Fields are retrieved directly and are not contained in a
 JavaMember.
 
-..
-  Examples
-  ^^^^^^^^
-
-  ::
-
-    TBD
 
 .. _api_javaclass:
 
@@ -197,13 +160,6 @@ Usually, `JavaClass` are not initialized using their constructor, but they are
 created while accessing the `jvm` property of a gateway, e.g.,
 `gateway.jvm.java.lang.String`.
 
-..
-  Examples
-  ^^^^^^^^
-
-  ::
-
-    TBD
 
 .. _api_javapackage:
 
@@ -214,13 +170,6 @@ JavaPackage
    :members:
    :undoc-members:
 
-..
-  Examples
-  ^^^^^^^^
-
-  ::
-
-    TBD
 
 .. _api_pythonproxypool:
 
@@ -231,13 +180,6 @@ PythonProxyPool
    :members:
    :undoc-members:
 
-..
-  Examples
-  ^^^^^^^^
-
-  ::
-
-    TBD
 
 .. _api_callbackserver:
 
@@ -248,13 +190,6 @@ CallbackServer
    :members:
    :undoc-members:
 
-..
-  Examples
-  ^^^^^^^^
-
-  ::
-
-    TBD
 
 .. _api_callbackconnection:
 
@@ -265,13 +200,6 @@ CallbackConnection
    :members:
    :undoc-members:
 
-..
-  Examples
-  ^^^^^^^^
-
-  ::
-
-    TBD
 
 .. _api_functions:
 
