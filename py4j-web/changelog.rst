@@ -4,6 +4,27 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.0
+-----------
+
+- Release date: TBD
+
+- Added a new threading model that is more efficient with indirect recursion
+  between Java and Python and that enables users to control which thread will
+  execute calls. Thanks to `kichwacoders <https://kichwacoders.com/>`_ for the
+  funding and the initial idea.
+- Added TLS support to encrypt the communication between both sides. Thanks to
+  @njwhite.
+- Added initial byte stream support so Python can consume Java byte streams
+  more efficiently. Support is still preliminary and subject to change in the
+  future, but it provides a good base to build on.
+- Java side: converted build script from ant to gradle. Introduced Java coding
+  conventions and static code analysis.
+- Java side: it is now possible to build a osgi bundle and an Eclipse update
+  site from Py4J source.
+- `tickets closed for 0.10.0 release
+  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10+is%3Aclosed>`_
+
 Py4J 0.9.2
 ----------
 
