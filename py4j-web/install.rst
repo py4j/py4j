@@ -68,21 +68,21 @@ You can install the latest version with pip and git:
 
 Otherwise, to build the Java and Python libraries, you need:
 
-1. `Git <http://git-scm.com/>`_ to download the latest source code.
+1. `Git <https://git-scm.com/>`_ to download the latest source code.
    Execute the command line ``git clone https://github.com/bartdag/py4j.git
    py4j`` to download the source code.
-2. `Apache ant <http://ant.apache.org>`_ to build the Py4J Java library execute
-   the command line ``ant jar`` in the py4j-java project directory to build the
-   code and create a jar file.
+2. `Gradle <https://gradle.org>`_ to build the Py4J Java library execute the
+   command line ``./gradlew assemble`` in the py4j-java project directory to
+   build the code and create a jar file.
 3. `Sphinx <http://sphinx.pocoo.org/>`_ to build the documentation. Just
    execute the command line ``make html``  in the
    py4j-web project.
 4. `nose <http://pypi.python.org/pypi/nose/>`_ to test the Py4J Python
    library.
 
-Execute the command line ``ant python-light-release`` in the py4j-java
+Execute the command line ``./gradlew buildPython`` in the py4j-java
 directory to create a tar.gz and zip source distribution. The
-``python-light-release`` target will (1) build the Py4J Java library, (2)
+``buildPython`` task will (1) build the Py4J Java library, (2)
 build the documentation, and (3) build the Py4J Python library and package it
 into a tar.gz and zip source distribution.
 

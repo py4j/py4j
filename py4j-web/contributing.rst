@@ -5,6 +5,19 @@ Contributing to Py4J
    :backlinks: entry
    :local:
 
+
+General Conventions
+-------------------
+
+Contributions to Py4J are always welcome, but to accelerate the review process,
+make sure that your contribution includes:
+
+1. At least one unit test in Python and/or Java.
+2. A docstring or javadoc comment if you create new public classes, methods or
+   functions.
+3. Some code examples in the py4j-web documentation subproject if you are
+   introducing new features.
+
 Python Coding Conventions
 -------------------------
 
@@ -37,12 +50,27 @@ installed with pip:
 Java Coding Conventions
 -----------------------
 
-We are still looking for a portable/universal code formatter, but in the
-meantime, try to adhere to these conventions:
+We use Eclipse code formatting conventions (see `py4j.formatter.xml
+<https://raw.githubusercontent.com/bartdag/py4j/master/py4j-java/py4j.formatter.xml>`_
+and `py4j.importorder
+<https://raw.githubusercontent.com/bartdag/py4j/master/py4j-java/py4j.importorder>`)
+that can be used in Eclipse and IntelliJ IDEs.
+
+In summary we use:
 
 1. We use tabs rather than spaces to indent the Java code.
 2. Most expressions (conditionals, loops, try/catch) are always wrapped with
    curly brackets.
+
+You can format your code using gradle and Java 8:
+
+.. code-block:: bash
+
+  ./gradlew spotlessJavaApply
+
+We use `FindBugs <http://findbugs.sourceforge.net/>`_ on the main source code
+(not the test source code) and any warnings must be corrected before a pull
+request will be accepted.
 
 
 Testing Python Code
@@ -54,8 +82,8 @@ On the Python side, we use nose and tox:
 
   # make sure that the jar file is created
   cd  py4j-java
-  ant cleanall
-  ant jar
+  ./gradlew clean
+  ./gradlew assemble
 
   # install test requirements
   cd py4j-python
@@ -86,8 +114,8 @@ We use JUnit to write test cases.
 .. code-block:: bash
 
   cd py4j-java
-  ant cleanall
-  ant java-test
+  ./gradlew clean
+  ./gradlew check
 
 
 .. _license_and_copyrights:
@@ -107,7 +135,7 @@ a license to distribute your code without further restrictions.
 
 The copyright statement in the License has been standardized to:
 
-``Copyright (c) 2009-2015, Barthelemy Dagenais and individual contributors. All
+``Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors. All
 rights reserved.```
 
 Individual contributors are identified in the AUTHORS file. If you have

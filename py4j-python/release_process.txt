@@ -1,11 +1,11 @@
 0. Update all versions (version.py, properties, documentation, index.rst).
 1. Write changelog
-2. ant cleanall clean-python-release
+2. gradle clean
 
 3. close all bugs on github
 4. tag the release on git
 
-5. ant python-release
+5. gradle buildPython
 6. create signature using gpg (gpg -b --armor)
 
 7. upload to PyPI using twine
