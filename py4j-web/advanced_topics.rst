@@ -764,6 +764,16 @@ plug-ins provided by Py4J available on the following update site:
 
 ``http://eclipse.py4j.org/``
 
+The plug-in `org.py4j.py4j-java` contains the same code as the production jar
+published on maven or pypi and it also contains a OSGi MANIFEST.MF. See the
+:ref:`build instructions <build_instructions>` to build the OSGi bundle
+locally.
+
+You can also use legacy plug-ins that will eventually be moved to the new build
+process on the following update site:
+
+``http://eclipse-legacy.py4j.org/``
+
 The first plug-in, `net.sf.py4j`, provides all the Py4J Java classes such as
 `GatewayServer`. The plug-in comes with the source and the javadoc. The plug-in
 also declares a `global` buddy policy which allows the `GatewayServer` to
@@ -815,7 +825,7 @@ Here is a short example of what you could do with Py4J and Eclipse:
   >>> print(project_names)
   [u'test2', u'testplugin', u'testplugin2']
 
-Support for Eclipse was introduced in Py4J 0.5 and more features will be added
+Support for Eclipse was introduced in Py4J 0.5 and more features may be added
 in the future.
 
 

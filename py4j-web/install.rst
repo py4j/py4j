@@ -60,6 +60,8 @@ Using an official release
 5. The Py4J Java library is located under ``py4j-java/py4j0.x.jar``.  Add this
    library to your classpath when using Py4J in a Java program.
 
+.. _build_instructions:
+
 Using the latest development source code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -76,15 +78,23 @@ Otherwise, to build the Java and Python libraries, you need:
    build the code and create a jar file.
 3. `Sphinx <http://sphinx.pocoo.org/>`_ to build the documentation. Just
    execute the command line ``make html``  in the
-   py4j-web project.
-4. `nose <http://pypi.python.org/pypi/nose/>`_ to test the Py4J Python
-   library.
+   py4j-web directory.
+4. Libraries such as `nose <http://pypi.python.org/pypi/nose/>`_ to test the
+   Py4J Python library. Just run ``pip install -r requirements-test.txt`` in
+   py4j-python directory.
 
-Execute the command line ``./gradlew buildPython`` in the py4j-java
-directory to create a tar.gz and zip source distribution. The
-``buildPython`` task will (1) build the Py4J Java library, (2)
-build the documentation, and (3) build the Py4J Python library and package it
-into a tar.gz and zip source distribution.
+Here are a few useful commands to build Py4J:
+
+1. ``cd py4j-java; ./gradlew buildPython`` - builds the Py4J Java library in a
+   jar, the documentation, and the Python binary and source distributions.
+2. ``cd py4j-java; ./gradlew bundles`` - builds the Py4J Java Library as a OSGi
+   bundle (check build/plugins).
+3. ``cd py4j-java; ./gradlew updateSite`` - builds the Eclipse update site.
+4. ``cd py4j-java; ./gradlew check`` - runs Java tests, FindBugs, and Java
+   coding conventions checks. (Python checks will be added in the future).
+5. ``cd py4j-python; flake8`` - performs flake8 check on Python source code.
+6. ``cd py4j-python; nosetests`` - runs Python test suite.
+
 
 Maven install
 ^^^^^^^^^^^^^
