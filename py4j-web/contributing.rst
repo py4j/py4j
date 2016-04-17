@@ -98,6 +98,9 @@ On the Python side, we use nose and tox:
   # Run all tests on all supported pythons:
   tox
 
+  # Run flake8 checks
+  flake8
+
 New code or bug fix should ideally be accompanied by a test case.
 
 Because we start a JVM for most test cases, it may happen that some test fails
