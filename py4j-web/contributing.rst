@@ -18,6 +18,8 @@ make sure that your contribution includes:
 3. Some code examples in the py4j-web documentation subproject if you are
    introducing new features.
 
+.. _python_conventions:
+
 Python Coding Conventions
 -------------------------
 
@@ -46,6 +48,8 @@ installed with pip:
   # Run flake8
   flake8
 
+
+.. _java_conventions:
 
 Java Coding Conventions
 -----------------------

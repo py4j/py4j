@@ -7,21 +7,25 @@ releases.
 Py4J 0.10.0
 -----------
 
-- Release date: TBD
-
+- Release date: April 18th 2016
 - Added a new threading model that is more efficient with indirect recursion
   between Java and Python and that enables users to control which thread will
-  execute calls. Thanks to `kichwacoders <https://kichwacoders.com/>`_ for the
-  funding and the initial idea.
+  execute calls. Thanks to `kichwacoders <https://kichwacoders.com/>`_ for
+  funding the implementation and providing the initial idea.
 - Added TLS support to encrypt the communication between both sides. Thanks to
   @njwhite.
 - Added initial byte stream support so Python can consume Java byte streams
   more efficiently. Support is still preliminary and subject to change in the
-  future, but it provides a good base to build on.
+  future, but it provides a good base to build on. See these `Python unit test
+  <https://github.com/bartdag/py4j/blob/9d3a520d9a31ea39534d2d290eaa7da5dc683ed5/py4j-python/src/py4j/tests/java_gateway_test.py#L547>`_
+  and `Java example class
+  <https://github.com/bartdag/py4j/blob/9d3a520d9a31ea39534d2d290eaa7da5dc683ed5/py4j-java/src/test/java/py4j/examples/ExampleClass.java#L192>`_
+  for a small example. Thanks to @njwhite.
 - Java side: converted build script from ant to gradle. Introduced Java coding
-  conventions and static code analysis.
+  conventions and static code analysis. See :ref:`Java Coding Conventions
+  <java_conventions>` for more details.
 - Java side: it is now possible to build a osgi bundle and an Eclipse update
-  site from Py4J source.
+  site from Py4J source. See :ref:`using Py4J with Eclipse <eclipse_features>`
 - `tickets closed for 0.10.0 release
   <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10+is%3Aclosed>`_
 
