@@ -259,7 +259,7 @@ class ClientServerConnection(object):
                 self.socket = self.ssl_context.wrap_socket(
                     self.socket, server_hostname=self.java_address)
             self.socket.connect((self.java_address, self.java_port))
-            self.stream = self.socket.makefile("rb", 0)
+            self.stream = self.socket.makefile("rb")
             self.is_connected = True
             self.initiated_from_client = True
         except Exception:
