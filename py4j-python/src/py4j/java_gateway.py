@@ -776,7 +776,7 @@ class GatewayConnection(object):
         try:
             self.socket.connect((self.address, self.port))
             self.is_connected = True
-            self.stream = self.socket.makefile("rb", 0)
+            self.stream = self.socket.makefile("rb")
         except Exception as e:
             msg = "An error occurred while trying to connect to the Java "\
                 "server ({0}:{1})".format(self.address, self.port)
@@ -1794,7 +1794,7 @@ class CallbackServer(object):
                     if self.ssl_context:
                         socket_instance = self.ssl_context.wrap_socket(
                             socket_instance, server_side=True)
-                    input = socket_instance.makefile("rb", 0)
+                    input = socket_instance.makefile("rb")
                     connection = self._create_connection(
                         socket_instance, input)
                     with self.lock:
