@@ -102,9 +102,13 @@ if (jdk6BootClasspathEnv && !jdk6BootClasspath) {
 
 if (jdk6BootClasspath) {
     tasks.withType(JavaCompile) {
-        options.fork = true
         options.bootClasspath = "$jdk6BootClasspath"
     }
+}
+
+tasks.withType(JavaCompile) {
+    options.fork = true
+    options.encoding = "UTF-8"
 }
 
 jacoco {
