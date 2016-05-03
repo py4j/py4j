@@ -1,8 +1,12 @@
 from functools import partial
+import gc
 import time
 import sys
 
 from py4j.java_gateway import JavaGateway, CallbackServerParameters
+
+
+ITERATIONS_FOR_LENGTHY_METHOD = 3
 
 
 class ComparablePython(object):
@@ -33,10 +37,11 @@ def callStaticMethodNoParam(iterations, staticMethod):
 
 
 def callInstanceMethodWithShortParam(iterations, instanceMethod):
-    longParam = "Super Long Param" * 100
+    shortParam = "Super Long Param"
     i = 0
     while i < iterations:
-        instanceMethod(longParam)
+        instanceMethod(shortParam)
+        instanceMethod(1)
         i += 1
 
 
@@ -54,10 +59,11 @@ def benchmark(name, func):
     func()
     stop = time.time()
     print("{0} - {1}".format(stop - start, name))
+    gc.collect()
 
 
 def main(iterations):
-    small_iterations = iterations / 10 if iterations > 0 else iterations
+    small_iterations = iterations / 10 if iterations > 10 else iterations
     gateway = JavaGateway(
         callback_server_parameters=CallbackServerParameters())
     currentTimeMillis = gateway.jvm.java.lang.System.currentTimeMillis
@@ -96,6 +102,12 @@ def main(iterations):
         al.append(cp7)
         gateway.jvm.java.util.Collections.sort(al)
 
+    def longParamCall():
+        longParam = "s" * 1024 * 1024 * 10
+        sb = gateway.jvm.java.lang.StringBuilder()
+        sb.append(longParam)
+        sb.toString()
+
     benchmark(
         "callStaticMethodNoParam",
         partial(callStaticMethodNoParam, iterations, currentTimeMillis))
@@ -109,6 +121,9 @@ def main(iterations):
         "constructorAndMemoryManagement",
         partial(callFunc, iterations, constructorAndMemoryManagement))
     benchmark(
+        "longParamAndMemoryManagement",
+        partial(callFunc, ITERATIONS_FOR_LENGTHY_METHOD, longParamCall))
+    benchmark(
         "javaCollection",
         partial(callFunc, small_iterations, javaCollection))
     benchmark(
@@ -120,7 +135,7 @@ def main(iterations):
 if __name__ == "__main__":
     # 1. Run py4j-java, e.g.,
     #    cd py4j-java; ./gradlew jarTests;
-    #    java -Xmx2048m -cp build/libs/py4j-tests-0.10.0.jar \
+    #    java -Xmx4096m -cp build/libs/py4j-tests-0.10.0.jar \
     #    py4j.example.ExampleApplication
     # 2. Run python program:
     #    cd py4j-python; export PYTHONPATH=src

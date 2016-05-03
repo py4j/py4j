@@ -6,6 +6,7 @@ much better:
 
 Peter Abeles <peter.abeles@gmail.com>
 Jacek Bzdak <jbzdak@gmail.com>
+Chris Kanich <ckanich@uic.edu>
 Barthelemy Dagenais <barthelemy@infobart.com>
 Frankie Dintino <fdintino@theatlantic.com>
 Matthew Farrellee <matt@redhat.com>
