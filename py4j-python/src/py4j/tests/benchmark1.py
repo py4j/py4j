@@ -134,7 +134,7 @@ def main(iterations):
 
 if __name__ == "__main__":
     # 1. Run py4j-java, e.g.,
-    #    cd py4j-java; ./gradlew jarTests;
+    #    cd py4j-java; ./gradlew testsJar;
     #    java -Xmx4096m -cp build/libs/py4j-tests-0.10.0.jar \
     #    py4j.example.ExampleApplication
     # 2. Run python program:
