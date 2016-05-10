@@ -346,8 +346,10 @@ assemble {
     dependsOn copyMainJar
 }
 
-bundles {
-    dependsOn assemble
+if (JavaVersion.current().isJava8Compatible()) {
+    bundles {
+        dependsOn assemble
+    }
 }
 
 clean {
