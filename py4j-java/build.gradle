@@ -43,18 +43,36 @@ if (JavaVersion.current().isJava8Compatible()) {
         categoryId = 'py4j'
         categoryName = 'Py4J'
 
-        bundle project
-        bnd(project) {
-            symbolicName = 'py4j-java'
-            bundleName = 'py4j-java'
-            version = bundleVersion
-            instruction 'Eclipse-BuddyPolicy', 'global'
-            instruction 'Import-Package', '!javax.net'
-            instruction 'Export-Package', 'py4j,py4j.commands,py4j.model,py4j.reflection'
-            instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.6'
-            instruction 'Bundle-Description', 'Bridge between Python and Java'
-            instruction 'Bundle-DocURL', 'http://www.py4j.org'
-            addQualifier = true
+        bundle file("build/libs/py4j-java-${version}.jar"), {
+            bnd {
+                symbolicName = 'py4j-java'
+                bundleName = 'py4j-java'
+                version = bundleVersion
+                instruction 'Eclipse-BuddyPolicy', 'global'
+                instruction 'Import-Package', '!javax.net'
+                instruction 'Export-Package', 'py4j,py4j.commands,py4j.model,py4j.reflection'
+                instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.6'
+                instruction 'Bundle-Description', 'Bridge between Python and Java - Java lib'
+                instruction 'Bundle-DocURL', 'http://www.py4j.org'
+                instruction 'Bundle-License', 'The New BSD License'
+                addQualifier = true
+            }
+        }
+
+        bundle file("build/libs/py4j-python-${version}.jar"), {
+            bnd {
+                symbolicName = 'py4j-python'
+                bundleName = 'py4j-python'
+                version = bundleVersion
+                instruction 'Eclipse-BuddyPolicy', 'global'
+                instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.6'
+                instruction 'Bundle-Description', 'Bridge between Python and Java - Python lib'
+                instruction 'Bundle-DocURL', 'http://www.py4j.org'
+                instruction 'Eclipse-BundleShape', 'dir'
+                instruction 'Bundle-License', 'The New BSD License'
+                instruction 'Export-Package', ''
+                addQualifier = true
+            }
         }
     }
 }
@@ -181,7 +199,7 @@ task createPom {
 }
 
 // If someone wants to access all examples
-task jarTests(type: Jar) {
+task testsJar(type: Jar) {
     description 'Creates a jar file with all test classes.'
     baseName = 'py4j-tests'
     from sourceSets.test.output
@@ -189,13 +207,24 @@ task jarTests(type: Jar) {
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
+    description 'Creates a sources jar.'
     classifier = 'sources'
     from sourceSets.main.allSource
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
+    description 'Creates a jar with javadoc.'
     classifier = 'javadoc'
     from javadoc.destinationDir
+}
+
+task pythonSourcesJar(type: Jar) {
+    description 'Creates a python src jar.'
+    baseName = 'py4j-python'
+    from pythonDir
+    include 'src/py4j/**/*.py'
+    include 'LICENSE.txt'
+    exclude '**/__pycache__/**'
 }
 
 // Backward compatibility with previous versions of Py4J
@@ -308,12 +337,19 @@ if (JavaVersion.current().isJava7Compatible()) {
 // Build all jars
 artifacts {
     archives sourcesJar
-    archives jarTests
+    archives testsJar
     archives javadocJar
+    archives pythonSourcesJar
 }
 
 assemble {
     dependsOn copyMainJar
+}
+
+if (JavaVersion.current().isJava8Compatible()) {
+    bundles {
+        dependsOn assemble
+    }
 }
 
 clean {
