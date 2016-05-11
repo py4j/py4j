@@ -19,7 +19,6 @@ ext {
 }
 
 
-
 // Only add spotless for JDK >= 1.8
 if (JavaVersion.current().isJava8Compatible()) {
     apply plugin: 'com.diffplug.gradle.spotless'
@@ -125,6 +124,8 @@ if (jdk6BootClasspath) {
 }
 
 tasks.withType(JavaCompile) {
+    sourceCompatibility = "1.6"
+    targetCompatibility = "1.6"
     options.fork = true
     options.encoding = "UTF-8"
 }
