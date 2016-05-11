@@ -17,8 +17,15 @@
 12. close release
 13. publish release
 
-14. Py4J for Eclipse: remove artifact.jar and the like: they break the update site (e.g., no category)
-15. Py4J for Eclipse: build update site
-16. upload update site using scp
+14. gradle updateSite
+15. Extract and modify artifacts.xml and content.xml to change build path to:
+    1. Py4J p2 Repository (repository name in artifacts and content)
+    2. version.Py4J (unit name and provides name in content)
+16. jar -cf content.jar content.xml
+17. jar -cf artifacts artifacts.xml
+18. Create a release with bintray
+19. Create a zip file with the version (e.g., 0.10.0.zip)
+20. Upload release
+21. Update symbolic links of eclipse.py4j.org to point to latest release.
 
-17. send an email to the mailing list.
+22. send an email to the mailing list.

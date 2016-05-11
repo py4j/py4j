@@ -4,6 +4,26 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.1
+-----------
+
+- Release date: May 11th 2016
+- Major performance fix: the Python side is now using default buffering when
+  reading responses from the Java side. This is particularly important if you
+  transfer large parameters (large strings or byte arrays). A simple benchmark
+  found that repeatedly sending 10 MB strings went from 99 seconds to 1 second.
+  Thanks to @kaytwo for finding this bug and suggesting a fix.
+- Both the Java and the Python libraries are now available as OSGi bundles.
+  Thanks to `kichwacoders <https://kichwacoders.com/>`_ for
+  funding the work.
+- The 0.10.0 jar uploaded to PyPI wrongly required Java 8. The Java
+  compatibility has been restored to 1.6. Thansk to @agronholm for finding this
+  bug.
+- Added the __version__ attribute in the py4j package to conform to PEP396.
+  Thanks to @lessthanoptimal for reporting this bug.
+- `tickets closed for 0.10.1 release
+  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.1+is%3Aclosed>`_
+
 Py4J 0.10.0
 -----------
 
