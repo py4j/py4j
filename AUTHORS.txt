@@ -6,13 +6,13 @@ much better:
 
 Peter Abeles <peter.abeles@gmail.com>
 Jacek Bzdak <jbzdak@gmail.com>
-Chris Kanich <ckanich@uic.edu>
 Barthelemy Dagenais <barthelemy@infobart.com>
 Frankie Dintino <fdintino@theatlantic.com>
 Matthew Farrellee <matt@redhat.com>
 Matthew Gerring <matthew.gerring@gmail.com>
 Jonah Graham <jonah@kichwacoders.com>
 Alex Grönholm <alex.gronholm+git@nextday.fi>
+Chris Kanich <ckanich@uic.edu>
 Chetan Narsude <@243826>
 Josh Rosen <rosenville@gmail.com>
 Isaac Sánchez Barrera <isaac@isb1009.es>
