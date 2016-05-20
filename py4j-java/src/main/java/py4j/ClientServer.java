@@ -160,4 +160,85 @@ public class ClientServer {
 		return proxy;
 	}
 
+	/**
+	 * Helper class to make it easier and self-documentating how a
+	 * {@link ClientServer} is constructed.
+	 */
+	public static class ClientServerBuilder {
+		private int javaPort;
+		private InetAddress javaAddress;
+		private int pythonPort;
+		private InetAddress pythonAddress;
+		private int connectTimeout;
+		private int readTimeout;
+		private ServerSocketFactory serverSocketFactory;
+		private SocketFactory socketFactory;
+		private Object entryPoint;
+
+		public ClientServerBuilder() {
+			this(null);
+		}
+
+		public ClientServerBuilder(Object entryPoint) {
+			javaPort = GatewayServer.DEFAULT_PORT;
+			javaAddress = GatewayServer.defaultAddress();
+			pythonPort = GatewayServer.DEFAULT_PYTHON_PORT;
+			pythonAddress = GatewayServer.defaultAddress();
+			connectTimeout = GatewayServer.DEFAULT_CONNECT_TIMEOUT;
+			readTimeout = GatewayServer.DEFAULT_READ_TIMEOUT;
+			serverSocketFactory = ServerSocketFactory.getDefault();
+			socketFactory = SocketFactory.getDefault();
+			this.entryPoint = entryPoint;
+		}
+
+		public ClientServer build() {
+			return new ClientServer(javaPort, javaAddress, pythonPort, pythonAddress, connectTimeout, readTimeout,
+					serverSocketFactory, socketFactory, entryPoint);
+		}
+
+		public ClientServerBuilder javaPort(int javaPort) {
+			this.javaPort = javaPort;
+			return this;
+		}
+
+		public ClientServerBuilder javaAddress(InetAddress javaAddress) {
+			this.javaAddress = javaAddress;
+			return this;
+		}
+
+		public ClientServerBuilder pythonPort(int pythonPort) {
+			this.pythonPort = pythonPort;
+			return this;
+		}
+
+		public ClientServerBuilder pythonAddress(InetAddress pythonAddress) {
+			this.pythonAddress = pythonAddress;
+			return this;
+		}
+
+		public ClientServerBuilder connectTimeout(int connectTimeout) {
+			this.connectTimeout = connectTimeout;
+			return this;
+		}
+
+		public ClientServerBuilder readTimeout(int readTimeout) {
+			this.readTimeout = readTimeout;
+			return this;
+		}
+
+		public ClientServerBuilder serverSocketFactory(ServerSocketFactory serverSocketFactory) {
+			this.serverSocketFactory = serverSocketFactory;
+			return this;
+		}
+
+		public ClientServerBuilder socketFactory(SocketFactory socketFactory) {
+			this.socketFactory = socketFactory;
+			return this;
+		}
+
+		public ClientServerBuilder entryPoint(Object entryPoint) {
+			this.entryPoint = entryPoint;
+			return this;
+		}
+	}
 }
