@@ -2,13 +2,14 @@ from contextlib import contextmanager
 import gc
 from multiprocessing import Process
 import subprocess
+import threading
 import unittest
 
-from py4j.java_gateway import GatewayConnectionGuard, is_instance_of
 from py4j.clientserver import (
     ClientServer, JavaParameters, PythonParameters)
+from py4j.java_gateway import GatewayConnectionGuard, is_instance_of, \
+    GatewayParameters, DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT
 from py4j.protocol import Py4JJavaError, smart_decode
-
 from py4j.tests.java_callback_test import IHelloImpl
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, test_gateway_connection, sleep)
@@ -43,6 +44,34 @@ def start_clientserver_example_app_process(start_java_client=False):
 @contextmanager
 def clientserver_example_app_process(start_java_client=False):
     p = start_clientserver_example_app_process(start_java_client)
+    try:
+        yield p
+    finally:
+        p.join()
+
+
+def start_java_multi_client_server_app():
+    subprocess.call([
+        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.MultiClientServer"])
+
+
+def start_java_multi_client_server_app_process():
+    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    p = Process(target=start_java_multi_client_server_app)
+    p.start()
+    sleep()
+    # test both gateways...
+    test_gateway_connection(
+        gateway_parameters=GatewayParameters(port=DEFAULT_PORT))
+    test_gateway_connection(
+        gateway_parameters=GatewayParameters(port=DEFAULT_PORT + 2))
+    return p
+
+
+@contextmanager
+def java_multi_client_server_app_process():
+    p = start_java_multi_client_server_app_process()
     try:
         yield p
     finally:
@@ -192,3 +221,164 @@ class IntegrationTest(unittest.TestCase):
             # higher than at the beginning.
             self.assertTrue(in_middle > before)
             client_server.shutdown()
+
+    def testMultiClientServerWithSharedJavaThread(self):
+        with java_multi_client_server_app_process():
+            client_server0 = ClientServer(
+                JavaParameters(), PythonParameters())
+            client_server1 = ClientServer(
+                JavaParameters(port=DEFAULT_PORT + 2),
+                PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT + 2))
+
+            entry0 = client_server0.entry_point
+            entry1 = client_server1.entry_point
+
+            # set up the ability for Java to get the Python thread ids
+            threadIdGetter0 = PythonGetThreadId(client_server0)
+            threadIdGetter1 = PythonGetThreadId(client_server1)
+            entry0.setPythonThreadIdGetter(threadIdGetter0)
+            entry1.setPythonThreadIdGetter(threadIdGetter1)
+            thisThreadId = threading.current_thread().ident
+
+            # ## Preconditions
+
+            # Make sure we are talking to two different Entry points on
+            # Java side
+            self.assertEqual(0, entry0.getEntryId())
+            self.assertEqual(1, entry1.getEntryId())
+
+            # ## 1 Hop to Shared Java Thread
+
+            # Check that the shared Java thread is the same thread
+            # for both ClientServers
+            sharedJavaThreadId = entry0.getSharedJavaThreadId()
+            self.assertEqual(sharedJavaThreadId,
+                             entry1.getSharedJavaThreadId())
+            # And that it is distinct from either corresponding to
+            # this Python thread
+            self.assertNotEqual(sharedJavaThreadId, entry0.getJavaThreadId())
+            self.assertNotEqual(sharedJavaThreadId, entry1.getJavaThreadId())
+
+            # ## 2 Hops via Shared Java Thread to Python Thread
+
+            # Check that the shared thread ends up as different threads
+            # in the Python side. This part may not be obvious as the
+            # top-level idea seems to be for Python thread to be pinned
+            # to Java thread. Consider that this case is a simplification
+            # of the real case. In the real case there are two
+            # ClientServers running in same JVM, but in Python side each
+            # ClientServer is in its own process. In that case it makes
+            # it obvious that the shared Java thread should indeed
+            # end up in different Python threads.
+            sharedPythonThreadId0 = entry0.getSharedPythonThreadId()
+            sharedPythonThreadId1 = entry1.getSharedPythonThreadId()
+            # three way assert to make sure all three python
+            # threads are distinct
+            self.assertNotEqual(thisThreadId, sharedPythonThreadId0)
+            self.assertNotEqual(thisThreadId, sharedPythonThreadId1)
+            self.assertNotEqual(sharedPythonThreadId0, sharedPythonThreadId1)
+            # Check that the Python thread id does not change between
+            # invocations
+            self.assertEquals(sharedPythonThreadId0,
+                              entry0.getSharedPythonThreadId())
+            self.assertEquals(sharedPythonThreadId1,
+                              entry1.getSharedPythonThreadId())
+
+            # ## 3 Hops to Shared Java Thread
+
+            # Check that the thread above after 2 hops calls back
+            # into the Java shared thread
+            self.assertEqual(sharedJavaThreadId,
+                             entry0.getSharedViaPythonJavaThreadId())
+            self.assertEqual(sharedJavaThreadId,
+                             entry1.getSharedViaPythonJavaThreadId())
+
+            client_server0.shutdown()
+            client_server1.shutdown()
+
+    def testMultiClientServer(self):
+        with java_multi_client_server_app_process():
+            client_server0 = ClientServer(
+                JavaParameters(), PythonParameters())
+            client_server1 = ClientServer(
+                JavaParameters(port=DEFAULT_PORT + 2),
+                PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT + 2))
+
+            entry0 = client_server0.entry_point
+            entry1 = client_server1.entry_point
+
+            # set up the ability for Java to get the Python thread ids
+            threadIdGetter0 = PythonGetThreadId(client_server0)
+            threadIdGetter1 = PythonGetThreadId(client_server1)
+            entry0.setPythonThreadIdGetter(threadIdGetter0)
+            entry1.setPythonThreadIdGetter(threadIdGetter1)
+            thisThreadId = threading.current_thread().ident
+
+            # Make sure we are talking to two different Entry points on
+            # Java side
+            self.assertEqual(0, entry0.getEntryId())
+            self.assertEqual(1, entry1.getEntryId())
+
+            # ## 0 Hops to Thread ID
+
+            # Check that the two thread getters get the same thread
+            self.assertEquals(thisThreadId,
+                              int(threadIdGetter0.getThreadId()))
+            self.assertEquals(thisThreadId,
+                              int(threadIdGetter1.getThreadId()))
+
+            # ## 1 Hop to Thread ID
+
+            # Check that ClientServers on Java side are on different threads
+            javaThreadId0 = entry0.getJavaThreadId()
+            javaThreadId1 = entry1.getJavaThreadId()
+            self.assertNotEqual(javaThreadId0, javaThreadId1)
+            # Check that ClientServers on Java side stay on same thread
+            # on subsequent calls to them
+            self.assertEqual(javaThreadId0, entry0.getJavaThreadId())
+            self.assertEqual(javaThreadId1, entry1.getJavaThreadId())
+            # Check alternate way of getting thread ids and that they match
+            self.assertEqual(javaThreadId0,
+                             int(threadIdGetter0.getJavaThreadId()))
+            self.assertEqual(javaThreadId1,
+                             int(threadIdGetter1.getJavaThreadId()))
+
+            # ## 2 Hops to Thread ID
+
+            # Check that round trips from Python to Java and Python
+            # end up back on this thread, regardless of which
+            # client server we use for the round trip
+            self.assertEqual(thisThreadId,
+                             entry0.getPythonThreadId())
+            self.assertEqual(thisThreadId,
+                             entry1.getPythonThreadId())
+
+            # ## 3 Hops to Thread ID
+
+            # Check that round trips from Python to Java to Python to Java
+            # end up on the same thread as 1 hop
+            self.assertEqual(javaThreadId0,
+                             entry0.getViaPythonJavaThreadId())
+            self.assertEqual(javaThreadId1,
+                             entry1.getViaPythonJavaThreadId())
+
+            client_server0.shutdown()
+            client_server1.shutdown()
+
+
+class PythonGetThreadId(object):
+    def __init__(self, gateway):
+        self.gateway = gateway
+
+    def getThreadId(self):
+        # Return as a string because python3 doesn't have a long type anymore
+        # and as a result when using python3 and the value is 32-bits this
+        # arrives at Java as an Integer which fails to be converted to a Long
+        return str(threading.current_thread().ident)
+
+    def getJavaThreadId(self):
+        # see comment above for why a string.
+        return str(self.gateway.jvm.java.lang.Thread.currentThread().getId())
+
+    class Java:
+        implements = ["py4j.examples.MultiClientServerGetThreadId"]

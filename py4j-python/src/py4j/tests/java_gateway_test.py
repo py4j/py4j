@@ -94,8 +94,8 @@ def start_example_app_process():
     return p
 
 
-def test_gateway_connection():
-    test_gateway = JavaGateway()
+def test_gateway_connection(gateway_parameters=None):
+    test_gateway = JavaGateway(gateway_parameters=gateway_parameters)
     try:
         # Call a dummy method just to make sure we can connect to the JVM
         test_gateway.jvm.System.currentTimeMillis()

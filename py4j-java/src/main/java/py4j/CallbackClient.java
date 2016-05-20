@@ -192,8 +192,6 @@ public class CallbackClient implements Py4JPythonClient {
 	protected void giveBackConnection(Py4JClientConnection cc) {
 		try {
 			lock.lock();
-			// TODO Does not make sense for PythonClient... the list will
-			// just grow.
 			if (cc != null) {
 				if (!isShutdown) {
 					connections.addLast(cc);
@@ -281,7 +279,6 @@ public class CallbackClient implements Py4JPythonClient {
 
 		try {
 			returnCommand = cc.sendCommand(command, blocking);
-			giveBackConnection(cc);
 		} catch (Py4JNetworkException pe) {
 			logger.log(Level.WARNING, "Error while sending a command", pe);
 			cc.shutdown();
@@ -293,7 +290,15 @@ public class CallbackClient implements Py4JPythonClient {
 			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Critical error while sending a command", e);
+			cc.shutdown();
 			throw new Py4JException("Error while sending a command.");
+		}
+
+		try {
+			giveBackConnection(cc);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Critical error while giving back connection.", e);
+			throw new Py4JException("Error while giving back connection.");
 		}
 
 		return returnCommand;

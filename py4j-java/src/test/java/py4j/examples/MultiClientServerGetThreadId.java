@@ -27,20 +27,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-package py4j;
+package py4j.examples;
 
-import java.net.Socket;
+public interface MultiClientServerGetThreadId {
 
-/**
- *
- */
-public interface Py4JServerConnection {
+	String getThreadId();
 
-	/**
-	 * @return The socket used by this gateway connection.
-	 */
-	Socket getSocket();
-
-	void shutdown();
+	String getJavaThreadId();
 
 }

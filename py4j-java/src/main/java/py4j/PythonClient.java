@@ -30,6 +30,7 @@
 package py4j;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.List;
@@ -46,7 +47,7 @@ import py4j.commands.Command;
  * ensuring that each thread uses its own connection.
  * </p>
  */
-public class PythonClient extends CallbackClient {
+public class PythonClient extends CallbackClient implements Py4JPythonClientPerThread {
 
 	private Gateway gateway;
 
@@ -56,6 +57,8 @@ public class PythonClient extends CallbackClient {
 
 	private Py4JJavaServer javaServer;
 
+	private ThreadLocal<WeakReference<ClientServerConnection>> threadConnection;
+
 	public PythonClient(Gateway gateway, List<Class<? extends Command>> customCommands, int pythonPort,
 			InetAddress pythonAddress, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory, Py4JJavaServer javaServer) {
@@ -63,6 +66,22 @@ public class PythonClient extends CallbackClient {
 		this.gateway = gateway;
 		this.javaServer = javaServer;
 		this.customCommands = customCommands;
+		this.threadConnection = new ThreadLocal<WeakReference<ClientServerConnection>>();
+	}
+
+	@Override
+	public ClientServerConnection getPerThreadConnection() {
+		ClientServerConnection connection = null;
+		WeakReference<ClientServerConnection> weakConnection = this.threadConnection.get();
+		if (weakConnection != null) {
+			connection = weakConnection.get();
+		}
+		return connection;
+	}
+
+	@Override
+	public void setPerThreadConnection(ClientServerConnection clientServerConnection) {
+		threadConnection.set(new WeakReference<ClientServerConnection>(clientServerConnection));
 	}
 
 	public Gateway getGateway() {
@@ -95,15 +114,18 @@ public class PythonClient extends CallbackClient {
 	protected Py4JClientConnection getConnection() throws IOException {
 		ClientServerConnection connection = null;
 
-		connection = ClientServerConnection.getThreadConnection();
+		connection = getPerThreadConnection();
+
+		if (connection != null) {
+			connections.remove(connection);
+		}
+
 		if (connection == null || connection.getSocket() == null) {
 			Socket socket = startClientSocket();
 			connection = new ClientServerConnection(gateway, socket, customCommands, this, javaServer);
 			connection.setInitiatedFromClient(true);
 			connection.start();
-			// TODO Need to test that we are not creating a leak.
-			ClientServerConnection.setThreadConnection(connection);
-			connections.addLast(connection);
+			setPerThreadConnection(connection);
 		}
 
 		return connection;
@@ -123,8 +145,7 @@ public class PythonClient extends CallbackClient {
 
 	@Override
 	protected void giveBackConnection(Py4JClientConnection cc) {
-		// Do nothing because we already added the connection to the
-		// connections deque
+		connections.addLast(cc);
 	}
 
 	@Override

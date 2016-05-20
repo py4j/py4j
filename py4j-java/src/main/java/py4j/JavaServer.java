@@ -70,17 +70,17 @@ public class JavaServer extends GatewayServer {
 	 *            features. These commands will be accessible from Python
 	 *            programs. Can be null.
 	 * @param pythonClient
-	 * 			  The Py4JPythonClient used to call Python.
+	 * 			  The Py4JPythonClientPerThread used to call Python.
 	 */
 	public JavaServer(Object entryPoint, int port, int connectTimeout, int readTimeout,
-			List<Class<? extends Command>> customCommands, Py4JPythonClient pythonClient) {
+			List<Class<? extends Command>> customCommands, Py4JPythonClientPerThread pythonClient) {
 		super(entryPoint, port, connectTimeout, readTimeout, customCommands, pythonClient);
 	}
 
 	@Override
 	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket) throws IOException {
 		ClientServerConnection connection = new ClientServerConnection(gateway, socket, getCustomCommands(),
-				getCallbackClient(), this);
+				(Py4JPythonClientPerThread) getCallbackClient(), this);
 		connection.startServerConnection();
 		return connection;
 	}

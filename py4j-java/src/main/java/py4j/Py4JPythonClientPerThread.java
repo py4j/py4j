@@ -29,18 +29,8 @@
  *****************************************************************************/
 package py4j;
 
-import java.net.Socket;
+public interface Py4JPythonClientPerThread extends Py4JPythonClient {
+	ClientServerConnection getPerThreadConnection();
 
-/**
- *
- */
-public interface Py4JServerConnection {
-
-	/**
-	 * @return The socket used by this gateway connection.
-	 */
-	Socket getSocket();
-
-	void shutdown();
-
+	void setPerThreadConnection(ClientServerConnection clientServerConnection);
 }

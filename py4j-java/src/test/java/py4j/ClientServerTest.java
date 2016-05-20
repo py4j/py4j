@@ -74,9 +74,9 @@ public class ClientServerTest {
 		} catch (Exception e) {
 
 		}
-		int listeningPort = ((GatewayServer) javaServer).getListeningPort();
+		int listeningPort = javaServer.getListeningPort();
 		assertTrue(listeningPort > 0);
-		assertTrue(((GatewayServer) javaServer).getPort() != listeningPort);
+		assertTrue(javaServer.getPort() != listeningPort);
 		server.shutdown();
 	}
 }

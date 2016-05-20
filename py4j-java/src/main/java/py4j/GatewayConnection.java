@@ -220,9 +220,25 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 				quietSendError(writer, e);
 			}
 		} finally {
-			NetworkUtil.quietlyClose(socket);
-			fireConnectionStopped();
+			shutdown();
 		}
 	}
 
+	/**
+	 * <p>
+	 * Shuts down the connection by closing the socket, the writer, and the reader.
+	 * </p>
+	 * <p>
+	 * Internal: emits a connection stopped signal so GatewayServer can remove the connection from the connections list.
+	 * In rare occasions, the shutdown method may be called twice (when the server shuts down at the same time as the
+	 * connection fails and shuts down).
+	 * </p>
+	 */
+	@Override
+	public void shutdown() {
+		NetworkUtil.quietlyClose(reader);
+		NetworkUtil.quietlyClose(writer);
+		NetworkUtil.quietlyClose(socket);
+		fireConnectionStopped();
+	}
 }

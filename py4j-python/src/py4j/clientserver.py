@@ -12,6 +12,7 @@ from __future__ import unicode_literals, absolute_import
 import logging
 import socket
 from threading import local, Thread
+import weakref
 
 from py4j.java_gateway import (
     quiet_close, quiet_shutdown, GatewayClient, JavaGateway,
@@ -25,8 +26,6 @@ from py4j.protocol import (
 
 
 logger = logging.getLogger("py4j.clientserver")
-
-thread_connection = local()
 
 
 class JavaParameters(GatewayParameters):
@@ -134,13 +133,42 @@ class JavaClient(GatewayClient):
             ssl_context=java_parameters.ssl_context)
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
+        self.thread_connection = local()
+
+    def set_thread_connection(self, connection):
+        """Associates a ClientServerConnection with the current thread.
+
+        :param connection: The ClientServerConnection to associate with the
+            current thread.
+        """
+        self.thread_connection.connection = weakref.ref(connection)
+
+    def get_thread_connection(self):
+        """Returns the ClientServerConnection associated with this thread. Can
+        be None.
+        """
+        connection = None
+        try:
+            connection_wr = self.thread_connection.connection
+            if connection_wr:
+                connection = connection_wr()
+        except AttributeError:
+            pass
+        return connection
 
     def _get_connection(self):
+        connection = self.get_thread_connection()
+
         try:
-            connection = thread_connection.connection
-            if connection.socket is None:
-                connection = self._create_new_connection()
-        except AttributeError:
+            if connection is not None:
+                # Remove the strong reference to the connection
+                # It will be re-added after the command is sent.
+                self.deque.remove(connection)
+        except ValueError:
+            # Should never reach this point
+            pass
+
+        if connection is None or connection.socket is None:
             connection = self._create_new_connection()
         return connection
 
@@ -149,13 +177,9 @@ class JavaClient(GatewayClient):
             self.java_parameters, self.python_parameters,
             self.gateway_property, self)
         connection.connect_to_java_server()
-        thread_connection.connection = connection
+        self.set_thread_connection(connection)
         self.deque.append(connection)
         return connection
-
-    def _give_back_connection(self, connection):
-        # Nothing to do for now
-        pass
 
     def _should_retry(self, retry, connection):
         # Only retry if Python was driving the communication.
@@ -301,7 +325,7 @@ class ClientServerConnection(object):
         t.start()
 
     def run(self):
-        thread_connection.connection = self
+        self.java_client.set_thread_connection(self)
         self.wait_for_commands()
 
     def send_command(self, command):
@@ -342,7 +366,7 @@ class ClientServerConnection(object):
             raise Py4JNetworkError("Error while sending or receiving", e)
 
     def close(self):
-        logger.info("Closing down client")
+        logger.info("Closing down clientserver connection")
         quiet_close(self.stream)
         quiet_shutdown(self.socket)
         quiet_close(self.socket)
@@ -379,7 +403,6 @@ class ClientServerConnection(object):
             logger.info(
                 "Error while python server was waiting for"
                 "a message", exc_info=True)
-
         self.close()
 
     def _call_proxy(self, obj_id, input):

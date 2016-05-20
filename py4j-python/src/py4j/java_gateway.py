@@ -1830,8 +1830,7 @@ class CallbackServer(object):
             self.server_socket = None
 
             for connection in self.connections:
-                quiet_shutdown(connection.socket)
-                quiet_close(connection.socket)
+                connection.close()
 
             self.pool.clear()
         self.thread.join()
@@ -1887,10 +1886,13 @@ class CallbackConnection(Thread):
             logger.info(
                 "Error while callback connection was waiting for"
                 "a message", exc_info=True)
+        self.close()
 
-        logger.info("Closing down connection")
+    def close(self):
+        logger.info("Closing down callback connection")
         quiet_shutdown(self.socket)
         quiet_close(self.socket)
+        self.socket = None
 
     def _call_proxy(self, obj_id, input):
         return_message = proto.ERROR_RETURN_MESSAGE

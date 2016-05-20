@@ -29,6 +29,7 @@
  *****************************************************************************/
 package py4j;
 
+import java.net.InetAddress;
 import java.util.List;
 
 /**
@@ -45,7 +46,19 @@ public interface Py4JJavaServer {
 	 */
 	List<GatewayServerListener> getListeners();
 
+	InetAddress getAddress();
+
 	Gateway getGateway();
+
+	int getListeningPort();
+
+	int getPort();
+
+	InetAddress getPythonAddress();
+
+	int getPythonPort();
+
+	void removeListener(GatewayServerListener listener);
 
 	/**
 	 * <p>

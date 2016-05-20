@@ -44,17 +44,16 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 
 	private boolean used = false;
 	private boolean initiatedFromClient = false;
-	private static ThreadLocal<ClientServerConnection> threadConnections = new ThreadLocal<ClientServerConnection>();
 	protected Socket socket;
 	protected BufferedWriter writer;
 	protected BufferedReader reader;
 	protected final Map<String, Command> commands;
 	protected final Logger logger = Logger.getLogger(ClientServerConnection.class.getName());
 	protected final Py4JJavaServer javaServer;
-	protected final Py4JPythonClient pythonClient;
+	protected final Py4JPythonClientPerThread pythonClient;
 
 	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
-			Py4JPythonClient pythonClient, Py4JJavaServer javaServer) throws IOException {
+			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer) throws IOException {
 		super();
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
@@ -73,16 +72,8 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		t.start();
 	}
 
-	public static ClientServerConnection getThreadConnection() {
-		return threadConnections.get();
-	}
-
-	public static void setThreadConnection(ClientServerConnection clientServerConnection) {
-		threadConnections.set(clientServerConnection);
-	}
-
 	public void run() {
-		setThreadConnection(this);
+		pythonClient.setPerThreadConnection(this);
 		waitForCommands();
 	}
 
@@ -204,6 +195,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 
 			}
 		} catch (Exception e) {
+			// This will make sure that the connection is shut down and not given back to the connections deque.
 			throw new Py4JNetworkException("Error while sending a command: " + command, e);
 		}
 	}
@@ -216,7 +208,10 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		socket = null;
 		writer = null;
 		reader = null;
-		fireConnectionStopped();
+		if (!initiatedFromClient) {
+			// Only fires this event when the connection is created by the JavaServer to respect the protocol.
+			fireConnectionStopped();
+		}
 	}
 
 	@Override

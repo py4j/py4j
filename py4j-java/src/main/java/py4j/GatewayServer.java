@@ -143,7 +143,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 
 	private final Logger logger = Logger.getLogger(GatewayServer.class.getName());
 
-	private final List<Socket> connections = new ArrayList<Socket>();
+	private final List<Py4JServerConnection> connections = new ArrayList<Py4JServerConnection>();
 
 	private final List<Class<? extends Command>> customCommands;
 
@@ -362,7 +362,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		try {
 			lock.lock();
 			if (!isShutdown) {
-				connections.remove(gatewayConnection.getSocket());
+				connections.remove(gatewayConnection);
 			}
 		} finally {
 			lock.unlock();
@@ -467,6 +467,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		}
 	}
 
+	@Override
 	public InetAddress getAddress() {
 		return address;
 	}
@@ -490,6 +491,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	 *         ephemeral port (specified port = 0). Returns -1 if the server
 	 *         socket is not listening on anything.
 	 */
+	@Override
 	public int getListeningPort() {
 		int port = -1;
 		try {
@@ -507,14 +509,17 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	 * @return The port specified when the gateway server is initialized. This
 	 *         is the port that is passed to the server socket.
 	 */
+	@Override
 	public int getPort() {
 		return port;
 	}
 
+	@Override
 	public InetAddress getPythonAddress() {
 		return pythonAddress;
 	}
 
+	@Override
 	public int getPythonPort() {
 		return pythonPort;
 	}
@@ -527,9 +532,9 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		try {
 			lock.lock();
 			if (!isShutdown) {
-				connections.add(socket);
 				socket.setSoTimeout(readTimeout);
 				Py4JServerConnection gatewayConnection = createConnection(gateway, socket);
+				connections.add(gatewayConnection);
 				fireConnectionStarted(gatewayConnection);
 			}
 		} catch (Exception e) {
@@ -541,6 +546,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		}
 	}
 
+	@Override
 	public void removeListener(GatewayServerListener listener) {
 		listeners.remove(listener);
 	}
@@ -587,8 +593,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 			lock.lock();
 			isShutdown = true;
 			NetworkUtil.quietlyClose(sSocket);
-			for (Socket socket : connections) {
-				NetworkUtil.quietlyClose(socket);
+			for (Py4JServerConnection connection : connections) {
+				connection.shutdown();
 			}
 			connections.clear();
 			gateway.shutdown(shutdownCallbackClient);
