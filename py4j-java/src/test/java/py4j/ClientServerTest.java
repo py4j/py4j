@@ -63,4 +63,20 @@ public class ClientServerTest {
 		assertTrue(listener.values.contains(new Long(10000)));
 		assertEquals(5, listener.values.size());
 	}
+
+	@Test
+	public void testClientServerBuilder() {
+		ClientServer server = new ClientServer.ClientServerBuilder(null).javaPort(0).build();
+		Py4JJavaServer javaServer = server.getJavaServer();
+		server.startServer(true);
+		try {
+			Thread.sleep(250);
+		} catch (Exception e) {
+
+		}
+		int listeningPort = ((GatewayServer) javaServer).getListeningPort();
+		assertTrue(listeningPort > 0);
+		assertTrue(((GatewayServer) javaServer).getPort() != listeningPort);
+		server.shutdown();
+	}
 }
