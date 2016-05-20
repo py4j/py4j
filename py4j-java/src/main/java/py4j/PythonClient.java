@@ -34,6 +34,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import javax.net.SocketFactory;
@@ -47,6 +48,9 @@ import py4j.commands.Command;
  * </p>
  */
 public class PythonClient extends CallbackClient {
+
+	private static AtomicInteger connectionIdCounter = new AtomicInteger();
+	private int connectionId = connectionIdCounter.incrementAndGet();
 
 	private Gateway gateway;
 
@@ -63,6 +67,10 @@ public class PythonClient extends CallbackClient {
 		this.gateway = gateway;
 		this.javaServer = javaServer;
 		this.customCommands = customCommands;
+	}
+
+	public int getConnectionId() {
+		return connectionId;
 	}
 
 	public Gateway getGateway() {
@@ -95,7 +103,7 @@ public class PythonClient extends CallbackClient {
 	protected Py4JClientConnection getConnection() throws IOException {
 		ClientServerConnection connection = null;
 
-		connection = ClientServerConnection.getThreadConnection();
+		connection = ClientServerConnection.getThreadConnection(connectionId);
 		if (connection == null || connection.getSocket() == null) {
 			Socket socket = startClientSocket();
 			connection = new ClientServerConnection(gateway, socket, customCommands, this, javaServer);

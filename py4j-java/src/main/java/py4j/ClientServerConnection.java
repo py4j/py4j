@@ -44,7 +44,11 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 
 	private boolean used = false;
 	private boolean initiatedFromClient = false;
-	private static ThreadLocal<ClientServerConnection> threadConnections = new ThreadLocal<ClientServerConnection>();
+	private static ThreadLocal<Map<Integer, ClientServerConnection>> threadConnections = new ThreadLocal<Map<Integer, ClientServerConnection>>() {
+		protected java.util.Map<Integer, ClientServerConnection> initialValue() {
+			return new HashMap<Integer, ClientServerConnection>();
+		};
+	};
 	protected Socket socket;
 	protected BufferedWriter writer;
 	protected BufferedReader reader;
@@ -73,12 +77,26 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		t.start();
 	}
 
-	public static ClientServerConnection getThreadConnection() {
-		return threadConnections.get();
+	public static ClientServerConnection getThreadConnection(int connectionId) {
+		return threadConnections.get().get(connectionId);
 	}
 
 	public static void setThreadConnection(ClientServerConnection clientServerConnection) {
-		threadConnections.set(clientServerConnection);
+		Integer connectionId;
+		if (clientServerConnection.pythonClient instanceof PythonClient) {
+			PythonClient pythonClient2 = (PythonClient) clientServerConnection.pythonClient;
+			connectionId = pythonClient2.getConnectionId();
+		} else {
+			// Py4JPythonClient was not a PythonClient, therefore we don't
+			// get per thread-per instance connection objects. This case is ok
+			// because recursive calls are not supported because there is
+			// no way to get the connection from the client
+			// XXX: Alternative is to eliminate this case if we know that
+			// pythonClient cannot be anything else but a PythonClient
+			connectionId = null;
+		}
+		Map<Integer, ClientServerConnection> map = threadConnections.get();
+		map.put(connectionId, clientServerConnection);
 	}
 
 	public void run() {
