@@ -11,7 +11,7 @@ from __future__ import unicode_literals, absolute_import
 
 import logging
 import socket
-from threading import local, Thread
+from threading import local, Thread, Lock
 
 from py4j.java_gateway import (
     quiet_close, quiet_shutdown, GatewayClient, JavaGateway,
@@ -27,6 +27,18 @@ from py4j.protocol import (
 logger = logging.getLogger("py4j.clientserver")
 
 thread_connection = local()
+
+thread_connection_id = 0
+thread_connection_id_lock = Lock()
+
+
+def next_connection_id():
+    """ Obtain the next connection id for use by the ClientServerConnection
+        to maintain a per-thread-per-instance connection """
+    global thread_connection_id
+    with thread_connection_id_lock:
+        thread_connection_id += 1
+        return thread_connection_id
 
 
 class JavaParameters(GatewayParameters):
@@ -134,13 +146,16 @@ class JavaClient(GatewayClient):
             ssl_context=java_parameters.ssl_context)
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
+        self._connection_id = next_connection_id()
 
     def _get_connection(self):
+        if not hasattr(thread_connection, "connections"):
+            thread_connection.connections = dict()
         try:
-            connection = thread_connection.connection
+            connection = thread_connection.connections[self._connection_id]
             if connection.socket is None:
                 connection = self._create_new_connection()
-        except AttributeError:
+        except KeyError:
             connection = self._create_new_connection()
         return connection
 
@@ -149,7 +164,7 @@ class JavaClient(GatewayClient):
             self.java_parameters, self.python_parameters,
             self.gateway_property, self)
         connection.connect_to_java_server()
-        thread_connection.connection = connection
+        thread_connection.connections[self._connection_id] = connection
         self.deque.append(connection)
         return connection
 
@@ -301,7 +316,9 @@ class ClientServerConnection(object):
         t.start()
 
     def run(self):
-        thread_connection.connection = self
+        if not hasattr(thread_connection, "connections"):
+            thread_connection.connections = dict()
+        thread_connection.connections[self.java_client._connection_id] = self
         self.wait_for_commands()
 
     def send_command(self, command):
