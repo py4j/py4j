@@ -505,6 +505,7 @@ This is now possible with the :mod:`py4j.clientserver` module:
           // Java calls Python without ever having been called from Python
           System.out.println(hello.sayHello());
           System.out.println(hello.sayHello(2, "Hello World"));
+          clientServer.shutdown();
       }
   }
 

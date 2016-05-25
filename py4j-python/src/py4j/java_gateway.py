@@ -480,36 +480,41 @@ class GatewayParameters(object):
     def __init__(
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
             auto_close=True, auto_convert=False, eager_load=False,
-            ssl_context=None):
+            ssl_context=None, enable_memory_management=True):
         """
         :param address: the address to which the client will request a
-         connection. If you're assing a `SSLContext` with `check_hostname=True`
-         then this address must match (one of) the hostname(s) in the
-         certificate the gateway server presents.
+            connection. If you're assing a `SSLContext` with
+            `check_hostname=True` then this address must match
+            (one of) the hostname(s) in the certificate the gateway
+            server presents.
 
         :param port: the port to which the client will request a connection.
-         Default is 25333.
+            Default is 25333.
 
         :param auto_field: if `False`, each object accessed through this
-         gateway won"t try to lookup fields (they will be accessible only by
-         calling get_field). If `True`, fields will be automatically looked
-         up, possibly hiding methods of the same name and making method calls
-         less efficient.
+            gateway won"t try to lookup fields (they will be accessible only by
+            calling get_field). If `True`, fields will be automatically looked
+            up, possibly hiding methods of the same name and making method
+            calls less efficient.
 
         :param auto_close: if `True`, the connections created by the client
-         close the socket when they are garbage collected.
+            close the socket when they are garbage collected.
 
         :param auto_convert: if `True`, try to automatically convert Python
-         objects like sequences and maps to Java Objects. Default value is
-         `False` to improve performance and because it is still possible to
-         explicitly perform this conversion.
+            objects like sequences and maps to Java Objects. Default value is
+            `False` to improve performance and because it is still possible to
+            explicitly perform this conversion.
 
         :param eager_load: if `True`, the gateway tries to connect to the JVM
-         by calling System.currentTimeMillis. If the gateway cannot connect to
-         the JVM, it shuts down itself and raises an exception.
+            by calling System.currentTimeMillis. If the gateway cannot connect
+            to the JVM, it shuts down itself and raises an exception.
 
         :param ssl_context: if not None, SSL connections will be made using
-         this SSLContext
+            this SSLContext
+
+        :param enable_memory_management: if True, tells the Java side when a
+            JavaObject (reference to an object on the Java side) is garbage
+            collected on the Python side.
         """
         self.address = address
         self.port = port
@@ -518,6 +523,7 @@ class GatewayParameters(object):
         self.auto_convert = auto_convert
         self.eager_load = eager_load
         self.ssl_context = ssl_context
+        self.enable_memory_management = enable_memory_management
 
 
 class CallbackServerParameters(object):
@@ -962,12 +968,13 @@ class JavaObject(object):
             smart_decode(self._gateway_client.port) +\
             self._target_id
 
-        value = weakref.ref(
-            self,
-            lambda wr, cc=self._gateway_client, id=self._target_id:
-            _garbage_collect_object and _garbage_collect_object(cc, id))
+        if self._gateway_client.gateway_property.enable_memory_management:
+            value = weakref.ref(
+                self,
+                lambda wr, cc=self._gateway_client, id=self._target_id:
+                _garbage_collect_object and _garbage_collect_object(cc, id))
 
-        ThreadSafeFinalizer.add_finalizer(key, value)
+            ThreadSafeFinalizer.add_finalizer(key, value)
 
     def _detach(self):
         _garbage_collect_object(self._gateway_client, self._target_id)
@@ -1317,9 +1324,10 @@ class JVMView(object):
 class GatewayProperty(object):
     """Object shared by callbackserver, gateway, and connections.
     """
-    def __init__(self, auto_field, pool):
+    def __init__(self, auto_field, pool, enable_memory_management=True):
         self.auto_field = auto_field
         self.pool = pool
+        self.enable_memory_management = enable_memory_management
 
 
 class JavaGateway(object):
@@ -1417,7 +1425,8 @@ class JavaGateway(object):
 
     def _create_gateway_property(self):
         gateway_property = GatewayProperty(
-            self.gateway_parameters.auto_field, PythonProxyPool())
+            self.gateway_parameters.auto_field, PythonProxyPool(),
+            self.gateway_parameters.enable_memory_management)
         return gateway_property
 
     def set_gateway_client(self, gateway_client):

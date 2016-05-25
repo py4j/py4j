@@ -439,6 +439,7 @@ class UtilityTest(unittest.TestCase):
 
 class MemoryManagementTest(unittest.TestCase):
     def setUp(self):
+        ThreadSafeFinalizer.clear_finalizers(True)
         self.p = start_example_app_process()
 
     def tearDown(self):
@@ -473,6 +474,58 @@ class MemoryManagementTest(unittest.TestCase):
 
         self.assertEqual(
             len(ThreadSafeFinalizer.finalizers) - finalizers_size_start, 0)
+        self.gateway.shutdown()
+
+    def testGCCollect(self):
+        self.gateway = JavaGateway()
+        gc.collect()
+        finalizers_size_start = len(ThreadSafeFinalizer.finalizers)
+
+        def internal():
+            sb = self.gateway.jvm.java.lang.StringBuffer()
+            sb.append("Hello World")
+            sb2 = self.gateway.jvm.java.lang.StringBuffer()
+            sb2.append("Hello World")
+            finalizers_size_middle = len(ThreadSafeFinalizer.finalizers)
+            return finalizers_size_middle
+        finalizers_size_middle = internal()
+        gc.collect()
+
+        # Before collection: two objects created + two returned objects (append
+        # returns a stringbuffer reference for easy chaining).
+        self.assertEqual(finalizers_size_middle, 4)
+
+        # Assert after collection
+        self.assertEqual(
+            len(ThreadSafeFinalizer.finalizers) - finalizers_size_start, 0)
+
+        self.gateway.shutdown()
+
+    def testGCCollectNoMemoryManagement(self):
+        self.gateway = JavaGateway(
+            gateway_parameters=GatewayParameters(
+                enable_memory_management=False))
+        gc.collect()
+        # Should have nothing in the finalizers
+        self.assertEqual(len(ThreadSafeFinalizer.finalizers), 0)
+
+        def internal():
+            sb = self.gateway.jvm.java.lang.StringBuffer()
+            sb.append("Hello World")
+            sb2 = self.gateway.jvm.java.lang.StringBuffer()
+            sb2.append("Hello World")
+            finalizers_size_middle = len(ThreadSafeFinalizer.finalizers)
+            return finalizers_size_middle
+        finalizers_size_middle = internal()
+        gc.collect()
+
+        # Before collection: two objects created + two returned objects (append
+        # returns a stringbuffer reference for easy chaining).
+        self.assertEqual(finalizers_size_middle, 0)
+
+        # Assert after collection
+        self.assertEqual(len(ThreadSafeFinalizer.finalizers), 0)
+
         self.gateway.shutdown()
 
 

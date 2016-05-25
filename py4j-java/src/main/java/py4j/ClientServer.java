@@ -52,8 +52,6 @@ public class ClientServer {
 
 	private final InetAddress pythonAddress;
 
-	private int listeningPort;
-
 	private final int connectTimeout;
 
 	private final int readTimeout;
@@ -67,6 +65,8 @@ public class ClientServer {
 	private final JavaServer javaServer;
 
 	private final PythonClient pythonClient;
+
+	private final boolean autoStartJavaServer;
 
 	protected final Logger logger = Logger.getLogger(ClientServer.class.getName());
 
@@ -96,6 +96,27 @@ public class ClientServer {
 	public ClientServer(int javaPort, InetAddress javaAddress, int pythonPort, InetAddress pythonAddress,
 			int connectTimeout, int readTimeout, ServerSocketFactory sSocketFactory, SocketFactory socketFactory,
 			Object entryPoint) {
+		this(javaPort, javaAddress, pythonPort, pythonAddress, connectTimeout, readTimeout, sSocketFactory,
+				socketFactory, entryPoint, true, true);
+	}
+
+	/**
+	 *
+	 * @param javaPort
+	 * @param javaAddress
+	 * @param pythonPort
+	 * @param pythonAddress
+	 * @param connectTimeout
+	 * @param readTimeout
+	 * @param sSocketFactory
+	 * @param socketFactory
+	 * @param entryPoint
+	 * @param autoStartJavaServer
+	 * @param enableMemoryManagement
+	 */
+	public ClientServer(int javaPort, InetAddress javaAddress, int pythonPort, InetAddress pythonAddress,
+			int connectTimeout, int readTimeout, ServerSocketFactory sSocketFactory, SocketFactory socketFactory,
+			Object entryPoint, boolean autoStartJavaServer, boolean enableMemoryManagement) {
 		this.javaPort = javaPort;
 		this.javaAddress = javaAddress;
 		this.pythonPort = pythonPort;
@@ -106,14 +127,20 @@ public class ClientServer {
 		this.socketFactory = socketFactory;
 
 		this.pythonClient = new PythonClient(null, null, pythonPort, pythonAddress,
-				CallbackClient.DEFAULT_MIN_CONNECTION_TIME, TimeUnit.SECONDS, SocketFactory.getDefault(), null);
+				CallbackClient.DEFAULT_MIN_CONNECTION_TIME, TimeUnit.SECONDS, SocketFactory.getDefault(), null,
+				enableMemoryManagement);
 		this.javaServer = new JavaServer(entryPoint, this.javaPort, this.connectTimeout, this.readTimeout, null,
 				pythonClient);
 		this.gateway = javaServer.getGateway();
 		pythonClient.setGateway(gateway);
 		pythonClient.setJavaServer(javaServer);
-		// XXX Force gateway startup here
-		this.gateway.startup();
+		this.autoStartJavaServer = autoStartJavaServer;
+
+		if (autoStartJavaServer) {
+			this.javaServer.start();
+		} else {
+			this.gateway.startup();
+		}
 	}
 
 	public Py4JJavaServer getJavaServer() {
@@ -126,14 +153,33 @@ public class ClientServer {
 
 	/**
 	 * <p>
+	 * Starts the JavaServer on its own thread.
+	 * </p>
+	 *
+	 * <p>
+	 * Does nothing if autoStartJavaServer was set to true when constructing the instance.
+	 * </p>
+	 */
+	public void startServer() {
+		startServer(true);
+	}
+
+	/**
+	 * <p>
 	 * Starts the JavaServer, which will handle requests from the Python side.
+	 * </p>
+	 *
+	 * <p>
+	 * Does nothing if autoStartJavaServer was set to true when constructing the instance.
 	 * </p>
 	 *
 	 * @param fork If the JavaServer is started in this thread or in its own
 	 *                thread.
 	 */
 	public void startServer(boolean fork) {
-		javaServer.start(fork);
+		if (!autoStartJavaServer) {
+			javaServer.start(fork);
+		}
 	}
 
 	/**
@@ -161,7 +207,7 @@ public class ClientServer {
 	}
 
 	/**
-	 * Helper class to make it easier and self-documentating how a
+	 * Helper class to make it easier and self-documenting how a
 	 * {@link ClientServer} is constructed.
 	 */
 	public static class ClientServerBuilder {
@@ -174,6 +220,8 @@ public class ClientServer {
 		private ServerSocketFactory serverSocketFactory;
 		private SocketFactory socketFactory;
 		private Object entryPoint;
+		private boolean autoStartJavaServer;
+		private boolean enableMemoryManagement;
 
 		public ClientServerBuilder() {
 			this(null);
@@ -189,11 +237,13 @@ public class ClientServer {
 			serverSocketFactory = ServerSocketFactory.getDefault();
 			socketFactory = SocketFactory.getDefault();
 			this.entryPoint = entryPoint;
+			autoStartJavaServer = true;
+			enableMemoryManagement = true;
 		}
 
 		public ClientServer build() {
 			return new ClientServer(javaPort, javaAddress, pythonPort, pythonAddress, connectTimeout, readTimeout,
-					serverSocketFactory, socketFactory, entryPoint);
+					serverSocketFactory, socketFactory, entryPoint, autoStartJavaServer, enableMemoryManagement);
 		}
 
 		public ClientServerBuilder javaPort(int javaPort) {
@@ -238,6 +288,16 @@ public class ClientServer {
 
 		public ClientServerBuilder entryPoint(Object entryPoint) {
 			this.entryPoint = entryPoint;
+			return this;
+		}
+
+		public ClientServerBuilder autoStartJavaServer(boolean autoStartJavaServer) {
+			this.autoStartJavaServer = autoStartJavaServer;
+			return this;
+		}
+
+		public ClientServerBuilder enableMemoryManagement(boolean enableMemoryManagement) {
+			this.enableMemoryManagement = enableMemoryManagement;
 			return this;
 		}
 	}

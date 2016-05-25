@@ -73,29 +73,23 @@ public class CallbackClient implements Py4JPythonClient {
 
 	public final static long DEFAULT_MIN_CONNECTION_TIME = 30;
 
+	public final static TimeUnit DEFAULT_MIN_CONNECTION_TIME_UNIT = TimeUnit.SECONDS;
+
 	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
 	protected final long minConnectionTime;
 
 	protected final TimeUnit minConnectionTimeUnit;
 
+	protected final boolean enableMemoryManagement;
+
 	public CallbackClient(int port) {
-		super();
-		this.port = port;
-		try {
-			this.address = InetAddress.getByName(DEFAULT_ADDRESS);
-		} catch (Exception e) {
-			throw new Py4JNetworkException(
-					"Default address could not be determined when creating communication channel.");
-		}
-		this.minConnectionTime = DEFAULT_MIN_CONNECTION_TIME;
-		this.minConnectionTimeUnit = TimeUnit.SECONDS;
-		this.socketFactory = SocketFactory.getDefault();
-		setupCleaner();
+		this(port, GatewayServer.defaultAddress(), DEFAULT_MIN_CONNECTION_TIME, DEFAULT_MIN_CONNECTION_TIME_UNIT,
+				SocketFactory.getDefault(), true);
 	}
 
 	public CallbackClient(int port, InetAddress address) {
-		this(port, address, DEFAULT_MIN_CONNECTION_TIME, TimeUnit.SECONDS);
+		this(port, address, DEFAULT_MIN_CONNECTION_TIME, DEFAULT_MIN_CONNECTION_TIME_UNIT);
 	}
 
 	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit) {
@@ -118,17 +112,45 @@ public class CallbackClient implements Py4JPythonClient {
 	 */
 	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory) {
+		this(port, address, minConnectionTime, minConnectionTimeUnit, socketFactory, true);
+	}
+
+	/**
+	 *
+	 * @param port
+	 *            The port used by channels to connect to the Python side.
+	 * @param address
+	 *            The addressed used by channels to connect to the Python side..
+	 * @param minConnectionTime
+	 *            The minimum connection time: channels are guaranteed to stay
+	 *            connected for this time after sending a command.
+	 * @param minConnectionTimeUnit
+	 *            The minimum coonnection time unit.
+	 * @param socketFactory
+	 *            The non-{@code null} factory to make {@link Socket}s.
+	 * @param enableMemoryManagement
+	 * 			  If False, we do not send tell the Python side when a PythonProxy
+	 * 			  is no longer used by the Java side.
+	 */
+	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit,
+			SocketFactory socketFactory, boolean enableMemoryManagement) {
 		super();
 		this.port = port;
 		this.address = address;
 		this.minConnectionTime = minConnectionTime;
 		this.minConnectionTimeUnit = minConnectionTimeUnit;
 		this.socketFactory = socketFactory;
+		this.enableMemoryManagement = enableMemoryManagement;
 		setupCleaner();
 	}
 
 	public InetAddress getAddress() {
 		return address;
+	}
+
+	@Override
+	public boolean isMemoryManagementEnabled() {
+		return enableMemoryManagement;
 	}
 
 	protected Py4JClientConnection getConnection() throws IOException {

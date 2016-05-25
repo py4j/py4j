@@ -86,9 +86,7 @@ class IntegrationTest(unittest.TestCase):
             JavaParameters(), PythonParameters(), hello_state)
 
         with clientserver_example_app_process(True):
-            pass
-
-        client_server.shutdown()
+            client_server.shutdown()
 
         # Check that Java correctly called Python
         self.assertEqual(2, len(hello_state.calls))
@@ -125,10 +123,10 @@ class IntegrationTest(unittest.TestCase):
                     expected, smart_decode(conn.read(len(expected))))
             client_server.shutdown()
 
-    def testRecursion(self):
+    def testRecursionWithAutoGC(self):
         with clientserver_example_app_process():
             client_server = ClientServer(
-                JavaParameters(), PythonParameters())
+                JavaParameters(auto_gc=True), PythonParameters(auto_gc=True))
             pingpong = client_server.jvm.py4j.examples.PingPong()
             ping = PythonPing()
             self.assertEqual(2, pingpong.start(ping))

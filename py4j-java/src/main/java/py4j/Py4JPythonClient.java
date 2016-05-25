@@ -99,6 +99,8 @@ public interface Py4JPythonClient {
 	 */
 	Py4JPythonClient copyWith(InetAddress pythonAddress, int pythonPort);
 
+	boolean isMemoryManagementEnabled();
+
 	int getPort();
 
 	InetAddress getAddress();

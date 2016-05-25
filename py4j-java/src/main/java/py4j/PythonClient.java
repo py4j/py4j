@@ -59,10 +59,42 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 
 	private ThreadLocal<WeakReference<ClientServerConnection>> threadConnection;
 
+	/**
+	 *
+	 * @param gateway The gateway used to pool Java instances created on the Python side.
+	 * @param customCommands Optional list of custom commands that can be invoked by the Python side.
+	 * @param pythonPort Port the PythonClient should connect to.
+	 * @param pythonAddress Address (IP) the PythonClient should connect to.
+	 * @param minConnectionTime Minimum time to wait before closing unused connections. Not used with PythonClient.
+	 * @param minConnectionTimeUnit Time unit of minConnectionTime
+	 * @param socketFactory SocketFactory used to create a socket.
+	 * @param javaServer The JavaServer used to receive commands from the Python side.
+	 */
 	public PythonClient(Gateway gateway, List<Class<? extends Command>> customCommands, int pythonPort,
 			InetAddress pythonAddress, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory, Py4JJavaServer javaServer) {
-		super(pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit, socketFactory);
+		this(gateway, customCommands, pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit,
+				socketFactory, javaServer, true);
+	}
+
+	/**
+	 *
+	 * @param gateway The gateway used to pool Java instances created on the Python side.
+	 * @param customCommands Optional list of custom commands that can be invoked by the Python side.
+	 * @param pythonPort Port the PythonClient should connect to.
+	 * @param pythonAddress Address (IP) the PythonClient should connect to.
+	 * @param minConnectionTime Minimum time to wait before closing unused connections. Not used with PythonClient.
+	 * @param minConnectionTimeUnit Time unit of minConnectionTime
+	 * @param socketFactory SocketFactory used to create a socket.
+	 * @param javaServer The JavaServer used to receive commands from the Python side.
+	 * @param enableMemoryManagement If false, the Java side does not tell the Python side when a Python proxy is
+	*      			garbage collected.
+	 */
+	public PythonClient(Gateway gateway, List<Class<? extends Command>> customCommands, int pythonPort,
+			InetAddress pythonAddress, long minConnectionTime, TimeUnit minConnectionTimeUnit,
+			SocketFactory socketFactory, Py4JJavaServer javaServer, boolean enableMemoryManagement) {
+		super(pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit, socketFactory,
+				enableMemoryManagement);
 		this.gateway = gateway;
 		this.javaServer = javaServer;
 		this.customCommands = customCommands;

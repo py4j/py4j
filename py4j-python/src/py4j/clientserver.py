@@ -9,6 +9,7 @@ code calls some Java code, the Java code will be executed in the UI thread.
 
 from __future__ import unicode_literals, absolute_import
 
+import gc
 import logging
 import socket
 from threading import local, Thread
@@ -35,40 +36,52 @@ class JavaParameters(GatewayParameters):
     def __init__(
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
             auto_close=True, auto_convert=False, eager_load=False,
-            ssl_context=None):
+            ssl_context=None, enable_memory_management=True, auto_gc=False):
         """
+
         :param address: the address to which the client will request a
-         connection. If you're assing a `SSLContext` with `check_hostname=True`
-         then this address must match (one of) the hostname(s) in the
-         certificate the gateway server presents.
+            connection. If you're assing a `SSLContext` with
+            `check_hostname=True` then this address must match
+            (one of) the hostname(s) in the certificate the gateway
+            server presents.
 
         :param port: the port to which the client will request a connection.
-         Default is 25333.
+            Default is 25333.
 
         :param auto_field: if `False`, each object accessed through this
-         gateway won"t try to lookup fields (they will be accessible only by
-         calling get_field). If `True`, fields will be automatically looked
-         up, possibly hiding methods of the same name and making method calls
-         less efficient.
+            gateway won"t try to lookup fields (they will be accessible only by
+            calling get_field). If `True`, fields will be automatically looked
+            up, possibly hiding methods of the same name and making method
+            calls less efficient.
 
         :param auto_close: if `True`, the connections created by the client
-         close the socket when they are garbage collected.
+            close the socket when they are garbage collected.
 
         :param auto_convert: if `True`, try to automatically convert Python
-         objects like sequences and maps to Java Objects. Default value is
-         `False` to improve performance and because it is still possible to
-         explicitly perform this conversion.
+            objects like sequences and maps to Java Objects. Default value is
+            `False` to improve performance and because it is still possible to
+            explicitly perform this conversion.
 
         :param eager_load: if `True`, the gateway tries to connect to the JVM
-         by calling System.currentTimeMillis. If the gateway cannot connect to
-         the JVM, it shuts down itself and raises an exception.
+            by calling System.currentTimeMillis. If the gateway cannot connect
+            to the JVM, it shuts down itself and raises an exception.
 
         :param ssl_context: if not None, SSL connections will be made using
-         this SSLContext
+            this SSLContext
+
+        :param enable_memory_management: if True, tells the Java side when a
+            JavaObject (reference to an object on the Java side) is garbage
+            collected on the Python side.
+
+        :param auto_gc: if True, call gc.collect() before sending a command to
+            the Java side. This should prevent the gc from running between
+            sending the command and waiting for an anwser. False by default
+            because this case is extremely unlikely.
         """
         super(JavaParameters, self).__init__(
             address, port, auto_field, auto_close, auto_convert, eager_load,
-            ssl_context)
+            ssl_context, enable_memory_management)
+        self.auto_gc = auto_gc
 
 
 class PythonParameters(CallbackServerParameters):
@@ -79,7 +92,7 @@ class PythonParameters(CallbackServerParameters):
     def __init__(
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PYTHON_PROXY_PORT,
             daemonize=False, daemonize_connections=False, eager_load=True,
-            ssl_context=None):
+            ssl_context=None, auto_gc=False):
         """
         :param address: the address to which the client will request a
             connection
@@ -99,11 +112,18 @@ class PythonParameters(CallbackServerParameters):
             started when the JavaGateway is created.
 
         :param ssl_context: if not None, the SSLContext's certificate will be
-         presented to callback connections.
+            presented to callback connections.
+
+        :param auto_gc: if True, call gc.collect() before returning a response
+            to the Java side. This should prevent the gc from running between
+            sending the response and waiting for a new command. False by
+            default because this case is extremely unlikely but could break
+            communication.
         """
         super(PythonParameters, self).__init__(
             address, port, daemonize, daemonize_connections, eager_load,
             ssl_context)
+        self.auto_gc = auto_gc
 
 
 class JavaClient(GatewayClient):
@@ -276,6 +296,12 @@ class ClientServerConnection(object):
         self.java_client = java_client
         self.initiated_from_client = False
 
+    def _auto_gc(self, from_client=False):
+        if from_client and self.java_parameters.auto_gc:
+            gc.collect()
+        elif not from_client and self.python_parameters.auto_gc:
+            gc.collect()
+
     def connect_to_java_server(self):
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -332,6 +358,7 @@ class ClientServerConnection(object):
         # TODO At some point extract common code from wait_for_commands
         logger.debug("Command to send: {0}".format(command))
         try:
+            self._auto_gc(True)
             self.socket.sendall(command.encode("utf-8"))
             while True:
                 answer = smart_decode(self.stream.readline()[:-1])
@@ -349,10 +376,12 @@ class ClientServerConnection(object):
 
                     if command == proto.CALL_PROXY_COMMAND_NAME:
                         return_message = self._call_proxy(obj_id, self.stream)
+                        self._auto_gc(True)
                         self.socket.sendall(return_message.encode("utf-8"))
                     elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                         self.stream.readline()
                         del(self.pool[obj_id])
+                        self._auto_gc(True)
                         self.socket.sendall(
                             proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                     else:
@@ -386,10 +415,12 @@ class ClientServerConnection(object):
                     break
                 if command == proto.CALL_PROXY_COMMAND_NAME:
                     return_message = self._call_proxy(obj_id, self.stream)
+                    self._auto_gc()
                     self.socket.sendall(return_message.encode("utf-8"))
                 elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                     self.stream.readline()
                     del(self.pool[obj_id])
+                    self._auto_gc()
                     self.socket.sendall(
                         proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                 else:

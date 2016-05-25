@@ -29,10 +29,11 @@
  *****************************************************************************/
 package py4j.examples;
 
-import py4j.GatewayServer;
+import javax.net.SocketFactory;
+import javax.security.auth.callback.Callback;
 
-//import java.util.logging.Level;
-//import java.util.logging.Logger;
+import py4j.CallbackClient;
+import py4j.GatewayServer;
 
 public class ExampleApplication {
 
@@ -41,16 +42,22 @@ public class ExampleApplication {
 	 */
 	public static void main(String[] args) {
 		GatewayServer.turnLoggingOff();
-		// Logger logger = Logger.getLogger("py4j");
-		// logger.setLevel(Level.ALL);
 		GatewayServer server = new GatewayServer(new ExampleEntryPoint());
 		server.start();
-		// try {
-		// Thread.sleep(10000);
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		// server.stop();
+	}
+
+	public static class ExampleNoMemManagementApplication {
+		public static void main(String[] args) {
+			GatewayServer.turnLoggingOff();
+			CallbackClient callbackClient = new CallbackClient(GatewayServer.DEFAULT_PYTHON_PORT,
+					GatewayServer.defaultAddress(), CallbackClient.DEFAULT_MIN_CONNECTION_TIME,
+					CallbackClient.DEFAULT_MIN_CONNECTION_TIME_UNIT, SocketFactory.getDefault(), false);
+			GatewayServer server = new GatewayServer(new ExampleEntryPoint(), GatewayServer.DEFAULT_PORT,
+					GatewayServer.defaultAddress(), GatewayServer.DEFAULT_CONNECT_TIMEOUT,
+					GatewayServer.DEFAULT_READ_TIMEOUT, null, callbackClient);
+			server.start();
+		}
+
 	}
 
 }

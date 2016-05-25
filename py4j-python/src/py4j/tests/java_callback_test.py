@@ -28,6 +28,12 @@ def start_example_server():
         "py4j.examples.ExampleApplication"])
 
 
+def start_no_mem_example_server():
+    subprocess.call([
+        "java", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.ExampleApplication$ExampleNoMemManagementApplication"])
+
+
 def start_example_server2():
     subprocess.call([
         "java", "-cp", PY4J_JAVA_PATH,
@@ -40,9 +46,13 @@ def start_example_server3():
         "py4j.examples.InterfaceExample"])
 
 
-def start_example_app_process():
+def start_example_app_process(no_mem_management=False):
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    p = Process(target=start_example_server)
+    if no_mem_management:
+        target = start_no_mem_example_server
+    else:
+        target = start_example_server
+    p = Process(target=target)
     p.start()
     sleep()
     test_gateway_connection()
@@ -151,6 +161,43 @@ class IHelloImpl(object):
 
     class Java:
         implements = ["py4j.examples.IHello"]
+
+
+class TestNoMemManagement(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process(True)
+        self.gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters())
+        sleep()
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+        sleep()
+
+    def testGC(self):
+        # This will only work with some JVM.
+        sleep()
+        example = self.gateway.entry_point.getNewExample()
+        impl = IHelloImpl()
+        self.assertEqual("This is Hello!", example.callHello(impl))
+        self.assertEqual(
+            "This is Hello;\n10MyMy!\n;",
+            example.callHello2(impl))
+        self.assertEqual(2, len(self.gateway.gateway_property.pool))
+
+        # Make sure that finalizers do not block
+        impl2 = IHelloImpl()
+        self.assertEqual("This is Hello!", example.callHello(impl2))
+        self.assertEqual(3, len(self.gateway.gateway_property.pool))
+
+        self.gateway.jvm.java.lang.System.gc()
+
+        # Leave time for sotimeout
+        sleep(3)
+        # Make sure the three objects have not been removed from the pool
+        # because the Java side should not send gc request.
+        self.assertEqual(len(self.gateway.gateway_property.pool), 3)
 
 
 class TestIntegration(unittest.TestCase):
