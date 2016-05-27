@@ -709,6 +709,20 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 
 	/**
 	 * <p>
+	 * Gets a reference to the entry point on the Python side. This is often
+	 * necessary if Java is driving the communication because Java cannot call
+	 * static methods, initialize Python objects or load Python modules yet.
+	 * </p>
+	 *
+	 * @param interfacesToImplement
+	 * @return
+	 */
+	public Object getPythonServerEntryPoint(Class[] interfacesToImplement) {
+		return getCallbackClient().getPythonServerEntryPoint(gateway, interfacesToImplement);
+	}
+
+	/**
+	 * <p>
 	 * Main method to start a local GatewayServer on a given port.
 	 * The listening port is printed to stdout so that clients can start
 	 * servers on ephemeral ports.

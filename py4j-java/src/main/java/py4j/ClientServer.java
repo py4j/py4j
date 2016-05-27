@@ -36,6 +36,8 @@ import java.util.logging.Logger;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
+import py4j.reflection.ReflectionUtil;
+
 /**
  * <p>
  * This class creates the JavaServer and the PythonClient necessary to
@@ -201,9 +203,7 @@ public class ClientServer {
 	 * @return
 	 */
 	public Object getPythonServerEntryPoint(Class[] interfacesToImplement) {
-		Object proxy = Protocol.getPythonProxyHandler(gateway.getClass().getClassLoader(), interfacesToImplement,
-				Protocol.ENTRY_POINT_OBJECT_ID, gateway);
-		return proxy;
+		return pythonClient.getPythonServerEntryPoint(gateway, interfacesToImplement);
 	}
 
 	/**

@@ -1356,7 +1356,8 @@ class JavaGateway(object):
             self, gateway_client=None, auto_field=False,
             python_proxy_port=DEFAULT_PYTHON_PROXY_PORT,
             start_callback_server=False, auto_convert=False, eager_load=False,
-            gateway_parameters=None, callback_server_parameters=None):
+            gateway_parameters=None, callback_server_parameters=None,
+            python_server_entry_point=None):
         """
         :param gateway_parameters: An instance of `GatewayParameters` used to
             configure the various options of the gateway.
@@ -1365,6 +1366,9 @@ class JavaGateway(object):
             `CallbackServerParameters` used to configure various options of the
             gateway server. Must be provided to start a gateway server.
             Otherwise, callbacks won"t be available.
+
+        :param python_server_entry_point: can be requested by the Java side if
+            Java is driving the communication.
         """
 
         self.gateway_parameters = gateway_parameters
@@ -1401,8 +1405,9 @@ class JavaGateway(object):
         else:
             gateway_client = self._create_gateway_client()
 
-        self.gateway_property = self._create_gateway_property()
+        self.python_server_entry_point = python_server_entry_point
         self._python_proxy_port = python_proxy_port
+        self.gateway_property = self._create_gateway_property()
 
         # Setup gateway client
         self.set_gateway_client(gateway_client)
@@ -1427,6 +1432,9 @@ class JavaGateway(object):
         gateway_property = GatewayProperty(
             self.gateway_parameters.auto_field, PythonProxyPool(),
             self.gateway_parameters.enable_memory_management)
+        if self.python_server_entry_point:
+            gateway_property.pool.put(
+                self.python_server_entry_point, proto.ENTRY_POINT_OBJECT_ID)
         return gateway_property
 
     def set_gateway_client(self, gateway_client):

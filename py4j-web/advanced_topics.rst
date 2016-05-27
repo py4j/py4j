@@ -468,16 +468,90 @@ threads from the Python side are calling the Java side, three Java threads will
 be created.
 
 
-Initiating the conversation from the Java side
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The previous example showed that you can control on which Python thread the
-code will be executed, but what if you want to control on which Java thread the
-code will be executed? For example, if you have a Java GUI application and you
-want to execute some Python code that will block and interact with the UI, you
-need to initiate the call to the Python side from the Java UI thread.
+.. _python_entry_point:
 
-This is now possible with the :mod:`py4j.clientserver` module:
+Initiating the communication from the Java side
+-----------------------------------------------
+
+All the previous examples assume that you want to initiate the communication
+between Python and Java from the Python side. What if you want to start calling
+Python from the Java side?
+
+If you want Java to call Python first, you need to:
+
+1. Start the Python process and create either a JavaGateway or a ClientServer.
+2. Pass a Python instance implementing a Java interface as a
+   ``python_server_entry_point`` parameter.
+3. Start a GatewayServer or ClientServer on the Java side.
+4. Call ``getPythonServerEntryPoint`` by providing the list of interfaces the
+   Python entry point is expected to implement.
+
+
+Using the traditional JavaGateway/GatewayServer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: java
+
+  // IHello.java
+  package py4j.examples;
+
+  public interface IHello {
+      public String sayHello();
+
+      public String sayHello(int i, String s);
+  }
+
+  // ExampleClientApplication.java
+  package py4j.examples;
+
+  import py4j.GatewayServer;
+
+  public class ExampleClientApplication {
+
+      public static void main(String[] args) {
+            GatewayServer.turnLoggingOff();
+            GatewayServer server = new GatewayServer(new ExampleEntryPoint());
+            server.start();
+            IHello hello = (IHello) server.getPythonServerEntryPoint(new Class[] { IHello.class });
+            try {
+                hello.sayHello();
+                hello.sayHello(2, "Hello World");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            server.shutdown();
+      }
+  }
+
+.. code-block:: python
+
+  class SimpleHello(object):
+
+      def sayHello(self, int_value=None, string_value=None):
+          print(int_value, string_value)
+          return "Said hello to {0}".format(string_value)
+
+      class Java:
+          implements = ["py4j.examples.IHello"]
+
+  # Make sure that the python code is started first.
+  # Then execute: java -cp py4j.jar py4j.examples.SingleThreadClientApplication
+  from py4j.java_gateway import Gateway, CallbackServerParameters
+  simple_hello = SimpleHello()
+  gateway = JavaGateway(
+      callback_server_parameters=CallbackServerParameters(),
+      python_server_entry_point=simple_hello)
+
+
+Using ClientServer
+^^^^^^^^^^^^^^^^^^
+
+In the following example, the Java side is initiating the conversation by
+making the first call to the Python side. If the call is initiated from a UI
+thread, then all subsequent call from Python to Java will be executed in the
+Java UI thread.
+
 
 .. code-block:: java
 
@@ -530,10 +604,6 @@ This is now possible with the :mod:`py4j.clientserver` module:
       python_parameters=PythonParameters(),
       python_server_entry_point=simple_hello)
 
-As opposed to all previous examples, the Java side is initiating the
-conversation by making the first call to the Python side. If the call is
-initiated from a UI thread, then all subsequent call from Python to Java will
-be executed in the Java UI thread.
 
 
 .. _dynamic_ports:

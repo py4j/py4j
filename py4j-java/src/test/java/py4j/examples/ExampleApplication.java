@@ -57,7 +57,22 @@ public class ExampleApplication {
 					GatewayServer.DEFAULT_READ_TIMEOUT, null, callbackClient);
 			server.start();
 		}
+	}
 
+	public static class ExamplePythonEntryPointApplication {
+
+		public static void main(String[] args) {
+			GatewayServer.turnLoggingOff();
+			GatewayServer server = new GatewayServer(new ExampleEntryPoint());
+			server.start();
+			IHello hello = (IHello) server.getPythonServerEntryPoint(new Class[] { IHello.class });
+			try {
+				hello.sayHello();
+				hello.sayHello(2, "Hello World");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

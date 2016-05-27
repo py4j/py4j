@@ -37,7 +37,12 @@ public class CurrentThreadClassLoadingStrategy implements ClassLoadingStrategy {
 
 	@Override
 	public Class<?> classForName(String className) throws ClassNotFoundException {
+		return Class.forName(className, true, this.getClassLoader());
+	}
+
+	@Override
+	public ClassLoader getClassLoader() {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		return Class.forName(className, true, classLoader);
+		return classLoader;
 	}
 }

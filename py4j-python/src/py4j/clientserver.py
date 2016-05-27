@@ -484,22 +484,15 @@ class ClientServer(JavaGateway):
         """
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
-        self.python_server_entry_point = python_server_entry_point
         super(ClientServer, self).__init__(
             gateway_parameters=java_parameters,
-            callback_server_parameters=python_parameters
+            callback_server_parameters=python_parameters,
+            python_server_entry_point=python_server_entry_point
         )
 
     def _create_gateway_client(self):
         java_client = JavaClient(self.java_parameters, self.python_parameters)
         return java_client
-
-    def _create_gateway_property(self):
-        gateway_property = super(ClientServer, self)._create_gateway_property()
-        if self.python_server_entry_point:
-            gateway_property.pool.put(
-                self.python_server_entry_point, proto.ENTRY_POINT_OBJECT_ID)
-        return gateway_property
 
     def _create_callback_server(self, callback_server_parameters):
         callback_server = PythonServer(

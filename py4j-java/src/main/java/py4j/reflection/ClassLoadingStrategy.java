@@ -35,4 +35,6 @@ package py4j.reflection;
 public interface ClassLoadingStrategy {
 
 	Class<?> classForName(String className) throws ClassNotFoundException;
+
+	ClassLoader getClassLoader();
 }

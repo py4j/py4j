@@ -44,6 +44,8 @@ import java.util.logging.Logger;
 
 import javax.net.SocketFactory;
 
+import py4j.reflection.ReflectionUtil;
+
 /**
  * <p>
  * A CallbackClient is responsible for managing communication channels: channels
@@ -324,6 +326,13 @@ public class CallbackClient implements Py4JPythonClient {
 		}
 
 		return returnCommand;
+	}
+
+	@Override
+	public Object getPythonServerEntryPoint(Gateway gateway, Class[] interfacesToImplement) {
+		Object proxy = Protocol.getPythonProxyHandler(ReflectionUtil.getClassLoader(), interfacesToImplement,
+				Protocol.ENTRY_POINT_OBJECT_ID, gateway);
+		return proxy;
 	}
 
 	protected boolean shouldRetrySendCommand(Py4JClientConnection cc, Py4JException pe) {

@@ -104,4 +104,17 @@ public interface Py4JPythonClient {
 	int getPort();
 
 	InetAddress getAddress();
+
+	/**
+	 * <p>
+	 * Gets a reference to the entry point on the Python side. This is often
+	 * necessary if Java is driving the communication because Java cannot call
+	 * static methods, initialize Python objects or load Python modules yet.
+	 * </p>
+	 *
+	 * @param gateway
+	 * @param interfacesToImplement
+	 * @return
+	 */
+	public Object getPythonServerEntryPoint(Gateway gateway, Class[] interfacesToImplement);
 }

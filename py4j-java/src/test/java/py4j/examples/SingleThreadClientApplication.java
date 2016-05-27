@@ -54,36 +54,5 @@ public class SingleThreadClientApplication {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		// This is to test connecting again if there was no successful
-		// initial connection.
-		//		try {
-		//			Thread.currentThread().sleep(5000);
-		//		} catch (Exception e) {
-		//			e.printStackTrace();
-		//		}
-		//
-		//		try {
-		//			hello.sayHello();
-		//			hello.sayHello(2, "Hello World");
-		//		} catch (Exception e) {
-		//			e.printStackTrace();
-		//		}
-
-		// This is to manually test reconnecting to the Python side after
-		// graceful shutdown.
-		//		clientServer.shutdown();
-		//
-		//		try {
-		//			Thread.currentThread().sleep(1000);
-		//		} catch (Exception e) {
-		//			e.printStackTrace();
-		//		}
-		//
-		//		clientServer = new ClientServer(null);
-		//		hello = (IHello) clientServer.getPythonServerEntryPoint
-		//				(new Class[] {IHello.class});
-		//		hello.sayHello();
-		//		hello.sayHello(2, "Hello World");
 	}
 }
