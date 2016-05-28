@@ -1,6 +1,10 @@
 Contributing to Py4J
 ====================
 
+.. contents:: Summary
+   :backlinks: entry
+   :local:
+
 Thanks a lot for using Py4J and wanting to contribute! Your help is greatly
 appreciated!
 
@@ -82,7 +86,7 @@ Java Coding Conventions
 We use Eclipse code formatting conventions (see `py4j.formatter.xml
 <https://raw.githubusercontent.com/bartdag/py4j/master/py4j-java/py4j.formatter.xml>`_
 and `py4j.importorder
-<https://raw.githubusercontent.com/bartdag/py4j/master/py4j-java/py4j.importorder>`)
+<https://raw.githubusercontent.com/bartdag/py4j/master/py4j-java/py4j.importorder>`_)
 that can be used in Eclipse and IntelliJ IDEs.
 
 In summary:
