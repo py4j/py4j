@@ -19,8 +19,28 @@ In general, if your contribution does not follow these guidelines, we will
 review your contribution, but expect that we will ask you for some changes and
 refer you to specific parts of this guide!
 
-General Conventions
+
+How can I get help?
 -------------------
+
+If you have already read the `Py4J documentation <https://www.py4j.org/>`_, the
+best way to get help is to ask a question on the `mailing list
+<https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_.
+
+
+How can I report a bug?
+-----------------------
+
+You can report an issue on `Github Issue Tracker
+<https://github.com/bartdag/py4j/issues/new>`_. Please, make sure to specify:
+
+1. The version of Py4J, Python, and Java you are using (e.g., 0.10.1, 3.5.1, 8)
+2. The OS your are using (Windows 7, OSX Yosemite, Ubuntu 16.04)
+3. A snippet of code that can reproduce the problem
+
+
+General Conventions for code contribution
+-----------------------------------------
 
 Contributions to Py4J are always welcome. To accelerate the review process,
 make sure that your contribution includes:
@@ -30,8 +50,6 @@ make sure that your contribution includes:
    functions.
 3. Some code examples in the py4j-web documentation subproject if you are
    introducing new features.
-
-.. _python_conventions:
 
 Python Coding Conventions
 -------------------------
@@ -61,8 +79,6 @@ installed with pip:
   # Run flake8
   flake8
 
-
-.. _java_conventions:
 
 Java Coding Conventions
 -----------------------
@@ -206,8 +222,6 @@ The Django contributing guide has a `good tutorial on using git to contribute
 and in particular, `squashing commits
 <https://docs.djangoproject.com/en/1.9/internals/contributing/writing-code/working-with-git/#rebasing-branches>`_.
 
-
-.. _license_and_copyrights:
 
 License and Copyrights
 ----------------------
