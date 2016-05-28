@@ -63,7 +63,7 @@ public class ExampleApplication {
 
 		public static void main(String[] args) {
 			GatewayServer.turnLoggingOff();
-			GatewayServer server = new GatewayServer(new ExampleEntryPoint());
+			GatewayServer server = new GatewayServer();
 			server.start();
 			IHello hello = (IHello) server.getPythonServerEntryPoint(new Class[] { IHello.class });
 			try {

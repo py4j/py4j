@@ -174,6 +174,16 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	 * Creates a GatewayServer instance with default port (25333), default
 	 * address (127.0.0.1), and default timeout value (no timeout).
 	 * </p>
+	 */
+	public GatewayServer() {
+		this(null, DEFAULT_PORT, DEFAULT_CONNECT_TIMEOUT, DEFAULT_READ_TIMEOUT);
+	}
+
+	/**
+	 * <p>
+	 * Creates a GatewayServer instance with default port (25333), default
+	 * address (127.0.0.1), and default timeout value (no timeout).
+	 * </p>
 	 *
 	 * @param entryPoint
 	 *            The entry point of this Gateway. Can be null.
