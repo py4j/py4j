@@ -49,15 +49,15 @@ import py4j.commands.Command;
  */
 public class PythonClient extends CallbackClient implements Py4JPythonClientPerThread {
 
-	private Gateway gateway;
+	protected Gateway gateway;
 
-	private List<Class<? extends Command>> customCommands;
+	protected List<Class<? extends Command>> customCommands;
 
 	protected final Logger logger = Logger.getLogger(PythonClient.class.getName());
 
-	private Py4JJavaServer javaServer;
+	protected Py4JJavaServer javaServer;
 
-	private ThreadLocal<WeakReference<ClientServerConnection>> threadConnection;
+	protected ThreadLocal<WeakReference<ClientServerConnection>> threadConnection;
 
 	/**
 	 *
@@ -137,7 +137,7 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 		// Do nothing, we don't need a cleaner.
 	}
 
-	private Socket startClientSocket() throws IOException {
+	protected Socket startClientSocket() throws IOException {
 		logger.info("Starting Python Client connection on " + address + " at " + port);
 		return socketFactory.createSocket(address, port);
 	}

@@ -27,79 +27,52 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-package py4j;
+package py4j.instrumented;
 
-import java.net.InetAddress;
-import java.util.List;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-/**
- * <p>
- * Interface that describes the operations a server must support to receive
- * requests from the Python side.
- * </p>
- */
-public interface Py4JJavaServer {
+public class MetricRegistry {
 
-	/**
-	 *
-	 * @return An unmodifiable list of listeners
-	 */
-	List<GatewayServerListener> getListeners();
+	private final static ConcurrentMap<String, String> createdObjects = new ConcurrentHashMap<String, String>();
 
-	InetAddress getAddress();
+	private final static ConcurrentMap<String, String> finalizedObjects = new ConcurrentHashMap<String, String>();
 
-	Gateway getGateway();
+	public static void addCreatedObject(Object obj) {
+		String str = obj.toString();
+		createdObjects.put(str, str);
+	}
 
-	int getListeningPort();
+	public static void addFinalizedObject(Object obj) {
+		String str = obj.toString();
+		finalizedObjects.put(str, str);
+	}
 
-	int getPort();
+	public static Set<String> getCreatedObjectsKeySet() {
+		return Collections.unmodifiableSet(createdObjects.keySet());
+	}
 
-	InetAddress getPythonAddress();
+	public static Set<String> getFinalizedObjectsKeySet() {
+		return Collections.unmodifiableSet(finalizedObjects.keySet());
+	}
 
-	int getPythonPort();
+	public static void forceFinalization() {
+		// Try to call System.gc() and System.runFinalizers()
+		// Multiple times to increase likelihood of finalization.
+		for (int i = 0; i < 10; i++) {
+			System.gc();
+			System.runFinalization();
+		}
+	}
 
-	void removeListener(GatewayServerListener listener);
+	public static void sleep() {
+		try {
+			Thread.currentThread().sleep(2000);
+		} catch (Exception e) {
 
-	/**
-	 * <p>
-	 * Stops accepting connections, closes all current connections, and calls
-	 * {@link py4j.Gateway#shutdown() Gateway.shutdown()}
-	 * </p>
-	 */
-	void shutdown();
+		}
+	}
 
-	/**
-	 * <p>
-	 * Stops accepting connections, closes all current connections, and calls
-	 * {@link py4j.Gateway#shutdown() Gateway.shutdown()}
-	 * </p>
-	 *
-	 * @param shutdownCallbackClient If True, shuts down the CallbackClient
-	 *                                  instance.
-	 */
-	void shutdown(boolean shutdownCallbackClient);
-
-	void addListener(GatewayServerListener listener);
-
-	/**
-	 * <p>
-	 * Starts to accept connections in a second thread (non-blocking call).
-	 * </p>
-	 */
-	void start();
-
-	/**
-	 * <p>
-	 * Starts to accept connections.
-	 * </p>
-	 *
-	 * @param fork
-	 *            If true, the GatewayServer accepts connection in another
-	 *            thread and this call is non-blocking. If False, the
-	 *            GatewayServer accepts connection in this thread and the call
-	 *            is blocking (until the Gateway is shutdown by another thread).
-	 * @throws Py4JNetworkException
-	 *             If the server socket cannot start.
-	 */
-	void start(boolean fork);
 }

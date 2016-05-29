@@ -611,8 +611,8 @@ class GatewayClient(object):
     both have the same interface, but the client supports multiple threads and
     connections, which is essential when using callbacks.  """
 
-    def __init__(self, address=DEFAULT_ADDRESS, port=25333, auto_close=True,
-                 gateway_property=None, ssl_context=None):
+    def __init__(self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT,
+                 auto_close=True, gateway_property=None, ssl_context=None):
         """
         :param address: the address to which the client will request a
          connection
@@ -744,8 +744,8 @@ class GatewayConnection(object):
     """Default gateway connection (socket based) responsible for communicating
        with the Java Virtual Machine."""
 
-    def __init__(self, address=DEFAULT_ADDRESS, port=25333, auto_close=True,
-                 gateway_property=None, ssl_context=None):
+    def __init__(self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT,
+                 auto_close=True, gateway_property=None, ssl_context=None):
         """
         :param address: the address to which the connection will be established
 

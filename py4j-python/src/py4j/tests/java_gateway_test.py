@@ -90,11 +90,11 @@ def start_example_app_process():
     p = Process(target=start_example_server)
     p.start()
     sleep()
-    test_gateway_connection()
+    check_connection()
     return p
 
 
-def test_gateway_connection(gateway_parameters=None):
+def check_connection(gateway_parameters=None):
     test_gateway = JavaGateway(gateway_parameters=gateway_parameters)
     try:
         # Call a dummy method just to make sure we can connect to the JVM

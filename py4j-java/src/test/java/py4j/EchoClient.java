@@ -74,9 +74,9 @@ public class EchoClient {
 	}
 
 	public void close() {
+		NetworkUtil.quietlyClose(clientSocket);
 		NetworkUtil.quietlyClose(reader);
 		NetworkUtil.quietlyClose(writer);
-		NetworkUtil.quietlyClose(clientSocket);
 	}
 
 }

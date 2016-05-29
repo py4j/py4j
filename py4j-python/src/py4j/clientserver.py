@@ -470,7 +470,7 @@ class ClientServer(JavaGateway):
     """
 
     def __init__(
-            self, java_parameters, python_parameters,
+            self, java_parameters=None, python_parameters=None,
             python_server_entry_point=None):
         """
         :param java_parameters: collection of parameters and flags used to
@@ -482,6 +482,10 @@ class ClientServer(JavaGateway):
         :param python_server_entry_point: can be requested by the Java side if
             Java is driving the communication.
         """
+        if not java_parameters:
+            java_parameters = JavaParameters()
+        if not python_parameters:
+            python_parameters = PythonParameters()
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
         super(ClientServer, self).__init__(

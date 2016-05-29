@@ -27,79 +27,47 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-package py4j;
+package py4j.instrumented;
 
-import java.net.InetAddress;
-import java.util.List;
+import py4j.GatewayServer;
+import py4j.examples.IHello;
 
-/**
- * <p>
- * Interface that describes the operations a server must support to receive
- * requests from the Python side.
- * </p>
- */
-public interface Py4JJavaServer {
+public class InstrumentedApplication {
 
-	/**
-	 *
-	 * @return An unmodifiable list of listeners
-	 */
-	List<GatewayServerListener> getListeners();
+	public void startServer2() {
+		InstrGatewayServer server2 = new InstrGatewayServer(this, GatewayServer.DEFAULT_PORT + 5,
+				GatewayServer.DEFAULT_PYTHON_PORT + 5);
+		server2.start();
+	}
 
-	InetAddress getAddress();
+	private void sayHello(GatewayServer server) {
+		IHello hello = (IHello) server.getPythonServerEntryPoint(new Class[] { IHello.class });
+		try {
+			hello.sayHello();
+			hello.sayHello(2, "Hello World");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-	Gateway getGateway();
+	public void startServerWithPythonEntry(boolean shutdown) {
+		InstrGatewayServer server2 = new InstrGatewayServer(this, GatewayServer.DEFAULT_PORT + 5,
+				GatewayServer.DEFAULT_PYTHON_PORT + 5);
+		server2.start();
 
-	int getListeningPort();
+		sayHello(server2);
 
-	int getPort();
+		MetricRegistry.forceFinalization();
+		MetricRegistry.sleep();
 
-	InetAddress getPythonAddress();
+		if (shutdown) {
+			server2.shutdown();
+		}
+	}
 
-	int getPythonPort();
-
-	void removeListener(GatewayServerListener listener);
-
-	/**
-	 * <p>
-	 * Stops accepting connections, closes all current connections, and calls
-	 * {@link py4j.Gateway#shutdown() Gateway.shutdown()}
-	 * </p>
-	 */
-	void shutdown();
-
-	/**
-	 * <p>
-	 * Stops accepting connections, closes all current connections, and calls
-	 * {@link py4j.Gateway#shutdown() Gateway.shutdown()}
-	 * </p>
-	 *
-	 * @param shutdownCallbackClient If True, shuts down the CallbackClient
-	 *                                  instance.
-	 */
-	void shutdown(boolean shutdownCallbackClient);
-
-	void addListener(GatewayServerListener listener);
-
-	/**
-	 * <p>
-	 * Starts to accept connections in a second thread (non-blocking call).
-	 * </p>
-	 */
-	void start();
-
-	/**
-	 * <p>
-	 * Starts to accept connections.
-	 * </p>
-	 *
-	 * @param fork
-	 *            If true, the GatewayServer accepts connection in another
-	 *            thread and this call is non-blocking. If False, the
-	 *            GatewayServer accepts connection in this thread and the call
-	 *            is blocking (until the Gateway is shutdown by another thread).
-	 * @throws Py4JNetworkException
-	 *             If the server socket cannot start.
-	 */
-	void start(boolean fork);
+	public static void main(String[] args) {
+		InstrumentedApplication app = new InstrumentedApplication();
+		GatewayServer server = new GatewayServer(app);
+		server.start();
+	}
 }
