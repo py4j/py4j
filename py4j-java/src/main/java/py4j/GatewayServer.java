@@ -787,4 +787,85 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	public List<GatewayServerListener> getListeners() {
 		return Collections.unmodifiableList(listeners);
 	}
+
+	/**
+	 * Helper class to make it easier and self-documenting how a
+	 * {@link GatewayServer} is constructed.
+	 */
+	public static class GatewayServerBuilder {
+		private int javaPort;
+		private InetAddress javaAddress;
+		private int connectTimeout;
+		private int readTimeout;
+		private ServerSocketFactory serverSocketFactory;
+		private Object entryPoint;
+		private Py4JPythonClient callbackClient;
+		private List<Class<? extends Command>> customCommands;
+
+		public GatewayServerBuilder() {
+			this(null);
+		}
+
+		public GatewayServerBuilder(Object entryPoint) {
+			javaPort = GatewayServer.DEFAULT_PORT;
+			javaAddress = GatewayServer.defaultAddress();
+			connectTimeout = GatewayServer.DEFAULT_CONNECT_TIMEOUT;
+			readTimeout = GatewayServer.DEFAULT_READ_TIMEOUT;
+			serverSocketFactory = ServerSocketFactory.getDefault();
+			this.entryPoint = entryPoint;
+		}
+
+		public GatewayServer build() {
+			if (callbackClient == null) {
+				callbackClient = new CallbackClient(GatewayServer.DEFAULT_PYTHON_PORT);
+			}
+			return new GatewayServer(entryPoint, javaPort, javaAddress, connectTimeout, readTimeout, customCommands,
+					callbackClient, serverSocketFactory);
+		}
+
+		public GatewayServerBuilder javaPort(int javaPort) {
+			this.javaPort = javaPort;
+			return this;
+		}
+
+		public GatewayServerBuilder javaAddress(InetAddress javaAddress) {
+			this.javaAddress = javaAddress;
+			return this;
+		}
+
+		public GatewayServerBuilder callbackClient(int pythonPort, InetAddress pythonAddress) {
+			callbackClient = new CallbackClient(pythonPort, pythonAddress);
+			return this;
+		}
+
+		public GatewayServerBuilder callbackClient(CallbackClient callbackClient) {
+			this.callbackClient = callbackClient;
+			return this;
+		}
+
+		public GatewayServerBuilder connectTimeout(int connectTimeout) {
+			this.connectTimeout = connectTimeout;
+			return this;
+		}
+
+		public GatewayServerBuilder readTimeout(int readTimeout) {
+			this.readTimeout = readTimeout;
+			return this;
+		}
+
+		public GatewayServerBuilder serverSocketFactory(ServerSocketFactory serverSocketFactory) {
+			this.serverSocketFactory = serverSocketFactory;
+			return this;
+		}
+
+		public GatewayServerBuilder entryPoint(Object entryPoint) {
+			this.entryPoint = entryPoint;
+			return this;
+		}
+
+		public GatewayServerBuilder customCommands(List<Class<? extends Command>> customCommands) {
+			this.customCommands = customCommands;
+			return this;
+		}
+	}
 }
