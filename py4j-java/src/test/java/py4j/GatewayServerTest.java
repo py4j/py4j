@@ -42,8 +42,8 @@ public class GatewayServerTest {
 
 	@Test
 	public void testDoubleListen() {
-		GatewayServer server1 = new GatewayServer(null);
-		GatewayServer server2 = new GatewayServer(null);
+		GatewayServer server1 = new GatewayServer.GatewayServerBuilder().entryPoint(null).build();
+		GatewayServer server2 = new GatewayServer.GatewayServerBuilder().entryPoint(null).build();
 		boolean valid = false;
 
 		try {
