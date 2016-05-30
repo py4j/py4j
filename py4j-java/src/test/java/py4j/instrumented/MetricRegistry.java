@@ -29,4 +29,13 @@ public class MetricRegistry {
 		return Collections.unmodifiableSet(finalizedObjects.keySet());
 	}
 
+	public static void forceFinalization() {
+		// Try to call System.gc() and System.runFinalizers()
+		// Multiple times to increase likelihood of finalization.
+		for (int i = 0; i < 10; i++) {
+			System.gc();
+			System.runFinalization();
+		}
+	}
+
 }

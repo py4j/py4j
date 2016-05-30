@@ -55,7 +55,7 @@ class GatewayServerTest(unittest.TestCase):
             gateway = JavaGateway()
             gateway.entry_point.startServer2()
             internal_work()
-            gateway.jvm.System.gc()
+            gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
                 getCreatedObjectsKeySet()
