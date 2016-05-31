@@ -30,6 +30,7 @@
 package py4j.instrumented;
 
 import py4j.GatewayServer;
+import py4j.examples.IHello;
 
 public class InstrumentedApplication {
 
@@ -37,6 +38,31 @@ public class InstrumentedApplication {
 		InstrGatewayServer server2 = new InstrGatewayServer(this, GatewayServer.DEFAULT_PORT + 5,
 				GatewayServer.DEFAULT_PYTHON_PORT + 5);
 		server2.start();
+	}
+
+	private void sayHello(GatewayServer server) {
+		IHello hello = (IHello) server.getPythonServerEntryPoint(new Class[] { IHello.class });
+		try {
+			hello.sayHello();
+			hello.sayHello(2, "Hello World");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void startServerWithPythonEntry(boolean shutdown) {
+		InstrGatewayServer server2 = new InstrGatewayServer(this, GatewayServer.DEFAULT_PORT + 5,
+				GatewayServer.DEFAULT_PYTHON_PORT + 5);
+		server2.start();
+
+		sayHello(server2);
+
+		MetricRegistry.forceFinalization();
+		MetricRegistry.sleep();
+
+		if (shutdown) {
+			server2.shutdown();
+		}
 	}
 
 	public static void main(String[] args) {

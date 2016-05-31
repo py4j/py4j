@@ -236,9 +236,10 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 	 */
 	@Override
 	public void shutdown() {
+		// XXX Close socket first, otherwise, reader.close() will block if stuck on readLine.
+		NetworkUtil.quietlyClose(socket);
 		NetworkUtil.quietlyClose(reader);
 		NetworkUtil.quietlyClose(writer);
-		NetworkUtil.quietlyClose(socket);
 		fireConnectionStopped();
 	}
 }

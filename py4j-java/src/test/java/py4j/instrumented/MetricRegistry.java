@@ -67,4 +67,12 @@ public class MetricRegistry {
 		}
 	}
 
+	public static void sleep() {
+		try {
+			Thread.currentThread().sleep(2000);
+		} catch (Exception e) {
+
+		}
+	}
+
 }

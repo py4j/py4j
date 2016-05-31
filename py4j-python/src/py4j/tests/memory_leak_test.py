@@ -10,7 +10,8 @@ from py4j.java_gateway import (
 # TODO rename test_gateway_connection because it is executed as a test
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, test_gateway_connection, sleep)
-from py4j.tests.py4j_callback_recursive_example import PythonPing
+from py4j.tests.py4j_callback_recursive_example import (
+    PythonPing, HelloState)
 
 
 def start_instrumented_gateway_server():
@@ -35,6 +36,29 @@ def gateway_server_example_app_process():
         yield p
     finally:
         p.join()
+
+
+class HelloState2(HelloState):
+    def __init__(self):
+        self.gateway = None
+        super(HelloState2, self).__init__()
+
+    def _play_with_jvm(self):
+        al = self.gateway.jvm.java.util.ArrayList()
+        al.append("Hello World")
+        obj = self.gateway.jvm.py4j.\
+            instrumented.InstrumentedObject("test")
+        al.append(obj)
+        return str(al)
+
+    def sayHello(self, int_value=None, string_value=None):
+        self._play_with_jvm()
+        gc.collect()
+        return super(HelloState2, self).sayHello(
+            int_value, string_value)
+
+    class Java:
+        implements = ["py4j.examples.IHello"]
 
 
 class GatewayServerTest(unittest.TestCase):
@@ -106,5 +130,43 @@ class GatewayServerTest(unittest.TestCase):
             # X CallbackConnection, TODO
             self.assertEqual(9, len(createdSet))
             self.assertEqual(9, len(finalizedSet))
+            self.assertEqual(createdSet, finalizedSet)
+            gateway.shutdown()
+
+    def testJavaToPythonToJavaCleanGC(self):
+        def internal_work(gateway):
+            hello_state = HelloState2()
+            gateway2 = JavaGateway(
+                gateway_parameters=GatewayParameters(
+                    port=DEFAULT_PORT+5),
+                callback_server_parameters=CallbackServerParameters(
+                    port=DEFAULT_PYTHON_PROXY_PORT+5),
+                python_server_entry_point=hello_state)
+            hello_state.gateway = gateway2
+            sleep()
+
+            gateway.entry_point.startServerWithPythonEntry(True)
+            sleep()
+            gateway2.shutdown()
+
+            # Check that Java correctly called Python
+            self.assertEqual(2, len(hello_state.calls))
+            self.assertEqual((None, None), hello_state.calls[0])
+            self.assertEqual((2, "Hello World"), hello_state.calls[1])
+
+        with gateway_server_example_app_process():
+            gateway = JavaGateway()
+            internal_work(gateway)
+            gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
+            sleep()
+            createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
+                getCreatedObjectsKeySet()
+            finalizedSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
+                getFinalizedObjectsKeySet()
+            # 6 objects: 2 InstrumentedObject (sayHello called twice), 1
+            # InstrGatewayServer, 1 CallbackClient, 1 CallbackConnection, 1
+            # GatewayConnection
+            self.assertEqual(6, len(createdSet))
+            self.assertEqual(6, len(finalizedSet))
             self.assertEqual(createdSet, finalizedSet)
             gateway.shutdown()
