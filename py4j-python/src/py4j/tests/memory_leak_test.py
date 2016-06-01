@@ -39,8 +39,9 @@ def gateway_server_example_app_process():
 
 
 class HelloState2(HelloState):
-    def __init__(self):
+    def __init__(self, run_gc=True):
         self.gateway = None
+        self.run_gc = run_gc
         super(HelloState2, self).__init__()
 
     def _play_with_jvm(self):
@@ -53,7 +54,8 @@ class HelloState2(HelloState):
 
     def sayHello(self, int_value=None, string_value=None):
         self._play_with_jvm()
-        gc.collect()
+        if self.run_gc:
+            gc.collect()
         return super(HelloState2, self).sayHello(
             int_value, string_value)
 
@@ -157,6 +159,128 @@ class GatewayServerTest(unittest.TestCase):
         with gateway_server_example_app_process():
             gateway = JavaGateway()
             internal_work(gateway)
+            gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
+            sleep()
+            createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
+                getCreatedObjectsKeySet()
+            finalizedSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
+                getFinalizedObjectsKeySet()
+            # 6 objects: 2 InstrumentedObject (sayHello called twice), 1
+            # InstrGatewayServer, 1 CallbackClient, 1 CallbackConnection, 1
+            # GatewayConnection
+            self.assertEqual(6, len(createdSet))
+            self.assertEqual(6, len(finalizedSet))
+            self.assertEqual(createdSet, finalizedSet)
+            gateway.shutdown()
+
+    def testJavaToPythonToJavaNoGC(self):
+        def internal_work(gateway):
+            hello_state = HelloState2(run_gc=False)
+            gateway2 = JavaGateway(
+                gateway_parameters=GatewayParameters(
+                    port=DEFAULT_PORT+5),
+                callback_server_parameters=CallbackServerParameters(
+                    port=DEFAULT_PYTHON_PROXY_PORT+5),
+                python_server_entry_point=hello_state)
+            hello_state.gateway = gateway2
+            sleep()
+
+            gateway.entry_point.startServerWithPythonEntry(True)
+            sleep()
+            gateway2.shutdown()
+
+            # Check that Java correctly called Python
+            self.assertEqual(2, len(hello_state.calls))
+            self.assertEqual((None, None), hello_state.calls[0])
+            self.assertEqual((2, "Hello World"), hello_state.calls[1])
+
+        with gateway_server_example_app_process():
+            gateway = JavaGateway()
+            # We disable gc to test whether a shut down on one side will
+            # garbage collect everything.
+            gc.disable()
+            internal_work(gateway)
+            gc.enable()
+            gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
+            sleep()
+            createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
+                getCreatedObjectsKeySet()
+            finalizedSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
+                getFinalizedObjectsKeySet()
+            # 6 objects: 2 InstrumentedObject (sayHello called twice), 1
+            # InstrGatewayServer, 1 CallbackClient, 1 CallbackConnection, 1
+            # GatewayConnection
+            self.assertEqual(6, len(createdSet))
+            self.assertEqual(6, len(finalizedSet))
+            self.assertEqual(createdSet, finalizedSet)
+            gateway.shutdown()
+
+    def testJavaToPythonToJavaCleanGCNoShutdown(self):
+        def internal_work(gateway):
+            hello_state = HelloState2()
+            gateway2 = JavaGateway(
+                gateway_parameters=GatewayParameters(
+                    port=DEFAULT_PORT+5),
+                callback_server_parameters=CallbackServerParameters(
+                    port=DEFAULT_PYTHON_PROXY_PORT+5),
+                python_server_entry_point=hello_state)
+            hello_state.gateway = gateway2
+            sleep()
+
+            gateway.entry_point.startServerWithPythonEntry(False)
+            sleep()
+            gateway2.shutdown()
+
+            # Check that Java correctly called Python
+            self.assertEqual(2, len(hello_state.calls))
+            self.assertEqual((None, None), hello_state.calls[0])
+            self.assertEqual((2, "Hello World"), hello_state.calls[1])
+
+        with gateway_server_example_app_process():
+            gateway = JavaGateway()
+            internal_work(gateway)
+            gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
+            sleep()
+            createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
+                getCreatedObjectsKeySet()
+            finalizedSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
+                getFinalizedObjectsKeySet()
+            # 6 objects: 2 InstrumentedObject (sayHello called twice), 1
+            # InstrGatewayServer, 1 CallbackClient, 1 CallbackConnection, 1
+            # GatewayConnection
+            self.assertEqual(6, len(createdSet))
+            self.assertEqual(6, len(finalizedSet))
+            self.assertEqual(createdSet, finalizedSet)
+            gateway.shutdown()
+
+    def testJavaToPythonToJavaNoGCNoShutdown(self):
+        def internal_work(gateway):
+            hello_state = HelloState2(run_gc=False)
+            gateway2 = JavaGateway(
+                gateway_parameters=GatewayParameters(
+                    port=DEFAULT_PORT+5),
+                callback_server_parameters=CallbackServerParameters(
+                    port=DEFAULT_PYTHON_PROXY_PORT+5),
+                python_server_entry_point=hello_state)
+            hello_state.gateway = gateway2
+            sleep()
+
+            gateway.entry_point.startServerWithPythonEntry(False)
+            sleep()
+            gateway2.shutdown()
+
+            # Check that Java correctly called Python
+            self.assertEqual(2, len(hello_state.calls))
+            self.assertEqual((None, None), hello_state.calls[0])
+            self.assertEqual((2, "Hello World"), hello_state.calls[1])
+
+        with gateway_server_example_app_process():
+            gateway = JavaGateway()
+            # We disable gc to test whether a shut down on one side will
+            # garbage collect everything.
+            gc.disable()
+            internal_work(gateway)
+            gc.enable()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
