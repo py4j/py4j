@@ -6,6 +6,7 @@ from py4j.java_gateway import (
     CallbackServer, JavaGateway, GatewayClient, GatewayProperty,
     PythonProxyPool, GatewayConnection, CallbackConnection, DEFAULT_PORT,
     DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ADDRESS)
+from py4j.tests.py4j_callback_recursive_example import PythonPing
 
 # Use deque to be thread-safe
 MEMORY_HOOKS = deque()
@@ -20,6 +21,13 @@ def register_creation(obj):
         obj,
         lambda wr: FINALIZED.append(obj_str)
     ))
+
+
+class InstrumentedPythonPing(PythonPing):
+
+    def __init__(self, fail=False):
+        super(InstrumentedPythonPing, self).__init__(fail)
+        register_creation(self)
 
 
 class InstrJavaGateway(JavaGateway):

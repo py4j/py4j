@@ -5,15 +5,15 @@ import subprocess
 import unittest
 
 from py4j.java_gateway import (
-    JavaGateway, GatewayParameters, CallbackServerParameters, DEFAULT_PORT,
-    DEFAULT_PYTHON_PROXY_PORT)
+    JavaGateway, GatewayParameters, CallbackServerParameters,
+    DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT)
 # TODO rename test_gateway_connection because it is executed as a test
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, test_gateway_connection, sleep)
-from py4j.tests.py4j_callback_recursive_example import (
-    PythonPing, HelloState)
+from py4j.tests.py4j_callback_recursive_example import HelloState
 from py4j.tests.instrumented import (
-    InstrJavaGateway, CREATED, FINALIZED, MEMORY_HOOKS)
+    InstrJavaGateway, InstrumentedPythonPing, register_creation,
+    CREATED, FINALIZED, MEMORY_HOOKS)
 
 
 def start_instrumented_gateway_server():
@@ -45,6 +45,7 @@ class HelloState2(HelloState):
         self.gateway = None
         self.run_gc = run_gc
         super(HelloState2, self).__init__()
+        register_creation(self)
 
     def _play_with_jvm(self):
         al = self.gateway.jvm.java.util.ArrayList()
@@ -63,6 +64,12 @@ class HelloState2(HelloState):
 
     class Java:
         implements = ["py4j.examples.IHello"]
+
+
+def assert_python_memory(test, size):
+    test.assertEqual(size, len(CREATED))
+    test.assertEqual(size, len(FINALIZED))
+    test.assertEqual(set(CREATED), set(FINALIZED))
 
 
 class GatewayServerTest(unittest.TestCase):
@@ -106,19 +113,19 @@ class GatewayServerTest(unittest.TestCase):
             self.assertEqual(createdSet, finalizedSet)
             gateway.shutdown()
 
-            self.assertEqual(4, len(CREATED))
-            self.assertEqual(4, len(FINALIZED))
-            self.assertEqual(set(CREATED), set(FINALIZED))
+            # 4 objects: JavaGateway, GatewayClient, GatewayProperty,
+            # GatewayConnection
+            assert_python_memory(self, 4)
 
     def testPythonToJavaToPython(self):
         def play_with_ping(gateway):
-            ping = PythonPing()
+            ping = InstrumentedPythonPing()
             pingpong = gateway.jvm.py4j.examples.PingPong()
             total = pingpong.start(ping)
             return total
 
         def internal_work():
-            gateway2 = JavaGateway(
+            gateway2 = InstrJavaGateway(
                 gateway_parameters=GatewayParameters(
                     port=DEFAULT_PORT+5),
                 callback_server_parameters=CallbackServerParameters(
@@ -133,6 +140,7 @@ class GatewayServerTest(unittest.TestCase):
             gateway = JavaGateway()
             gateway.entry_point.startServer2()
             internal_work()
+            gc.collect()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
@@ -140,17 +148,22 @@ class GatewayServerTest(unittest.TestCase):
             finalizedSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
                 getFinalizedObjectsKeySet()
 
-            # 9 objects: GatewayServer, X GatewayConnection, CallbackClient,
-            # X CallbackConnection, TODO
+            # 9 objects: GatewayServer, 4 GatewayConnection, CallbackClient,
+            # 3 CallbackConnection
             self.assertEqual(9, len(createdSet))
             self.assertEqual(9, len(finalizedSet))
             self.assertEqual(createdSet, finalizedSet)
             gateway.shutdown()
 
+            # 11 objects: JavaGateway, CallbackSerer, GatewayClient,
+            # GatewayProperty, PythonPing, 4 GatewayConnection,
+            # 3 CallbackConnection. Notice the symmetry
+            assert_python_memory(self, 12)
+
     def testJavaToPythonToJavaCleanGC(self):
         def internal_work(gateway):
             hello_state = HelloState2()
-            gateway2 = JavaGateway(
+            gateway2 = InstrJavaGateway(
                 gateway_parameters=GatewayParameters(
                     port=DEFAULT_PORT+5),
                 callback_server_parameters=CallbackServerParameters(
@@ -171,6 +184,7 @@ class GatewayServerTest(unittest.TestCase):
         with gateway_server_example_app_process():
             gateway = JavaGateway()
             internal_work(gateway)
+            gc.collect()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
@@ -184,6 +198,11 @@ class GatewayServerTest(unittest.TestCase):
             self.assertEqual(6, len(finalizedSet))
             self.assertEqual(createdSet, finalizedSet)
             gateway.shutdown()
+
+            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
+            # GatewayProperty, HelloState, GatewayConnection,
+            # CallbackConnection
+            assert_python_memory(self, 7)
 
     def testJavaToPythonToJavaNoGC(self):
         def internal_work(gateway):
