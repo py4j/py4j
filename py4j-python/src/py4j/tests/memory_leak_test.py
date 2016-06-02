@@ -207,7 +207,7 @@ class GatewayServerTest(unittest.TestCase):
     def testJavaToPythonToJavaNoGC(self):
         def internal_work(gateway):
             hello_state = HelloState2(run_gc=False)
-            gateway2 = JavaGateway(
+            gateway2 = InstrJavaGateway(
                 gateway_parameters=GatewayParameters(
                     port=DEFAULT_PORT+5),
                 callback_server_parameters=CallbackServerParameters(
@@ -232,6 +232,7 @@ class GatewayServerTest(unittest.TestCase):
             gc.disable()
             internal_work(gateway)
             gc.enable()
+            gc.collect()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
@@ -246,10 +247,15 @@ class GatewayServerTest(unittest.TestCase):
             self.assertEqual(createdSet, finalizedSet)
             gateway.shutdown()
 
+            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
+            # GatewayProperty, HelloState, GatewayConnection,
+            # CallbackConnection
+            assert_python_memory(self, 7)
+
     def testJavaToPythonToJavaCleanGCNoShutdown(self):
         def internal_work(gateway):
             hello_state = HelloState2()
-            gateway2 = JavaGateway(
+            gateway2 = InstrJavaGateway(
                 gateway_parameters=GatewayParameters(
                     port=DEFAULT_PORT+5),
                 callback_server_parameters=CallbackServerParameters(
@@ -270,6 +276,7 @@ class GatewayServerTest(unittest.TestCase):
         with gateway_server_example_app_process():
             gateway = JavaGateway()
             internal_work(gateway)
+            gc.collect()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
@@ -284,10 +291,15 @@ class GatewayServerTest(unittest.TestCase):
             self.assertEqual(createdSet, finalizedSet)
             gateway.shutdown()
 
+            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
+            # GatewayProperty, HelloState, GatewayConnection,
+            # CallbackConnection
+            assert_python_memory(self, 7)
+
     def testJavaToPythonToJavaNoGCNoShutdown(self):
         def internal_work(gateway):
             hello_state = HelloState2(run_gc=False)
-            gateway2 = JavaGateway(
+            gateway2 = InstrJavaGateway(
                 gateway_parameters=GatewayParameters(
                     port=DEFAULT_PORT+5),
                 callback_server_parameters=CallbackServerParameters(
@@ -312,6 +324,7 @@ class GatewayServerTest(unittest.TestCase):
             gc.disable()
             internal_work(gateway)
             gc.enable()
+            gc.collect()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
@@ -325,3 +338,8 @@ class GatewayServerTest(unittest.TestCase):
             self.assertEqual(6, len(finalizedSet))
             self.assertEqual(createdSet, finalizedSet)
             gateway.shutdown()
+
+            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
+            # GatewayProperty, HelloState, GatewayConnection,
+            # CallbackConnection
+            assert_python_memory(self, 7)
