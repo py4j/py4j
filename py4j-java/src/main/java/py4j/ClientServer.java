@@ -46,29 +46,31 @@ import py4j.reflection.ReflectionUtil;
  */
 public class ClientServer {
 
-	private final int javaPort;
+	protected final int javaPort;
 
-	private final InetAddress javaAddress;
+	protected final InetAddress javaAddress;
 
-	private final int pythonPort;
+	protected final int pythonPort;
 
-	private final InetAddress pythonAddress;
+	protected final InetAddress pythonAddress;
 
-	private final int connectTimeout;
+	protected final int connectTimeout;
 
-	private final int readTimeout;
+	protected final int readTimeout;
 
-	private final ServerSocketFactory sSocketFactory;
+	protected final ServerSocketFactory sSocketFactory;
 
-	private final SocketFactory socketFactory;
+	protected final SocketFactory socketFactory;
 
-	private final Gateway gateway;
+	protected final Gateway gateway;
 
-	private final JavaServer javaServer;
+	protected final Py4JJavaServer javaServer;
 
-	private final PythonClient pythonClient;
+	protected final Py4JPythonClientPerThread pythonClient;
 
-	private final boolean autoStartJavaServer;
+	protected final boolean autoStartJavaServer;
+
+	protected final boolean enableMemoryManagement;
 
 	protected final Logger logger = Logger.getLogger(ClientServer.class.getName());
 
@@ -127,12 +129,10 @@ public class ClientServer {
 		this.readTimeout = readTimeout;
 		this.sSocketFactory = sSocketFactory;
 		this.socketFactory = socketFactory;
+		this.enableMemoryManagement = enableMemoryManagement;
+		this.pythonClient = createPythonClient();
+		this.javaServer = createJavaServer(entryPoint, pythonClient);
 
-		this.pythonClient = new PythonClient(null, null, pythonPort, pythonAddress,
-				CallbackClient.DEFAULT_MIN_CONNECTION_TIME, TimeUnit.SECONDS, SocketFactory.getDefault(), null,
-				enableMemoryManagement);
-		this.javaServer = new JavaServer(entryPoint, this.javaPort, this.connectTimeout, this.readTimeout, null,
-				pythonClient);
 		this.gateway = javaServer.getGateway();
 		pythonClient.setGateway(gateway);
 		pythonClient.setJavaServer(javaServer);
@@ -143,6 +143,15 @@ public class ClientServer {
 		} else {
 			this.gateway.startup();
 		}
+	}
+
+	protected Py4JPythonClientPerThread createPythonClient() {
+		return new PythonClient(null, null, pythonPort, pythonAddress, CallbackClient.DEFAULT_MIN_CONNECTION_TIME,
+				TimeUnit.SECONDS, SocketFactory.getDefault(), null, enableMemoryManagement);
+	}
+
+	protected Py4JJavaServer createJavaServer(Object entryPoint, Py4JPythonClientPerThread pythonClient) {
+		return new JavaServer(entryPoint, javaPort, connectTimeout, readTimeout, null, pythonClient);
 	}
 
 	public Py4JJavaServer getJavaServer() {

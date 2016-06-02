@@ -27,79 +27,41 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-package py4j;
+package py4j.instrumented;
 
 import java.net.InetAddress;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-/**
- * <p>
- * Interface that describes the operations a server must support to receive
- * requests from the Python side.
- * </p>
- */
-public interface Py4JJavaServer {
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
 
-	/**
-	 *
-	 * @return An unmodifiable list of listeners
-	 */
-	List<GatewayServerListener> getListeners();
+import py4j.CallbackClient;
+import py4j.ClientServer;
+import py4j.Py4JJavaServer;
+import py4j.Py4JPythonClientPerThread;
 
-	InetAddress getAddress();
+public class InstrClientServer extends ClientServer {
 
-	Gateway getGateway();
+	public InstrClientServer(int javaPort, InetAddress javaAddress, int pythonPort, InetAddress pythonAddress,
+			int connectTimeout, int readTimeout, ServerSocketFactory sSocketFactory, SocketFactory socketFactory,
+			Object entryPoint, boolean autoStartJavaServer, boolean enableMemoryManagement) {
+		super(javaPort, javaAddress, pythonPort, pythonAddress, connectTimeout, readTimeout, sSocketFactory,
+				socketFactory, entryPoint, autoStartJavaServer, enableMemoryManagement);
+		MetricRegistry.addCreatedObject(this);
+	}
 
-	int getListeningPort();
+	@Override
+	protected void finalize() throws Throwable {
+		MetricRegistry.addFinalizedObject(this);
+		super.finalize();
+	}
 
-	int getPort();
+	protected Py4JPythonClientPerThread createPythonClient() {
+		return new InstrPythonClient(null, null, pythonPort, pythonAddress, CallbackClient.DEFAULT_MIN_CONNECTION_TIME,
+				TimeUnit.SECONDS, SocketFactory.getDefault(), null, enableMemoryManagement);
+	}
 
-	InetAddress getPythonAddress();
-
-	int getPythonPort();
-
-	void removeListener(GatewayServerListener listener);
-
-	/**
-	 * <p>
-	 * Stops accepting connections, closes all current connections, and calls
-	 * {@link py4j.Gateway#shutdown() Gateway.shutdown()}
-	 * </p>
-	 */
-	void shutdown();
-
-	/**
-	 * <p>
-	 * Stops accepting connections, closes all current connections, and calls
-	 * {@link py4j.Gateway#shutdown() Gateway.shutdown()}
-	 * </p>
-	 *
-	 * @param shutdownCallbackClient If True, shuts down the CallbackClient
-	 *                                  instance.
-	 */
-	void shutdown(boolean shutdownCallbackClient);
-
-	void addListener(GatewayServerListener listener);
-
-	/**
-	 * <p>
-	 * Starts to accept connections in a second thread (non-blocking call).
-	 * </p>
-	 */
-	void start();
-
-	/**
-	 * <p>
-	 * Starts to accept connections.
-	 * </p>
-	 *
-	 * @param fork
-	 *            If true, the GatewayServer accepts connection in another
-	 *            thread and this call is non-blocking. If False, the
-	 *            GatewayServer accepts connection in this thread and the call
-	 *            is blocking (until the Gateway is shutdown by another thread).
-	 * @throws Py4JNetworkException
-	 *             If the server socket cannot start.
-	 */
-	void start(boolean fork);
+	protected Py4JJavaServer createJavaServer(Object entryPoint, Py4JPythonClientPerThread pythonClient) {
+		return new InstrJavaServer(entryPoint, javaPort, connectTimeout, readTimeout, null, pythonClient);
+	}
 }

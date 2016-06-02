@@ -7,6 +7,8 @@ import unittest
 from py4j.java_gateway import (
     JavaGateway, GatewayParameters, CallbackServerParameters,
     DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT)
+from py4j.clientserver import (
+    ClientServer, JavaParameters, PythonParameters)
 # TODO rename test_gateway_connection because it is executed as a test
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, test_gateway_connection, sleep)
@@ -22,9 +24,18 @@ def start_instrumented_gateway_server():
         "py4j.instrumented.InstrumentedApplication"])
 
 
-def start_gateway_server_example_app_process():
+def start_instrumented_clientserver():
+    subprocess.call([
+        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+        "py4j.instrumented.InstrumentedClientServerApplication"])
+
+
+def start_gateway_server_example_app_process(start_gateway_server=True):
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    p = Process(target=start_instrumented_gateway_server)
+    if start_gateway_server:
+        p = Process(target=start_instrumented_gateway_server)
+    else:
+        p = Process(target=start_instrumented_clientserver)
     p.start()
     sleep()
     test_gateway_connection()
@@ -32,8 +43,8 @@ def start_gateway_server_example_app_process():
 
 
 @contextmanager
-def gateway_server_example_app_process():
-    p = start_gateway_server_example_app_process()
+def gateway_server_example_app_process(start_gateway_server=True):
+    p = start_gateway_server_example_app_process(start_gateway_server)
     try:
         yield p
     finally:
@@ -343,3 +354,51 @@ class GatewayServerTest(unittest.TestCase):
             # GatewayProperty, HelloState, GatewayConnection,
             # CallbackConnection
             assert_python_memory(self, 7)
+
+
+class ClientServerTest(unittest.TestCase):
+
+    def tearDown(self):
+        MEMORY_HOOKS.clear()
+        CREATED.clear()
+        FINALIZED.clear()
+
+    def testPythonToJava(self):
+        def work_with_object(clientserver):
+            obj = clientserver.jvm.py4j.\
+                instrumented.InstrumentedObject("test")
+            return str(obj)
+
+        def internal_work():
+            clientserver2 = ClientServer(
+                JavaParameters(port=DEFAULT_PORT+5),
+                PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5))
+            sleep()
+            work_with_object(clientserver2)
+            gc.collect()
+            sleep()
+            clientserver2.shutdown()
+
+        with gateway_server_example_app_process(False):
+            clientserver = ClientServer(JavaParameters(), PythonParameters())
+            clientserver.entry_point.startServer2()
+            internal_work()
+            gc.collect()
+            clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                forceFinalization()
+            sleep()
+            createdSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getCreatedObjectsKeySet()
+            finalizedSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getFinalizedObjectsKeySet()
+
+            # 5 objects: ClientServer, ClientServerConnection, PythonClient,
+            # JavaServer, InstrumentedObject
+            self.assertEqual(5, len(createdSet))
+            self.assertEqual(5, len(finalizedSet))
+            self.assertEqual(createdSet, finalizedSet)
+            clientserver.shutdown()
+
+            # 4 objects: JavaGateway, GatewayClient, GatewayProperty,
+            # GatewayConnection
+            # assert_python_memory(self, 4)
