@@ -380,7 +380,7 @@ class ClientServerTest(unittest.TestCase):
             clientserver2.shutdown()
 
         with gateway_server_example_app_process(False):
-            clientserver = ClientServer(JavaParameters(), PythonParameters())
+            clientserver = ClientServer()
             clientserver.entry_point.startServer2()
             internal_work()
             gc.collect()
@@ -402,3 +402,45 @@ class ClientServerTest(unittest.TestCase):
             # 4 objects: JavaGateway, GatewayClient, GatewayProperty,
             # GatewayConnection
             # assert_python_memory(self, 4)
+
+    def testPythonToJavaToPython(self):
+        def play_with_ping(clientserver):
+            ping = InstrumentedPythonPing()
+            pingpong = clientserver.jvm.py4j.examples.PingPong()
+            total = pingpong.start(ping)
+            return total
+
+        def internal_work():
+            clientserver2 = ClientServer(
+                JavaParameters(port=DEFAULT_PORT+5),
+                PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5))
+            sleep()
+            play_with_ping(clientserver2)
+            gc.collect()
+            sleep()
+            clientserver2.shutdown()
+
+        with gateway_server_example_app_process(False):
+            clientserver = ClientServer()
+            clientserver.entry_point.startServer2()
+            internal_work()
+            gc.collect()
+            clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                forceFinalization()
+            sleep()
+            createdSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getCreatedObjectsKeySet()
+            finalizedSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getFinalizedObjectsKeySet()
+
+            # 4 objects: ClientServer, ClientServerConnection, JavaServer,
+            # PythonClient
+            self.assertEqual(4, len(createdSet))
+            self.assertEqual(4, len(finalizedSet))
+            self.assertEqual(createdSet, finalizedSet)
+            clientserver.shutdown()
+
+            # 11 objects: JavaGateway, CallbackSerer, GatewayClient,
+            # GatewayProperty, PythonPing, 4 GatewayConnection,
+            # 3 CallbackConnection. Notice the symmetry
+            # assert_python_memory(self, 12)

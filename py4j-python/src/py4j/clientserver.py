@@ -470,7 +470,7 @@ class ClientServer(JavaGateway):
     """
 
     def __init__(
-            self, java_parameters, python_parameters,
+            self, java_parameters=None, python_parameters=None,
             python_server_entry_point=None):
         """
         :param java_parameters: collection of parameters and flags used to
