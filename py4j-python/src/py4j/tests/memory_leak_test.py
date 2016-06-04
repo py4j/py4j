@@ -477,7 +477,8 @@ class ClientServerTest(unittest.TestCase):
                 getFinalizedObjectsKeySet()
             # 7 objects: 2 InstrumentedObject (sayHello called twice), 1
             # JavaServer, 1 PythonClient, 1 ClientServer, 2
-            # ClientServerConnection
+            # ClientServerConnection (1 to call sayHello, 1 that calls GC from
+            # Java to Python)
             self.assertEqual(7, len(createdSet))
             self.assertEqual(7, len(finalizedSet))
             self.assertEqual(createdSet, finalizedSet)
@@ -524,7 +525,8 @@ class ClientServerTest(unittest.TestCase):
                 getFinalizedObjectsKeySet()
             # 7 objects: 2 InstrumentedObject (sayHello called twice), 1
             # JavaServer, 1 PythonClient, 1 ClientServer, 2
-            # ClientServerConnection
+            # ClientServerConnection (1 to call sayHello, 1 that calls GC from
+            # Java to Python)
             self.assertEqual(7, len(createdSet))
             self.assertEqual(7, len(finalizedSet))
             self.assertEqual(createdSet, finalizedSet)
@@ -569,9 +571,8 @@ class ClientServerTest(unittest.TestCase):
                 getFinalizedObjectsKeySet()
             # 8 objects: 2 InstrumentedObject (sayHello called twice), 1
             # JavaServer, 1 PythonClient, 1 ClientServer, 3
-            # ClientServerConnection
-            # TODO Investigate why there are 3 clientserver connections.
-            # Because of retry?
+            # ClientServerConnection (1 to call sayHello, 1 that calls GC from
+            # Java to Python, 1 that receives shutdown command)
             self.assertEqual(8, len(createdSet))
             self.assertEqual(8, len(finalizedSet))
             self.assertEqual(createdSet, finalizedSet)
@@ -618,8 +619,8 @@ class ClientServerTest(unittest.TestCase):
                 getFinalizedObjectsKeySet()
             # 7 objects: 2 InstrumentedObject (sayHello called twice), 1
             # JavaServer, 1 PythonClient, 1 ClientServer, 3
-            # ClientServerConnection
-            # TODO Investigate why 3 ClientServerConnections
+            # ClientServerConnection (1 to call sayHello, 1 that calls GC from
+            # Java to Python, 1 that receives shutdown command)
             self.assertEqual(8, len(createdSet))
             self.assertEqual(8, len(finalizedSet))
             self.assertEqual(createdSet, finalizedSet)
