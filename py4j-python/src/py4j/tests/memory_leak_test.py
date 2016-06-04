@@ -444,3 +444,188 @@ class ClientServerTest(unittest.TestCase):
             # GatewayProperty, PythonPing, 4 GatewayConnection,
             # 3 CallbackConnection. Notice the symmetry
             # assert_python_memory(self, 12)
+
+    def testJavaToPythonToJavaCleanGC(self):
+        def internal_work(clientserver):
+            hello_state = HelloState2()
+            clientserver2 = ClientServer(
+                JavaParameters(port=DEFAULT_PORT+5),
+                PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5),
+                python_server_entry_point=hello_state)
+            hello_state.gateway = clientserver2
+            sleep()
+
+            clientserver.entry_point.startServerWithPythonEntry(True)
+            sleep()
+            clientserver2.shutdown()
+
+            # Check that Java correctly called Python
+            self.assertEqual(2, len(hello_state.calls))
+            self.assertEqual((None, None), hello_state.calls[0])
+            self.assertEqual((2, "Hello World"), hello_state.calls[1])
+
+        with gateway_server_example_app_process(False):
+            clientserver = ClientServer()
+            internal_work(clientserver)
+            gc.collect()
+            clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                forceFinalization()
+            sleep()
+            createdSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getCreatedObjectsKeySet()
+            finalizedSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getFinalizedObjectsKeySet()
+            # 7 objects: 2 InstrumentedObject (sayHello called twice), 1
+            # JavaServer, 1 PythonClient, 1 ClientServer, 2
+            # ClientServerConnection
+            self.assertEqual(7, len(createdSet))
+            self.assertEqual(7, len(finalizedSet))
+            self.assertEqual(createdSet, finalizedSet)
+            clientserver.shutdown()
+
+            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
+            # GatewayProperty, HelloState, GatewayConnection,
+            # CallbackConnection
+            # assert_python_memory(self, 7)
+
+    def testJavaToPythonToJavaNoGC(self):
+        def internal_work(clientserver):
+            hello_state = HelloState2()
+            clientserver2 = ClientServer(
+                JavaParameters(port=DEFAULT_PORT+5),
+                PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5),
+                python_server_entry_point=hello_state)
+            hello_state.gateway = clientserver2
+            sleep()
+
+            clientserver.entry_point.startServerWithPythonEntry(True)
+            sleep()
+            clientserver2.shutdown()
+
+            # Check that Java correctly called Python
+            self.assertEqual(2, len(hello_state.calls))
+            self.assertEqual((None, None), hello_state.calls[0])
+            self.assertEqual((2, "Hello World"), hello_state.calls[1])
+
+        with gateway_server_example_app_process(False):
+            clientserver = ClientServer()
+            # We disable gc to test whether a shut down on one side will
+            # garbage collect everything.
+            gc.disable()
+            internal_work(clientserver)
+            gc.enable()
+            gc.collect()
+            clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                forceFinalization()
+            sleep()
+            createdSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getCreatedObjectsKeySet()
+            finalizedSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getFinalizedObjectsKeySet()
+            # 7 objects: 2 InstrumentedObject (sayHello called twice), 1
+            # JavaServer, 1 PythonClient, 1 ClientServer, 2
+            # ClientServerConnection
+            self.assertEqual(7, len(createdSet))
+            self.assertEqual(7, len(finalizedSet))
+            self.assertEqual(createdSet, finalizedSet)
+            clientserver.shutdown()
+
+            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
+            # GatewayProperty, HelloState, GatewayConnection,
+            # CallbackConnection
+            # assert_python_memory(self, 7)
+
+    def testJavaToPythonToJavaCleanGCNoShutdown(self):
+        def internal_work(clientserver):
+            hello_state = HelloState2()
+            clientserver2 = ClientServer(
+                JavaParameters(port=DEFAULT_PORT+5),
+                PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5),
+                python_server_entry_point=hello_state)
+            hello_state.gateway = clientserver2
+            sleep()
+
+            clientserver.entry_point.startServerWithPythonEntry(False)
+            sleep()
+            clientserver2.shutdown()
+
+            # Check that Java correctly called Python
+            self.assertEqual(2, len(hello_state.calls))
+            self.assertEqual((None, None), hello_state.calls[0])
+            self.assertEqual((2, "Hello World"), hello_state.calls[1])
+
+        with gateway_server_example_app_process(False):
+            clientserver = ClientServer()
+            # We disable gc to test whether a shut down on one side will
+            # garbage collect everything.
+            internal_work(clientserver)
+            gc.collect()
+            clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                forceFinalization()
+            sleep()
+            createdSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getCreatedObjectsKeySet()
+            finalizedSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getFinalizedObjectsKeySet()
+            # 8 objects: 2 InstrumentedObject (sayHello called twice), 1
+            # JavaServer, 1 PythonClient, 1 ClientServer, 3
+            # ClientServerConnection
+            # TODO Investigate why there are 3 clientserver connections.
+            # Because of retry?
+            self.assertEqual(8, len(createdSet))
+            self.assertEqual(8, len(finalizedSet))
+            self.assertEqual(createdSet, finalizedSet)
+            clientserver.shutdown()
+
+            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
+            # GatewayProperty, HelloState, GatewayConnection,
+            # CallbackConnection
+            # assert_python_memory(self, 7)
+
+    def testJavaToPythonToJavaNoGCNoShutdown(self):
+        def internal_work(clientserver):
+            hello_state = HelloState2()
+            clientserver2 = ClientServer(
+                JavaParameters(port=DEFAULT_PORT+5),
+                PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5),
+                python_server_entry_point=hello_state)
+            hello_state.gateway = clientserver2
+            sleep()
+
+            clientserver.entry_point.startServerWithPythonEntry(False)
+            sleep()
+            clientserver2.shutdown()
+
+            # Check that Java correctly called Python
+            self.assertEqual(2, len(hello_state.calls))
+            self.assertEqual((None, None), hello_state.calls[0])
+            self.assertEqual((2, "Hello World"), hello_state.calls[1])
+
+        with gateway_server_example_app_process(False):
+            clientserver = ClientServer()
+            # We disable gc to test whether a shut down on one side will
+            # garbage collect everything.
+            gc.disable()
+            internal_work(clientserver)
+            gc.enable()
+            gc.collect()
+            clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                forceFinalization()
+            sleep()
+            createdSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getCreatedObjectsKeySet()
+            finalizedSet = clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                getFinalizedObjectsKeySet()
+            # 7 objects: 2 InstrumentedObject (sayHello called twice), 1
+            # JavaServer, 1 PythonClient, 1 ClientServer, 3
+            # ClientServerConnection
+            # TODO Investigate why 3 ClientServerConnections
+            self.assertEqual(8, len(createdSet))
+            self.assertEqual(8, len(finalizedSet))
+            self.assertEqual(createdSet, finalizedSet)
+            clientserver.shutdown()
+
+            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
+            # GatewayProperty, HelloState, GatewayConnection,
+            # CallbackConnection
+            # assert_python_memory(self, 7)

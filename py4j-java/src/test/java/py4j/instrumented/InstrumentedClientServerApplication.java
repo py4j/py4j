@@ -34,6 +34,7 @@ import javax.net.SocketFactory;
 
 import py4j.ClientServer;
 import py4j.GatewayServer;
+import py4j.examples.IHello;
 
 public class InstrumentedClientServerApplication {
 
@@ -43,6 +44,33 @@ public class InstrumentedClientServerApplication {
 				GatewayServer.DEFAULT_CONNECT_TIMEOUT, GatewayServer.DEFAULT_READ_TIMEOUT,
 				ServerSocketFactory.getDefault(), SocketFactory.getDefault(), this, false, true);
 		server2.startServer();
+	}
+
+	private void sayHello(ClientServer server) {
+		IHello hello = (IHello) server.getPythonServerEntryPoint(new Class[] { IHello.class });
+		try {
+			hello.sayHello();
+			hello.sayHello(2, "Hello World");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void startServerWithPythonEntry(boolean shutdown) {
+		InstrClientServer server2 = new InstrClientServer(GatewayServer.DEFAULT_PORT + 5,
+				GatewayServer.defaultAddress(), GatewayServer.DEFAULT_PYTHON_PORT + 5, GatewayServer.defaultAddress(),
+				GatewayServer.DEFAULT_CONNECT_TIMEOUT, GatewayServer.DEFAULT_READ_TIMEOUT,
+				ServerSocketFactory.getDefault(), SocketFactory.getDefault(), this, false, true);
+		server2.startServer();
+
+		sayHello(server2);
+
+		MetricRegistry.forceFinalization();
+		MetricRegistry.sleep();
+
+		if (shutdown) {
+			server2.shutdown();
+		}
 	}
 
 	public static void main(String[] args) {
