@@ -2,6 +2,8 @@ from collections import deque
 import weakref
 
 import py4j.protocol as proto
+from py4j.clientserver import (
+    ClientServerConnection, ClientServer, JavaClient, PythonServer)
 from py4j.java_gateway import (
     CallbackServer, JavaGateway, GatewayClient, GatewayProperty,
     PythonProxyPool, GatewayConnection, CallbackConnection, DEFAULT_PORT,
@@ -120,9 +122,7 @@ class InstrCallbackServer(CallbackServer):
 
 
 class InstrCallbackConnection(CallbackConnection):
-    """A `CallbackConnection` receives callbacks and garbage collection
-       requests from the Java side.
-    """
+
     def __init__(
             self, pool, input, socket_instance, gateway_client,
             callback_server_parameters):
@@ -130,3 +130,78 @@ class InstrCallbackConnection(CallbackConnection):
             pool, input, socket_instance, gateway_client,
             callback_server_parameters)
         register_creation(self)
+
+
+class InstrClientServerConnection(ClientServerConnection):
+    def __init__(
+            self, java_parameters, python_parameters, gateway_property,
+            java_client):
+        super(InstrClientServerConnection, self).__init__(
+            java_parameters, python_parameters, gateway_property,
+            java_client)
+        register_creation(self)
+
+
+class InstrPythonServer(PythonServer):
+    def __init__(
+            self, java_client, java_parameters, python_parameters,
+            gateway_property):
+        super(InstrPythonServer, self).__init__(
+            java_client, java_parameters, python_parameters, gateway_property)
+        register_creation(self)
+
+    def _create_connection(self, socket, stream):
+        connection = InstrClientServerConnection(
+            self.java_parameters, self.python_parameters,
+            self.gateway_property, self.gateway_client)
+        connection.init_socket_from_python_server(socket, stream)
+        return connection
+
+
+class InstrJavaClient(JavaClient):
+
+    def __init__(
+            self, java_parameters, python_parameters, gateway_property=None):
+        super(InstrJavaClient, self).__init__(
+            java_parameters, python_parameters, gateway_property)
+        register_creation(self)
+
+    def _create_new_connection(self):
+        connection = InstrClientServerConnection(
+            self.java_parameters, self.python_parameters,
+            self.gateway_property, self)
+        connection.connect_to_java_server()
+        self.set_thread_connection(connection)
+        self.deque.append(connection)
+        return connection
+
+
+class InstrClientServer(ClientServer):
+
+    def __init__(
+            self, java_parameters=None, python_parameters=None,
+            python_server_entry_point=None):
+        super(InstrClientServer, self).__init__(
+            java_parameters, python_parameters,
+            python_server_entry_point)
+        register_creation(self)
+
+    def _create_gateway_client(self):
+        java_client = InstrJavaClient(
+            self.java_parameters, self.python_parameters)
+        return java_client
+
+    def _create_callback_server(self, callback_server_parameters):
+        callback_server = InstrPythonServer(
+            self._gateway_client, self.java_parameters, self.python_parameters,
+            self.gateway_property)
+        return callback_server
+
+    def _create_gateway_property(self):
+        gateway_property = InstrGatewayProperty(
+            self.java_parameters.auto_field, PythonProxyPool(),
+            self.java_parameters.enable_memory_management)
+        if self.python_server_entry_point:
+            gateway_property.pool.put(
+                self.python_server_entry_point, proto.ENTRY_POINT_OBJECT_ID)
+        return gateway_property

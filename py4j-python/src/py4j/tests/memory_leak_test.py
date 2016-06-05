@@ -15,7 +15,7 @@ from py4j.tests.java_gateway_test import (
 from py4j.tests.py4j_callback_recursive_example import HelloState
 from py4j.tests.instrumented import (
     InstrJavaGateway, InstrumentedPythonPing, register_creation,
-    CREATED, FINALIZED, MEMORY_HOOKS)
+    CREATED, FINALIZED, MEMORY_HOOKS, InstrClientServer)
 
 
 def start_instrumented_gateway_server():
@@ -69,7 +69,7 @@ class HelloState2(HelloState):
     def sayHello(self, int_value=None, string_value=None):
         self._play_with_jvm()
         if self.run_gc:
-            gc.collect()
+            python_gc()
         return super(HelloState2, self).sayHello(
             int_value, string_value)
 
@@ -81,6 +81,14 @@ def assert_python_memory(test, size):
     test.assertEqual(size, len(CREATED))
     test.assertEqual(size, len(FINALIZED))
     test.assertEqual(set(CREATED), set(FINALIZED))
+
+
+def python_gc():
+    """Runs the gc three times to ensure that all circular reference are
+    correctly removed.
+    """
+    for i in range(3):
+        gc.collect()
 
 
 class GatewayServerTest(unittest.TestCase):
@@ -101,7 +109,7 @@ class GatewayServerTest(unittest.TestCase):
                 port=DEFAULT_PORT+5))
             sleep()
             work_with_object(gateway2)
-            gc.collect()
+            python_gc()
             sleep()
             gateway2.shutdown()
 
@@ -109,7 +117,7 @@ class GatewayServerTest(unittest.TestCase):
             gateway = JavaGateway()
             gateway.entry_point.startServer2()
             internal_work()
-            gc.collect()
+            python_gc()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
@@ -143,7 +151,7 @@ class GatewayServerTest(unittest.TestCase):
                     port=DEFAULT_PYTHON_PROXY_PORT+5))
             sleep()
             play_with_ping(gateway2)
-            gc.collect()
+            python_gc()
             sleep()
             gateway2.shutdown()
 
@@ -151,7 +159,7 @@ class GatewayServerTest(unittest.TestCase):
             gateway = JavaGateway()
             gateway.entry_point.startServer2()
             internal_work()
-            gc.collect()
+            python_gc()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
@@ -195,7 +203,7 @@ class GatewayServerTest(unittest.TestCase):
         with gateway_server_example_app_process():
             gateway = JavaGateway()
             internal_work(gateway)
-            gc.collect()
+            python_gc()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
@@ -243,7 +251,7 @@ class GatewayServerTest(unittest.TestCase):
             gc.disable()
             internal_work(gateway)
             gc.enable()
-            gc.collect()
+            python_gc()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
@@ -287,7 +295,7 @@ class GatewayServerTest(unittest.TestCase):
         with gateway_server_example_app_process():
             gateway = JavaGateway()
             internal_work(gateway)
-            gc.collect()
+            python_gc()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
@@ -335,7 +343,7 @@ class GatewayServerTest(unittest.TestCase):
             gc.disable()
             internal_work(gateway)
             gc.enable()
-            gc.collect()
+            python_gc()
             gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
             sleep()
             createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
@@ -370,12 +378,12 @@ class ClientServerTest(unittest.TestCase):
             return str(obj)
 
         def internal_work():
-            clientserver2 = ClientServer(
+            clientserver2 = InstrClientServer(
                 JavaParameters(port=DEFAULT_PORT+5),
                 PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5))
             sleep()
             work_with_object(clientserver2)
-            gc.collect()
+            python_gc()
             sleep()
             clientserver2.shutdown()
 
@@ -383,7 +391,7 @@ class ClientServerTest(unittest.TestCase):
             clientserver = ClientServer()
             clientserver.entry_point.startServer2()
             internal_work()
-            gc.collect()
+            python_gc()
             clientserver.jvm.py4j.instrumented.MetricRegistry.\
                 forceFinalization()
             sleep()
@@ -399,9 +407,9 @@ class ClientServerTest(unittest.TestCase):
             self.assertEqual(createdSet, finalizedSet)
             clientserver.shutdown()
 
-            # 4 objects: JavaGateway, GatewayClient, GatewayProperty,
-            # GatewayConnection
-            # assert_python_memory(self, 4)
+            # 5 objects: ClientServer, ClientServerConnection, PythonClient,
+            # JavaServer, GatewayProperty
+            assert_python_memory(self, 5)
 
     def testPythonToJavaToPython(self):
         def play_with_ping(clientserver):
@@ -411,12 +419,12 @@ class ClientServerTest(unittest.TestCase):
             return total
 
         def internal_work():
-            clientserver2 = ClientServer(
+            clientserver2 = InstrClientServer(
                 JavaParameters(port=DEFAULT_PORT+5),
                 PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5))
             sleep()
             play_with_ping(clientserver2)
-            gc.collect()
+            python_gc()
             sleep()
             clientserver2.shutdown()
 
@@ -424,7 +432,7 @@ class ClientServerTest(unittest.TestCase):
             clientserver = ClientServer()
             clientserver.entry_point.startServer2()
             internal_work()
-            gc.collect()
+            python_gc()
             clientserver.jvm.py4j.instrumented.MetricRegistry.\
                 forceFinalization()
             sleep()
@@ -440,15 +448,14 @@ class ClientServerTest(unittest.TestCase):
             self.assertEqual(createdSet, finalizedSet)
             clientserver.shutdown()
 
-            # 11 objects: JavaGateway, CallbackSerer, GatewayClient,
-            # GatewayProperty, PythonPing, 4 GatewayConnection,
-            # 3 CallbackConnection. Notice the symmetry
-            # assert_python_memory(self, 12)
+            # 6 objects: ClientServer, PythonServer, JavaClient,
+            # GatewayProperty, PythonPing, ClientServerConnection
+            assert_python_memory(self, 6)
 
     def testJavaToPythonToJavaCleanGC(self):
         def internal_work(clientserver):
             hello_state = HelloState2()
-            clientserver2 = ClientServer(
+            clientserver2 = InstrClientServer(
                 JavaParameters(port=DEFAULT_PORT+5),
                 PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5),
                 python_server_entry_point=hello_state)
@@ -467,7 +474,7 @@ class ClientServerTest(unittest.TestCase):
         with gateway_server_example_app_process(False):
             clientserver = ClientServer()
             internal_work(clientserver)
-            gc.collect()
+            python_gc()
             clientserver.jvm.py4j.instrumented.MetricRegistry.\
                 forceFinalization()
             sleep()
@@ -484,15 +491,14 @@ class ClientServerTest(unittest.TestCase):
             self.assertEqual(createdSet, finalizedSet)
             clientserver.shutdown()
 
-            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
-            # GatewayProperty, HelloState, GatewayConnection,
-            # CallbackConnection
-            # assert_python_memory(self, 7)
+            # 8 objects: ClientServer (ok), PythonServer (ok), JavaClient,
+            # GatewayProperty, HelloState (ok), 3 ClientServer Connections (2)
+            assert_python_memory(self, 8)
 
     def testJavaToPythonToJavaNoGC(self):
         def internal_work(clientserver):
             hello_state = HelloState2()
-            clientserver2 = ClientServer(
+            clientserver2 = InstrClientServer(
                 JavaParameters(port=DEFAULT_PORT+5),
                 PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5),
                 python_server_entry_point=hello_state)
@@ -515,7 +521,7 @@ class ClientServerTest(unittest.TestCase):
             gc.disable()
             internal_work(clientserver)
             gc.enable()
-            gc.collect()
+            python_gc()
             clientserver.jvm.py4j.instrumented.MetricRegistry.\
                 forceFinalization()
             sleep()
@@ -532,15 +538,14 @@ class ClientServerTest(unittest.TestCase):
             self.assertEqual(createdSet, finalizedSet)
             clientserver.shutdown()
 
-            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
-            # GatewayProperty, HelloState, GatewayConnection,
-            # CallbackConnection
-            # assert_python_memory(self, 7)
+            # 8 objects: ClientServer (ok), PythonServer (ok), JavaClient,
+            # GatewayProperty, HelloState (ok), 3 ClientServer Connections (2)
+            assert_python_memory(self, 8)
 
     def testJavaToPythonToJavaCleanGCNoShutdown(self):
         def internal_work(clientserver):
             hello_state = HelloState2()
-            clientserver2 = ClientServer(
+            clientserver2 = InstrClientServer(
                 JavaParameters(port=DEFAULT_PORT+5),
                 PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5),
                 python_server_entry_point=hello_state)
@@ -561,7 +566,7 @@ class ClientServerTest(unittest.TestCase):
             # We disable gc to test whether a shut down on one side will
             # garbage collect everything.
             internal_work(clientserver)
-            gc.collect()
+            python_gc()
             clientserver.jvm.py4j.instrumented.MetricRegistry.\
                 forceFinalization()
             sleep()
@@ -578,15 +583,14 @@ class ClientServerTest(unittest.TestCase):
             self.assertEqual(createdSet, finalizedSet)
             clientserver.shutdown()
 
-            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
-            # GatewayProperty, HelloState, GatewayConnection,
-            # CallbackConnection
-            # assert_python_memory(self, 7)
+            # 8 objects: ClientServer (ok), PythonServer (ok), JavaClient,
+            # GatewayProperty, HelloState (ok), 3 ClientServer Connections (2)
+            assert_python_memory(self, 8)
 
     def testJavaToPythonToJavaNoGCNoShutdown(self):
         def internal_work(clientserver):
             hello_state = HelloState2()
-            clientserver2 = ClientServer(
+            clientserver2 = InstrClientServer(
                 JavaParameters(port=DEFAULT_PORT+5),
                 PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5),
                 python_server_entry_point=hello_state)
@@ -609,7 +613,7 @@ class ClientServerTest(unittest.TestCase):
             gc.disable()
             internal_work(clientserver)
             gc.enable()
-            gc.collect()
+            python_gc()
             clientserver.jvm.py4j.instrumented.MetricRegistry.\
                 forceFinalization()
             sleep()
@@ -626,7 +630,6 @@ class ClientServerTest(unittest.TestCase):
             self.assertEqual(createdSet, finalizedSet)
             clientserver.shutdown()
 
-            # 7 objects: JavaGateway, GatewayClient, CallbackServer,
-            # GatewayProperty, HelloState, GatewayConnection,
-            # CallbackConnection
-            # assert_python_memory(self, 7)
+            # 8 objects: ClientServer (ok), PythonServer (ok), JavaClient,
+            # GatewayProperty, HelloState (ok), 3 ClientServer Connections (2)
+            assert_python_memory(self, 8)
