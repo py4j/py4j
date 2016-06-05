@@ -17,7 +17,7 @@ from py4j.java_gateway import (
     JavaGateway, PythonProxyPool, CallbackServerParameters,
     set_default_callback_accept_timeout)
 from py4j.tests.java_gateway_test import (
-    PY4J_JAVA_PATH, safe_shutdown, sleep, test_gateway_connection)
+    PY4J_JAVA_PATH, safe_shutdown, sleep, check_connection)
 
 
 set_default_callback_accept_timeout(0.125)
@@ -64,7 +64,7 @@ def start_example_app_process(app=None):
     p = Process(target=target)
     p.start()
     sleep()
-    test_gateway_connection()
+    check_connection()
     return p
 
 
@@ -82,7 +82,7 @@ def start_example_app_process2():
     p = Process(target=start_example_server2)
     p.start()
     sleep()
-    test_gateway_connection()
+    check_connection()
     return p
 
 
@@ -91,7 +91,7 @@ def start_example_app_process3():
     p = Process(target=start_example_server3)
     p.start()
     sleep()
-    test_gateway_connection()
+    check_connection()
     return p
 
 

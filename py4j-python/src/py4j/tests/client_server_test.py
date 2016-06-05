@@ -12,7 +12,7 @@ from py4j.java_gateway import GatewayConnectionGuard, is_instance_of, \
 from py4j.protocol import Py4JJavaError, smart_decode
 from py4j.tests.java_callback_test import IHelloImpl
 from py4j.tests.java_gateway_test import (
-    PY4J_JAVA_PATH, test_gateway_connection, sleep)
+    PY4J_JAVA_PATH, check_connection, sleep)
 from py4j.tests.py4j_callback_recursive_example import (
     PythonPing, HelloState)
 
@@ -37,7 +37,7 @@ def start_clientserver_example_app_process(start_java_client=False):
         p = Process(target=start_java_clientserver_example_server)
     p.start()
     sleep()
-    test_gateway_connection()
+    check_connection()
     return p
 
 
@@ -62,9 +62,9 @@ def start_java_multi_client_server_app_process():
     p.start()
     sleep()
     # test both gateways...
-    test_gateway_connection(
+    check_connection(
         gateway_parameters=GatewayParameters(port=DEFAULT_PORT))
-    test_gateway_connection(
+    check_connection(
         gateway_parameters=GatewayParameters(port=DEFAULT_PORT + 2))
     return p
 

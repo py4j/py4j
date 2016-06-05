@@ -9,9 +9,8 @@ from py4j.java_gateway import (
     DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT)
 from py4j.clientserver import (
     ClientServer, JavaParameters, PythonParameters)
-# TODO rename test_gateway_connection because it is executed as a test
 from py4j.tests.java_gateway_test import (
-    PY4J_JAVA_PATH, test_gateway_connection, sleep)
+    PY4J_JAVA_PATH, check_connection, sleep)
 from py4j.tests.py4j_callback_recursive_example import HelloState
 from py4j.tests.instrumented import (
     InstrJavaGateway, InstrumentedPythonPing, register_creation,
@@ -38,7 +37,7 @@ def start_gateway_server_example_app_process(start_gateway_server=True):
         p = Process(target=start_instrumented_clientserver)
     p.start()
     sleep()
-    test_gateway_connection()
+    check_connection()
     return p
 
 
