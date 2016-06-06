@@ -29,6 +29,8 @@
  *****************************************************************************/
 package py4j;
 
+import static py4j.NetworkUtil.checkConnection;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.Charset;
@@ -51,9 +53,11 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	protected final Logger logger = Logger.getLogger(ClientServerConnection.class.getName());
 	protected final Py4JJavaServer javaServer;
 	protected final Py4JPythonClientPerThread pythonClient;
+	protected final int blockingReadTimeout;
+	protected final int nonBlockingReadTimeout;
 
 	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
-			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer) throws IOException {
+			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer, int readTimeout) throws IOException {
 		super();
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
@@ -65,6 +69,12 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		}
 		this.javaServer = javaServer;
 		this.pythonClient = pythonClient;
+		this.blockingReadTimeout = readTimeout;
+		if (readTimeout > 0) {
+			this.nonBlockingReadTimeout = readTimeout;
+		} else {
+			this.nonBlockingReadTimeout = CallbackConnection.DEFAULT_NONBLOCKING_SO_TIMEOUT;
+		}
 	}
 
 	public void startServerConnection() {
@@ -166,9 +176,15 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		logger.log(Level.INFO, "Sending Python command: " + command);
 		String returnCommand = null;
 		try {
+			checkConnection(this.socket, this.reader, this.blockingReadTimeout);
 			writer.write(command);
 			writer.flush();
+		} catch (Exception e) {
+			throw new Py4JNetworkException("Error while sending a command: " + command, e,
+					Py4JNetworkException.ErrorTime.ERROR_ON_SEND);
+		}
 
+		try {
 			while (true) {
 				if (blocking) {
 					returnCommand = this.readBlockingResponse(this.reader);
@@ -196,7 +212,8 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 			}
 		} catch (Exception e) {
 			// This will make sure that the connection is shut down and not given back to the connections deque.
-			throw new Py4JNetworkException("Error while sending a command: " + command, e);
+			throw new Py4JNetworkException("Error while sending a command: " + command, e,
+					Py4JNetworkException.ErrorTime.ERROR_ON_RECEIVE);
 		}
 	}
 
@@ -245,7 +262,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	protected String readNonBlockingResponse(Socket socket, BufferedReader reader) throws IOException {
 		String returnCommand = null;
 
-		socket.setSoTimeout(CallbackConnection.DEFAULT_NONBLOCKING_SO_TIMEOUT);
+		socket.setSoTimeout(nonBlockingReadTimeout);
 
 		while (true) {
 			try {
@@ -254,12 +271,12 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 			} finally {
 				// Set back blocking timeout (necessary if
 				// sockettimeoutexception is raised and propagated)
-				socket.setSoTimeout(0);
+				socket.setSoTimeout(blockingReadTimeout);
 			}
 		}
 
 		// Set back blocking timeout
-		socket.setSoTimeout(0);
+		socket.setSoTimeout(blockingReadTimeout);
 
 		return returnCommand;
 	}

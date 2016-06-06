@@ -29,6 +29,8 @@
  *****************************************************************************/
 package py4j;
 
+import static py4j.NetworkUtil.checkConnection;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -36,6 +38,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,15 +73,40 @@ public class CallbackConnection implements Py4JClientConnection {
 
 	private final Logger logger = Logger.getLogger(CallbackConnection.class.getName());
 
+	private final int blockingReadTimeout;
+
+	private final int nonBlockingReadTimeout;
+
 	public CallbackConnection(int port, InetAddress address) {
 		this(port, address, SocketFactory.getDefault());
 	}
 
 	public CallbackConnection(int port, InetAddress address, SocketFactory socketFactory) {
+		this(port, address, socketFactory, GatewayServer.DEFAULT_READ_TIMEOUT);
+	}
+
+	/**
+	 *
+	 * @param port The port used to connect to the Python side.
+	 * @param address The address used to connect to the Java side.
+	 * @param socketFactory The socket factory used to create a socket (connection) to the Python side.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once connected to the Python side,
+	 *            if the Java side does not receive a response after this time, the connection with the Python
+	 *            program is closed. If readTimeout = 0, a default readTimeout of 1000 is used for operations that
+	 *            must absolutely be non-blocking.
+	 */
+	public CallbackConnection(int port, InetAddress address, SocketFactory socketFactory, int readTimeout) {
 		super();
 		this.port = port;
 		this.address = address;
 		this.socketFactory = socketFactory;
+		this.blockingReadTimeout = readTimeout;
+		if (readTimeout > 0) {
+			this.nonBlockingReadTimeout = readTimeout;
+		} else {
+			this.nonBlockingReadTimeout = DEFAULT_NONBLOCKING_SO_TIMEOUT;
+		}
 	}
 
 	public String sendCommand(String command) {
@@ -90,19 +118,30 @@ public class CallbackConnection implements Py4JClientConnection {
 		String returnCommand = null;
 		try {
 			this.used = true;
+			checkConnection(this.socket, this.reader, this.blockingReadTimeout);
+			// XXX write will never fail for small commands because the payload is below the socket's buffer.
 			writer.write(command);
 			writer.flush();
+		} catch (Exception e) {
+			throw new Py4JNetworkException("Error while sending a command: null response: " + command, e,
+					Py4JNetworkException.ErrorTime.ERROR_ON_SEND);
+		}
 
+		try {
 			if (blocking) {
 				returnCommand = this.readBlockingResponse(this.reader);
 			} else {
 				returnCommand = this.readNonBlockingResponse(this.socket, this.reader);
 			}
 		} catch (Exception e) {
-			throw new Py4JNetworkException("Error while sending a command: " + command, e);
+			throw new Py4JNetworkException("Error while sending a command: " + command, e,
+					Py4JNetworkException.ErrorTime.ERROR_ON_RECEIVE);
 		}
 
-		if (Protocol.isReturnMessage(returnCommand)) {
+		if (returnCommand == null) {
+			throw new Py4JNetworkException("Error while sending a command: null response: " + command,
+					Py4JNetworkException.ErrorTime.ERROR_ON_RECEIVE);
+		} else if (Protocol.isReturnMessage(returnCommand)) {
 			returnCommand = returnCommand.substring(1);
 		}
 
@@ -117,7 +156,7 @@ public class CallbackConnection implements Py4JClientConnection {
 	protected String readNonBlockingResponse(Socket socket, BufferedReader reader) throws IOException {
 		String returnCommand = null;
 
-		socket.setSoTimeout(DEFAULT_NONBLOCKING_SO_TIMEOUT);
+		socket.setSoTimeout(nonBlockingReadTimeout);
 
 		while (true) {
 			try {
@@ -126,12 +165,12 @@ public class CallbackConnection implements Py4JClientConnection {
 			} finally {
 				// Set back blocking timeout (necessary if
 				// sockettimeoutexception is raised and propagated)
-				socket.setSoTimeout(0);
+				socket.setSoTimeout(blockingReadTimeout);
 			}
 		}
 
 		// Set back blocking timeout
-		socket.setSoTimeout(0);
+		socket.setSoTimeout(blockingReadTimeout);
 
 		return returnCommand;
 	}
@@ -160,6 +199,7 @@ public class CallbackConnection implements Py4JClientConnection {
 	public void start() throws IOException {
 		logger.info("Starting Communication Channel on " + address + " at " + port);
 		socket = socketFactory.createSocket(address, port);
+		socket.setSoTimeout(blockingReadTimeout);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
 		writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 	}

@@ -42,8 +42,8 @@ import py4j.commands.Command;
 public class InstrClientServerConnection extends ClientServerConnection {
 
 	public InstrClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
-			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer) throws IOException {
-		super(gateway, socket, customCommands, pythonClient, javaServer);
+			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer, int readTimeout) throws IOException {
+		super(gateway, socket, customCommands, pythonClient, javaServer, readTimeout);
 		MetricRegistry.addCreatedObject(this);
 	}
 

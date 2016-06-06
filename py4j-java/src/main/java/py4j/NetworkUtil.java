@@ -34,6 +34,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -109,6 +110,37 @@ public class NetworkUtil {
 		} catch (Exception e) {
 			logger.log(Level.FINE, "Socket cannot be closed.", e);
 		}
+	}
+
+	/**
+	 * <p>Checks that a socket is ready to receive by reading from it.</p>
+	 *
+	 * <p>If the read raises a timeout exception, this is a good sign. If the response is -1, this usually means
+	 * that the socket was remotely closed.</p>
+	 *
+	 * @param socket
+	 * @param reader
+	 * @param readTimeout
+	 * @throws IOException
+	 */
+	public static void checkConnection(Socket socket, BufferedReader reader, int readTimeout) throws IOException {
+		int response = 0;
+
+		socket.setSoTimeout(5);
+
+		try {
+			response = reader.read();
+		} catch (SocketTimeoutException ste) {
+			// This is expected!
+		} finally {
+			// Set back blocking timeout
+			socket.setSoTimeout(readTimeout);
+		}
+
+		if (response == -1) {
+			throw new IOException("Remote socket is closed.");
+		}
+
 	}
 
 }

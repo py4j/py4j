@@ -29,23 +29,13 @@
  *****************************************************************************/
 package py4j.examples;
 
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import py4j.ClientServer;
 import py4j.GatewayServer;
 
 public class SingleThreadApplication {
 
 	public static void main(String[] args) {
-		GatewayServer.turnAllLoggingOn();
-		Logger logger = Logger.getLogger("py4j");
-		logger.setLevel(Level.ALL);
-		ConsoleHandler handler = new ConsoleHandler();
-		handler.setLevel(Level.FINEST);
-		logger.addHandler(handler);
-		System.out.println("Starting");
+		GatewayServer.turnLoggingOff();
 		ExampleEntryPoint point = new ExampleEntryPoint();
 		ClientServer clientServer = new ClientServer(point);
 		// Wait for Python side to shut down Java side
@@ -61,5 +51,14 @@ public class SingleThreadApplication {
 		//		clientServer.shutdown();
 		//
 		//		System.out.println("Stopping");
+	}
+
+	public static class SingleThreadShortTimeoutApplication {
+		public static void main(String[] args) {
+			GatewayServer.turnLoggingOff();
+			ClientServer clientServer = new ClientServer.ClientServerBuilder().readTimeout(250)
+					.entryPoint(new ExampleEntryPoint()).build();
+			clientServer.startServer(true);
+		}
 	}
 }

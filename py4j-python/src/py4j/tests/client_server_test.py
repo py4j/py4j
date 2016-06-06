@@ -9,10 +9,10 @@ from py4j.clientserver import (
     ClientServer, JavaParameters, PythonParameters)
 from py4j.java_gateway import GatewayConnectionGuard, is_instance_of, \
     GatewayParameters, DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT
-from py4j.protocol import Py4JJavaError, smart_decode
+from py4j.protocol import Py4JError, Py4JJavaError, smart_decode
 from py4j.tests.java_callback_test import IHelloImpl
 from py4j.tests.java_gateway_test import (
-    PY4J_JAVA_PATH, check_connection, sleep)
+    PY4J_JAVA_PATH, check_connection, sleep, WaitOperator)
 from py4j.tests.py4j_callback_recursive_example import (
     PythonPing, HelloState)
 
@@ -23,16 +23,26 @@ def start_clientserver_example_server():
         "py4j.examples.SingleThreadApplication"])
 
 
+def start_short_timeout_clientserver_example_server():
+    subprocess.call([
+        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.SingleThreadApplication$"
+        "SingleThreadShortTimeoutApplication"])
+
+
 def start_java_clientserver_example_server():
     subprocess.call([
         "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
         "py4j.examples.SingleThreadClientApplication"])
 
 
-def start_clientserver_example_app_process(start_java_client=False):
+def start_clientserver_example_app_process(start_java_client=False,
+                                           start_short_timeout=False):
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    if not start_java_client:
+    if not start_java_client and not start_short_timeout:
         p = Process(target=start_clientserver_example_server)
+    elif start_short_timeout:
+        p = Process(target=start_short_timeout_clientserver_example_server)
     else:
         p = Process(target=start_java_clientserver_example_server)
     p.start()
@@ -42,8 +52,10 @@ def start_clientserver_example_app_process(start_java_client=False):
 
 
 @contextmanager
-def clientserver_example_app_process(start_java_client=False):
-    p = start_clientserver_example_app_process(start_java_client)
+def clientserver_example_app_process(
+        start_java_client=False, start_short_timeout=False):
+    p = start_clientserver_example_app_process(
+        start_java_client, start_short_timeout)
     try:
         yield p
     finally:
@@ -76,6 +88,148 @@ def java_multi_client_server_app_process():
         yield p
     finally:
         p.join()
+
+
+class RetryTest(unittest.TestCase):
+
+    def testBadRetry(self):
+        """Should not retry from Python to Java.
+        Python calls a long Java method. The call goes through, but the
+        response takes a long time to get back.
+
+        If there is a bug, Python will fail on read and retry (sending the same
+        call twice).
+
+        If there is no bug, Python will fail on read and raise an Exception.
+        """
+        client_server = ClientServer(
+            JavaParameters(read_timeout=0.250), PythonParameters())
+        with clientserver_example_app_process():
+            try:
+                example = client_server.jvm.py4j.examples.ExampleClass()
+                value = example.sleepFirstTimeOnly(500)
+                self.fail(
+                    "Should never retry once the first command went through."
+                    "number of calls made: {0}".format(value))
+            except Py4JError:
+                self.assertTrue(True)
+            finally:
+                client_server.shutdown()
+
+    def testGoodRetry(self):
+        """Should retry from Python to Java.
+        Python calls Java twice in a row, then waits, then calls again.
+
+        Java fails when it does not receive calls quickly.
+
+        If there is a bug, Python will fail on the third call because the Java
+        connection was closed and it did not retry.
+
+        If there is a bug, Python might not fail because Java did not close the
+        connection on timeout. The connection used to call Java will be the
+        same one for all calls (and an assertion will fail).
+
+        If there is no bug, Python will call Java twice with the same
+        connection. On the third call, the write will fail, and a new
+        connection will be created.
+        """
+        client_server = ClientServer(
+            JavaParameters(), PythonParameters())
+        connections = client_server._gateway_client.deque
+
+        with clientserver_example_app_process(False, True):
+            try:
+                # Call #1
+                client_server.jvm.System.currentTimeMillis()
+                str_connection = str(connections[0])
+
+                # Call #2
+                client_server.jvm.System.currentTimeMillis()
+                self.assertEqual(1, len(connections))
+                str_connection2 = str(connections[0])
+                self.assertEqual(str_connection, str_connection2)
+
+                sleep(0.5)
+                client_server.jvm.System.currentTimeMillis()
+                self.assertEqual(1, len(connections))
+                str_connection3 = str(connections[0])
+                # A new connection was automatically created.
+                self.assertNotEqual(str_connection, str_connection3)
+
+            except Py4JError:
+                self.fail("Should retry automatically by default.")
+            finally:
+                client_server.shutdown()
+
+    def testBadRetryFromJava(self):
+        """Should not retry from Java to Python.
+        Similar use case as testBadRetry, but from Java: Java calls a long
+        Python operation.
+
+        If there is a bug, Java will call Python, then read will fail, then it
+        will call Python again.
+
+        If there is no bug, Java will call Python, read will fail, then Java
+        will raise an Exception that will be received as a Py4JError on the
+        Python side.
+        """
+
+        client_server = ClientServer(
+            JavaParameters(), PythonParameters())
+
+        with clientserver_example_app_process(False, True):
+            try:
+                operator = WaitOperator(0.5)
+                opExample = client_server.jvm.py4j.examples.OperatorExample()
+
+                opExample.randomBinaryOperator(operator)
+                self.fail(
+                    "Should never retry once the first command went through."
+                    " number of calls made: {0}".format(operator.callCount))
+            except Py4JError:
+                # XXX This occurs when WaitOperator tries to send a response to
+                # the Java side (this is slightly different then the
+                # GatewayServer equivalent where the Py4JError occurs on the
+                # clientserver, but the Java side can still send back an
+                # exception to the JavaGateway).
+                self.assertTrue(True)
+            finally:
+                client_server.shutdown()
+
+    def testGoodRetryFromJava(self):
+        """Should retry from Java to Python.
+        Similar use case as testGoodRetry, but from Java: Python calls Java,
+        which calls Python back. Then Java waits for a while and calls Python
+        again.
+
+        Because Python Server has been waiting for too much time, the
+        receiving socket has closed so the call from Java to Python will fail
+        on send, and Java must retry by creating a new connection
+        (ClientServerConnection).
+
+        Because ClientServer reuses the same connection in each thread, we must
+        launch a new thread on the Java side to correctly test the Python
+        Server.
+        """
+        client_server = ClientServer(
+            JavaParameters(), PythonParameters(read_timeout=0.250))
+        with clientserver_example_app_process():
+            try:
+                operator = WaitOperator(0)
+                opExample = client_server.jvm.py4j.examples.OperatorExample()
+                opExample.launchOperator(operator, 500)
+                sleep(0.1)
+                str_connection = str(
+                    list(client_server._callback_server.connections)[0])
+
+                sleep(0.75)
+                str_connection2 = str(
+                    list(client_server._callback_server.connections)[0])
+                self.assertNotEqual(str_connection, str_connection2)
+            except Py4JJavaError:
+                self.fail("Callbackserver did not retry.")
+            finally:
+                client_server.shutdown()
 
 
 class IntegrationTest(unittest.TestCase):

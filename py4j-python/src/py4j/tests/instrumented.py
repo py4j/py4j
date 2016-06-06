@@ -6,8 +6,7 @@ from py4j.clientserver import (
     ClientServerConnection, ClientServer, JavaClient, PythonServer)
 from py4j.java_gateway import (
     CallbackServer, JavaGateway, GatewayClient, GatewayProperty,
-    PythonProxyPool, GatewayConnection, CallbackConnection, DEFAULT_PORT,
-    DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ADDRESS)
+    PythonProxyPool, GatewayConnection, CallbackConnection)
 from py4j.tests.py4j_callback_recursive_example import PythonPing
 
 # Use deque to be thread-safe
@@ -33,26 +32,13 @@ class InstrumentedPythonPing(PythonPing):
 
 
 class InstrJavaGateway(JavaGateway):
-    def __init__(
-            self, gateway_client=None, auto_field=False,
-            python_proxy_port=DEFAULT_PYTHON_PROXY_PORT,
-            start_callback_server=False, auto_convert=False, eager_load=False,
-            gateway_parameters=None, callback_server_parameters=None,
-            python_server_entry_point=None):
-        super(InstrJavaGateway, self). __init__(
-            gateway_client, auto_field,
-            python_proxy_port,
-            start_callback_server, auto_convert, eager_load,
-            gateway_parameters, callback_server_parameters,
-            python_server_entry_point)
+    def __init__(self, *args, **kwargs):
+        super(InstrJavaGateway, self). __init__(*args, **kwargs)
         register_creation(self)
 
     def _create_gateway_client(self):
         gateway_client = InstrGatewayClient(
-            address=self.gateway_parameters.address,
-            port=self.gateway_parameters.port,
-            auto_close=self.gateway_parameters.auto_close,
-            ssl_context=self.gateway_parameters.ssl_context)
+            self.gateway_parameters)
         return gateway_client
 
     def _create_callback_server(self, callback_server_parameters):
@@ -73,16 +59,13 @@ class InstrJavaGateway(JavaGateway):
 
 class InstrGatewayClient(GatewayClient):
 
-    def __init__(self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT,
-                 auto_close=True, gateway_property=None, ssl_context=None):
-        super(InstrGatewayClient, self).__init__(
-            address, port, auto_close, gateway_property, ssl_context)
+    def __init__(self, *args, **kwargs):
+        super(InstrGatewayClient, self).__init__(*args, **kwargs)
         register_creation(self)
 
     def _create_connection(self):
         connection = InstrGatewayConnection(
-            self.address, self.port, self.auto_close, self.gateway_property,
-            self.ssl_context)
+            self.gateway_parameters, self.gateway_property)
         connection.start()
         return connection
 
@@ -90,28 +73,21 @@ class InstrGatewayClient(GatewayClient):
 class InstrGatewayProperty(GatewayProperty):
     """Object shared by callbackserver, gateway, and connections.
     """
-    def __init__(self, auto_field, pool, enable_memory_management=True):
-        super(InstrGatewayProperty, self).__init__(
-            auto_field, pool, enable_memory_management)
+    def __init__(self, *args, **kwargs):
+        super(InstrGatewayProperty, self).__init__(*args, **kwargs)
         register_creation(self)
 
 
 class InstrGatewayConnection(GatewayConnection):
 
-    def __init__(self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT,
-                 auto_close=True, gateway_property=None, ssl_context=None):
-        super(InstrGatewayConnection, self).__init__(
-            address, port, auto_close, gateway_property, ssl_context)
+    def __init__(self, *args, **kwargs):
+        super(InstrGatewayConnection, self).__init__(*args, **kwargs)
         register_creation(self)
 
 
 class InstrCallbackServer(CallbackServer):
-    def __init__(
-            self, pool, gateway_client, port=DEFAULT_PYTHON_PROXY_PORT,
-            address=DEFAULT_ADDRESS, callback_server_parameters=None):
-        super(InstrCallbackServer, self).__init__(
-            pool, gateway_client, port,
-            address, callback_server_parameters)
+    def __init__(self, *args, **kwargs):
+        super(InstrCallbackServer, self).__init__(*args, **kwargs)
         register_creation(self)
 
     def _create_connection(self, socket_instance, stream):
@@ -123,31 +99,20 @@ class InstrCallbackServer(CallbackServer):
 
 class InstrCallbackConnection(CallbackConnection):
 
-    def __init__(
-            self, pool, input, socket_instance, gateway_client,
-            callback_server_parameters):
-        super(InstrCallbackConnection, self).__init__(
-            pool, input, socket_instance, gateway_client,
-            callback_server_parameters)
+    def __init__(self, *args, **kwargs):
+        super(InstrCallbackConnection, self).__init__(*args, **kwargs)
         register_creation(self)
 
 
 class InstrClientServerConnection(ClientServerConnection):
-    def __init__(
-            self, java_parameters, python_parameters, gateway_property,
-            java_client):
-        super(InstrClientServerConnection, self).__init__(
-            java_parameters, python_parameters, gateway_property,
-            java_client)
+    def __init__(self, *args, **kwargs):
+        super(InstrClientServerConnection, self).__init__(*args, **kwargs)
         register_creation(self)
 
 
 class InstrPythonServer(PythonServer):
-    def __init__(
-            self, java_client, java_parameters, python_parameters,
-            gateway_property):
-        super(InstrPythonServer, self).__init__(
-            java_client, java_parameters, python_parameters, gateway_property)
+    def __init__(self, *args, **kwargs):
+        super(InstrPythonServer, self).__init__(*args, **kwargs)
         register_creation(self)
 
     def _create_connection(self, socket, stream):
@@ -160,10 +125,8 @@ class InstrPythonServer(PythonServer):
 
 class InstrJavaClient(JavaClient):
 
-    def __init__(
-            self, java_parameters, python_parameters, gateway_property=None):
-        super(InstrJavaClient, self).__init__(
-            java_parameters, python_parameters, gateway_property)
+    def __init__(self, *args, **kwargs):
+        super(InstrJavaClient, self).__init__(*args, **kwargs)
         register_creation(self)
 
     def _create_new_connection(self):
@@ -178,12 +141,8 @@ class InstrJavaClient(JavaClient):
 
 class InstrClientServer(ClientServer):
 
-    def __init__(
-            self, java_parameters=None, python_parameters=None,
-            python_server_entry_point=None):
-        super(InstrClientServer, self).__init__(
-            java_parameters, python_parameters,
-            python_server_entry_point)
+    def __init__(self, *args, **kwargs):
+        super(InstrClientServer, self).__init__(*args, **kwargs)
         register_creation(self)
 
     def _create_gateway_client(self):

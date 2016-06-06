@@ -39,13 +39,7 @@ import py4j.GatewayServer;
 public class SingleThreadClientApplication {
 
 	public static void main(String[] args) {
-		GatewayServer.turnAllLoggingOn();
-		Logger logger = Logger.getLogger("py4j");
-		logger.setLevel(Level.ALL);
-		ConsoleHandler handler = new ConsoleHandler();
-		handler.setLevel(Level.FINEST);
-		logger.addHandler(handler);
-		System.out.println("Starting");
+		GatewayServer.turnLoggingOff();
 		ClientServer clientServer = new ClientServer(null);
 		IHello hello = (IHello) clientServer.getPythonServerEntryPoint(new Class[] { IHello.class });
 		try {

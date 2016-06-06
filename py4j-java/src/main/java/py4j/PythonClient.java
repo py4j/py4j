@@ -59,6 +59,8 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 
 	protected ThreadLocal<WeakReference<ClientServerConnection>> threadConnection;
 
+	protected final int readTimeout;
+
 	/**
 	 *
 	 * @param gateway The gateway used to pool Java instances created on the Python side.
@@ -74,7 +76,7 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 			InetAddress pythonAddress, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory, Py4JJavaServer javaServer) {
 		this(gateway, customCommands, pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit,
-				socketFactory, javaServer, true);
+				socketFactory, javaServer, true, GatewayServer.DEFAULT_READ_TIMEOUT);
 	}
 
 	/**
@@ -88,17 +90,23 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 	 * @param socketFactory SocketFactory used to create a socket.
 	 * @param javaServer The JavaServer used to receive commands from the Python side.
 	 * @param enableMemoryManagement If false, the Java side does not tell the Python side when a Python proxy is
-	*      			garbage collected.
+	 *      			garbage collected.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once connected to the Python side,
+	 *            if the Java side does not receive a response after this time, the connection with the Python
+	 *            program is closed. If readTimeout = 0, a default readTimeout of 1000 is used for operations that
+	 *            must absolutely be non-blocking.
 	 */
 	public PythonClient(Gateway gateway, List<Class<? extends Command>> customCommands, int pythonPort,
 			InetAddress pythonAddress, long minConnectionTime, TimeUnit minConnectionTimeUnit,
-			SocketFactory socketFactory, Py4JJavaServer javaServer, boolean enableMemoryManagement) {
+			SocketFactory socketFactory, Py4JJavaServer javaServer, boolean enableMemoryManagement, int readTimeout) {
 		super(pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit, socketFactory,
 				enableMemoryManagement);
 		this.gateway = gateway;
 		this.javaServer = javaServer;
 		this.customCommands = customCommands;
 		this.threadConnection = new ThreadLocal<WeakReference<ClientServerConnection>>();
+		this.readTimeout = readTimeout;
 	}
 
 	@Override
@@ -133,13 +141,20 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 	}
 
 	@Override
+	public int getReadTimeout() {
+		return readTimeout;
+	}
+
+	@Override
 	protected void setupCleaner() {
 		// Do nothing, we don't need a cleaner.
 	}
 
 	protected Socket startClientSocket() throws IOException {
 		logger.info("Starting Python Client connection on " + address + " at " + port);
-		return socketFactory.createSocket(address, port);
+		Socket socket = socketFactory.createSocket(address, port);
+		socket.setSoTimeout(readTimeout);
+		return socket;
 	}
 
 	@Override
@@ -154,7 +169,7 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 
 		if (connection == null || connection.getSocket() == null) {
 			Socket socket = startClientSocket();
-			connection = new ClientServerConnection(gateway, socket, customCommands, this, javaServer);
+			connection = new ClientServerConnection(gateway, socket, customCommands, this, javaServer, readTimeout);
 			connection.setInitiatedFromClient(true);
 			connection.start();
 			setPerThreadConnection(connection);
@@ -164,10 +179,10 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 	}
 
 	@Override
-	protected boolean shouldRetrySendCommand(Py4JClientConnection cc, Py4JException pe) {
-		boolean shouldRetry = false;
+	protected boolean shouldRetrySendCommand(Py4JClientConnection cc, Py4JNetworkException pne) {
+		boolean shouldRetry = super.shouldRetrySendCommand(cc, pne);
 
-		if (cc instanceof ClientServerConnection) {
+		if (shouldRetry && cc instanceof ClientServerConnection) {
 			ClientServerConnection csc = (ClientServerConnection) cc;
 			shouldRetry = csc.isInitiatedFromClient();
 		}

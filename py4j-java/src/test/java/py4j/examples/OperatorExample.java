@@ -72,6 +72,21 @@ public class OperatorExample {
 		return numbers;
 	}
 
+	public void launchOperator(final Operator op, final long waitTimeMillis) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				randomBinaryOperator(op);
+				try {
+					Thread.currentThread().sleep(waitTimeMillis);
+				} catch (Exception e) {
+
+				}
+				randomBinaryOperator(op);
+			}
+		}).start();
+	}
+
 	public static void main(String[] args) {
 		GatewayServer server = new GatewayServer(new OperatorExample());
 		server.start();

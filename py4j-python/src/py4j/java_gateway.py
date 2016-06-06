@@ -45,6 +45,7 @@ BUFFER_SIZE = 4096
 DEFAULT_ADDRESS = "127.0.0.1"
 DEFAULT_PORT = 25333
 DEFAULT_PYTHON_PROXY_PORT = 25334
+DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER = "DEFAULT"
 DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT = 5
 PY4J_SKIP_COLLECTIONS = "PY4J_SKIP_COLLECTIONS"
 PY4J_TRUE = set(["yes", "y", "t", "true"])
@@ -52,10 +53,9 @@ PY4J_TRUE = set(["yes", "y", "t", "true"])
 
 def set_default_callback_accept_timeout(accept_timeout):
     """Sets default accept timeout of callback server.
-
-    TODO: Create a CallbackServer parameter for this value. Because it is only
-    used during testing, this is not a major issue for now.
     """
+    deprecated("set_default_callback_accept_timeout", "1.0",
+               "CallbackServerParameters")
     global DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT
     DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT = accept_timeout
 
@@ -326,6 +326,29 @@ def quiet_shutdown(socket_instance):
         logger.debug("Exception while shutting down a socket", exc_info=True)
 
 
+def check_connection(a_socket, read_timeout):
+    """Checks that a socket is ready to receive by reading from it.
+
+    If the read times out, this is a good sign. If the read returns an
+    empty string, this usually means that the socket was remotely closed.
+
+    :param a_socket: The socket to read from.
+    :param read_timeout: The read_timeout to restore the socket to.
+    """
+    a_socket.settimeout(0.005)
+    response = 0
+    try:
+        response = a_socket.recv(4096)
+    except socket.timeout:
+        # Do nothing this is expected!
+        pass
+    finally:
+        a_socket.settimeout(read_timeout)
+
+    if response == b"":
+        raise Exception("The connection was remotely closed.")
+
+
 def gateway_help(gateway_client, var, pattern=None, short_name=True,
                  display=True):
     """Displays a help page about a class or an object.
@@ -480,7 +503,8 @@ class GatewayParameters(object):
     def __init__(
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
             auto_close=True, auto_convert=False, eager_load=False,
-            ssl_context=None, enable_memory_management=True):
+            ssl_context=None, enable_memory_management=True,
+            read_timeout=None):
         """
         :param address: the address to which the client will request a
             connection. If you're assing a `SSLContext` with
@@ -515,6 +539,9 @@ class GatewayParameters(object):
         :param enable_memory_management: if True, tells the Java side when a
             JavaObject (reference to an object on the Java side) is garbage
             collected on the Python side.
+
+        :param read_timeout: if > 0, sets a timeout in seconds after
+            which the socket stops waiting for a response from the Java side.
         """
         self.address = address
         self.port = port
@@ -524,6 +551,7 @@ class GatewayParameters(object):
         self.eager_load = eager_load
         self.ssl_context = ssl_context
         self.enable_memory_management = enable_memory_management
+        self.read_timeout = read_timeout
 
 
 class CallbackServerParameters(object):
@@ -534,7 +562,9 @@ class CallbackServerParameters(object):
     def __init__(
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PYTHON_PROXY_PORT,
             daemonize=False, daemonize_connections=False, eager_load=True,
-            ssl_context=None):
+            ssl_context=None,
+            accept_timeout=DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
+            read_timeout=None):
         """
         :param address: the address to which the client will request a
             connection
@@ -555,6 +585,16 @@ class CallbackServerParameters(object):
 
         :param ssl_context: if not None, the SSLContext's certificate will be
          presented to callback connections.
+
+        :param accept_timeout: if > 0, sets a timeout in seconds after which
+            the callbackserver stops waiting for a connection, sees if the
+            callback server should shut down, and if not, wait again for a
+            connection. The default is 5 seconds: this roughly means that
+            if can take up to 5 seconds to shut down the callback server.
+
+        :param read_timeout: if > 0, sets a timeout in seconds after
+            which the socket stops waiting for a call or command from the
+            Java side.
         """
         self.address = address
         self.port = port
@@ -562,6 +602,13 @@ class CallbackServerParameters(object):
         self.daemonize_connections = daemonize_connections
         self.eager_load = eager_load
         self.ssl_context = ssl_context
+        if accept_timeout == DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER:
+            # This is to support deprecated function call...
+            # TODO Remove "DEFAULT" once we remove the deprecated function
+            # call.
+            accept_timeout = DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT
+        self.accept_timeout = accept_timeout
+        self.read_timeout = read_timeout
 
 
 class DummyRLock(object):
@@ -611,30 +658,24 @@ class GatewayClient(object):
     both have the same interface, but the client supports multiple threads and
     connections, which is essential when using callbacks.  """
 
-    def __init__(self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT,
-                 auto_close=True, gateway_property=None, ssl_context=None):
+    def __init__(self, gateway_parameters=None, gateway_property=None):
         """
-        :param address: the address to which the client will request a
-         connection
-
-        :param port: the port to which the client will request a connection.
-         Default is 25333.
-
-        :param auto_close: if `True`, the connections created by the client
-         close the socket when they are garbage collected.
+        :param gateway_parameters: the set of parameters used to configure the
+            GatewayClient.
 
         :param gateway_property: used to keep gateway preferences without a
-         cycle with the gateway
-
-        :param ssl_context: if not None, SSL connections will be made using
-         this SSLContext
+            cycle with the gateway
         """
-        self.address = address
-        self.port = port
+        if not gateway_parameters:
+            gateway_parameters = GatewayParameters()
+
+        self.gateway_parameters = gateway_parameters
+        self.address = gateway_parameters.address
+        self.port = gateway_parameters.port
         self.is_connected = True
-        self.auto_close = auto_close
+        self.auto_close = gateway_parameters.auto_close
         self.gateway_property = gateway_property
-        self.ssl_context = ssl_context
+        self.ssl_context = gateway_parameters.ssl_context
         self.deque = deque()
 
     def _get_connection(self):
@@ -648,8 +689,7 @@ class GatewayClient(object):
 
     def _create_connection(self):
         connection = GatewayConnection(
-            self.address, self.port, self.auto_close, self.gateway_property,
-            self.ssl_context)
+            self.gateway_parameters, self.gateway_property)
         connection.start()
         return connection
 
@@ -703,10 +743,10 @@ class GatewayClient(object):
                 return response, self._create_connection_guard(connection)
             else:
                 self._give_back_connection(connection)
-        except Py4JNetworkError:
+        except Py4JNetworkError as pne:
             if connection:
                 connection.close()
-            if self._should_retry(retry, connection):
+            if self._should_retry(retry, connection, pne):
                 logging.info("Exception while sending command.", exc_info=True)
                 response = self.send_command(command, binary=binary)
             else:
@@ -719,8 +759,8 @@ class GatewayClient(object):
     def _create_connection_guard(self, connection):
         return GatewayConnectionGuard(self, connection)
 
-    def _should_retry(self, retry, connection):
-        return retry
+    def _should_retry(self, retry, connection, pne=None):
+        return pne and pne.when == proto.ERROR_ON_SEND
 
     def close(self):
         """Closes all currently opened connections.
@@ -744,31 +784,25 @@ class GatewayConnection(object):
     """Default gateway connection (socket based) responsible for communicating
        with the Java Virtual Machine."""
 
-    def __init__(self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT,
-                 auto_close=True, gateway_property=None, ssl_context=None):
+    def __init__(self, gateway_parameters, gateway_property=None):
         """
-        :param address: the address to which the connection will be established
-
-        :param port: the port to which the connection will be established.
-         Default is 25333.
-
-        :param auto_close: if `True`, the connection closes the socket when it
-         is garbage collected.
+        :param gateway_parameters: the set of parameters used to configure the
+            GatewayClient.
 
         :param gateway_property: contains gateway preferences to avoid a cycle
          with gateway
-
-        :param ssl_context: if not None, SSL connections will be made using
-         this SSLContext
         """
-        self.address = address
-        self.port = port
+        self.gateway_parameters = gateway_parameters
+        self.address = gateway_parameters.address
+        self.port = gateway_parameters.port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if ssl_context:
-            self.socket = ssl_context.wrap_socket(
-                self.socket, server_hostname=address)
+        if gateway_parameters.read_timeout:
+            self.socket.settimeout(gateway_parameters.read_timeout)
+        if gateway_parameters.ssl_context:
+            self.socket = gateway_parameters.ssl_context.wrap_socket(
+                self.socket, server_hostname=self.address)
         self.is_connected = False
-        self.auto_close = auto_close
+        self.auto_close = gateway_parameters.auto_close
         self.gateway_property = gateway_property
         self.wr = weakref.ref(
             self,
@@ -829,8 +863,17 @@ class GatewayConnection(object):
         """
         logger.debug("Command to send: {0}".format(command))
         try:
+            check_connection(
+                self.socket, self.gateway_parameters.read_timeout)
+            # Write will never fail for small commands because the payload is
+            # below the socket's buffer.
             self.socket.sendall(command.encode("utf-8"))
+        except Exception as e:
+            logger.info("Error while sending.", exc_info=True)
+            raise Py4JNetworkError(
+                "Error while sending", e, proto.ERROR_ON_SEND)
 
+        try:
             answer = smart_decode(self.stream.readline()[:-1])
             logger.debug("Answer received: {0}".format(answer))
             if answer.startswith(proto.RETURN_MESSAGE):
@@ -842,8 +885,9 @@ class GatewayConnection(object):
                 raise Py4JError("Answer from Java side is empty")
             return answer
         except Exception as e:
-            logger.exception("Error while sending or receiving.")
-            raise Py4JNetworkError("Error while sending or receiving", e)
+            logger.info("Error while receiving.", exc_info=True)
+            raise Py4JNetworkError(
+                "Error while receiving", e, proto.ERROR_ON_RECEIVE)
 
 
 class JavaMember(object):
@@ -1421,11 +1465,7 @@ class JavaGateway(object):
             self.start_callback_server(self.callback_server_parameters)
 
     def _create_gateway_client(self):
-        gateway_client = GatewayClient(
-            address=self.gateway_parameters.address,
-            port=self.gateway_parameters.port,
-            auto_close=self.gateway_parameters.auto_close,
-            ssl_context=self.gateway_parameters.ssl_context)
+        gateway_client = GatewayClient(self.gateway_parameters)
         return gateway_client
 
     def _create_gateway_property(self):
@@ -1801,13 +1841,17 @@ class CallbackServer(object):
             read_list = [self.server_socket]
             while not self.is_shutdown:
                 readable, writable, errored = select.select(
-                    read_list, [], [], DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT)
+                    read_list, [], [],
+                    self.callback_server_parameters.accept_timeout)
 
                 if self.is_shutdown:
                     break
 
                 for s in readable:
                     socket_instance, _ = self.server_socket.accept()
+                    if self.callback_server_parameters.read_timeout:
+                        socket_instance.settimeout(
+                            self.callback_server_parameters.read_timeout)
                     if self.ssl_context:
                         socket_instance = self.ssl_context.wrap_socket(
                             socket_instance, server_side=True)

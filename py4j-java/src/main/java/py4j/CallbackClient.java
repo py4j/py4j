@@ -85,6 +85,8 @@ public class CallbackClient implements Py4JPythonClient {
 
 	protected final boolean enableMemoryManagement;
 
+	protected final int readTimeout;
+
 	public CallbackClient(int port) {
 		this(port, GatewayServer.defaultAddress(), DEFAULT_MIN_CONNECTION_TIME, DEFAULT_MIN_CONNECTION_TIME_UNIT,
 				SocketFactory.getDefault(), true);
@@ -136,6 +138,34 @@ public class CallbackClient implements Py4JPythonClient {
 	 */
 	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory, boolean enableMemoryManagement) {
+		this(port, address, minConnectionTime, minConnectionTimeUnit, socketFactory, enableMemoryManagement,
+				GatewayServer.DEFAULT_READ_TIMEOUT);
+	}
+
+	/**
+	 *
+	 * @param port
+	 *            The port used by channels to connect to the Python side.
+	 * @param address
+	 *            The addressed used by channels to connect to the Python side..
+	 * @param minConnectionTime
+	 *            The minimum connection time: channels are guaranteed to stay
+	 *            connected for this time after sending a command.
+	 * @param minConnectionTimeUnit
+	 *            The minimum coonnection time unit.
+	 * @param socketFactory
+	 *            The non-{@code null} factory to make {@link Socket}s.
+	 * @param enableMemoryManagement
+	 * 			  If False, we do not send tell the Python side when a PythonProxy
+	 * 			  is no longer used by the Java side.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once a Python program is
+	 *            connected, if a GatewayServer does not receive a request
+	 *            (e.g., a method call) after this time, the connection with the
+	 *            Python program is closed.
+	 */
+	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit,
+			SocketFactory socketFactory, boolean enableMemoryManagement, int readTimeout) {
 		super();
 		this.port = port;
 		this.address = address;
@@ -143,6 +173,7 @@ public class CallbackClient implements Py4JPythonClient {
 		this.minConnectionTimeUnit = minConnectionTimeUnit;
 		this.socketFactory = socketFactory;
 		this.enableMemoryManagement = enableMemoryManagement;
+		this.readTimeout = readTimeout;
 		setupCleaner();
 	}
 
@@ -160,7 +191,7 @@ public class CallbackClient implements Py4JPythonClient {
 
 		connection = connections.pollLast();
 		if (connection == null) {
-			connection = new CallbackConnection(port, address, socketFactory);
+			connection = new CallbackConnection(port, address, socketFactory, readTimeout);
 			connection.start();
 		}
 
@@ -176,7 +207,7 @@ public class CallbackClient implements Py4JPythonClient {
 				cc = getConnection();
 				logger.log(Level.INFO, "Acquired CB Connection");
 			} else {
-				logger.log(Level.INFO, "Shuting down, no connection can be created.");
+				logger.log(Level.INFO, "Shutting down, no connection can be created.");
 			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Critical error while sending a command", e);
@@ -190,6 +221,10 @@ public class CallbackClient implements Py4JPythonClient {
 
 	public int getPort() {
 		return port;
+	}
+
+	public int getReadTimeout() {
+		return readTimeout;
 	}
 
 	/**
@@ -310,6 +345,7 @@ public class CallbackClient implements Py4JPythonClient {
 				// Retry in case the channel was dead.
 				returnCommand = sendCommand(command, blocking);
 			} else {
+				logger.log(Level.SEVERE, "Error while sending a command.", pe);
 				throw new Py4JException("Error while sending a command.", pe);
 			}
 		} catch (Exception e) {
@@ -335,8 +371,8 @@ public class CallbackClient implements Py4JPythonClient {
 		return proxy;
 	}
 
-	protected boolean shouldRetrySendCommand(Py4JClientConnection cc, Py4JException pe) {
-		return true;
+	protected boolean shouldRetrySendCommand(Py4JClientConnection cc, Py4JNetworkException pne) {
+		return pne.getWhen() == Py4JNetworkException.ErrorTime.ERROR_ON_SEND;
 	}
 
 	protected void setupCleaner() {
