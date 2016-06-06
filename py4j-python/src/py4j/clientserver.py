@@ -19,7 +19,7 @@ from py4j.java_gateway import (
     quiet_close, quiet_shutdown, GatewayClient, JavaGateway,
     CallbackServerParameters, GatewayParameters, CallbackServer,
     GatewayConnectionGuard, DEFAULT_ADDRESS, DEFAULT_PORT,
-    DEFAULT_PYTHON_PROXY_PORT)
+    DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER)
 from py4j import protocol as proto
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
@@ -36,7 +36,8 @@ class JavaParameters(GatewayParameters):
     def __init__(
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
             auto_close=True, auto_convert=False, eager_load=False,
-            ssl_context=None, enable_memory_management=True, auto_gc=False):
+            ssl_context=None, enable_memory_management=True, auto_gc=False,
+            read_timeout=None):
         """
 
         :param address: the address to which the client will request a
@@ -77,10 +78,13 @@ class JavaParameters(GatewayParameters):
             the Java side. This should prevent the gc from running between
             sending the command and waiting for an anwser. False by default
             because this case is extremely unlikely.
+
+        :param read_timeout: if > 0, sets a timeout in seconds after
+            which the socket stops waiting for a response from the Java side.
         """
         super(JavaParameters, self).__init__(
             address, port, auto_field, auto_close, auto_convert, eager_load,
-            ssl_context, enable_memory_management)
+            ssl_context, enable_memory_management, read_timeout)
         self.auto_gc = auto_gc
 
 
@@ -92,7 +96,9 @@ class PythonParameters(CallbackServerParameters):
     def __init__(
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PYTHON_PROXY_PORT,
             daemonize=False, daemonize_connections=False, eager_load=True,
-            ssl_context=None, auto_gc=False):
+            ssl_context=None, auto_gc=False,
+            accept_timeout=DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
+            read_timeout=None,):
         """
         :param address: the address to which the client will request a
             connection
@@ -119,10 +125,20 @@ class PythonParameters(CallbackServerParameters):
             sending the response and waiting for a new command. False by
             default because this case is extremely unlikely but could break
             communication.
+
+        :param accept_timeout: if > 0, sets a timeout in seconds after which
+            the callbackserver stops waiting for a connection, sees if the
+            callback server should shut down, and if not, wait again for a
+            connection. The default is 5 seconds: this roughly means that
+            if can take up to 5 seconds to shut down the callback server.
+
+        :param read_timeout: if > 0, sets a timeout in seconds after
+            which the socket stops waiting for a call or command from the
+            Java side.
         """
         super(PythonParameters, self).__init__(
             address, port, daemonize, daemonize_connections, eager_load,
-            ssl_context)
+            ssl_context, accept_timeout, read_timeout)
         self.auto_gc = auto_gc
 
 
@@ -146,11 +162,8 @@ class JavaClient(GatewayClient):
             cycle with the JavaGateway
         """
         super(JavaClient, self).__init__(
-            address=java_parameters.address,
-            port=java_parameters.port,
-            auto_close=java_parameters.auto_close,
-            gateway_property=gateway_property,
-            ssl_context=java_parameters.ssl_context)
+            java_parameters,
+            gateway_property=gateway_property)
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
         self.thread_connection = local()
@@ -305,6 +318,8 @@ class ClientServerConnection(object):
     def connect_to_java_server(self):
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            if self.java_parameters.read_timeout:
+                self.socket.settimeout(self.java_parameters.read_timeout)
             if self.ssl_context:
                 self.socket = self.ssl_context.wrap_socket(
                     self.socket, server_hostname=self.java_address)
