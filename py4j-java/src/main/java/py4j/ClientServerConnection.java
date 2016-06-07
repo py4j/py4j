@@ -51,9 +51,11 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	protected final Logger logger = Logger.getLogger(ClientServerConnection.class.getName());
 	protected final Py4JJavaServer javaServer;
 	protected final Py4JPythonClientPerThread pythonClient;
+	protected final int blockingReadTimeout;
+	protected final int nonBlockingReadTimeout;
 
 	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
-			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer) throws IOException {
+			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer, int readTimeout) throws IOException {
 		super();
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
@@ -65,6 +67,12 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		}
 		this.javaServer = javaServer;
 		this.pythonClient = pythonClient;
+		this.blockingReadTimeout = readTimeout;
+		if (readTimeout > 0) {
+			this.nonBlockingReadTimeout = readTimeout;
+		} else {
+			this.nonBlockingReadTimeout = CallbackConnection.DEFAULT_NONBLOCKING_SO_TIMEOUT;
+		}
 	}
 
 	public void startServerConnection() {
@@ -245,7 +253,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	protected String readNonBlockingResponse(Socket socket, BufferedReader reader) throws IOException {
 		String returnCommand = null;
 
-		socket.setSoTimeout(CallbackConnection.DEFAULT_NONBLOCKING_SO_TIMEOUT);
+		socket.setSoTimeout(nonBlockingReadTimeout);
 
 		while (true) {
 			try {
@@ -254,12 +262,12 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 			} finally {
 				// Set back blocking timeout (necessary if
 				// sockettimeoutexception is raised and propagated)
-				socket.setSoTimeout(0);
+				socket.setSoTimeout(blockingReadTimeout);
 			}
 		}
 
 		// Set back blocking timeout
-		socket.setSoTimeout(0);
+		socket.setSoTimeout(blockingReadTimeout);
 
 		return returnCommand;
 	}

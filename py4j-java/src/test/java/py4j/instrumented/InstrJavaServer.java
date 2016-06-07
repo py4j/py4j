@@ -53,7 +53,7 @@ public class InstrJavaServer extends JavaServer {
 	@Override
 	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket) throws IOException {
 		ClientServerConnection connection = new InstrClientServerConnection(gateway, socket, getCustomCommands(),
-				(Py4JPythonClientPerThread) getCallbackClient(), this);
+				(Py4JPythonClientPerThread) getCallbackClient(), this, getReadTimeout());
 		connection.startServerConnection();
 		return connection;
 	}

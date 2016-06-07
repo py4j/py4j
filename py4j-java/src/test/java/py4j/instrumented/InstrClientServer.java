@@ -58,7 +58,7 @@ public class InstrClientServer extends ClientServer {
 
 	protected Py4JPythonClientPerThread createPythonClient() {
 		return new InstrPythonClient(null, null, pythonPort, pythonAddress, CallbackClient.DEFAULT_MIN_CONNECTION_TIME,
-				TimeUnit.SECONDS, SocketFactory.getDefault(), null, enableMemoryManagement);
+				TimeUnit.SECONDS, SocketFactory.getDefault(), null, enableMemoryManagement, readTimeout);
 	}
 
 	protected Py4JJavaServer createJavaServer(Object entryPoint, Py4JPythonClientPerThread pythonClient) {

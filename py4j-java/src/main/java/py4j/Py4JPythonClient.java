@@ -103,6 +103,8 @@ public interface Py4JPythonClient {
 
 	int getPort();
 
+	int getReadTimeout();
+
 	InetAddress getAddress();
 
 	/**
