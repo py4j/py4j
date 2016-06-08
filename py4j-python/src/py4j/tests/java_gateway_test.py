@@ -1109,7 +1109,9 @@ class RetryTest(unittest.TestCase):
         If there is a bug, Java will call Python, then read will fail, then it
         will call Python again.
 
-        TODO: COMPLETE DOC
+        If there is no bug, Java will call Python, read will fail, then Java
+        will raise an Exception that will be received as a Py4JError on the
+        Python side.
         """
         self.p = start_short_timeout_app_process()
         gateway = JavaGateway(
@@ -1118,7 +1120,6 @@ class RetryTest(unittest.TestCase):
             operator = WaitOperator(0.5)
             opExample = gateway.jvm.py4j.examples.OperatorExample()
 
-            # TODO Why does it fail if the next test fail as well (no retry?)
             opExample.randomBinaryOperator(operator)
             self.fail(
                 "Should never retry once the first command went through."
@@ -1147,7 +1148,7 @@ class RetryTest(unittest.TestCase):
             str_connection2 = str(
                 list(gateway._callback_server.connections)[0])
 
-            sleep(0.750)
+            sleep(0.5)
 
             opExample.randomBinaryOperator(operator)
             str_connection3 = str(

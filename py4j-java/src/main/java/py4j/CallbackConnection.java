@@ -123,6 +123,7 @@ public class CallbackConnection implements Py4JClientConnection {
 			} else {
 				returnCommand = this.readNonBlockingResponse(this.socket, this.reader);
 			}
+			// TODO if returnCommand is null, throw an exception
 		} catch (Exception e) {
 			throw new Py4JNetworkException("Error while sending a command: " + command, e);
 		}

@@ -209,7 +209,7 @@ public class ExampleClass {
 			try {
 				Thread.currentThread().sleep(millis);
 
-			} catch(Exception e) {
+			} catch (Exception e) {
 
 			}
 		}

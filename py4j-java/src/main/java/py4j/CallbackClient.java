@@ -207,7 +207,7 @@ public class CallbackClient implements Py4JPythonClient {
 				cc = getConnection();
 				logger.log(Level.INFO, "Acquired CB Connection");
 			} else {
-				logger.log(Level.INFO, "Shuting down, no connection can be created.");
+				logger.log(Level.INFO, "Shutting down, no connection can be created.");
 			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Critical error while sending a command", e);
