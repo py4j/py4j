@@ -85,9 +85,24 @@ def start_example_server():
         "py4j.examples.ExampleApplication"])
 
 
+def start_short_timeout_example_server():
+    subprocess.call([
+        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.ExampleApplication$ExampleShortTimeoutApplication"])
+
+
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_example_server)
+    p.start()
+    sleep()
+    check_connection()
+    return p
+
+
+def start_short_timeout_app_process():
+    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    p = Process(target=start_short_timeout_example_server)
     p.start()
     sleep()
     check_connection()
@@ -1001,6 +1016,150 @@ class GatewayLauncherTest(unittest.TestCase):
         finally:
             os.unlink(outpath)
             os.unlink(errpath)
+
+
+class WaitOperator(object):
+
+    def __init__(self, sleepTime):
+        self.sleepTime = sleepTime
+        self.callCount = 0
+
+    def doOperation(self, i, j):
+        self.callCount += 1
+        if self.callCount == 1:
+            sleep(self.sleepTime)
+        return i + j
+
+    class Java:
+        implements = ["py4j.examples.Operator"]
+
+
+class RetryTest(unittest.TestCase):
+
+    def testBadRetry(self):
+        """Python calls a long Java method. The call goes through, but the
+        response takes a long time to get back.
+
+        If there is a bug, Python will fail on read and retry (sending the same
+        call twice).
+
+        If there is no bug, Python will fail on read and raise an Exception.
+        """
+        self.p = start_example_app_process()
+        gateway = JavaGateway(
+            gateway_parameters=GatewayParameters(read_timeout=0.250))
+        try:
+            value = gateway.entry_point.getNewExample().sleepFirstTimeOnly(500)
+            self.fail(
+                "Should never retry once the first command went through."
+                "number of calls made: {0}".format(value))
+        except Py4JError:
+            self.assertTrue(True)
+        finally:
+            gateway.shutdown()
+            self.p.join()
+
+    def testGoodRetry(self):
+        """Python calls Java twice in a row, then waits, then calls again.
+
+        Java fails when it does not receive calls quickly.
+
+        If there is a bug, Python will fail on the third call because the Java
+        connection was closed and it did not retry.
+
+        If there is a bug, Python might not fail because Java did not close the
+        connection on timeout. The connection used to call Java will be the
+        same one for all calls (and an assertion will fail).
+
+        If there is no bug, Python will call Java twice with the same
+        connection. On the third call, the write will fail, and a new
+        connection will be created.
+        """
+        self.p = start_short_timeout_app_process()
+        gateway = JavaGateway()
+        connections = gateway._gateway_client.deque
+        try:
+            # Call #1
+            gateway.jvm.System.currentTimeMillis()
+            str_connection = str(connections[0])
+
+            # Call #2 after, should not create new connections if the system is
+            # not too slow :-)
+            gateway.jvm.System.currentTimeMillis()
+            self.assertEqual(1, len(connections))
+            str_connection2 = str(connections[0])
+            self.assertEqual(str_connection, str_connection2)
+
+            sleep(0.5)
+            gateway.jvm.System.currentTimeMillis()
+            self.assertEqual(1, len(connections))
+            str_connection3 = str(connections[0])
+            # A new connection was automatically created.
+            self.assertNotEqual(str_connection, str_connection3)
+        except Py4JError:
+            self.fail("Should retry automatically by default.")
+        finally:
+            gateway.shutdown()
+            self.p.join()
+
+    def testBadRetryFromJava(self):
+        """Similar use case as testBadRetry, but from Java: Java calls a long
+        Python operation.
+
+        If there is a bug, Java will call Python, then read will fail, then it
+        will call Python again.
+
+        TODO: COMPLETE DOC
+        """
+        self.p = start_short_timeout_app_process()
+        gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters())
+        try:
+            operator = WaitOperator(0.5)
+            opExample = gateway.jvm.py4j.examples.OperatorExample()
+
+            # TODO Why does it fail if the next test fail as well (no retry?)
+            opExample.randomBinaryOperator(operator)
+            self.fail(
+                "Should never retry once the first command went through."
+                " number of calls made: {0}".format(operator.callCount))
+        except Py4JJavaError:
+            self.assertTrue(True)
+        finally:
+            gateway.shutdown()
+            self.p.join()
+
+    def testGoodRetryFromJava(self):
+        """
+        TODO: COMPLETE DOC
+        """
+        self.p = start_short_timeout_app_process()
+        gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters(
+                read_timeout=0.250))
+        try:
+            operator = WaitOperator(0)
+            opExample = gateway.jvm.py4j.examples.OperatorExample()
+            opExample.randomBinaryOperator(operator)
+            str_connection = str(list(gateway._callback_server.connections)[0])
+
+            opExample.randomBinaryOperator(operator)
+            str_connection2 = str(
+                list(gateway._callback_server.connections)[0])
+
+            sleep(0.750)
+
+            opExample.randomBinaryOperator(operator)
+            str_connection3 = str(
+                list(gateway._callback_server.connections)[0])
+
+            self.assertEqual(str_connection, str_connection2)
+            self.assertNotEqual(str_connection, str_connection3)
+        except Py4JJavaError:
+            self.fail("Callbackserver did not retry.")
+        finally:
+            gateway.shutdown()
+            self.p.join()
 
 
 if __name__ == "__main__":

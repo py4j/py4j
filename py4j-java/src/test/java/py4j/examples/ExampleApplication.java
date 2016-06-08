@@ -75,4 +75,17 @@ public class ExampleApplication {
 		}
 	}
 
+	public static class ExampleShortTimeoutApplication {
+		public static void main(String[] args) {
+			GatewayServer.turnLoggingOff();
+			CallbackClient callbackClient = new CallbackClient(GatewayServer.DEFAULT_PYTHON_PORT,
+					GatewayServer.defaultAddress(), CallbackClient.DEFAULT_MIN_CONNECTION_TIME,
+					CallbackClient.DEFAULT_MIN_CONNECTION_TIME_UNIT, SocketFactory.getDefault(), false, 250);
+			GatewayServer server = new GatewayServer.GatewayServerBuilder().readTimeout(250).entryPoint(new
+					ExampleEntryPoint()).callbackClient(callbackClient).build();
+			server.start();
+
+		}
+	}
+
 }

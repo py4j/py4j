@@ -41,6 +41,8 @@ import java.util.List;
 
 public class ExampleClass {
 
+	private int sleepCounter = 0;
+
 	private int field1 = 2;
 
 	public int field10 = 10;
@@ -196,5 +198,23 @@ public class ExampleClass {
 
 	public ReadableByteChannel getBrokenStream() throws IOException {
 		throw new NotSerializableException("...or some other expected failure");
+	}
+
+	public int sleepFirstTimeOnly(long millis) {
+		// Will only sleep the first time.
+		// Returns the number of time the method is called.
+		sleepCounter++;
+
+		if (sleepCounter == 1) {
+			try {
+				Thread.currentThread().sleep(millis);
+
+			} catch(Exception e) {
+
+			}
+		}
+
+		return sleepCounter;
+
 	}
 }
