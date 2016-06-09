@@ -36,6 +36,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -115,6 +116,7 @@ public class CallbackConnection implements Py4JClientConnection {
 		String returnCommand = null;
 		try {
 			this.used = true;
+			checkConnection(this.socket, this.reader);
 			writer.write(command);
 			writer.flush();
 
@@ -123,17 +125,48 @@ public class CallbackConnection implements Py4JClientConnection {
 			} else {
 				returnCommand = this.readNonBlockingResponse(this.socket, this.reader);
 			}
-			// TODO if returnCommand is null, throw an exception
 		} catch (Exception e) {
 			throw new Py4JNetworkException("Error while sending a command: " + command, e);
 		}
 
-		if (Protocol.isReturnMessage(returnCommand)) {
+		if (returnCommand == null) {
+			throw new Py4JNetworkException("Error while sending a command: null response: " + command);
+		} else if (Protocol.isReturnMessage(returnCommand)) {
 			returnCommand = returnCommand.substring(1);
 		}
 
 		logger.log(Level.INFO, "Returning CB command: " + returnCommand);
 		return returnCommand;
+	}
+
+	/**
+	 * <p>Checks that a socket is ready to receive by reading from it.</p>
+	 *
+	 * <p>If the read raises a timeout exception, this is a good sign. If the response is -1, this usually means
+	 * that the socket was remotely closed.</p>
+	 *
+	 * @param socket
+	 * @param reader
+	 * @throws IOException
+	 */
+	protected void checkConnection(Socket socket, BufferedReader reader) throws IOException {
+		int response = 0;
+
+		socket.setSoTimeout(5);
+
+		try {
+			response = reader.read();
+		} catch (SocketTimeoutException ste) {
+			// This is expected!
+		} finally {
+			// Set back blocking timeout
+			socket.setSoTimeout(blockingReadTimeout);
+		}
+
+		if (response == -1) {
+			throw new IOException("Remote socket is closed.");
+		}
+
 	}
 
 	protected String readBlockingResponse(BufferedReader reader) throws IOException {

@@ -827,6 +827,25 @@ class GatewayConnection(object):
             logger.debug("Exception occurred while shutting down gateway",
                          exc_info=True)
 
+    def check_connection(self):
+        """Checks that a socket is ready to receive by reading from it.
+
+        If the read times out, this is a good sign. If the read returns an
+        empty string, this usually means that the socket was remotely closed.
+        """
+        self.socket.settimeout(0.005)
+        response = 0
+        try:
+            response = self.stream.read()
+        except socket.timeout:
+            # Do nothing this is expected!
+            pass
+        finally:
+            self.socket.settimeout(self.gateway_parameters.read_timeout)
+
+        if response == "":
+            raise Exception("The connection was remotely closed.")
+
     def send_command(self, command):
         """Sends a command to the JVM. This method is not intended to be
            called directly by Py4J users: it is usually called by JavaMember
@@ -840,6 +859,7 @@ class GatewayConnection(object):
         """
         logger.debug("Command to send: {0}".format(command))
         try:
+            self.check_connection()
             self.socket.sendall(command.encode("utf-8"))
 
             answer = smart_decode(self.stream.readline()[:-1])
@@ -853,7 +873,7 @@ class GatewayConnection(object):
                 raise Py4JError("Answer from Java side is empty")
             return answer
         except Exception as e:
-            logger.exception("Error while sending or receiving.")
+            logger.info("Error while sending or receiving.")
             raise Py4JNetworkError("Error while sending or receiving", e)
 
 

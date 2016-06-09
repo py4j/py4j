@@ -345,6 +345,7 @@ public class CallbackClient implements Py4JPythonClient {
 				// Retry in case the channel was dead.
 				returnCommand = sendCommand(command, blocking);
 			} else {
+				logger.log(Level.SEVERE, "Error while sending a command.", pe);
 				throw new Py4JException("Error while sending a command.", pe);
 			}
 		} catch (Exception e) {
