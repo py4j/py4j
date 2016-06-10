@@ -30,7 +30,6 @@
 package py4j.examples;
 
 import javax.net.SocketFactory;
-import javax.security.auth.callback.Callback;
 
 import py4j.CallbackClient;
 import py4j.GatewayServer;

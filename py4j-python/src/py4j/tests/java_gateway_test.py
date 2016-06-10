@@ -1132,7 +1132,14 @@ class RetryTest(unittest.TestCase):
 
     def testGoodRetryFromJava(self):
         """
-        TODO: COMPLETE DOC
+        Similar use case as testGoodRetry, but from Java: Python calls Java,
+        which calls Python back two times in a row. Then python waits for a
+        while. Python then calls Java, which calls Python.
+
+        Because Python Callback server has been waiting for too much time, the
+        receiving socket has closed so the call from Java to Python will fail
+        on send, and Java must retry by creating a new connection
+        (CallbackConnection).
         """
         self.p = start_short_timeout_app_process()
         gateway = JavaGateway(

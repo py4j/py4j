@@ -9,7 +9,7 @@ from py4j.clientserver import (
     ClientServer, JavaParameters, PythonParameters)
 from py4j.java_gateway import GatewayConnectionGuard, is_instance_of, \
     GatewayParameters, DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT
-from py4j.protocol import Py4JJavaError, smart_decode
+from py4j.protocol import Py4JError, Py4JJavaError, smart_decode
 from py4j.tests.java_callback_test import IHelloImpl
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, check_connection, sleep)
@@ -76,6 +76,24 @@ def java_multi_client_server_app_process():
         yield p
     finally:
         p.join()
+
+
+class RetryTest(unittest.TestCase):
+
+    def testBadRetry(self):
+        client_server = ClientServer(
+            JavaParameters(read_timeout=0.250), PythonParameters())
+        with clientserver_example_app_process(True):
+            try:
+                example = client_server.jvm.py4j.examples.ExampleClass()
+                value = example.sleepFirstTimeOnly(500)
+                self.fail(
+                    "Should never retry once the first command went through."
+                    "number of calls made: {0}".format(value))
+            except Py4JError:
+                self.assertTrue(True)
+            finally:
+                client_server.shutdown()
 
 
 class IntegrationTest(unittest.TestCase):

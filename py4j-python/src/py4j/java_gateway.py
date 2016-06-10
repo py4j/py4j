@@ -860,6 +860,8 @@ class GatewayConnection(object):
         logger.debug("Command to send: {0}".format(command))
         try:
             self.check_connection()
+            # Write will never fail for small commands because the payload is
+            # below the socket's buffer.
             self.socket.sendall(command.encode("utf-8"))
 
             answer = smart_decode(self.stream.readline()[:-1])

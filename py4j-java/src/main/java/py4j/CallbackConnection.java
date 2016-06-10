@@ -117,6 +117,7 @@ public class CallbackConnection implements Py4JClientConnection {
 		try {
 			this.used = true;
 			checkConnection(this.socket, this.reader);
+			// XXX write will never fail for small commands because the payload is below the socket's buffer.
 			writer.write(command);
 			writer.flush();
 
