@@ -23,16 +23,26 @@ def start_clientserver_example_server():
         "py4j.examples.SingleThreadApplication"])
 
 
+def start_short_timeout_clientserver_example_server():
+    subprocess.call([
+        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.SingleThreadApplication$"
+        "SingleThreadShortTimeoutApplication"])
+
+
 def start_java_clientserver_example_server():
     subprocess.call([
         "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
         "py4j.examples.SingleThreadClientApplication"])
 
 
-def start_clientserver_example_app_process(start_java_client=False):
+def start_clientserver_example_app_process(start_java_client=False,
+                                           start_short_timeout=False):
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    if not start_java_client:
+    if not start_java_client and not start_short_timeout:
         p = Process(target=start_clientserver_example_server)
+    elif start_short_timeout:
+        p = Process(target=start_short_timeout_clientserver_example_server)
     else:
         p = Process(target=start_java_clientserver_example_server)
     p.start()
@@ -42,8 +52,10 @@ def start_clientserver_example_app_process(start_java_client=False):
 
 
 @contextmanager
-def clientserver_example_app_process(start_java_client=False):
-    p = start_clientserver_example_app_process(start_java_client)
+def clientserver_example_app_process(
+        start_java_client=False, start_short_timeout=False):
+    p = start_clientserver_example_app_process(
+        start_java_client, start_short_timeout)
     try:
         yield p
     finally:
@@ -81,9 +93,11 @@ def java_multi_client_server_app_process():
 class RetryTest(unittest.TestCase):
 
     def testBadRetry(self):
+        """TODO
+        """
         client_server = ClientServer(
             JavaParameters(read_timeout=0.250), PythonParameters())
-        with clientserver_example_app_process(True):
+        with clientserver_example_app_process():
             try:
                 example = client_server.jvm.py4j.examples.ExampleClass()
                 value = example.sleepFirstTimeOnly(500)
@@ -92,6 +106,37 @@ class RetryTest(unittest.TestCase):
                     "number of calls made: {0}".format(value))
             except Py4JError:
                 self.assertTrue(True)
+            finally:
+                client_server.shutdown()
+
+    def testGoodRetry(self):
+        """TODO
+        """
+        client_server = ClientServer(
+            JavaParameters(), PythonParameters())
+        connections = client_server._gateway_client.deque
+
+        with clientserver_example_app_process(False, True):
+            try:
+                # Call #1
+                client_server.jvm.System.currentTimeMillis()
+                str_connection = str(connections[0])
+
+                # Call #2
+                client_server.jvm.System.currentTimeMillis()
+                self.assertEqual(1, len(connections))
+                str_connection2 = str(connections[0])
+                self.assertEqual(str_connection, str_connection2)
+
+                sleep(0.5)
+                client_server.jvm.System.currentTimeMillis()
+                self.assertEqual(1, len(connections))
+                str_connection3 = str(connections[0])
+                # A new connection was automatically created.
+                self.assertNotEqual(str_connection, str_connection3)
+
+            except Py4JError:
+                self.fail("Should retry automatically by default.")
             finally:
                 client_server.shutdown()
 

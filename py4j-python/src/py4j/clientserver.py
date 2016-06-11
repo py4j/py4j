@@ -211,7 +211,6 @@ class JavaClient(GatewayClient):
             self.gateway_property, self)
         connection.connect_to_java_server()
         self.set_thread_connection(connection)
-        self.deque.append(connection)
         return connection
 
     def _should_retry(self, retry, connection):
