@@ -93,7 +93,8 @@ def java_multi_client_server_app_process():
 class RetryTest(unittest.TestCase):
 
     def testBadRetry(self):
-        """Python calls a long Java method. The call goes through, but the
+        """Should not retry from Python to Java.
+        Python calls a long Java method. The call goes through, but the
         response takes a long time to get back.
 
         If there is a bug, Python will fail on read and retry (sending the same
@@ -116,7 +117,8 @@ class RetryTest(unittest.TestCase):
                 client_server.shutdown()
 
     def testGoodRetry(self):
-        """Python calls Java twice in a row, then waits, then calls again.
+        """Should retry from Python to Java.
+        Python calls Java twice in a row, then waits, then calls again.
 
         Java fails when it does not receive calls quickly.
 
@@ -160,7 +162,8 @@ class RetryTest(unittest.TestCase):
                 client_server.shutdown()
 
     def testBadRetryFromJava(self):
-        """Similar use case as testBadRetry, but from Java: Java calls a long
+        """Should not retry from Java to Python.
+        Similar use case as testBadRetry, but from Java: Java calls a long
         Python operation.
 
         If there is a bug, Java will call Python, then read will fail, then it
@@ -189,7 +192,7 @@ class RetryTest(unittest.TestCase):
                 client_server.shutdown()
 
     def testGoodRetryFromJava(self):
-        """
+        """Should retry from Java to Python.
         Similar use case as testGoodRetry, but from Java: Python calls Java,
         which calls Python back. Then Java waits for a while and calls Python
         again.

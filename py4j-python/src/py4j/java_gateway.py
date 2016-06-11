@@ -326,6 +326,30 @@ def quiet_shutdown(socket_instance):
         logger.debug("Exception while shutting down a socket", exc_info=True)
 
 
+def check_connection_state(a_socket, stream, read_timeout):
+    """Checks that a socket is ready to receive by reading from it.
+
+    If the read times out, this is a good sign. If the read returns an
+    empty string, this usually means that the socket was remotely closed.
+
+    :param a_socket: The socket to read from.
+    :param stream: The stream to read from.
+    :param read_timeout: The read_timeout to restore the socket to.
+    """
+    a_socket.settimeout(0.005)
+    response = 0
+    try:
+        response = stream.read()
+    except socket.timeout:
+        # Do nothing this is expected!
+        pass
+    finally:
+        a_socket.settimeout(read_timeout)
+
+    if response == "":
+        raise Exception("The connection was remotely closed.")
+
+
 def gateway_help(gateway_client, var, pattern=None, short_name=True,
                  display=True):
     """Displays a help page about a class or an object.
@@ -720,10 +744,10 @@ class GatewayClient(object):
                 return response, self._create_connection_guard(connection)
             else:
                 self._give_back_connection(connection)
-        except Py4JNetworkError:
+        except Py4JNetworkError as pne:
             if connection:
                 connection.close()
-            if self._should_retry(retry, connection):
+            if self._should_retry(retry, connection, pne):
                 logging.info("Exception while sending command.", exc_info=True)
                 response = self.send_command(command, binary=binary)
             else:
@@ -736,8 +760,8 @@ class GatewayClient(object):
     def _create_connection_guard(self, connection):
         return GatewayConnectionGuard(self, connection)
 
-    def _should_retry(self, retry, connection):
-        return retry
+    def _should_retry(self, retry, connection, pne=None):
+        return pne and pne.when == proto.ERROR_ON_SEND
 
     def close(self):
         """Closes all currently opened connections.
@@ -827,25 +851,6 @@ class GatewayConnection(object):
             logger.debug("Exception occurred while shutting down gateway",
                          exc_info=True)
 
-    def check_connection(self):
-        """Checks that a socket is ready to receive by reading from it.
-
-        If the read times out, this is a good sign. If the read returns an
-        empty string, this usually means that the socket was remotely closed.
-        """
-        self.socket.settimeout(0.005)
-        response = 0
-        try:
-            response = self.stream.read()
-        except socket.timeout:
-            # Do nothing this is expected!
-            pass
-        finally:
-            self.socket.settimeout(self.gateway_parameters.read_timeout)
-
-        if response == "":
-            raise Exception("The connection was remotely closed.")
-
     def send_command(self, command):
         """Sends a command to the JVM. This method is not intended to be
            called directly by Py4J users: it is usually called by JavaMember
@@ -859,11 +864,17 @@ class GatewayConnection(object):
         """
         logger.debug("Command to send: {0}".format(command))
         try:
-            self.check_connection()
+            check_connection_state(
+                self.socket, self.stream, self.gateway_parameters.read_timeout)
             # Write will never fail for small commands because the payload is
             # below the socket's buffer.
             self.socket.sendall(command.encode("utf-8"))
+        except Exception as e:
+            logger.info("Error while sending or receiving.", exc_info=True)
+            raise Py4JNetworkError(
+                "Error while sending or receiving", e, proto.ERROR_ON_SEND)
 
+        try:
             answer = smart_decode(self.stream.readline()[:-1])
             logger.debug("Answer received: {0}".format(answer))
             if answer.startswith(proto.RETURN_MESSAGE):
@@ -875,8 +886,9 @@ class GatewayConnection(object):
                 raise Py4JError("Answer from Java side is empty")
             return answer
         except Exception as e:
-            logger.info("Error while sending or receiving.")
-            raise Py4JNetworkError("Error while sending or receiving", e)
+            logger.info("Error while sending or receiving.", exc_info=True)
+            raise Py4JNetworkError(
+                "Error while sending or receiving", e, proto.ERROR_ON_RECEIVE)
 
 
 class JavaMember(object):

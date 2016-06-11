@@ -164,6 +164,10 @@ OUTPUT_CONVERTER = {
 
 INPUT_CONVERTER = []
 
+# ERRORS
+ERROR_ON_SEND = "on_send"
+ERROR_ON_RECEIVE = "on_receive"
+
 
 def escape_new_line(original):
     """Replaces new line characters by a backslash followed by a n.
@@ -385,7 +389,10 @@ class Py4JError(Exception):
 
 class Py4JNetworkError(Py4JError):
     """Exception raised when a network error occurs with Py4J."""
-    pass
+    def __init__(self, args=None, cause=None, when=None):
+        super(Py4JNetworkError, self).__init__(args)
+        self.cause = cause
+        self.when = when
 
 
 class Py4JJavaError(Py4JError):

@@ -16,7 +16,8 @@ from threading import local, Thread
 import weakref
 
 from py4j.java_gateway import (
-    quiet_close, quiet_shutdown, GatewayClient, JavaGateway,
+    quiet_close, quiet_shutdown, check_connection_state,
+    GatewayClient, JavaGateway,
     CallbackServerParameters, GatewayParameters, CallbackServer,
     GatewayConnectionGuard, DEFAULT_ADDRESS, DEFAULT_PORT,
     DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER)
@@ -213,9 +214,12 @@ class JavaClient(GatewayClient):
         self.set_thread_connection(connection)
         return connection
 
-    def _should_retry(self, retry, connection):
+    def _should_retry(self, retry, connection, pne=None):
         # Only retry if Python was driving the communication.
-        return retry and connection and connection.initiated_from_client
+        parent_retry = super(JavaClient, self)._should_retry(
+            retry, connection, pne)
+        return parent_retry and retry and connection and\
+            connection.initiated_from_client
 
     def _create_connection_guard(self, connection):
         return ClientServerConnectionGuard(self, connection)
@@ -372,8 +376,16 @@ class ClientServerConnection(object):
         # TODO At some point extract common code from wait_for_commands
         logger.debug("Command to send: {0}".format(command))
         try:
+            check_connection_state(
+                self.socket, self.stream, self.java_parameters.read_timeout)
             self._auto_gc(True)
             self.socket.sendall(command.encode("utf-8"))
+        except Exception as e:
+            logger.exception("Error while sending or receiving.")
+            raise Py4JNetworkError(
+                "Error while sending or receiving", e, proto.ERROR_ON_SEND)
+
+        try:
             while True:
                 answer = smart_decode(self.stream.readline()[:-1])
                 logger.debug("Answer received: {0}".format(answer))
@@ -406,7 +418,8 @@ class ClientServerConnection(object):
                             proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
         except Exception as e:
             logger.exception("Error while sending or receiving.")
-            raise Py4JNetworkError("Error while sending or receiving", e)
+            raise Py4JNetworkError(
+                "Error while sending or receiving", e, proto.ERROR_ON_RECEIVE)
 
     def close(self):
         logger.info("Closing down clientserver connection")
