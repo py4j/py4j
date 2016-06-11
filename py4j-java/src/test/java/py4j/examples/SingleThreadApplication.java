@@ -56,8 +56,8 @@ public class SingleThreadApplication {
 	public static class SingleThreadShortTimeoutApplication {
 		public static void main(String[] args) {
 			GatewayServer.turnLoggingOff();
-			ClientServer clientServer = new ClientServer.ClientServerBuilder().readTimeout(250).entryPoint
-					(new ExampleEntryPoint()).build();
+			ClientServer clientServer = new ClientServer.ClientServerBuilder().readTimeout(250)
+					.entryPoint(new ExampleEntryPoint()).build();
 			clientServer.startServer(true);
 		}
 	}
