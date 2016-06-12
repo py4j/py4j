@@ -37,7 +37,11 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.SocketFactory;
 
-import py4j.*;
+import py4j.ClientServerConnection;
+import py4j.Gateway;
+import py4j.Py4JClientConnection;
+import py4j.Py4JJavaServer;
+import py4j.PythonClient;
 import py4j.commands.Command;
 
 public class InstrPythonClient extends PythonClient {

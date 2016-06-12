@@ -33,7 +33,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-import py4j.*;
+import py4j.Gateway;
+import py4j.GatewayServer;
+import py4j.Py4JException;
+import py4j.Py4JJavaServer;
+import py4j.Py4JServerConnection;
 
 /**
  * <p>

@@ -29,10 +29,6 @@
  *****************************************************************************/
 package py4j.examples;
 
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import py4j.ClientServer;
 import py4j.GatewayServer;
 

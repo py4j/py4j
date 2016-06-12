@@ -33,7 +33,11 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 
-import py4j.*;
+import py4j.ClientServerConnection;
+import py4j.Gateway;
+import py4j.JavaServer;
+import py4j.Py4JPythonClientPerThread;
+import py4j.Py4JServerConnection;
 import py4j.commands.Command;
 
 public class InstrJavaServer extends JavaServer {

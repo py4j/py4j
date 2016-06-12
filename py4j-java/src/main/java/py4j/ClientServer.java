@@ -36,8 +36,6 @@ import java.util.logging.Logger;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
-import py4j.reflection.ReflectionUtil;
-
 /**
  * <p>
  * This class creates the JavaServer and the PythonClient necessary to

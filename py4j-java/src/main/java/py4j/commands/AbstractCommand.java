@@ -37,7 +37,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import py4j.*;
+import py4j.Gateway;
+import py4j.Protocol;
+import py4j.Py4JException;
+import py4j.Py4JServerConnection;
+import py4j.ReturnObject;
 
 /**
  * <p>

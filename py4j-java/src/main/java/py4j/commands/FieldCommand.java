@@ -37,7 +37,11 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
-import py4j.*;
+import py4j.Gateway;
+import py4j.Protocol;
+import py4j.Py4JException;
+import py4j.Py4JServerConnection;
+import py4j.ReturnObject;
 import py4j.reflection.ReflectionEngine;
 
 /**
