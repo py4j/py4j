@@ -326,7 +326,7 @@ def quiet_shutdown(socket_instance):
         logger.debug("Exception while shutting down a socket", exc_info=True)
 
 
-def check_connection_state(a_socket, stream, read_timeout):
+def check_connection(a_socket, stream, read_timeout):
     """Checks that a socket is ready to receive by reading from it.
 
     If the read times out, this is a good sign. If the read returns an
@@ -864,15 +864,15 @@ class GatewayConnection(object):
         """
         logger.debug("Command to send: {0}".format(command))
         try:
-            check_connection_state(
+            check_connection(
                 self.socket, self.stream, self.gateway_parameters.read_timeout)
             # Write will never fail for small commands because the payload is
             # below the socket's buffer.
             self.socket.sendall(command.encode("utf-8"))
         except Exception as e:
-            logger.info("Error while sending or receiving.", exc_info=True)
+            logger.info("Error while sending.", exc_info=True)
             raise Py4JNetworkError(
-                "Error while sending or receiving", e, proto.ERROR_ON_SEND)
+                "Error while sending", e, proto.ERROR_ON_SEND)
 
         try:
             answer = smart_decode(self.stream.readline()[:-1])

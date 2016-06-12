@@ -16,7 +16,7 @@ from threading import local, Thread
 import weakref
 
 from py4j.java_gateway import (
-    quiet_close, quiet_shutdown, check_connection_state,
+    quiet_close, quiet_shutdown, check_connection,
     GatewayClient, JavaGateway,
     CallbackServerParameters, GatewayParameters, CallbackServer,
     GatewayConnectionGuard, DEFAULT_ADDRESS, DEFAULT_PORT,
@@ -376,7 +376,7 @@ class ClientServerConnection(object):
         # TODO At some point extract common code from wait_for_commands
         logger.debug("Command to send: {0}".format(command))
         try:
-            check_connection_state(
+            check_connection(
                 self.socket, self.stream, self.java_parameters.read_timeout)
             self._auto_gc(True)
             self.socket.sendall(command.encode("utf-8"))

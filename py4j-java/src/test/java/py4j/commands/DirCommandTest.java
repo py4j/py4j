@@ -73,7 +73,7 @@ public class DirCommandTest {
 		ExampleClassMethods.addAll(Arrays.asList(new String[] { "method1", "method2", "method3", "method4", "method5",
 				"method6", "method7", "method8", "method9", "method10", "method11", "getList", "getField1", "setField1",
 				"getStringArray", "getIntArray", "callHello", "callHello2", "static_method", "getInteger",
-				"getBrokenStream", "getStream" }));
+				"getBrokenStream", "getStream", "sleepFirstTimeOnly" }));
 		// Defined in Object
 		ExampleClassMethods.addAll(Arrays
 				.asList(new String[] { "getClass", "hashCode", "equals", "toString", "notify", "notifyAll", "wait" }));
