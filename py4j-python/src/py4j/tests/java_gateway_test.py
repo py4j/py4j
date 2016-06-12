@@ -957,6 +957,7 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.out.println("Test")
 
     def testRedirectToQueue(self):
+        end = os.linesep
         qout = Queue()
         qerr = Queue()
         self.gateway = JavaGateway.launch_gateway(
@@ -966,12 +967,13 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.err.println("Test2")
         sleep()
         for i in range(10):
-            self.assertEqual("Test\n", qout.get())
-            self.assertEqual("Test2\n", qerr.get())
+            self.assertEqual("Test{0}".format(end), qout.get())
+            self.assertEqual("Test2{0}".format(end), qerr.get())
         self.assertTrue(qout.empty)
         self.assertTrue(qerr.empty)
 
     def testRedirectToDeque(self):
+        end = os.linesep
         qout = deque()
         qerr = deque()
         self.gateway = JavaGateway.launch_gateway(
@@ -981,14 +983,15 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.err.println("Test2")
         sleep()
         for i in range(10):
-            self.assertEqual("Test\n", qout.pop())
-            self.assertEqual("Test2\n", qerr.pop())
+            self.assertEqual("Test{0}".format(end), qout.pop())
+            self.assertEqual("Test2{0}".format(end), qerr.pop())
         self.assertEqual(0, len(qout))
         self.assertEqual(0, len(qerr))
 
     def testRedirectToFile(self):
-        (_, outpath) = tempfile.mkstemp(text=True)
-        (_, errpath) = tempfile.mkstemp(text=True)
+        end = os.linesep
+        (out_handle, outpath) = tempfile.mkstemp(text=True)
+        (err_handle, errpath) = tempfile.mkstemp(text=True)
 
         stdout = open(outpath, "w")
         stderr = open(errpath, "w")
@@ -999,6 +1002,8 @@ class GatewayLauncherTest(unittest.TestCase):
             for i in range(10):
                 self.gateway.jvm.System.out.println("Test")
                 self.gateway.jvm.System.err.println("Test2")
+            self.gateway.shutdown()
+            sleep()
             # Should not be necessary
             quiet_close(stdout)
             quiet_close(stderr)
@@ -1007,13 +1012,17 @@ class GatewayLauncherTest(unittest.TestCase):
             with open(outpath, "r") as stdout:
                 lines = stdout.readlines()
                 self.assertEqual(10, len(lines))
-                self.assertEqual("Test\n", lines[0])
+                self.assertEqual("Test{0}".format(end), lines[0])
 
             with open(errpath, "r") as stderr:
                 lines = stderr.readlines()
                 self.assertEqual(10, len(lines))
+                # XXX Apparently, it's \n by default even on windows...
+                # Go figure
                 self.assertEqual("Test2\n", lines[0])
         finally:
+            os.close(out_handle)
+            os.close(err_handle)
             os.unlink(outpath)
             os.unlink(errpath)
 
