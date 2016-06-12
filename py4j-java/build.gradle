@@ -243,7 +243,11 @@ task copyMainJar(type: Copy, dependsOn: jar) {
 task buildWeb(type: Exec) {
     description 'Builds Py4J static web site and documentation.'
     workingDir webDir
-    executable 'make'
+    if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+        commandLine 'cmd', '/c', 'make.bat'
+    } else {
+        executable 'make'
+    }
     args 'html'
 }
 
@@ -306,7 +310,11 @@ task cleanMainJar(type: Delete) {
 // Clean web dist
 task cleanWeb(type: Exec) {
     workingDir webDir
-    executable 'make'
+    if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+        commandLine 'cmd', '/c', 'make.bat'
+    } else {
+        executable 'make'
+    }
     args 'clean'
 }
 
