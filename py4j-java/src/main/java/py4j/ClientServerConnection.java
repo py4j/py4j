@@ -29,6 +29,8 @@
  *****************************************************************************/
 package py4j;
 
+import static py4j.NetworkUtil.checkConnection;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.Charset;
@@ -174,9 +176,15 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		logger.log(Level.INFO, "Sending Python command: " + command);
 		String returnCommand = null;
 		try {
+			checkConnection(this.socket, this.reader, this.blockingReadTimeout);
 			writer.write(command);
 			writer.flush();
+		} catch (Exception e) {
+			throw new Py4JNetworkException("Error while sending a command: " + command, e,
+					Py4JNetworkException.ErrorTime.ERROR_ON_SEND);
+		}
 
+		try {
 			while (true) {
 				if (blocking) {
 					returnCommand = this.readBlockingResponse(this.reader);
@@ -204,7 +212,8 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 			}
 		} catch (Exception e) {
 			// This will make sure that the connection is shut down and not given back to the connections deque.
-			throw new Py4JNetworkException("Error while sending a command: " + command, e);
+			throw new Py4JNetworkException("Error while sending a command: " + command, e,
+					Py4JNetworkException.ErrorTime.ERROR_ON_RECEIVE);
 		}
 	}
 

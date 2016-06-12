@@ -44,19 +44,43 @@ public class Py4JNetworkException extends Py4JException {
 	 */
 	private static final long serialVersionUID = -3338931855286981212L;
 
+	private final ErrorTime when;
+
+	public enum ErrorTime {
+		ERROR_ON_SEND, ERROR_ON_RECEIVE, OTHER
+	}
+
 	public Py4JNetworkException() {
+		this(null, null, ErrorTime.OTHER);
+	}
+
+	public Py4JNetworkException(ErrorTime when) {
+		this(null, null, when);
 	}
 
 	public Py4JNetworkException(String message) {
-		super(message);
+		this(null, null, ErrorTime.OTHER);
+	}
+
+	public Py4JNetworkException(String message, ErrorTime when) {
+		this(null, null, when);
 	}
 
 	public Py4JNetworkException(String message, Throwable cause) {
+		this(message, cause, ErrorTime.OTHER);
+	}
+
+	public Py4JNetworkException(String message, Throwable cause, ErrorTime when) {
 		super(message, cause);
+		this.when = when;
 	}
 
 	public Py4JNetworkException(Throwable cause) {
-		super(cause);
+		this(null, cause, ErrorTime.OTHER);
+	}
+
+	public ErrorTime getWhen() {
+		return when;
 	}
 
 }

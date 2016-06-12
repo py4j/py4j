@@ -179,10 +179,10 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 	}
 
 	@Override
-	protected boolean shouldRetrySendCommand(Py4JClientConnection cc, Py4JException pe) {
-		boolean shouldRetry = false;
+	protected boolean shouldRetrySendCommand(Py4JClientConnection cc, Py4JNetworkException pne) {
+		boolean shouldRetry = super.shouldRetrySendCommand(cc, pne);
 
-		if (cc instanceof ClientServerConnection) {
+		if (shouldRetry && cc instanceof ClientServerConnection) {
 			ClientServerConnection csc = (ClientServerConnection) cc;
 			shouldRetry = csc.isInitiatedFromClient();
 		}

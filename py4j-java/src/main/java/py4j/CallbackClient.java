@@ -371,8 +371,8 @@ public class CallbackClient implements Py4JPythonClient {
 		return proxy;
 	}
 
-	protected boolean shouldRetrySendCommand(Py4JClientConnection cc, Py4JException pe) {
-		return true;
+	protected boolean shouldRetrySendCommand(Py4JClientConnection cc, Py4JNetworkException pne) {
+		return pne.getWhen() == Py4JNetworkException.ErrorTime.ERROR_ON_SEND;
 	}
 
 	protected void setupCleaner() {

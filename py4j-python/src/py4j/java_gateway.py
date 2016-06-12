@@ -886,9 +886,9 @@ class GatewayConnection(object):
                 raise Py4JError("Answer from Java side is empty")
             return answer
         except Exception as e:
-            logger.info("Error while sending or receiving.", exc_info=True)
+            logger.info("Error while receiving.", exc_info=True)
             raise Py4JNetworkError(
-                "Error while sending or receiving", e, proto.ERROR_ON_RECEIVE)
+                "Error while receiving", e, proto.ERROR_ON_RECEIVE)
 
 
 class JavaMember(object):

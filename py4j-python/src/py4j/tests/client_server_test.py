@@ -186,7 +186,12 @@ class RetryTest(unittest.TestCase):
                 self.fail(
                     "Should never retry once the first command went through."
                     " number of calls made: {0}".format(operator.callCount))
-            except Py4JJavaError:
+            except Py4JError:
+                # XXX This occurs when WaitOperator tries to send a response to
+                # the Java side (this is slightly different then the
+                # GatewayServer equivalent where the Py4JError occurs on the
+                # clientserver, but the Java side can still send back an
+                # exception to the JavaGateway).
                 self.assertTrue(True)
             finally:
                 client_server.shutdown()

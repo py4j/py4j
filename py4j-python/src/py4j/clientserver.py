@@ -381,9 +381,9 @@ class ClientServerConnection(object):
             self._auto_gc(True)
             self.socket.sendall(command.encode("utf-8"))
         except Exception as e:
-            logger.exception("Error while sending or receiving.")
+            logger.info("Error while sending or receiving.", exc_info=True)
             raise Py4JNetworkError(
-                "Error while sending or receiving", e, proto.ERROR_ON_SEND)
+                "Error while sending", e, proto.ERROR_ON_SEND)
 
         try:
             while True:
@@ -417,7 +417,7 @@ class ClientServerConnection(object):
                         self.socket.sendall(
                             proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
         except Exception as e:
-            logger.exception("Error while sending or receiving.")
+            logger.info("Error while receiving.", exc_info=True)
             raise Py4JNetworkError(
                 "Error while sending or receiving", e, proto.ERROR_ON_RECEIVE)
 

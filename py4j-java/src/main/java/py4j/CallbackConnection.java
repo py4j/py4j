@@ -29,6 +29,8 @@
  *****************************************************************************/
 package py4j;
 
+import static py4j.NetworkUtil.checkConnection;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -116,58 +118,35 @@ public class CallbackConnection implements Py4JClientConnection {
 		String returnCommand = null;
 		try {
 			this.used = true;
-			checkConnection(this.socket, this.reader);
+			checkConnection(this.socket, this.reader, this.blockingReadTimeout);
 			// XXX write will never fail for small commands because the payload is below the socket's buffer.
 			writer.write(command);
 			writer.flush();
+		} catch (Exception e) {
+			throw new Py4JNetworkException("Error while sending a command: null response: " + command, e,
+					Py4JNetworkException.ErrorTime.ERROR_ON_SEND);
+		}
 
+		try {
 			if (blocking) {
 				returnCommand = this.readBlockingResponse(this.reader);
 			} else {
 				returnCommand = this.readNonBlockingResponse(this.socket, this.reader);
 			}
 		} catch (Exception e) {
-			throw new Py4JNetworkException("Error while sending a command: " + command, e);
+			throw new Py4JNetworkException("Error while sending a command: " + command, e,
+					Py4JNetworkException.ErrorTime.ERROR_ON_RECEIVE);
 		}
 
 		if (returnCommand == null) {
-			throw new Py4JNetworkException("Error while sending a command: null response: " + command);
+			throw new Py4JNetworkException("Error while sending a command: null response: " + command,
+					Py4JNetworkException.ErrorTime.ERROR_ON_RECEIVE);
 		} else if (Protocol.isReturnMessage(returnCommand)) {
 			returnCommand = returnCommand.substring(1);
 		}
 
 		logger.log(Level.INFO, "Returning CB command: " + returnCommand);
 		return returnCommand;
-	}
-
-	/**
-	 * <p>Checks that a socket is ready to receive by reading from it.</p>
-	 *
-	 * <p>If the read raises a timeout exception, this is a good sign. If the response is -1, this usually means
-	 * that the socket was remotely closed.</p>
-	 *
-	 * @param socket
-	 * @param reader
-	 * @throws IOException
-	 */
-	protected void checkConnection(Socket socket, BufferedReader reader) throws IOException {
-		int response = 0;
-
-		socket.setSoTimeout(5);
-
-		try {
-			response = reader.read();
-		} catch (SocketTimeoutException ste) {
-			// This is expected!
-		} finally {
-			// Set back blocking timeout
-			socket.setSoTimeout(blockingReadTimeout);
-		}
-
-		if (response == -1) {
-			throw new IOException("Remote socket is closed.");
-		}
-
 	}
 
 	protected String readBlockingResponse(BufferedReader reader) throws IOException {
