@@ -77,7 +77,7 @@ public class ExceptionCommandTest {
 		try {
 			command.execute("p", new BufferedReader(new StringReader(inputCommand)), writer);
 			System.out.println("DEBUG!!!" + sWriter.toString());
-			assertTrue(sWriter.toString().startsWith("!ysjava.lang.RuntimeException: Hello World\\n"));
+			assertTrue(sWriter.toString().startsWith("!ysjava.lang.RuntimeException: Hello World"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

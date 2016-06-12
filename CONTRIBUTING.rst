@@ -68,13 +68,13 @@ If external libraries must be used, they should be wrapped in a mechanism that
 by default does not require them (e.g., conditional imports, graceful
 degradation, etc.).
 
-Libraries used for testing and contributing (flake8, nose, tox) can be
+Libraries used for testing and contributing (flake8, nose, tox, Sphinx) can be
 installed with pip:
 
 
 .. code-block:: bash
 
-  pip install -r py4j-python/requirements-test.txt
+  pip install -r requirements.txt
 
   # Run flake8
   flake8
@@ -130,7 +130,7 @@ suite across the supported python versions.
 
   # install test requirements
   cd py4j-python
-  pip install -r py4j-python/requirements-test.txt
+  pip install -r requirements.txt
 
   # Run the full test suite
   nosetests

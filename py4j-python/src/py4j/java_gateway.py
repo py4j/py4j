@@ -52,6 +52,17 @@ PY4J_SKIP_COLLECTIONS = "PY4J_SKIP_COLLECTIONS"
 PY4J_TRUE = set(["yes", "y", "t", "true"])
 
 
+def set_reuse_address(server_socket):
+    """Sets reuse address option if not on windows.
+
+    On windows, the SO_REUSEADDR option means that multiple server sockets can
+    be bound to the same address (it has nothing to do with TIME_WAIT).
+    """
+    if os.name != "nt":
+        server_socket.setsockopt(
+            socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+
 def set_default_callback_accept_timeout(accept_timeout):
     """Sets default accept timeout of callback server.
     """
@@ -351,10 +362,10 @@ def check_connection(a_socket, read_timeout):
     :param a_socket: The socket to read from.
     :param read_timeout: The read_timeout to restore the socket to.
     """
-    a_socket.settimeout(0.005)
+    a_socket.settimeout(0.0001)
     response = 0
     try:
-        response = a_socket.recv(4096)
+        response = a_socket.recv(2)
     except socket.timeout:
         # Do nothing this is expected!
         pass
@@ -1811,8 +1822,7 @@ class CallbackServer(object):
         """Starts the CallbackServer. This method should be called by the
         client instead of run()."""
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(
-            socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        set_reuse_address(self.server_socket)
         try:
             self.server_socket.bind((self.address, self.port))
             self._listening_address, self._listening_port = \
