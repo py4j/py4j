@@ -326,27 +326,26 @@ def quiet_shutdown(socket_instance):
         logger.debug("Exception while shutting down a socket", exc_info=True)
 
 
-def check_connection(a_socket, stream, read_timeout):
+def check_connection(a_socket, read_timeout):
     """Checks that a socket is ready to receive by reading from it.
 
     If the read times out, this is a good sign. If the read returns an
     empty string, this usually means that the socket was remotely closed.
 
     :param a_socket: The socket to read from.
-    :param stream: The stream to read from.
     :param read_timeout: The read_timeout to restore the socket to.
     """
     a_socket.settimeout(0.005)
     response = 0
     try:
-        response = stream.read()
+        response = a_socket.recv(4096)
     except socket.timeout:
         # Do nothing this is expected!
         pass
     finally:
         a_socket.settimeout(read_timeout)
 
-    if response == "":
+    if response == b"":
         raise Exception("The connection was remotely closed.")
 
 
@@ -865,7 +864,7 @@ class GatewayConnection(object):
         logger.debug("Command to send: {0}".format(command))
         try:
             check_connection(
-                self.socket, self.stream, self.gateway_parameters.read_timeout)
+                self.socket, self.gateway_parameters.read_timeout)
             # Write will never fail for small commands because the payload is
             # below the socket's buffer.
             self.socket.sendall(command.encode("utf-8"))

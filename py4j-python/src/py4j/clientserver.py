@@ -377,7 +377,7 @@ class ClientServerConnection(object):
         logger.debug("Command to send: {0}".format(command))
         try:
             check_connection(
-                self.socket, self.stream, self.java_parameters.read_timeout)
+                self.socket, self.java_parameters.read_timeout)
             self._auto_gc(True)
             self.socket.sendall(command.encode("utf-8"))
         except Exception as e:
