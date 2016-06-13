@@ -351,10 +351,10 @@ def check_connection(a_socket, read_timeout):
     :param a_socket: The socket to read from.
     :param read_timeout: The read_timeout to restore the socket to.
     """
-    a_socket.settimeout(0.005)
+    a_socket.settimeout(0.0001)
     response = 0
     try:
-        response = a_socket.recv(4096)
+        response = a_socket.recv(2)
     except socket.timeout:
         # Do nothing this is expected!
         pass
