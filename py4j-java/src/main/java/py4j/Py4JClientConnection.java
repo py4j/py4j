@@ -39,6 +39,8 @@ public interface Py4JClientConnection {
 
 	void shutdown();
 
+	void shutdown(boolean reset);
+
 	void start() throws IOException;
 
 	void setUsed(boolean used);

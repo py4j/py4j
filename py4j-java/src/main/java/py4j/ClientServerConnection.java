@@ -29,14 +29,13 @@
  *****************************************************************************/
 package py4j;
 
-import static py4j.NetworkUtil.checkConnection;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
@@ -144,7 +143,9 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	}
 
 	public void waitForCommands() {
+		boolean reset = false;
 		boolean executing = false;
+		Throwable error = null;
 		try {
 			logger.info("Gateway Connection ready to receive messages");
 			String commandLine = null;
@@ -161,13 +162,18 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 					// TODO SEND BACK AN ERROR?
 				}
 			} while (commandLine != null && !commandLine.equals("q"));
+		} catch (SocketTimeoutException ste) {
+			logger.log(Level.WARNING, "Timeout occurred while waiting for a command.", ste);
+			reset = true;
+			error = ste;
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
-			if (executing && writer != null) {
-				quietSendError(writer, e);
-			}
+			error = e;
 		} finally {
-			shutdown();
+			if (error != null && executing && writer != null) {
+				quietSendError(writer, error);
+			}
+			shutdown(reset);
 		}
 	}
 
@@ -180,7 +186,6 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		logger.log(Level.INFO, "Sending Python command: " + command);
 		String returnCommand = null;
 		try {
-			checkConnection(this.socket, this.reader, this.blockingReadTimeout);
 			writer.write(command);
 			writer.flush();
 		} catch (Exception e) {
@@ -212,7 +217,6 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 						// TODO SEND BACK AN ERROR?
 					}
 				}
-
 			}
 		} catch (Exception e) {
 			// This will make sure that the connection is shut down and not given back to the connections deque.
@@ -223,6 +227,14 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 
 	@Override
 	public void shutdown() {
+		shutdown(false);
+	}
+
+	@Override
+	public void shutdown(boolean reset) {
+		if (reset) {
+			NetworkUtil.quietlySetLinger(socket);
+		}
 		// XXX Close socket first, otherwise, reader.close() will block if stuck on readLine.
 		NetworkUtil.quietlyClose(socket);
 		NetworkUtil.quietlyClose(reader);

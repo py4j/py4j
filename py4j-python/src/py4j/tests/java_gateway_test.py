@@ -1144,7 +1144,7 @@ class RetryTest(unittest.TestCase):
         on send, and Java must retry by creating a new connection
         (CallbackConnection).
         """
-        self.p = start_short_timeout_app_process()
+        self.p = start_example_app_process()
         gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters(
                 read_timeout=0.250))
@@ -1167,7 +1167,7 @@ class RetryTest(unittest.TestCase):
             self.assertEqual(str_connection, str_connection2)
             self.assertNotEqual(str_connection, str_connection3)
         except Py4JJavaError:
-            self.fail("Callbackserver did not retry.")
+            self.fail("Java callbackclient did not retry.")
         finally:
             gateway.shutdown()
             self.p.join()
