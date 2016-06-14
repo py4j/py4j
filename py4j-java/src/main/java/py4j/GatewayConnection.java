@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -199,6 +200,8 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 	@Override
 	public void run() {
 		boolean executing = false;
+		boolean reset = false;
+		Throwable error = null;
 		try {
 			logger.info("Gateway Connection ready to receive messages");
 			String commandLine = null;
@@ -214,14 +217,24 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 					logger.log(Level.WARNING, "Unknown command " + commandLine);
 				}
 			} while (commandLine != null && !commandLine.equals("q"));
+		} catch (SocketTimeoutException ste) {
+			logger.log(Level.WARNING, "Timeout occurred while waiting for a command.", ste);
+			error = ste;
+			reset = true;
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
-			if (executing && writer != null) {
-				quietSendError(writer, e);
-			}
+			error = e;
 		} finally {
-			shutdown();
+			if (error != null && executing && writer != null) {
+				quietSendError(writer, error);
+			}
+			shutdown(reset);
 		}
+	}
+
+	@Override
+	public void shutdown() {
+		shutdown(false);
 	}
 
 	/**
@@ -235,7 +248,10 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 	 * </p>
 	 */
 	@Override
-	public void shutdown() {
+	public void shutdown(boolean reset) {
+		if (reset) {
+			NetworkUtil.quietlySetLinger(socket);
+		}
 		// XXX Close socket first, otherwise, reader.close() will block if stuck on readLine.
 		NetworkUtil.quietlyClose(socket);
 		NetworkUtil.quietlyClose(reader);

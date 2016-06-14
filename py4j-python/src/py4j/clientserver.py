@@ -16,8 +16,8 @@ from threading import local, Thread
 import weakref
 
 from py4j.java_gateway import (
-    quiet_close, quiet_shutdown, check_connection,
-    GatewayClient, JavaGateway,
+    quiet_close, quiet_shutdown,
+    set_linger, GatewayClient, JavaGateway,
     CallbackServerParameters, GatewayParameters, CallbackServer,
     GatewayConnectionGuard, DEFAULT_ADDRESS, DEFAULT_PORT,
     DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER)
@@ -376,8 +376,6 @@ class ClientServerConnection(object):
         # TODO At some point extract common code from wait_for_commands
         logger.debug("Command to send: {0}".format(command))
         try:
-            check_connection(
-                self.socket, self.java_parameters.read_timeout)
             self._auto_gc(True)
             self.socket.sendall(command.encode("utf-8"))
         except Exception as e:
@@ -392,8 +390,7 @@ class ClientServerConnection(object):
                 # Happens when a the other end is dead. There might be an empty
                 # answer before the socket raises an error.
                 if answer.strip() == "":
-                    self.close()
-                    raise Py4JError("Answer from Java side is empty")
+                    raise Py4JNetworkError("Answer from Java side is empty")
                 if answer.startswith(proto.RETURN_MESSAGE):
                     return answer[1:]
                 else:
@@ -421,8 +418,10 @@ class ClientServerConnection(object):
             raise Py4JNetworkError(
                 "Error while sending or receiving", e, proto.ERROR_ON_RECEIVE)
 
-    def close(self):
+    def close(self, reset=False):
         logger.info("Closing down clientserver connection")
+        if reset:
+            set_linger(self.socket)
         quiet_close(self.stream)
         quiet_shutdown(self.socket)
         quiet_close(self.socket)
@@ -431,6 +430,7 @@ class ClientServerConnection(object):
 
     def wait_for_commands(self):
         logger.info("Python Server ready to receive messages")
+        reset = False
         try:
             while True:
                 command = smart_decode(self.stream.readline())[:-1]
@@ -456,12 +456,17 @@ class ClientServerConnection(object):
                     # point, the protocol is broken.
                     self.socket.sendall(
                         proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
+        except socket.timeout:
+            reset = True
+            logger.info(
+                "Timeout while python server was waiting for"
+                "a message", exc_info=True)
         except Exception:
             # This is a normal exception...
             logger.info(
                 "Error while python server was waiting for"
                 "a message", exc_info=True)
-        self.close()
+        self.close(reset)
 
     def _call_proxy(self, obj_id, input):
         return_message = proto.ERROR_RETURN_MESSAGE

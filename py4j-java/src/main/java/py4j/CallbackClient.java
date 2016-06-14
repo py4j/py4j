@@ -32,6 +32,7 @@ package py4j;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.Executors;
@@ -340,7 +341,11 @@ public class CallbackClient implements Py4JPythonClient {
 			returnCommand = cc.sendCommand(command, blocking);
 		} catch (Py4JNetworkException pe) {
 			logger.log(Level.WARNING, "Error while sending a command", pe);
-			cc.shutdown();
+			boolean reset = false;
+			if (pe.getCause() instanceof SocketTimeoutException) {
+				reset = true;
+			}
+			cc.shutdown(reset);
 			if (shouldRetrySendCommand(cc, pe)) {
 				// Retry in case the channel was dead.
 				returnCommand = sendCommand(command, blocking);

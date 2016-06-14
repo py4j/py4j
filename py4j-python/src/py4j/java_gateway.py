@@ -18,6 +18,7 @@ import os
 from pydoc import pager
 import select
 import socket
+import struct
 from subprocess import Popen, PIPE
 import sys
 from threading import Thread, RLock
@@ -324,6 +325,21 @@ def quiet_shutdown(socket_instance):
         socket_instance.shutdown(socket.SHUT_RDWR)
     except Exception:
         logger.debug("Exception while shutting down a socket", exc_info=True)
+
+
+def set_linger(a_socket):
+    """Sets SO_LINGER to true, 0 to send a RST packet. This forcibly closes the
+    connection and the remote socket should fail on write and should not need
+    to read to realize that the socket was closed.
+
+    Only use on timeout and maybe shutdown because it does not terminate the
+    TCP connection normally.
+    """
+    l_onoff = 1
+    l_linger = 0
+    a_socket.setsockopt(
+        socket.SOL_SOCKET, socket.SO_LINGER,
+        struct.pack('ii', l_onoff, l_linger))
 
 
 def check_connection(a_socket, read_timeout):
@@ -745,7 +761,10 @@ class GatewayClient(object):
                 self._give_back_connection(connection)
         except Py4JNetworkError as pne:
             if connection:
-                connection.close()
+                reset = False
+                if isinstance(pne.cause, socket.timeout):
+                    reset = True
+                connection.close(reset)
             if self._should_retry(retry, connection, pne):
                 logging.info("Exception while sending command.", exc_info=True)
                 response = self.send_command(command, binary=binary)
@@ -823,8 +842,13 @@ class GatewayConnection(object):
             logger.exception(msg)
             raise Py4JNetworkError(msg, e)
 
-    def close(self):
-        """Closes the connection by closing the socket."""
+    def close(self, reset=False):
+        """Closes the connection by closing the socket.
+
+        If reset is True, sends a RST packet with SO_LINGER
+        """
+        if reset:
+            set_linger(self.socket)
         quiet_close(self.stream)
         quiet_shutdown(self.socket)
         quiet_close(self.socket)
@@ -863,10 +887,8 @@ class GatewayConnection(object):
         """
         logger.debug("Command to send: {0}".format(command))
         try:
-            check_connection(
-                self.socket, self.gateway_parameters.read_timeout)
-            # Write will never fail for small commands because the payload is
-            # below the socket's buffer.
+            # Write will only fail if remote is closed for large payloads or
+            # if it sent a RST packet (SO_LINGER)
             self.socket.sendall(command.encode("utf-8"))
         except Exception as e:
             logger.info("Error while sending.", exc_info=True)
@@ -881,8 +903,7 @@ class GatewayConnection(object):
             # Happens when a the other end is dead. There might be an empty
             # answer before the socket raises an error.
             if answer.strip() == "":
-                self.close()
-                raise Py4JError("Answer from Java side is empty")
+                raise Py4JNetworkError("Answer from Java side is empty")
             return answer
         except Exception as e:
             logger.info("Error while receiving.", exc_info=True)
@@ -1919,6 +1940,7 @@ class CallbackConnection(Thread):
 
     def run(self):
         logger.info("Callback Connection ready to receive messages")
+        reset = False
         try:
             while True:
                 command = smart_decode(self.input.readline())[:-1]
@@ -1942,18 +1964,27 @@ class CallbackConnection(Thread):
                     # point, the protocol is broken.
                     self.socket.sendall(
                         proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
+        except socket.timeout:
+            reset = True
+            logger.info(
+                "Timeout while callback connection was waiting for"
+                "a message", exc_info=True)
         except Exception:
             # This is a normal exception...
             logger.info(
                 "Error while callback connection was waiting for"
                 "a message", exc_info=True)
-        self.close()
+        self.close(reset)
 
-    def close(self):
+    def close(self, reset=False):
         logger.info("Closing down callback connection")
+        if reset:
+            set_linger(self.socket)
+        quiet_close(self.input)
         quiet_shutdown(self.socket)
         quiet_close(self.socket)
         self.socket = None
+        self.input = None
 
     def _call_proxy(self, obj_id, input):
         return_message = proto.ERROR_RETURN_MESSAGE

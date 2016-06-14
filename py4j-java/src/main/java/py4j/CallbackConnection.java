@@ -29,8 +29,6 @@
  *****************************************************************************/
 package py4j;
 
-import static py4j.NetworkUtil.checkConnection;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -117,7 +115,6 @@ public class CallbackConnection implements Py4JClientConnection {
 		String returnCommand = null;
 		try {
 			this.used = true;
-			checkConnection(this.socket, this.reader, this.blockingReadTimeout);
 			// XXX write will never fail for small commands because the payload is below the socket's buffer.
 			writer.write(command);
 			writer.flush();
@@ -178,6 +175,10 @@ public class CallbackConnection implements Py4JClientConnection {
 		this.used = used;
 	}
 
+	@Override
+	public void shutdown() {
+		shutdown(false);
+	}
 	/**
 	 * <p>
 	 * Shuts down the connection by closing the socket, the writer, and the reader.
@@ -188,7 +189,11 @@ public class CallbackConnection implements Py4JClientConnection {
 	 * to be cleared.
 	 * </p>
 	 */
-	public void shutdown() {
+	@Override
+	public void shutdown(boolean reset) {
+		if (reset) {
+			NetworkUtil.quietlySetLinger(socket);
+		}
 		// XXX Close socket first, otherwise, reader.close() will block if stuck on readLine.
 		NetworkUtil.quietlyClose(socket);
 		NetworkUtil.quietlyClose(reader);

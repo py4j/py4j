@@ -113,34 +113,17 @@ public class NetworkUtil {
 	}
 
 	/**
-	 * <p>Checks that a socket is ready to receive by reading from it.</p>
-	 *
-	 * <p>If the read raises a timeout exception, this is a good sign. If the response is -1, this usually means
-	 * that the socket was remotely closed.</p>
+	 * <p>Will send a RST packet on close, which should make both remote
+	 * write and read operations fail.</p>
 	 *
 	 * @param socket
-	 * @param reader
-	 * @param readTimeout
-	 * @throws IOException
 	 */
-	public static void checkConnection(Socket socket, BufferedReader reader, int readTimeout) throws IOException {
-		int response = 0;
-
-		socket.setSoTimeout(5);
-
+	public static void quietlySetLinger(Socket socket) {
 		try {
-			response = reader.read();
-		} catch (SocketTimeoutException ste) {
-			// This is expected!
-		} finally {
-			// Set back blocking timeout
-			socket.setSoTimeout(readTimeout);
+			socket.setSoLinger(true, 0);
+		} catch (Exception e) {
+			logger.log(Level.FINE, "Cannot set linger on socket.", e);
 		}
-
-		if (response == -1) {
-			throw new IOException("Remote socket is closed.");
-		}
-
 	}
 
 }

@@ -43,4 +43,6 @@ public interface Py4JServerConnection {
 
 	void shutdown();
 
+	void shutdown(boolean reset);
+
 }
