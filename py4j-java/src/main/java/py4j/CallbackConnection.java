@@ -179,6 +179,7 @@ public class CallbackConnection implements Py4JClientConnection {
 	public void shutdown() {
 		shutdown(false);
 	}
+
 	/**
 	 * <p>
 	 * Shuts down the connection by closing the socket, the writer, and the reader.

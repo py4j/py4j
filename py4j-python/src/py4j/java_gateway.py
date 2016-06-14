@@ -339,7 +339,7 @@ def set_linger(a_socket):
     l_linger = 0
     a_socket.setsockopt(
         socket.SOL_SOCKET, socket.SO_LINGER,
-        struct.pack('ii', l_onoff, l_linger))
+        struct.pack(b'ii', l_onoff, l_linger))
 
 
 def check_connection(a_socket, read_timeout):
