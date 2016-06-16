@@ -850,7 +850,8 @@ class GatewayConnection(object):
         if reset:
             set_linger(self.socket)
         quiet_close(self.stream)
-        quiet_shutdown(self.socket)
+        if not reset:
+            quiet_shutdown(self.socket)
         quiet_close(self.socket)
         self.is_connected = False
 
@@ -1981,7 +1982,8 @@ class CallbackConnection(Thread):
         if reset:
             set_linger(self.socket)
         quiet_close(self.input)
-        quiet_shutdown(self.socket)
+        if not reset:
+            quiet_shutdown(self.socket)
         quiet_close(self.socket)
         self.socket = None
         self.input = None

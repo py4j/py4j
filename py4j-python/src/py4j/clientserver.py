@@ -423,7 +423,8 @@ class ClientServerConnection(object):
         if reset:
             set_linger(self.socket)
         quiet_close(self.stream)
-        quiet_shutdown(self.socket)
+        if not reset:
+            quiet_shutdown(self.socket)
         quiet_close(self.socket)
         self.socket = None
         self.stream = None
