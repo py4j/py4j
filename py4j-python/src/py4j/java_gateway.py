@@ -814,7 +814,8 @@ class GatewayConnection(object):
         self.gateway_parameters = gateway_parameters
         self.address = gateway_parameters.address
         self.port = gateway_parameters.port
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        af_type = socket.getaddrinfo(self.address, self.port)[0][0]
+        self.socket = socket.socket(af_type, socket.SOCK_STREAM)
         if gateway_parameters.read_timeout:
             self.socket.settimeout(gateway_parameters.read_timeout)
         if gateway_parameters.ssl_context:
@@ -1810,7 +1811,8 @@ class CallbackServer(object):
     def start(self):
         """Starts the CallbackServer. This method should be called by the
         client instead of run()."""
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        af_type = socket.getaddrinfo(self.address, self.port)[0][0]
+        self.server_socket = socket.socket(af_type, socket.SOCK_STREAM)
         self.server_socket.setsockopt(
             socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
