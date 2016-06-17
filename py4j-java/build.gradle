@@ -6,6 +6,7 @@ apply plugin: 'maven'
 
 
 // ====== CONFIGURATION ===== //
+//isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
 
 ext {
     // For CI environment. Optional.
@@ -16,6 +17,7 @@ ext {
     pythonJavaDir = "${pythonDir}/py4j-java"
     pythonWebDir = "${pythonDir}/doc"
     pythonWebJavadocDir = "${pythonWebDir}/_static"
+    isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
 }
 
 
@@ -229,21 +231,22 @@ task pythonSourcesJar(type: Jar) {
 }
 
 // Backward compatibility with previous versions of Py4J
-task copyMainJar(type: Copy, dependsOn: jar) {
+task copyMainJar(type: Exec, dependsOn: jar) {
     description 'Copies and rename Py4J main jar for backward compatibility.'
-    from 'build/libs/'
-    into '.'
-    include "py4j-java-${version}.jar"
-    rename { String fileName ->
-        fileName.replace('-java-', '')
+    workingDir '.'
+    if (isWindows) {
+        commandLine 'copy', '/Y'
+    } else {
+        commandLine 'cp', '-f' 
     }
+    args "build/libs/py4j-java-${version}.jar", "py4j${version}.jar"
 }
 
 // Make Py4J.org website and doc
 task buildWeb(type: Exec) {
     description 'Builds Py4J static web site and documentation.'
     workingDir webDir
-    if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+    if (isWindows) {
         commandLine 'cmd', '/c', 'make.bat'
     } else {
         executable 'make'
@@ -310,7 +313,7 @@ task cleanMainJar(type: Delete) {
 // Clean web dist
 task cleanWeb(type: Exec) {
     workingDir webDir
-    if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+    if (isWindows) {
         commandLine 'cmd', '/c', 'make.bat'
     } else {
         executable 'make'
