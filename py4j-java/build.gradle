@@ -230,16 +230,20 @@ task pythonSourcesJar(type: Jar) {
     exclude '**/__pycache__/**'
 }
 
-// Backward compatibility with previous versions of Py4J
+// We cannot use Copy because we are copying into the main directory
+// And Windows does not like that:
+// https://discuss.gradle.org/t/error-with-a-copy-task-on-windows/1803
 task copyMainJar(type: Exec, dependsOn: jar) {
     description 'Copies and rename Py4J main jar for backward compatibility.'
     workingDir '.'
     if (isWindows) {
-        commandLine 'copy', '/Y'
+        commandLine 'cmd', '/c', 'copy', '/Y'
+        ext.baseLibPath = 'build\\libs\\'
     } else {
         commandLine 'cp', '-f' 
+        ext.baseLibPath = 'build/libs/'
     }
-    args "build/libs/py4j-java-${version}.jar", "py4j${version}.jar"
+    args "${baseLibPath}py4j-java-${version}.jar", "py4j${version}.jar"
 }
 
 // Make Py4J.org website and doc
