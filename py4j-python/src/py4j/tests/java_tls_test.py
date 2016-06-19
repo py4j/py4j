@@ -71,7 +71,9 @@ if sys.version_info >= (2, 7):
             self.gateway = JavaGateway(
                 gateway_parameters=gateway_parameters,
                 callback_server_parameters=callback_server_parameters)
-            sleep()
+            # It seems SecureServerSocket may need a little more time to
+            # initialize on some platforms/slow machines.
+            sleep(0.500)
 
         def tearDown(self):
             safe_shutdown(self)
@@ -79,6 +81,7 @@ if sys.version_info >= (2, 7):
             sleep()
 
         def testUnicode(self):
+            sleep()
             sb = self.gateway.jvm.java.lang.StringBuffer()
             sb.append("\r\n\tHello\r\n\t")
             self.assertEqual("\r\n\tHello\r\n\t", sb.toString())
