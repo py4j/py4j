@@ -685,7 +685,10 @@ class GatewayClient(object):
     both have the same interface, but the client supports multiple threads and
     connections, which is essential when using callbacks.  """
 
-    def __init__(self, gateway_parameters=None, gateway_property=None):
+    def __init__(
+            self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT,
+            auto_close=True, gateway_property=None,
+            ssl_context=None, gateway_parameters=None):
         """
         :param gateway_parameters: the set of parameters used to configure the
             GatewayClient.
@@ -693,8 +696,15 @@ class GatewayClient(object):
         :param gateway_property: used to keep gateway preferences without a
             cycle with the gateway
         """
+        if address != DEFAULT_ADDRESS:
+            deprecated("GatewayClient.address", "1.0", "GatewayParameters")
+        if port != DEFAULT_PORT:
+            deprecated("GatewayClient.port", "1.0", "GatewayParameters")
+
         if not gateway_parameters:
-            gateway_parameters = GatewayParameters()
+            gateway_parameters = GatewayParameters(
+                address=address, port=port, auto_close=auto_close,
+                ssl_context=ssl_context)
 
         self.gateway_parameters = gateway_parameters
         self.address = gateway_parameters.address
@@ -1498,7 +1508,8 @@ class JavaGateway(object):
             self.start_callback_server(self.callback_server_parameters)
 
     def _create_gateway_client(self):
-        gateway_client = GatewayClient(self.gateway_parameters)
+        gateway_client = GatewayClient(
+            gateway_parameters=self.gateway_parameters)
         return gateway_client
 
     def _create_gateway_property(self):
