@@ -420,6 +420,22 @@ class FieldTest(unittest.TestCase):
         self.assertEqual(1, get_method(ex, "method1")())
 
 
+class DeprecatedTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+
+    def test_gateway_client(self):
+        gateway_client = GatewayClient(port=DEFAULT_PORT)
+        self.gateway = JavaGateway(gateway_client=gateway_client)
+
+        i = self.gateway.jvm.System.currentTimeMillis()
+        self.assertTrue(i > 0)
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+
+
 class UtilityTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()

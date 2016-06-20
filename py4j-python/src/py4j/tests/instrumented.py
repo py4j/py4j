@@ -38,7 +38,7 @@ class InstrJavaGateway(JavaGateway):
 
     def _create_gateway_client(self):
         gateway_client = InstrGatewayClient(
-            self.gateway_parameters)
+            gateway_parameters=self.gateway_parameters)
         return gateway_client
 
     def _create_callback_server(self, callback_server_parameters):
