@@ -4,6 +4,15 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.2.1
+-------------
+
+- Release date: June 20th 2016
+- Python side: re-added missing parameter in GatewayClient constructor.
+- `tickets closed for 0.10.2.1 release
+  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.2.1+is%3Aclosed>`_
+
+
 Py4J 0.10.2
 -----------
 
