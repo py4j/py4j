@@ -87,6 +87,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 
 	public static final String DEFAULT_ADDRESS = "127.0.0.1";
 
+	public static final String DEFAULT_IPv6_ADDRESS = "::1";
+
 	public static final int DEFAULT_PORT = 25333;
 
 	public static final int DEFAULT_PYTHON_PORT = 25334;
@@ -165,6 +167,14 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	public static InetAddress defaultAddress() {
 		try {
 			return InetAddress.getByName(DEFAULT_ADDRESS);
+		} catch (UnknownHostException e) {
+			throw new Py4JNetworkException(e);
+		}
+	}
+
+	public static InetAddress defaultIPv6Address() {
+		try {
+			return InetAddress.getByName(DEFAULT_IPv6_ADDRESS);
 		} catch (UnknownHostException e) {
 			throw new Py4JNetworkException(e);
 		}

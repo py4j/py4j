@@ -7,6 +7,14 @@ releases.
 Py4J 0.10.2.1
 -------------
 
+- Release date:
+- Both sides: added support for IPv6 (requires Python 2.7+)
+- `tickets closed for 0.10.3 release
+  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.3+is%3Aclosed>`_
+
+Py4J 0.10.2.1
+-------------
+
 - Release date: June 20th 2016
 - Python side: re-added missing parameter in GatewayClient constructor.
 - `tickets closed for 0.10.2.1 release
