@@ -29,8 +29,6 @@
  *****************************************************************************/
 package py4j.examples;
 
-import java.net.InetAddress;
-
 import javax.net.SocketFactory;
 
 import py4j.CallbackClient;
