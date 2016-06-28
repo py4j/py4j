@@ -835,7 +835,8 @@ class GatewayConnection(object):
         self.gateway_parameters = gateway_parameters
         self.address = gateway_parameters.address
         self.port = gateway_parameters.port
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        af_type = socket.getaddrinfo(self.address, self.port)[0][0]
+        self.socket = socket.socket(af_type, socket.SOCK_STREAM)
         if gateway_parameters.read_timeout:
             self.socket.settimeout(gateway_parameters.read_timeout)
         if gateway_parameters.ssl_context:
@@ -1832,12 +1833,15 @@ class CallbackServer(object):
     def start(self):
         """Starts the CallbackServer. This method should be called by the
         client instead of run()."""
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        af_type = socket.getaddrinfo(self.address, self.port)[0][0]
+        self.server_socket = socket.socket(af_type, socket.SOCK_STREAM)
         set_reuse_address(self.server_socket)
         try:
             self.server_socket.bind((self.address, self.port))
-            self._listening_address, self._listening_port = \
-                self.server_socket.getsockname()
+            # 4-tuple for ipv6, 2-tuple for ipv4
+            info = self.server_socket.getsockname()
+            self._listening_address = info[0]
+            self._listening_port = info[1]
         except Exception as e:
             msg = "An error occurred while trying to start the callback "\
                   "server ({0}:{1})".format(self.address, self.port)

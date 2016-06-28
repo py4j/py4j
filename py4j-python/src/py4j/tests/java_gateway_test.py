@@ -91,6 +91,12 @@ def start_short_timeout_example_server():
         "py4j.examples.ExampleApplication$ExampleShortTimeoutApplication"])
 
 
+def start_ipv6_example_server():
+    subprocess.call([
+        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.ExampleApplication$ExampleIPv6Application"])
+
+
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_example_server)
@@ -106,6 +112,16 @@ def start_short_timeout_app_process():
     p.start()
     sleep()
     check_connection()
+    return p
+
+
+def start_ipv6_app_process():
+    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    p = Process(target=start_ipv6_example_server)
+    p.start()
+    # Sleep twice because we do not check connections.
+    sleep()
+    sleep()
     return p
 
 
@@ -1057,6 +1073,27 @@ class WaitOperator(object):
 
     class Java:
         implements = ["py4j.examples.Operator"]
+
+
+class IPv6Test(unittest.TestCase):
+
+    def testIpV6(self):
+        self.p = start_ipv6_app_process()
+        gateway = JavaGateway(
+            gateway_parameters=GatewayParameters(address="::1"),
+            callback_server_parameters=CallbackServerParameters(address="::1"))
+
+        try:
+            timeMillis = gateway.jvm.System.currentTimeMillis()
+            self.assertTrue(timeMillis > 0)
+
+            operator = WaitOperator(0.1)
+            opExample = gateway.jvm.py4j.examples.OperatorExample()
+            a_list = opExample.randomBinaryOperator(operator)
+            self.assertEqual(a_list[0] + a_list[1], a_list[2])
+        finally:
+            gateway.shutdown()
+            self.p.join()
 
 
 class RetryTest(unittest.TestCase):

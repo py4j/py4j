@@ -29,6 +29,8 @@
  *****************************************************************************/
 package py4j.examples;
 
+import java.net.InetAddress;
+
 import javax.net.SocketFactory;
 
 import py4j.CallbackClient;
@@ -82,6 +84,20 @@ public class ExampleApplication {
 					CallbackClient.DEFAULT_MIN_CONNECTION_TIME_UNIT, SocketFactory.getDefault(), false, 250);
 			GatewayServer server = new GatewayServer.GatewayServerBuilder().readTimeout(250)
 					.entryPoint(new ExampleEntryPoint()).callbackClient(callbackClient).build();
+			server.start();
+
+		}
+	}
+
+	public static class ExampleIPv6Application {
+		public static void main(String[] args) {
+			GatewayServer.turnLoggingOff();
+			CallbackClient callbackClient = new CallbackClient(GatewayServer.DEFAULT_PYTHON_PORT,
+					GatewayServer.defaultIPv6Address(), CallbackClient.DEFAULT_MIN_CONNECTION_TIME,
+					CallbackClient.DEFAULT_MIN_CONNECTION_TIME_UNIT, SocketFactory.getDefault(), false, 250);
+			GatewayServer server = new GatewayServer.GatewayServerBuilder().readTimeout(250)
+					.entryPoint(new ExampleEntryPoint()).callbackClient(callbackClient)
+					.javaAddress(GatewayServer.defaultIPv6Address()).build();
 			server.start();
 
 		}
