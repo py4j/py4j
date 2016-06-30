@@ -49,7 +49,7 @@ if (JavaVersion.current().isJava8Compatible()) {
                 symbolicName = 'py4j-java'
                 bundleName = 'py4j-java'
                 version = bundleVersion
-                instruction 'Eclipse-BuddyPolicy', 'global'
+                instruction 'DynamicImport-Package', '*'
                 instruction 'Import-Package', '!javax.net'
                 instruction 'Export-Package', 'py4j,py4j.commands,py4j.model,py4j.reflection'
                 instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.6'
@@ -65,7 +65,7 @@ if (JavaVersion.current().isJava8Compatible()) {
                 symbolicName = 'py4j-python'
                 bundleName = 'py4j-python'
                 version = bundleVersion
-                instruction 'Eclipse-BuddyPolicy', 'global'
+                instruction 'DynamicImport-Package', '*'
                 instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.6'
                 instruction 'Bundle-Description', 'Bridge between Python and Java - Python lib'
                 instruction 'Bundle-DocURL', 'http://www.py4j.org'
