@@ -13,7 +13,7 @@ import gc
 import math
 from multiprocessing import Process
 import os
-from socket import AF_INET, SOCK_STREAM, socket
+from socket import AF_INET, AF_INET6, SOCK_STREAM, socket
 import subprocess
 import sys
 import tempfile
@@ -145,6 +145,12 @@ def get_socket():
     return testSocket
 
 
+def get_socket6():
+    testSocket = socket(AF_INET6, SOCK_STREAM)
+    testSocket.connect(("::1", TEST_PORT))
+    return testSocket
+
+
 def safe_shutdown(instance):
     if hasattr(instance, 'gateway'):
         try:
@@ -176,6 +182,30 @@ def example_app_process():
         p.join()
 
 
+class TestConnection6(object):
+    """Connection that does nothing. Useful for testing."""
+
+    counter = -1
+
+    def __init__(self, return_message="yro"):
+        self.address = "::1"
+        self.port = 1234
+        self.return_message = return_message
+        self.is_connected = True
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
+
+    def send_command(self, command):
+        TestConnection6.counter += 1
+        if not command.startswith("m\nd\n"):
+            self.last_message = command
+        return self.return_message + str(TestConnection6.counter)
+
+
 class TestConnection(object):
     """Connection that does nothing. Useful for testing."""
 
@@ -201,6 +231,12 @@ class TestConnection(object):
 
 
 class ProtocolTest(unittest.TestCase):
+    def getConnection(self):
+        return TestConnection()
+
+    def getSocket(self):
+        return get_socket()
+
     def tearDown(self):
         # Safety check in case there was an exception...
         safe_shutdown(self)
@@ -212,7 +248,7 @@ class ProtocolTest(unittest.TestCase):
             escape_new_line("Hello\t\rWorld\n\\")))
 
     def testProtocolSend(self):
-        testConnection = TestConnection()
+        testConnection = self.getConnection()
         self.gateway = JavaGateway()
 
         # Replace gateway client by test connection
@@ -229,7 +265,7 @@ class ProtocolTest(unittest.TestCase):
     def testProtocolReceive(self):
         p = start_echo_server_process()
         try:
-            testSocket = get_socket()
+            testSocket = self.getSocket()
             testSocket.sendall("!yo\n".encode("utf-8"))
             testSocket.sendall("!yro0\n".encode("utf-8"))
             testSocket.sendall("!yo\n".encode("utf-8"))
@@ -263,6 +299,14 @@ class ProtocolTest(unittest.TestCase):
             print_exc()
             self.fail("Problem occurred")
         p.join()
+
+
+class Protocol6Test(ProtocolTest):
+    def getConnection(self):
+        return TestConnection6()
+
+    def getSocket(self):
+        return get_socket6()
 
 
 class IntegrationTest(unittest.TestCase):
