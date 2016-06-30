@@ -33,6 +33,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -85,6 +86,8 @@ import py4j.commands.Command;
 public class GatewayServer extends DefaultGatewayServerListener implements Py4JJavaServer, Runnable {
 
 	public static final String DEFAULT_ADDRESS = "127.0.0.1";
+
+	public static final String DEFAULT_IPv6_ADDRESS = "::1";
 
 	public static final int DEFAULT_PORT = 25333;
 
@@ -164,6 +167,14 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	public static InetAddress defaultAddress() {
 		try {
 			return InetAddress.getByName(DEFAULT_ADDRESS);
+		} catch (UnknownHostException e) {
+			throw new Py4JNetworkException(e);
+		}
+	}
+
+	public static InetAddress defaultIPv6Address() {
+		try {
+			return InetAddress.getByName(DEFAULT_IPv6_ADDRESS);
 		} catch (UnknownHostException e) {
 			throw new Py4JNetworkException(e);
 		}
@@ -709,9 +720,10 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	 */
 	protected void startSocket() throws Py4JNetworkException {
 		try {
-			sSocket = sSocketFactory.createServerSocket(port, -1, address);
+			sSocket = sSocketFactory.createServerSocket();
 			sSocket.setSoTimeout(connectTimeout);
 			sSocket.setReuseAddress(true);
+			sSocket.bind(new InetSocketAddress(address, port), -1);
 		} catch (IOException e) {
 			throw new Py4JNetworkException(e);
 		}

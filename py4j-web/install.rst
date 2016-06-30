@@ -80,8 +80,8 @@ Otherwise, to build the Java and Python libraries, you need:
 3. `Sphinx <http://sphinx.pocoo.org/>`_ to build the documentation. Just
    execute the command ``make html``  in the py4j-web directory.
 4. Libraries such as `nose <http://pypi.python.org/pypi/nose/>`_ to test the
-   Py4J Python library. Just run ``pip install -r requirements-test.txt`` in
-   py4j-python directory.
+   Py4J Python library. Just run ``pip install -r requirements.txt`` in
+   py4j directory.
 
 Here are a few useful commands to build Py4J:
 

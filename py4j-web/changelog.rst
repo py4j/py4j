@@ -4,6 +4,49 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.2.1
+-------------
+
+- Release date:
+- Both sides: added support for IPv6 (requires Python 2.7+)
+- `tickets closed for 0.10.3 release
+  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.3+is%3Aclosed>`_
+
+Py4J 0.10.2.1
+-------------
+
+- Release date: June 20th 2016
+- Python side: re-added missing parameter in GatewayClient constructor.
+- `tickets closed for 0.10.2.1 release
+  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.2.1+is%3Aclosed>`_
+
+
+Py4J 0.10.2
+-----------
+
+- Release date: June 19th 2016
+- Both sides: added memory management options to disable garbage collection.
+  This is useful if you create many short-lived py4j client/server pairs.
+- Both sides: fixed ClientServer to allow users to creater multiple
+  ClientServer instances. Thanks to @jonahkichwacoders for reporting the bug
+  and helping diagnosing the issue.
+- Both sides: it is now possible to specify a python entry point when creating
+  a CallbackServer. The CallbackClient on the Java side can then access the
+  python entry point and drive the conversation. See the :ref:`advanced topics
+  guide <python_entry_point>` for more information.
+- Both sides: fixed memory leak issue with ClientServer and potential deadlock
+  issue by creating a memory leak test suite.
+- Both sides: fixed retry logic by only retrying if an error occurs on write
+  (send command). Thanks to @jonahkichwacoders for raising the issue.
+- Both sides: the assemble gradle task, the Java test suite and the Python test
+  suite now runs correctly on Windows.
+- Java side: added GatewayServerBuilder and ClientServerBuilder to ease the
+  creation of these instances with many options. Thanks to @jonahkichwacoders.
+- A link to the contributing guide now appears when opening pull requests or
+  issues.
+- `tickets closed for 0.10.2 release
+  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.2+is%3Aclosed>`_
+
 Py4J 0.10.1
 -----------
 

@@ -18,6 +18,7 @@ import os
 from pydoc import pager
 import select
 import socket
+import struct
 from subprocess import Popen, PIPE
 import sys
 from threading import Thread, RLock
@@ -49,6 +50,17 @@ DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER = "DEFAULT"
 DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT = 5
 PY4J_SKIP_COLLECTIONS = "PY4J_SKIP_COLLECTIONS"
 PY4J_TRUE = set(["yes", "y", "t", "true"])
+
+
+def set_reuse_address(server_socket):
+    """Sets reuse address option if not on windows.
+
+    On windows, the SO_REUSEADDR option means that multiple server sockets can
+    be bound to the same address (it has nothing to do with TIME_WAIT).
+    """
+    if os.name != "nt":
+        server_socket.setsockopt(
+            socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 
 def set_default_callback_accept_timeout(accept_timeout):
@@ -326,6 +338,21 @@ def quiet_shutdown(socket_instance):
         logger.debug("Exception while shutting down a socket", exc_info=True)
 
 
+def set_linger(a_socket):
+    """Sets SO_LINGER to true, 0 to send a RST packet. This forcibly closes the
+    connection and the remote socket should fail on write and should not need
+    to read to realize that the socket was closed.
+
+    Only use on timeout and maybe shutdown because it does not terminate the
+    TCP connection normally.
+    """
+    l_onoff = 1
+    l_linger = 0
+    a_socket.setsockopt(
+        socket.SOL_SOCKET, socket.SO_LINGER,
+        struct.pack(b'ii', l_onoff, l_linger))
+
+
 def check_connection(a_socket, read_timeout):
     """Checks that a socket is ready to receive by reading from it.
 
@@ -335,10 +362,10 @@ def check_connection(a_socket, read_timeout):
     :param a_socket: The socket to read from.
     :param read_timeout: The read_timeout to restore the socket to.
     """
-    a_socket.settimeout(0.005)
+    a_socket.settimeout(0.0001)
     response = 0
     try:
-        response = a_socket.recv(4096)
+        response = a_socket.recv(2)
     except socket.timeout:
         # Do nothing this is expected!
         pass
@@ -658,7 +685,10 @@ class GatewayClient(object):
     both have the same interface, but the client supports multiple threads and
     connections, which is essential when using callbacks.  """
 
-    def __init__(self, gateway_parameters=None, gateway_property=None):
+    def __init__(
+            self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT,
+            auto_close=True, gateway_property=None,
+            ssl_context=None, gateway_parameters=None):
         """
         :param gateway_parameters: the set of parameters used to configure the
             GatewayClient.
@@ -666,8 +696,15 @@ class GatewayClient(object):
         :param gateway_property: used to keep gateway preferences without a
             cycle with the gateway
         """
+        if address != DEFAULT_ADDRESS:
+            deprecated("GatewayClient.address", "1.0", "GatewayParameters")
+        if port != DEFAULT_PORT:
+            deprecated("GatewayClient.port", "1.0", "GatewayParameters")
+
         if not gateway_parameters:
-            gateway_parameters = GatewayParameters()
+            gateway_parameters = GatewayParameters(
+                address=address, port=port, auto_close=auto_close,
+                ssl_context=ssl_context)
 
         self.gateway_parameters = gateway_parameters
         self.address = gateway_parameters.address
@@ -745,7 +782,10 @@ class GatewayClient(object):
                 self._give_back_connection(connection)
         except Py4JNetworkError as pne:
             if connection:
-                connection.close()
+                reset = False
+                if isinstance(pne.cause, socket.timeout):
+                    reset = True
+                connection.close(reset)
             if self._should_retry(retry, connection, pne):
                 logging.info("Exception while sending command.", exc_info=True)
                 response = self.send_command(command, binary=binary)
@@ -824,10 +864,16 @@ class GatewayConnection(object):
             logger.exception(msg)
             raise Py4JNetworkError(msg, e)
 
-    def close(self):
-        """Closes the connection by closing the socket."""
+    def close(self, reset=False):
+        """Closes the connection by closing the socket.
+
+        If reset is True, sends a RST packet with SO_LINGER
+        """
+        if reset:
+            set_linger(self.socket)
         quiet_close(self.stream)
-        quiet_shutdown(self.socket)
+        if not reset:
+            quiet_shutdown(self.socket)
         quiet_close(self.socket)
         self.is_connected = False
 
@@ -864,10 +910,8 @@ class GatewayConnection(object):
         """
         logger.debug("Command to send: {0}".format(command))
         try:
-            check_connection(
-                self.socket, self.gateway_parameters.read_timeout)
-            # Write will never fail for small commands because the payload is
-            # below the socket's buffer.
+            # Write will only fail if remote is closed for large payloads or
+            # if it sent a RST packet (SO_LINGER)
             self.socket.sendall(command.encode("utf-8"))
         except Exception as e:
             logger.info("Error while sending.", exc_info=True)
@@ -882,8 +926,7 @@ class GatewayConnection(object):
             # Happens when a the other end is dead. There might be an empty
             # answer before the socket raises an error.
             if answer.strip() == "":
-                self.close()
-                raise Py4JError("Answer from Java side is empty")
+                raise Py4JNetworkError("Answer from Java side is empty")
             return answer
         except Exception as e:
             logger.info("Error while receiving.", exc_info=True)
@@ -1466,7 +1509,8 @@ class JavaGateway(object):
             self.start_callback_server(self.callback_server_parameters)
 
     def _create_gateway_client(self):
-        gateway_client = GatewayClient(self.gateway_parameters)
+        gateway_client = GatewayClient(
+            gateway_parameters=self.gateway_parameters)
         return gateway_client
 
     def _create_gateway_property(self):
@@ -1791,12 +1835,13 @@ class CallbackServer(object):
         client instead of run()."""
         af_type = socket.getaddrinfo(self.address, self.port)[0][0]
         self.server_socket = socket.socket(af_type, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(
-            socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        set_reuse_address(self.server_socket)
         try:
             self.server_socket.bind((self.address, self.port))
-            self._listening_address, self._listening_port = \
-                self.server_socket.getsockname()
+            # 4-tuple for ipv6, 2-tuple for ipv4
+            info = self.server_socket.getsockname()
+            self._listening_address = info[0]
+            self._listening_port = info[1]
         except Exception as e:
             msg = "An error occurred while trying to start the callback "\
                   "server ({0}:{1})".format(self.address, self.port)
@@ -1921,6 +1966,7 @@ class CallbackConnection(Thread):
 
     def run(self):
         logger.info("Callback Connection ready to receive messages")
+        reset = False
         try:
             while True:
                 command = smart_decode(self.input.readline())[:-1]
@@ -1944,18 +1990,28 @@ class CallbackConnection(Thread):
                     # point, the protocol is broken.
                     self.socket.sendall(
                         proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
+        except socket.timeout:
+            reset = True
+            logger.info(
+                "Timeout while callback connection was waiting for"
+                "a message", exc_info=True)
         except Exception:
             # This is a normal exception...
             logger.info(
                 "Error while callback connection was waiting for"
                 "a message", exc_info=True)
-        self.close()
+        self.close(reset)
 
-    def close(self):
+    def close(self, reset=False):
         logger.info("Closing down callback connection")
-        quiet_shutdown(self.socket)
+        if reset:
+            set_linger(self.socket)
+        quiet_close(self.input)
+        if not reset:
+            quiet_shutdown(self.socket)
         quiet_close(self.socket)
         self.socket = None
+        self.input = None
 
     def _call_proxy(self, obj_id, input):
         return_message = proto.ERROR_RETURN_MESSAGE

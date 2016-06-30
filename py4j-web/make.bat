@@ -27,6 +27,7 @@ if "%1" == "help" (
 )
 
 if "%1" == "clean" (
+	if not exist _build goto end
 	for /d %%i in (_build\*) do rmdir /q /s %%i
 	del /q /s _build\*
 	goto end

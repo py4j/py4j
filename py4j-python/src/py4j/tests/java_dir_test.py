@@ -22,6 +22,7 @@ ExampleClassMethods = sorted([
     "method4",
     "method5",
     "method6",
+    "sleepFirstTimeOnly",
     # overloaded
     "method7",
     "method8",
@@ -62,6 +63,8 @@ def test_dir_object():
     with example_app_process():
         with gateway() as g:
             ex = g.getNewExample()
+            print(sorted(dir(ex)))
+            print(ExampleClassMethods)
             assert sorted(dir(ex)) == ExampleClassMethods
 
 

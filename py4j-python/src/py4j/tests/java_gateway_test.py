@@ -15,6 +15,7 @@ from multiprocessing import Process
 import os
 from socket import AF_INET, SOCK_STREAM, socket
 import subprocess
+import sys
 import tempfile
 from threading import Thread
 import time
@@ -91,6 +92,12 @@ def start_short_timeout_example_server():
         "py4j.examples.ExampleApplication$ExampleShortTimeoutApplication"])
 
 
+def start_ipv6_example_server():
+    subprocess.call([
+        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.ExampleApplication$ExampleIPv6Application"])
+
+
 def start_example_app_process():
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_example_server)
@@ -106,6 +113,16 @@ def start_short_timeout_app_process():
     p.start()
     sleep()
     check_connection()
+    return p
+
+
+def start_ipv6_app_process():
+    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
+    p = Process(target=start_ipv6_example_server)
+    p.start()
+    # Sleep twice because we do not check connections.
+    sleep()
+    sleep()
     return p
 
 
@@ -418,6 +435,22 @@ class FieldTest(unittest.TestCase):
         self.gateway = JavaGateway()
         ex = self.gateway.getNewExample()
         self.assertEqual(1, get_method(ex, "method1")())
+
+
+class DeprecatedTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+
+    def test_gateway_client(self):
+        gateway_client = GatewayClient(port=DEFAULT_PORT)
+        self.gateway = JavaGateway(gateway_client=gateway_client)
+
+        i = self.gateway.jvm.System.currentTimeMillis()
+        self.assertTrue(i > 0)
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
 
 
 class UtilityTest(unittest.TestCase):
@@ -957,6 +990,7 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.out.println("Test")
 
     def testRedirectToQueue(self):
+        end = os.linesep
         qout = Queue()
         qerr = Queue()
         self.gateway = JavaGateway.launch_gateway(
@@ -966,12 +1000,13 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.err.println("Test2")
         sleep()
         for i in range(10):
-            self.assertEqual("Test\n", qout.get())
-            self.assertEqual("Test2\n", qerr.get())
+            self.assertEqual("Test{0}".format(end), qout.get())
+            self.assertEqual("Test2{0}".format(end), qerr.get())
         self.assertTrue(qout.empty)
         self.assertTrue(qerr.empty)
 
     def testRedirectToDeque(self):
+        end = os.linesep
         qout = deque()
         qerr = deque()
         self.gateway = JavaGateway.launch_gateway(
@@ -981,14 +1016,15 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.err.println("Test2")
         sleep()
         for i in range(10):
-            self.assertEqual("Test\n", qout.pop())
-            self.assertEqual("Test2\n", qerr.pop())
+            self.assertEqual("Test{0}".format(end), qout.pop())
+            self.assertEqual("Test2{0}".format(end), qerr.pop())
         self.assertEqual(0, len(qout))
         self.assertEqual(0, len(qerr))
 
     def testRedirectToFile(self):
-        (_, outpath) = tempfile.mkstemp(text=True)
-        (_, errpath) = tempfile.mkstemp(text=True)
+        end = os.linesep
+        (out_handle, outpath) = tempfile.mkstemp(text=True)
+        (err_handle, errpath) = tempfile.mkstemp(text=True)
 
         stdout = open(outpath, "w")
         stderr = open(errpath, "w")
@@ -999,6 +1035,8 @@ class GatewayLauncherTest(unittest.TestCase):
             for i in range(10):
                 self.gateway.jvm.System.out.println("Test")
                 self.gateway.jvm.System.err.println("Test2")
+            self.gateway.shutdown()
+            sleep()
             # Should not be necessary
             quiet_close(stdout)
             quiet_close(stderr)
@@ -1007,13 +1045,17 @@ class GatewayLauncherTest(unittest.TestCase):
             with open(outpath, "r") as stdout:
                 lines = stdout.readlines()
                 self.assertEqual(10, len(lines))
-                self.assertEqual("Test\n", lines[0])
+                self.assertEqual("Test{0}".format(end), lines[0])
 
             with open(errpath, "r") as stderr:
                 lines = stderr.readlines()
                 self.assertEqual(10, len(lines))
+                # XXX Apparently, it's \n by default even on windows...
+                # Go figure
                 self.assertEqual("Test2\n", lines[0])
         finally:
+            os.close(out_handle)
+            os.close(err_handle)
             os.unlink(outpath)
             os.unlink(errpath)
 
@@ -1032,6 +1074,31 @@ class WaitOperator(object):
 
     class Java:
         implements = ["py4j.examples.Operator"]
+
+
+class IPv6Test(unittest.TestCase):
+
+    def testIpV6(self):
+        if sys.version_info[:2] == (2, 6):
+            # IPv6 not supported in Python 2.6
+            return
+
+        self.p = start_ipv6_app_process()
+        gateway = JavaGateway(
+            gateway_parameters=GatewayParameters(address="::1"),
+            callback_server_parameters=CallbackServerParameters(address="::1"))
+
+        try:
+            timeMillis = gateway.jvm.System.currentTimeMillis()
+            self.assertTrue(timeMillis > 0)
+
+            operator = WaitOperator(0.1)
+            opExample = gateway.jvm.py4j.examples.OperatorExample()
+            a_list = opExample.randomBinaryOperator(operator)
+            self.assertEqual(a_list[0] + a_list[1], a_list[2])
+        finally:
+            gateway.shutdown()
+            self.p.join()
 
 
 class RetryTest(unittest.TestCase):
@@ -1144,7 +1211,7 @@ class RetryTest(unittest.TestCase):
         on send, and Java must retry by creating a new connection
         (CallbackConnection).
         """
-        self.p = start_short_timeout_app_process()
+        self.p = start_example_app_process()
         gateway = JavaGateway(
             callback_server_parameters=CallbackServerParameters(
                 read_timeout=0.250))
@@ -1167,7 +1234,7 @@ class RetryTest(unittest.TestCase):
             self.assertEqual(str_connection, str_connection2)
             self.assertNotEqual(str_connection, str_connection3)
         except Py4JJavaError:
-            self.fail("Callbackserver did not retry.")
+            self.fail("Java callbackclient did not retry.")
         finally:
             gateway.shutdown()
             self.p.join()

@@ -1,4 +1,6 @@
 machine:
+  pre:
+    - sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0 net.ipv6.conf.default.disable_ipv6=0 net.ipv6.conf.all.disable_ipv6=0
   environment:
     JDK6_BOOT_CLASSPATH: /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/jsse.jar
 general:
