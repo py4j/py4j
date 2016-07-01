@@ -15,7 +15,6 @@ from multiprocessing import Process
 import os
 from socket import AF_INET, SOCK_STREAM, socket
 import subprocess
-import sys
 import tempfile
 from threading import Thread
 import time
@@ -1079,10 +1078,6 @@ class WaitOperator(object):
 class IPv6Test(unittest.TestCase):
 
     def testIpV6(self):
-        if sys.version_info[:2] == (2, 6):
-            # IPv6 not supported in Python 2.6
-            return
-
         self.p = start_ipv6_app_process()
         gateway = JavaGateway(
             gateway_parameters=GatewayParameters(address="::1"),
