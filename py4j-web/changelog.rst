@@ -9,6 +9,8 @@ Py4J 0.10.2.1
 
 - Release date:
 - Both sides: added support for IPv6.
+- Eclipse: Replaced Eclipse-BuddyPolicy: global by DynamicImport-Package: * for
+  greater compatibility with other OSGi frameworks.
 - `tickets closed for 0.10.3 release
   <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.3+is%3Aclosed>`_
 
