@@ -150,7 +150,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 
 	private final List<Class<? extends Command>> customCommands;
 
-	private final List<GatewayServerListener> listeners;
+	private final CopyOnWriteArrayList<GatewayServerListener> listeners;
 
 	private final ServerSocketFactory sSocketFactory;
 
@@ -426,9 +426,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	}
 
 	public void addListener(GatewayServerListener listener) {
-		if (!listeners.contains(listener)) {
-			listeners.add(listener);
-		}
+		listeners.addIfAbsent(listener);
 	}
 
 	public void connectionStopped(Py4JServerConnection gatewayConnection) {
