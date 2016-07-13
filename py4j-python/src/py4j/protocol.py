@@ -29,6 +29,7 @@ from py4j.compat import (
 
 
 JAVA_MAX_INT = 2147483647
+JAVA_MIN_INT = -2147483648
 
 JAVA_INFINITY = "Infinity"
 JAVA_NEGATIVE_INFINITY = "-Infinity"
@@ -266,7 +267,8 @@ def get_command_part(parameter, python_proxy_pool=None):
         command_part = BOOLEAN_TYPE + smart_decode(parameter)
     elif isinstance(parameter, Decimal):
         command_part = DECIMAL_TYPE + smart_decode(parameter)
-    elif isinstance(parameter, int) and parameter <= JAVA_MAX_INT:
+    elif isinstance(parameter, int) and parameter <= JAVA_MAX_INT\
+            and parameter >= JAVA_MIN_INT:
         command_part = INTEGER_TYPE + smart_decode(parameter)
     elif isinstance(parameter, long) or isinstance(parameter, int):
         command_part = LONG_TYPE + smart_decode(parameter)

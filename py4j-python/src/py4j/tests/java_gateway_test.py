@@ -589,6 +589,7 @@ class TypeConversionTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
         self.assertEqual(1, ex.method7(1234))
         self.assertEqual(4, ex.method7(2147483648))
+        self.assertEqual(4, ex.method7(-2147483649))
         self.assertEqual(4, ex.method7(long(2147483648)))
         self.assertEqual(long(4), ex.method8(3))
         self.assertEqual(4, ex.method8(3))
