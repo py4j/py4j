@@ -1161,6 +1161,13 @@ class JavaObject(object):
         else:
             return other.__eq__(self)
 
+    def __ne__(self, other):
+        value = self.__eq__(other)
+        if value is NotImplemented:
+            return value
+        else:
+            return not value
+
     def __hash__(self):
         return self.hashCode()
 
