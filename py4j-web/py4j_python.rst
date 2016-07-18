@@ -23,3 +23,4 @@ that users are expected to only use :mod:`py4j.java_gateway` or
    py4j_java_protocol.rst
    py4j_java_collections.rst
    py4j_finalizer.rst
+   py4j_signals.rst

@@ -900,6 +900,73 @@ Support for Eclipse was introduced in Py4J 0.5 and more features may be added
 in the future.
 
 
+Listening to server events
+--------------------------
+
+On the Java side, it is possible to listen to GatewayServer events by
+registering an instance of ``py4j.GatewayServerListener`` with
+``GatewayServer.addListener``.
+
+On the Python side, it is possible to listen to CallbackServer events using
+signals. Recognizing that signals may be a foreign concept to Java developers,
+here is a full example:
+
+
+.. code-block:: python
+
+    from py4j.java_gateway import (
+        server_connection_started, server_connection_stopped,
+        server_started, server_stopped, pre_server_shutdown, post_server_shutdown,
+        JavaGateway, GatewayParameters, CallbackServerParameters)
+
+    def started(sender, **kwargs):
+        server = kwargs["server"]
+        # do something
+
+    def connection_started(sender, **kwargs):
+        connection = kwargs["connection"]
+        # do something
+
+    def connection_stopped(sender, **kwargs):
+        connection = kwargs["connection"]
+        # do something
+
+    def stopped(sender, **kwargs):
+        server = kwargs["server"]
+        # do something
+
+    def pre_shutdown(sender, **kwargs):
+        server = kwargs["server"]
+        # do something
+
+    def post_shutdown(sender, **kwargs):
+        server = kwargs["server"]
+        # do something
+
+    # Because the server is created and started at the same time,
+    # you must listen to all started signals. You will receive the server
+    # instance that was started as a parameter and sender.
+    server_started.connect(started)
+    gateway = JavaGateway(
+        gateway_parameters=GatewayParameters(),
+        callback_server_parameters=CallbackServerParameters())
+    server_stopped.connect(
+        stopped, sender=gateway.get_callback_server())
+    server_connection_started.connect(
+        connection_started,
+        sender=gateway.get_callback_server())
+    server_connection_stopped.connect(
+        connection_stopped,
+        sender=gateway.get_callback_server())
+    pre_server_shutdown.connect(
+        pre_shutdown, sender=gateway.get_callback_server())
+    post_server_shutdown.connect(
+        post_shutdown, sender=gateway.get_callback_server())
+
+You can read more information about the :mod:`signals <py4j.signals>` module or
+the :ref:`Py4J signals <api_signals>`.
+
+
 .. _adv_memory:
 
 Py4J Memory model

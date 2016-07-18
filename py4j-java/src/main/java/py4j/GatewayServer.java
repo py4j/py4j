@@ -669,10 +669,10 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 			}
 			connections.clear();
 			gateway.shutdown(shutdownCallbackClient);
-			fireServerPostShutdown();
 		} finally {
 			lock.unlock();
 		}
+		fireServerPostShutdown();
 	}
 
 	/**

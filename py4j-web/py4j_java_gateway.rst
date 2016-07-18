@@ -105,6 +105,8 @@ CallbackServerParameters
 GatewayClient
 -------------
 
+**This is an internal class. Do not use it directly.**
+
 .. autoclass:: py4j.java_gateway.GatewayClient
    :members:
    :undoc-members:
@@ -114,6 +116,8 @@ GatewayClient
 
 GatewayConnection
 -----------------
+
+**This is an internal class. Do not use it directly.**
 
 .. autoclass:: py4j.java_gateway.GatewayConnection
    :members:
@@ -125,6 +129,8 @@ GatewayConnection
 JVMView
 -------
 
+**This is an internal class. Do not use it directly.**
+
 .. autoclass:: py4j.java_gateway.JVMView
    :members:
    :undoc-members:
@@ -135,6 +141,8 @@ JVMView
 JavaObject
 ----------
 
+**This is an internal class. Do not use it directly.**
+
 Represents a Java object from which you can call methods or access fields.
 
 
@@ -142,6 +150,8 @@ Represents a Java object from which you can call methods or access fields.
 
 JavaMember
 -----------
+
+**This is an internal class. Do not use it directly.**
 
 Represents a member (i.e., method) of a :class:`JavaObject`. For now, only
 methods are supported. Fields are retrieved directly and are not contained in a
@@ -152,6 +162,8 @@ JavaMember.
 
 JavaClass
 ---------
+
+**This is an internal class. Do not use it directly.**
 
 A `JavaClass` represents a Java Class from which static members can be
 retrieved. `JavaClass` instances are also needed to initialize an array.
@@ -166,6 +178,8 @@ created while accessing the `jvm` property of a gateway, e.g.,
 JavaPackage
 -----------
 
+**This is an internal class. Do not use it directly.**
+
 .. autoclass:: py4j.java_gateway.JavaPackage
    :members:
    :undoc-members:
@@ -175,6 +189,8 @@ JavaPackage
 
 PythonProxyPool
 ---------------
+
+**This is an internal class. Do not use it directly.**
 
 .. autoclass:: py4j.java_gateway.PythonProxyPool
    :members:
@@ -196,9 +212,85 @@ CallbackServer
 CallbackConnection
 ------------------
 
+**This is an internal class. Do not use it directly.**
+
 .. autoclass:: py4j.java_gateway.CallbackConnection
    :members:
    :undoc-members:
+
+
+.. _api_signals:
+
+Py4J Core Signals
+-----------------
+
+This is a list of signals that Py4J can send during various lifecycle events.
+They are all instances of :class:`Signal <py4j.signals.Signal>`.
+
+
+.. py:data:: server_connection_stopped
+
+    Signal sent when a Python (Callback) Server connection is stopped.
+
+    Will supply the ``connection`` argument, an instance of CallbackConnection.
+
+    The sender is the CallbackServer instance.
+
+.. py:data:: server_connection_started
+
+    Signal sent when a Python (Callback) Server connection is started.
+
+    Will supply the ``connection`` argument, an instance of CallbackConnection.
+
+    The sender is the CallbackServer instance.
+
+
+.. py:data:: server_connection_error
+
+    Signal sent when a Python (Callback) Server encounters an error while
+    waiting for a connection.
+
+    Will supply the ``error`` argument, an instance of Exception.
+
+    The sender is the CallbackServer instance.
+
+
+.. py:data:: server_started
+
+    Signal sent when a Python (Callback) Server is started
+
+    Will supply the ``server`` argument, an instance of CallbackServer
+
+    The sender is the CallbackServer instance, but it is not possible for now
+    to bind to a CallbackServer instance before it is started (limitation of
+    the current JavaGateway and ClientServer API).
+
+
+.. py:data:: server_stopped
+
+    Signal sent when a Python (Callback) Server is stopped
+
+    Will supply the ``server`` argument, an instance of CallbackServer
+
+    The sender is the CallbackServer instance.
+
+
+.. py:data:: pre_server_shutdown
+
+    Signal sent when a Python (Callback) Server is about to shut down.
+
+    Will supply the ``server`` argument, an instance of CallbackServer
+
+    The sender is the CallbackServer instance.
+
+
+.. py:data:: post_server_shutdown
+
+    Signal sent when a Python (Callback) Server is shutted down.
+
+    Will supply the ``server`` argument, an instance of CallbackServer
+
+    The sender is the CallbackServer instance.
 
 
 .. _api_functions:

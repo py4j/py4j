@@ -93,7 +93,7 @@ class InstrCallbackServer(CallbackServer):
     def _create_connection(self, socket_instance, stream):
         connection = InstrCallbackConnection(
             self.pool, stream, socket_instance, self.gateway_client,
-            self.callback_server_parameters)
+            self.callback_server_parameters, self)
         return connection
 
 
@@ -118,7 +118,7 @@ class InstrPythonServer(PythonServer):
     def _create_connection(self, socket, stream):
         connection = InstrClientServerConnection(
             self.java_parameters, self.python_parameters,
-            self.gateway_property, self.gateway_client)
+            self.gateway_property, self.gateway_client, self)
         connection.init_socket_from_python_server(socket, stream)
         return connection
 

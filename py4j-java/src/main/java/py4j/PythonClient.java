@@ -47,7 +47,7 @@ import py4j.commands.Command;
  * ensuring that each thread uses its own connection.
  * </p>
  */
-public class PythonClient extends CallbackClient implements Py4JPythonClientPerThread {
+public class PythonClient extends CallbackClient implements Py4JPythonClientPerThread, GatewayServerListener {
 
 	protected Gateway gateway;
 
@@ -107,6 +107,14 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 		this.customCommands = customCommands;
 		this.threadConnection = new ThreadLocal<WeakReference<ClientServerConnection>>();
 		this.readTimeout = readTimeout;
+		setSelfListener();
+	}
+
+	private void setSelfListener() {
+		// Used to know when a connection is closed so we can remove it from our connections list
+		if (javaServer != null) {
+			javaServer.addListener(this);
+		}
 	}
 
 	@Override
@@ -138,6 +146,7 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 
 	public void setJavaServer(Py4JJavaServer javaServer) {
 		this.javaServer = javaServer;
+		setSelfListener();
 	}
 
 	@Override
@@ -201,4 +210,49 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 				minConnectionTimeUnit, socketFactory, javaServer);
 	}
 
+	@Override
+	public void connectionError(Exception e) {
+
+	}
+
+	@Override
+	public void connectionStarted(Py4JServerConnection gatewayConnection) {
+
+	}
+
+	@Override
+	public void connectionStopped(Py4JServerConnection gatewayConnection) {
+		try {
+			// Best effort to remove connections from deque
+			// In an ideal world, we should use a lock around connections, but it could be tricky (potential deadlock?)
+			connections.remove(gatewayConnection);
+		} catch (Exception e) {
+
+		}
+	}
+
+	@Override
+	public void serverError(Exception e) {
+
+	}
+
+	@Override
+	public void serverPostShutdown() {
+
+	}
+
+	@Override
+	public void serverPreShutdown() {
+
+	}
+
+	@Override
+	public void serverStarted() {
+
+	}
+
+	@Override
+	public void serverStopped() {
+
+	}
 }

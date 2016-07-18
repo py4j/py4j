@@ -178,6 +178,72 @@ class GatewayServerTest(unittest.TestCase):
             # 3 CallbackConnection. Notice the symmetry
             assert_python_memory(self, 12)
 
+    def testPythonToJavaToPythonClose(self):
+        def play_with_ping(gateway):
+            ping = InstrumentedPythonPing()
+            pingpong = gateway.jvm.py4j.examples.PingPong()
+            total = pingpong.start(ping)
+            return total
+
+        def internal_work(assert_memory):
+            gateway2 = InstrJavaGateway(
+                gateway_parameters=GatewayParameters(
+                    port=DEFAULT_PORT+5),
+                callback_server_parameters=CallbackServerParameters(
+                    port=DEFAULT_PYTHON_PROXY_PORT+5))
+            sleep()
+            play_with_ping(gateway2)
+            python_gc()
+            sleep()
+            gateway2.close(close_callback_server_connections=True,
+                           keep_callback_server=True)
+            sleep()
+            assert_memory()
+            gateway2.shutdown()
+            sleep()
+
+        with gateway_server_example_app_process():
+            gateway = JavaGateway()
+            gateway.entry_point.startServer2()
+
+            def perform_memory_tests():
+                python_gc()
+                gateway.jvm.py4j.instrumented.MetricRegistry.\
+                    forceFinalization()
+                sleep()
+                createdSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
+                    getCreatedObjectsKeySet()
+                finalizedSet = gateway.jvm.py4j.instrumented.MetricRegistry.\
+                    getFinalizedObjectsKeySet()
+
+                # 10 objects: GatewayServer, 4 GatewayConnection,
+                # CallbackClient, 4 CallbackConnection
+                self.assertEqual(10, len(createdSet))
+                # 13 objects: JavaGateway, CallbackSerer, GatewayClient,
+                # GatewayProperty, PythonPing, 4 GatewayConnection,
+                # 4 CallbackConnection. Notice the symmetry between callback
+                # and gateway connections.
+                self.assertEqual(13, len(CREATED))
+                # 4 gateway connections, 3 callback connections.
+                # There is still one callback connection staying around
+                # following Java finalization that called back Python.
+                self.assertEqual(7, len(finalizedSet))
+                # Same amount of connections for the Python side
+                self.assertEqual(7, len(FINALIZED))
+
+            internal_work(perform_memory_tests)
+            python_gc()
+            gateway.jvm.py4j.instrumented.MetricRegistry.forceFinalization()
+            sleep()
+            gateway.shutdown()
+            # 14 objects: JavaGateway, CallbackSerer, GatewayClient,
+            # GatewayProperty, PythonPing, 5 GatewayConnection,
+            # 4 CallbackConnection. Notice the symmetry
+            # One more gateway connection created because we called shutdown
+            # after close (which requires a connection to send a shutdown
+            # command).
+            assert_python_memory(self, 14)
+
     def testJavaToPythonToJavaCleanGC(self):
         def internal_work(gateway):
             hello_state = HelloState2()
@@ -449,7 +515,73 @@ class ClientServerTest(unittest.TestCase):
 
             # 6 objects: ClientServer, PythonServer, JavaClient,
             # GatewayProperty, PythonPing, ClientServerConnection
-            assert_python_memory(self, 6)
+
+    def testPythonToJavaToPythonClose(self):
+        def play_with_ping(clientserver):
+            ping = InstrumentedPythonPing()
+            pingpong = clientserver.jvm.py4j.examples.PingPong()
+            total = pingpong.start(ping)
+            return total
+
+        def internal_work(assert_memory):
+            clientserver2 = InstrClientServer(
+                JavaParameters(port=DEFAULT_PORT+5),
+                PythonParameters(port=DEFAULT_PYTHON_PROXY_PORT+5))
+            sleep()
+            play_with_ping(clientserver2)
+            python_gc()
+            sleep()
+            clientserver2.close(
+                close_callback_server_connections=True,
+                keep_callback_server=True)
+            sleep()
+            assert_memory()
+            clientserver2.shutdown()
+            sleep()
+
+        with gateway_server_example_app_process(False):
+            clientserver = ClientServer()
+            clientserver.entry_point.startServer2()
+
+            def perform_memory_tests():
+                python_gc()
+                clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                    forceFinalization()
+                sleep()
+
+                createdSet = clientserver.jvm.py4j.instrumented.\
+                    MetricRegistry.getCreatedObjectsKeySet()
+                finalizedSet = clientserver.jvm.py4j.instrumented.\
+                    MetricRegistry.getFinalizedObjectsKeySet()
+
+                # 6 objects: ClientServer, JavaServer,
+                # PythonClient, 3 ClientServerConnection.
+                self.assertEqual(6, len(createdSet))
+
+                # Should be 2: ClientServer, 1 ClientServerConnection
+                # But for some reasons, Java refuses to collect the
+                # clientserverconnection even though there are no strong
+                # references.
+                self.assertEqual(1, len(finalizedSet))
+
+                # 8 objects: ClientServer, PythonServer, JavaClient,
+                # GatewayProperty, PythonPing, 3 ClientServerConnection
+                self.assertEqual(8, len(CREATED))
+
+                # PythonPing + ClientServerConnection
+                self.assertEqual(2, len(FINALIZED))
+
+            internal_work(perform_memory_tests)
+            python_gc()
+            clientserver.jvm.py4j.instrumented.MetricRegistry.\
+                forceFinalization()
+            sleep()
+
+            clientserver.shutdown()
+
+            # 9 objects: ClientServer, PythonServer, JavaClient,
+            # GatewayProperty, PythonPing, 4 ClientServerConnection
+            assert_python_memory(self, 9)
 
     def testJavaToPythonToJavaCleanGC(self):
         def internal_work(clientserver):

@@ -31,6 +31,7 @@ from py4j import protocol as proto
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, escape_new_line, get_command_part,
     get_return_value, is_error, register_output_converter, smart_decode)
+from py4j.signals import Signal
 from py4j.version import __version__
 
 
@@ -50,6 +51,64 @@ DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER = "DEFAULT"
 DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT = 5
 PY4J_SKIP_COLLECTIONS = "PY4J_SKIP_COLLECTIONS"
 PY4J_TRUE = set(["yes", "y", "t", "true"])
+
+
+server_connection_stopped = Signal()
+"""Signal sent when a Python (Callback) Server connection is stopped.
+
+Will supply the ``connection`` argument, an instance of CallbackConnection.
+
+The sender is the CallbackServer instance.
+"""
+
+server_connection_started = Signal()
+"""Signal sent when a Python (Callback) Server connection is started.
+
+Will supply the ``connection`` argument, an instance of CallbackConnection.
+
+The sender is the CallbackServer instance.
+"""
+
+server_connection_error = Signal()
+"""Signal sent when a Python (Callback) Server encounters an error while
+waiting for a connection.
+
+Will supply the ``error`` argument, an instance of Exception.
+
+The sender is the CallbackServer instance.
+"""
+
+server_started = Signal()
+"""Signal sent when a Python (Callback) Server is started
+
+Will supply the ``server`` argument, an instance of CallbackServer
+
+The sender is the CallbackServer instance.
+"""
+
+server_stopped = Signal()
+"""Signal sent when a Python (Callback) Server is stopped
+
+Will supply the ``server`` argument, an instance of CallbackServer
+
+The sender is the CallbackServer instance.
+"""
+
+pre_server_shutdown = Signal()
+"""Signal sent when a Python (Callback) Server is about to shut down.
+
+Will supply the ``server`` argument, an instance of CallbackServer
+
+The sender is the CallbackServer instance.
+"""
+
+post_server_shutdown = Signal()
+"""Signal sent when a Python (Callback) Server is shutted down.
+
+Will supply the ``server`` argument, an instance of CallbackServer
+
+The sender is the CallbackServer instance.
+"""
 
 
 def set_reuse_address(server_socket):
@@ -871,9 +930,10 @@ class GatewayConnection(object):
         """
         if reset:
             set_linger(self.socket)
-        quiet_close(self.stream)
-        if not reset:
+        else:
+            # Sent shut down before attempting to close a stream or socket.
             quiet_shutdown(self.socket)
+        quiet_close(self.stream)
         quiet_close(self.socket)
         self.is_connected = False
 
@@ -1682,6 +1742,28 @@ class JavaGateway(object):
                     "Exception while shutting down callback server",
                     exc_info=True)
 
+    def close_callback_server(self, raise_exception=False):
+        """Closes the
+           :class:`CallbackServer <py4j.java_callback.CallbackServer>`
+           connections.
+
+        :param raise_exception: If `True`, raise an exception if an error
+            occurs while closing the callback server connections
+            (very likely with sockets).
+        """
+        if self._callback_server is None:
+            # Nothing to shutdown
+            return
+        try:
+            self._callback_server.close()
+        except Exception:
+            if raise_exception:
+                raise
+            else:
+                logger.info(
+                    "Exception while closing callback server",
+                    exc_info=True)
+
     def restart_callback_server(self):
         """Shuts down the callback server (if started) and restarts a new one.
         """
@@ -1689,16 +1771,27 @@ class JavaGateway(object):
         self._callback_server = None
         self.start_callback_server(self.callback_server_parameters)
 
-    def close(self, keep_callback_server=False):
+    def close(
+            self, keep_callback_server=False,
+            close_callback_server_connections=False):
         """Closes all gateway connections. A connection will be reopened if
            necessary (e.g., if a :class:`JavaMethod` is called).
 
         :param keep_callback_server: if `True`, the callback server is not
-            shut down.
+            shut down. Mutually exclusive with
+            close_callback_server_connections.
+        :param close_callback_server_connections: if `True`, close all
+            callback server connections.
         """
         self._gateway_client.close()
+
         if not keep_callback_server:
+            deprecated(
+                "JavaGateway.close.keep_callback_server", "1.0",
+                "JavaGateway.shutdown_callback_server")
             self.shutdown_callback_server()
+        elif close_callback_server_connections:
+            self.close_callback_server()
 
     def detach(self, java_object):
         """Makes the Java Gateway dereference this object.
@@ -1884,6 +1977,8 @@ class CallbackServer(object):
             logger.info(
                 "Socket listening on {0}".
                 format(smart_decode(self.server_socket.getsockname())))
+            server_started.send(
+                self, server=self)
 
             read_list = [self.server_socket]
             while not self.is_shutdown:
@@ -1909,20 +2004,34 @@ class CallbackServer(object):
                         if not self.is_shutdown:
                             self.connections.add(connection)
                             connection.start()
+                            server_connection_started.send(
+                                self, connection=connection)
                         else:
                             quiet_shutdown(connection.socket)
                             quiet_close(connection.socket)
-        except Exception:
+        except Exception as e:
             if self.is_shutdown:
                 logger.info("Error while waiting for a connection.")
             else:
+                server_connection_error.send(
+                    self, error=e)
                 logger.exception("Error while waiting for a connection.")
+
+        server_stopped.send(self, server=self)
 
     def _create_connection(self, socket_instance, stream):
         connection = CallbackConnection(
             self.pool, stream, socket_instance, self.gateway_client,
-            self.callback_server_parameters)
+            self.callback_server_parameters, self)
         return connection
+
+    def close(self):
+        """Closes all active callback connections
+        """
+        logger.info("Closing down callback connections from CallbackServer")
+        with self.lock:
+            for connection in self.connections:
+                quiet_close(connection)
 
     def shutdown(self):
         """Stops listening and accepting connection requests. All live
@@ -1931,6 +2040,7 @@ class CallbackServer(object):
            This method can safely be called by another thread.
         """
         logger.info("Callback Server Shutting Down")
+        pre_server_shutdown.send(self, server=self)
         with self.lock:
             self.is_shutdown = True
             quiet_shutdown(self.server_socket)
@@ -1943,6 +2053,7 @@ class CallbackServer(object):
             self.pool.clear()
         self.thread.join()
         self.thread = None
+        post_server_shutdown.send(self, server=self)
 
 
 class CallbackConnection(Thread):
@@ -1951,16 +2062,21 @@ class CallbackConnection(Thread):
     """
     def __init__(
             self, pool, input, socket_instance, gateway_client,
-            callback_server_parameters):
+            callback_server_parameters, callback_server):
         super(CallbackConnection, self).__init__()
         self.pool = pool
         self.input = input
         self.socket = socket_instance
         self.gateway_client = gateway_client
 
+        # TODO Remove in 1.0. Take it from the callback_server directly
         self.callback_server_parameters = callback_server_parameters
+
         if not callback_server_parameters:
+            # TODO Remove in 1.0. This should never be the case.
             self.callback_server_parameters = CallbackServerParameters()
+
+        self.callback_server = callback_server
 
         self.daemon = self.callback_server_parameters.daemonize_connections
 
@@ -2006,12 +2122,17 @@ class CallbackConnection(Thread):
         logger.info("Closing down callback connection")
         if reset:
             set_linger(self.socket)
-        quiet_close(self.input)
-        if not reset:
+        else:
+            # Send shutdown before closing stream and socket
             quiet_shutdown(self.socket)
+        quiet_close(self.input)
         quiet_close(self.socket)
+        already_closed = self.socket is None
         self.socket = None
         self.input = None
+        if not already_closed:
+            server_connection_stopped.send(
+                self.callback_server, connection=self)
 
     def _call_proxy(self, obj_id, input):
         return_message = proto.ERROR_RETURN_MESSAGE
