@@ -121,7 +121,7 @@ public class TypeUtil {
 	}
 
 	private static int computeInterfaceDistance(Class<?> parent, Class<?> child, Set<String> visitedInterfaces,
-			List<Class<?>> interfacesToVisit) {
+			List<? extends Class<?>> interfacesToVisit) {
 		int distance = -1;
 		List<Class<?>> nextInterfaces = new ArrayList<Class<?>>();
 		for (Class<?> clazz : interfacesToVisit) {

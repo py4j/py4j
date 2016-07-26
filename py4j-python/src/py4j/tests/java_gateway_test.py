@@ -29,7 +29,8 @@ from py4j.java_gateway import (
     JavaGateway, JavaMember, get_field, get_method,
     GatewayClient, set_field, java_import, JavaObject, is_instance_of,
     GatewayParameters, CallbackServerParameters, quiet_close, DEFAULT_PORT,
-    set_default_callback_accept_timeout, GatewayConnectionGuard)
+    set_default_callback_accept_timeout, GatewayConnectionGuard,
+    get_java_class)
 from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
     encode_bytearray, escape_new_line, unescape_new_line, smart_decode)
@@ -460,6 +461,16 @@ class UtilityTest(unittest.TestCase):
     def tearDown(self):
         safe_shutdown(self)
         self.p.join()
+
+    def testGetJavaClass(self):
+        ArrayList = self.gateway.jvm.java.util.ArrayList
+        clazz1 = ArrayList._java_lang_class
+        clazz2 = get_java_class(ArrayList)
+
+        self.assertEqual("java.util.ArrayList", clazz1.getName())
+        self.assertEqual("java.util.ArrayList", clazz2.getName())
+        self.assertEqual("java.lang.Class", clazz1.getClass().getName())
+        self.assertEqual("java.lang.Class", clazz2.getClass().getName())
 
     def testIsInstance(self):
         a_list = self.gateway.jvm.java.util.ArrayList()

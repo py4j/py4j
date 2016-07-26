@@ -367,6 +367,16 @@ def is_instance_of(gateway, java_object, java_class):
         param, java_object)
 
 
+def get_java_class(java_class):
+    """Returns the java.lang.Class of a JavaClass. This is equivalent to
+    calling .class in Java.
+
+    :param java_class: An instance of JavaClass
+    :rtype: An instance of JavaObject that corresponds to a java.lang.Class
+    """
+    return java_class._java_lang_class
+
+
 def quiet_close(closable):
     """Quietly closes a closable object without throwing an exception.
 
@@ -1272,6 +1282,23 @@ class JavaClass(object):
                 answer, self._gateway_client, self._fqn, "__dir__")
             self._statics = return_value.split("\n")
         return self._statics[:]
+
+    @property
+    def _java_lang_class(self):
+        """Gets the java.lang.Class of the current JavaClass. This is
+        equivalent to calling .class in Java.
+        """
+        command = proto.REFLECTION_COMMAND_NAME +\
+            proto.REFL_GET_JAVA_LANG_CLASS_SUB_COMMAND_NAME +\
+            self._fqn + "\n" + proto.END_COMMAND_PART
+        answer = self._gateway_client.send_command(command)
+
+        if len(answer) > 1 and answer[0] == proto.SUCCESS:
+            return get_return_value(
+                answer, self._gateway_client, self._fqn, "_java_lang_class")
+        else:
+            raise Py4JError(
+                "{0} does not exist in the JVM".format(self._fqn))
 
     def __getattr__(self, name):
         if name in ["__str__", "__repr__"]:

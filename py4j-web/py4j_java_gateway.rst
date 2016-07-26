@@ -165,12 +165,20 @@ JavaClass
 
 **This is an internal class. Do not use it directly.**
 
-A `JavaClass` represents a Java Class from which static members can be
-retrieved. `JavaClass` instances are also needed to initialize an array.
 
-Usually, `JavaClass` are not initialized using their constructor, but they are
-created while accessing the `jvm` property of a gateway, e.g.,
-`gateway.jvm.java.lang.String`.
+.. autoclass:: py4j.java_gateway.JavaClass
+
+    A `JavaClass` represents a Java Class from which static members can be
+    retrieved. `JavaClass` instances are also needed to initialize an array.
+
+    Usually, `JavaClass` are not initialized using their constructor, but they are
+    created while accessing the `jvm` property of a gateway, e.g.,
+    `gateway.jvm.java.lang.String`.
+
+    .. py:attribute:: _java_lang_class
+
+        Property that returns the java.lang.Class associated with this
+        JavaClass. Equivalent to calling .class in Java.
 
 
 .. _api_javapackage:
@@ -311,5 +319,7 @@ The following functions get be used to import packages or to get a particular fi
 .. autofunction:: py4j.java_gateway.get_method
 
 .. autofunction:: py4j.java_gateway.is_instance_of
+
+.. autofunction:: py4j.java_gateway.get_java_class
 
 

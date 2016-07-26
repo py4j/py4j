@@ -103,6 +103,22 @@ public class ReflectionCommandTest {
 	}
 
 	@Test
+	public void testJavaLangClass() {
+		String inputCommand1 = ReflectionCommand.GET_JAVA_LANG_CLASS_SUB_COMMAND_NAME + "\n" + "java.lang.String\ne\n";
+		String inputCommand2 = ReflectionCommand.GET_JAVA_LANG_CLASS_SUB_COMMAND_NAME + "\n" + "java.lang"
+				+ ".FOOOOO\ne\n"; // does not exist
+		try {
+			command.execute("r", new BufferedReader(new StringReader(inputCommand1)), writer);
+			assertEquals("!yro0\n", sWriter.toString());
+			command.execute("r", new BufferedReader(new StringReader(inputCommand2)), writer);
+			assertEquals("!yro0\n!xsThe class java.lang.FOOOOO does not exist.\n", sWriter.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
 	public void testMember() {
 		String inputCommand1 = ReflectionCommand.GET_MEMBER_SUB_COMMAND_NAME + "\n" + "java.lang.String\n" + "valueOf"
 				+ "\ne\n";

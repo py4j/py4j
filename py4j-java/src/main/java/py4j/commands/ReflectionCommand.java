@@ -66,6 +66,8 @@ public class ReflectionCommand extends AbstractCommand {
 
 	public final static char GET_MEMBER_SUB_COMMAND_NAME = 'm';
 
+	public final static char GET_JAVA_LANG_CLASS_SUB_COMMAND_NAME = 'c';
+
 	public static final String REFLECTION_COMMAND_NAME = "r";
 
 	protected ReflectionEngine rEngine;
@@ -83,6 +85,8 @@ public class ReflectionCommand extends AbstractCommand {
 
 		if (subCommand == GET_UNKNOWN_SUB_COMMAND_NAME) {
 			returnCommand = getUnknownMember(reader);
+		} else if (subCommand == GET_JAVA_LANG_CLASS_SUB_COMMAND_NAME) {
+			returnCommand = getJavaLangClass(reader);
 		} else {
 			returnCommand = getMember(reader);
 		}
@@ -90,6 +94,23 @@ public class ReflectionCommand extends AbstractCommand {
 		logger.finest("Returning command: " + returnCommand);
 		writer.write(returnCommand);
 		writer.flush();
+	}
+
+	private String getJavaLangClass(BufferedReader reader) throws IOException {
+		String fqn = reader.readLine();
+		reader.readLine();
+		String returnCommand = null;
+		try {
+			Class<?> clazz = TypeUtil.forName(fqn);
+			ReturnObject rObject = gateway.getReturnObject(clazz);
+			returnCommand = Protocol.getOutputCommand(rObject);
+		} catch (ClassNotFoundException ce) {
+			returnCommand = Protocol.getOutputErrorCommand("The class " + fqn + " does not exist.");
+		} catch (Exception e) {
+			returnCommand = Protocol.getOutputErrorCommand();
+		}
+
+		return returnCommand;
 	}
 
 	/**
