@@ -34,6 +34,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -73,6 +74,8 @@ public class CallbackClient implements Py4JPythonClient {
 	private final Logger logger = Logger.getLogger(CallbackClient.class.getName());
 
 	private boolean isShutdown = false;
+
+	private boolean isShuttingDown = false;
 
 	public final static long DEFAULT_MIN_CONNECTION_TIME = 30;
 
@@ -403,13 +406,19 @@ public class CallbackClient implements Py4JPythonClient {
 		logger.info("Shutting down Callback Client");
 		try {
 			lock.lock();
+			if (isShuttingDown) {
+				return;
+			}
 			isShutdown = true;
-			for (Py4JClientConnection cc : connections) {
+			isShuttingDown = true;
+			ArrayList<Py4JClientConnection> tempConnections = new ArrayList<Py4JClientConnection>(connections);
+			for (Py4JClientConnection cc : tempConnections) {
 				cc.shutdown();
 			}
 			executor.shutdownNow();
 			connections.clear();
 		} finally {
+			isShuttingDown = false;
 			lock.unlock();
 		}
 	}

@@ -158,6 +158,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 
 	private boolean isShutdown = false;
 
+	private boolean isShuttingDown = false;
+
 	private final Lock lock = new ReentrantLock(true);
 
 	static {
@@ -662,14 +664,23 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		fireServerPreShutdown();
 		try {
 			lock.lock();
+			if (isShuttingDown) {
+				// Prevent call to shutdown by a listener.
+				return;
+			}
 			isShutdown = true;
+			isShuttingDown = true;
 			NetworkUtil.quietlyClose(sSocket);
-			for (Py4JServerConnection connection : connections) {
+			ArrayList<Py4JServerConnection> tempConnections = new ArrayList<Py4JServerConnection>(connections);
+			for (Py4JServerConnection connection : tempConnections) {
 				connection.shutdown();
 			}
+			// Clear existing connections
 			connections.clear();
 			gateway.shutdown(shutdownCallbackClient);
 		} finally {
+			// If an error occurs, do not prevent the shutdown method from being called again.
+			isShuttingDown = false;
 			lock.unlock();
 		}
 		fireServerPostShutdown();

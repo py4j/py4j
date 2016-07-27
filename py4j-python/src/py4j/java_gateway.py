@@ -1949,6 +1949,7 @@ class CallbackServer(object):
         # They will be caught and dealt with.
         self.lock = RLock()
         self.is_shutdown = False
+        self.is_shutting_down = False
 
     def start(self):
         """Starts the CallbackServer. This method should be called by the
@@ -2057,7 +2058,8 @@ class CallbackServer(object):
         """
         logger.info("Closing down callback connections from CallbackServer")
         with self.lock:
-            for connection in self.connections:
+            temp_connections = list(self.connections)
+            for connection in temp_connections:
                 quiet_close(connection)
 
     def shutdown(self):
@@ -2069,15 +2071,26 @@ class CallbackServer(object):
         logger.info("Callback Server Shutting Down")
         pre_server_shutdown.send(self, server=self)
         with self.lock:
-            self.is_shutdown = True
-            quiet_shutdown(self.server_socket)
-            quiet_close(self.server_socket)
-            self.server_socket = None
+            try:
+                if self.is_shutting_down:
+                    # Do not allow calling shutdown while shutdown is
+                    # executing. Alternative would be to not use a
+                    # reentrant lock, but we
+                    # would need to check all the other uses of this lock.
+                    return
+                self.is_shutting_down = True
+                self.is_shutdown = True
+                quiet_shutdown(self.server_socket)
+                quiet_close(self.server_socket)
+                self.server_socket = None
+                temp_connections = list(self.connections)
 
-            for connection in self.connections:
-                connection.close()
+                for connection in temp_connections:
+                    connection.close()
 
-            self.pool.clear()
+                self.pool.clear()
+            finally:
+                self.is_shutting_down = False
         self.thread.join()
         self.thread = None
         post_server_shutdown.send(self, server=self)
