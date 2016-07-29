@@ -1869,7 +1869,7 @@ class JavaGateway(object):
     def launch_gateway(
             cls, port=0, jarpath="", classpath="", javaopts=[],
             die_on_exit=False, redirect_stdout=None,
-            redirect_stderr=None, daemonize_redirect=True, java_path=None):
+            redirect_stderr=None, daemonize_redirect=True, java_path="java"):
         """Launch a `Gateway` in a new Java process and create a default
         :class:`JavaGateway <py4j.java_gateway.JavaGateway>` to connect to
         it.
@@ -1914,7 +1914,7 @@ class JavaGateway(object):
         _port = launch_gateway(
             port, jarpath, classpath, javaopts, die_on_exit,
             redirect_stdout=redirect_stdout, redirect_stderr=redirect_stderr,
-            daemonize_redirect=daemonize_redirect, java_path="java")
+            daemonize_redirect=daemonize_redirect, java_path=java_path)
         gateway = JavaGateway(gateway_parameters=GatewayParameters(port=_port))
         return gateway
 
