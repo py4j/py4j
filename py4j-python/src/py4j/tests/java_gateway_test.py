@@ -991,6 +991,10 @@ class GatewayLauncherTest(unittest.TestCase):
         self.gateway = JavaGateway.launch_gateway()
         self.assertTrue(self.gateway.jvm)
 
+    def testJavaPath(self):
+        self.gateway = JavaGateway.launch_gateway(java_path=None)
+        self.assertTrue(self.gateway.jvm)
+
     def testJavaopts(self):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
         self.assertTrue(self.gateway.jvm)

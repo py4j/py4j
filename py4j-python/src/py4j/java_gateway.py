@@ -189,7 +189,8 @@ def find_jar_path():
 
 def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
                    die_on_exit=False, redirect_stdout=None,
-                   redirect_stderr=None, daemonize_redirect=True):
+                   redirect_stderr=None, daemonize_redirect=True,
+                   java_path="java"):
     """Launch a `Gateway` in a new Java process.
 
     The redirect parameters accept file-like objects, Queue, or deque. When
@@ -227,11 +228,20 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         the file descriptors (stderr, stdout, redirect_stderr, redirect_stdout)
         might not be properly closed. This is not usually a problem, but in
         case of errors related to file descriptors, set this flag to False.
+    :param java_path: If None, Py4J will use $JAVA_HOME/bin/java if $JAVA_HOME
+        is defined, otherwise it will use "java".
 
     :rtype: the port number of the `Gateway` server.
     """
     if not jarpath:
         jarpath = find_jar_path()
+
+    if not java_path:
+        java_home = os.environ["JAVA_HOME"]
+        if java_home:
+            java_path = os.path.join(java_home, "bin", "java")
+        else:
+            java_path = "java"
 
     # Fail if the jar does not exist.
     if not os.path.exists(jarpath):
@@ -239,7 +249,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
 
     # Launch the server in a subprocess.
     classpath = os.pathsep.join((jarpath, classpath))
-    command = ["java", "-classpath", classpath] + javaopts + \
+    command = [java_path, "-classpath", classpath] + javaopts + \
               ["py4j.GatewayServer"]
     if die_on_exit:
         command.append("--die-on-broken-pipe")
@@ -1859,7 +1869,7 @@ class JavaGateway(object):
     def launch_gateway(
             cls, port=0, jarpath="", classpath="", javaopts=[],
             die_on_exit=False, redirect_stdout=None,
-            redirect_stderr=None, daemonize_redirect=True):
+            redirect_stderr=None, daemonize_redirect=True, java_path=None):
         """Launch a `Gateway` in a new Java process and create a default
         :class:`JavaGateway <py4j.java_gateway.JavaGateway>` to connect to
         it.
@@ -1895,6 +1905,8 @@ class JavaGateway(object):
             redirect_stderr, redirect_stdout) might not be properly closed.
             This is not usually a problem, but in case of errors related
             to file descriptors, set this flag to False.
+        :param java_path: If None, Py4J will use $JAVA_HOME/bin/java if
+            $JAVA_HOME is defined, otherwise it will use "java".
 
         :rtype: a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
             connected to the `Gateway` server.
@@ -1902,7 +1914,7 @@ class JavaGateway(object):
         _port = launch_gateway(
             port, jarpath, classpath, javaopts, die_on_exit,
             redirect_stdout=redirect_stdout, redirect_stderr=redirect_stderr,
-            daemonize_redirect=daemonize_redirect)
+            daemonize_redirect=daemonize_redirect, java_path="java")
         gateway = JavaGateway(gateway_parameters=GatewayParameters(port=_port))
         return gateway
 
