@@ -4,13 +4,44 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
-Py4J 0.10.2.1
--------------
 
-- Release date:
+Py4J 0.10.3
+-----------
+
+- Release date: July 31st 2016
+- Python side: Added java_path option in launch_gateway. If None, will detect
+  whether JAVA_HOME is set and use ``JAVA_HOME/bin/java`` instead of ``java``
+  to launch the JVM.
+- Python side: added ``create_new_process_group`` in ``launch_gateway``. If
+  True, will launch the JVM in a new process group which (1) prevents signals
+  sent to the parent Python process to propagate to the child JVM process, and
+  (2) does not kill the Java process if the Python process dies. This is a
+  useful option if you want to interrupt a long-running Java method call from
+  Python and you launched the JVM using launch_gateway. Such interruption has
+  always been possible if you launched the JVM outside of Python.
+- Python side: introduced a small signals library. Users can now connect to
+  signals emitted by the CallbackServer, which mirrors the events sent by
+  GatewayServer on the Java side.
+- Python side: added ``get_java_class`` function which returns the
+  java.lang.Class of a JavaClass. Equivalent to calling .class in Java, but
+  from Python.
+- Python side: fixed the project root setup.py, which allows users to install
+  Py4J with pip from the git repository. The root setup.py relied on compiled
+  jars that are no longer provided. It now uses gradlew to build the required
+  jars during the installation. Works on both Linux and Windows :-)
+- Python side: fixed type conversion when passing a large negative integer.
+- Java side: added defensive programming to prevent concurrent modification of
+  the listeners list (in case a listener removes itself after receiving an
+  event).
+- Both sides: added more memory leak tests and fixed a potential memory leak
+  related to listeners.
 - Both sides: added support for IPv6.
-- Eclipse: Replaced Eclipse-BuddyPolicy: global by DynamicImport-Package: * for
-  greater compatibility with other OSGi frameworks.
+- Created an official `benchmark program
+  <https://github.com/bartdag/py4j-benchmark>`_ to track Py4J speed. The
+  results are available as a `Google sheet and charts
+  <https://docs.google.com/spreadsheets/d/14ljMYIESFbOBFe4o_Fy6WirI2P5iCQuTP9fA1BuLMAI/edit?usp=sharing>`_.
+- Eclipse: Replaced ``Eclipse-BuddyPolicy: global`` by ``DynamicImport-Package:
+  *`` for greater compatibility with other OSGi frameworks.
 - `tickets closed for 0.10.3 release
   <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.3+is%3Aclosed>`_
 

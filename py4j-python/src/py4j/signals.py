@@ -1,3 +1,9 @@
+# -*- coding: UTF-8 -*-
+"""Module that provides a simple signals library.
+
+The signals pattern is very similar to the listener/observer pattern.
+
+"""
 from inspect import ismethod
 from threading import Lock
 
