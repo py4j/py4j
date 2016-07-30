@@ -995,12 +995,23 @@ class GatewayLauncherTest(unittest.TestCase):
         self.gateway = JavaGateway.launch_gateway(java_path=None)
         self.assertTrue(self.gateway.jvm)
 
+    def testCreateNewProcessGroup(self):
+        self.gateway = JavaGateway.launch_gateway(
+            create_new_process_group=True)
+        self.assertTrue(self.gateway.jvm)
+
     def testJavaopts(self):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
         self.assertTrue(self.gateway.jvm)
 
     def testRedirectToNull(self):
         self.gateway = JavaGateway.launch_gateway()
+        for i in range(4097):  # Hangs if not properly redirected
+            self.gateway.jvm.System.out.println("Test")
+
+    def testRedirectToNullOtherProcessGroup(self):
+        self.gateway = JavaGateway.launch_gateway(
+            create_new_process_group=True)
         for i in range(4097):  # Hangs if not properly redirected
             self.gateway.jvm.System.out.println("Test")
 

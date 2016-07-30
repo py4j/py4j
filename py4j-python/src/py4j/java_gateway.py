@@ -20,6 +20,7 @@ import select
 import socket
 import struct
 from subprocess import Popen, PIPE
+import subprocess
 import sys
 from threading import Thread, RLock
 import weakref
@@ -111,6 +112,19 @@ The sender is the CallbackServer instance.
 """
 
 
+def get_create_new_process_group_kwargs():
+    """Ensures that the child process is created in another process group.
+
+    This prevents signals such as SIGINT from propagating to the JVM.
+    """
+    if os.name != "nt":
+        kwargs = {"preexec_fn": os.setpgrp}
+    else:
+        kwargs = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+
+    return kwargs
+
+
 def set_reuse_address(server_socket):
     """Sets reuse address option if not on windows.
 
@@ -190,7 +204,7 @@ def find_jar_path():
 def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
                    die_on_exit=False, redirect_stdout=None,
                    redirect_stderr=None, daemonize_redirect=True,
-                   java_path="java"):
+                   java_path="java", create_new_process_group=False):
     """Launch a `Gateway` in a new Java process.
 
     The redirect parameters accept file-like objects, Queue, or deque. When
@@ -230,14 +244,22 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         case of errors related to file descriptors, set this flag to False.
     :param java_path: If None, Py4J will use $JAVA_HOME/bin/java if $JAVA_HOME
         is defined, otherwise it will use "java".
+    :param create_new_process_group: If True, the JVM is started in a new
+        process group. This ensures that signals sent to the parent Python
+        process are not forwarded to the JVM. For example, sending
+        Ctrl-C/SIGINT won't interrupt the JVM. If the python process dies, the
+        Java process will stay alive, which may be a problem for some scenarios
+        though.
 
     :rtype: the port number of the `Gateway` server.
     """
+    popen_kwargs = {}
+
     if not jarpath:
         jarpath = find_jar_path()
 
     if not java_path:
-        java_home = os.environ["JAVA_HOME"]
+        java_home = os.environ.get("JAVA_HOME")
         if java_home:
             java_path = os.path.join(java_home, "bin", "java")
         else:
@@ -271,7 +293,11 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     if redirect_stdout is None:
         redirect_stdout = open(os.devnull, "w")
 
-    proc = Popen(command, stdout=PIPE, stdin=PIPE, stderr=stderr)
+    if create_new_process_group:
+        popen_kwargs.update(get_create_new_process_group_kwargs())
+
+    proc = Popen(command, stdout=PIPE, stdin=PIPE, stderr=stderr,
+                 **popen_kwargs)
 
     # Determine which port the server started on (needed to support
     # ephemeral ports)
@@ -1869,7 +1895,8 @@ class JavaGateway(object):
     def launch_gateway(
             cls, port=0, jarpath="", classpath="", javaopts=[],
             die_on_exit=False, redirect_stdout=None,
-            redirect_stderr=None, daemonize_redirect=True, java_path="java"):
+            redirect_stderr=None, daemonize_redirect=True, java_path="java",
+            create_new_process_group=False):
         """Launch a `Gateway` in a new Java process and create a default
         :class:`JavaGateway <py4j.java_gateway.JavaGateway>` to connect to
         it.
@@ -1907,6 +1934,13 @@ class JavaGateway(object):
             to file descriptors, set this flag to False.
         :param java_path: If None, Py4J will use $JAVA_HOME/bin/java if
             $JAVA_HOME is defined, otherwise it will use "java".
+        :param create_new_process_group: If True, the JVM is started in a new
+            process group. This ensures that signals sent to the parent Python
+            process are not forwarded to the JVM. For example, sending
+            Ctrl-C/SIGINT won't interrupt the JVM. If the python process dies,
+            the Java process will stay alive, which may be a problem for some
+            scenarios though.
+
 
         :rtype: a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
             connected to the `Gateway` server.
@@ -1914,7 +1948,8 @@ class JavaGateway(object):
         _port = launch_gateway(
             port, jarpath, classpath, javaopts, die_on_exit,
             redirect_stdout=redirect_stdout, redirect_stderr=redirect_stderr,
-            daemonize_redirect=daemonize_redirect, java_path=java_path)
+            daemonize_redirect=daemonize_redirect, java_path=java_path,
+            create_new_process_group=create_new_process_group)
         gateway = JavaGateway(gateway_parameters=GatewayParameters(port=_port))
         return gateway
 
