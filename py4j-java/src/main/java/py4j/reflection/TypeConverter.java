@@ -29,6 +29,8 @@
  *****************************************************************************/
 package py4j.reflection;
 
+import java.lang.reflect.Array;
+
 /**
  * <p>
  * A TypeConverter converts a Python type into a Java Type. For example, a
@@ -47,6 +49,7 @@ public class TypeConverter {
 	public final static int INT_TO_BYTE = 2;
 	public final static int STRING_TO_CHAR = 3;
 	public final static int NUM_TO_LONG = 4;
+	public final static int VAR_ARGS = 6;
 
 	private final int conversion;
 
@@ -56,6 +59,7 @@ public class TypeConverter {
 	public final static TypeConverter BYTE_CONVERTER = new TypeConverter(INT_TO_BYTE);
 	public final static TypeConverter CHAR_CONVERTER = new TypeConverter(STRING_TO_CHAR);
 	public final static TypeConverter LONG_CONVERTER = new TypeConverter(NUM_TO_LONG);
+	public final static TypeConverter VARARGS_CONVERTER = new TypeConverter(VAR_ARGS);
 
 	public TypeConverter() {
 		this(NO_CONVERSION);
@@ -94,8 +98,36 @@ public class TypeConverter {
 		return newObject;
 	}
 
+	/**
+	 * Convert remaining varags into an array
+	 * @param arrayClass 
+	 * @param index
+	 * @param newArguments
+	 * @return converted objects
+	 */
+	public Object[] convert(Class<?> arrayClass, int index, Object[] newArguments) {
+		Object lastArg = Array.newInstance(arrayClass, newArguments.length - index);
+		int count = 0;
+		for (int i = index; i < newArguments.length; i++) {
+			Array.set(lastArg, count++, newArguments[i]); // TODO convert?
+		}
+		if (index == 0) {
+			return new Object[] { lastArg }; // must be array with array in or will not work
+		}
+		
+		Object[] ret = new Object[index + 1];
+		for (int i = 0; i < index; i++)
+			ret[i] = newArguments[i];
+
+		ret[index] = lastArg;
+		return ret;
+	}
+
 	public int getConversion() {
 		return conversion;
 	}
 
+	public boolean isVarArgs() {
+		return conversion == VAR_ARGS;
+	}
 }

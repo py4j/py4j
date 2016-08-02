@@ -29,6 +29,7 @@
  *****************************************************************************/
 package py4j.reflection;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -83,30 +84,11 @@ public class ReflectionEngine {
 		return returnObject;
 	}
 
-	private MethodInvoker getBestConstructor(List<Constructor<?>> acceptableConstructors, Class<?>[] parameters) {
+	private MethodInvoker getBestAccessibleObject(List<AccessibleObject> acceptableObjects, Class<?>[] parameters) {
 		MethodInvoker lowestCost = null;
 
-		for (Constructor<?> constructor : acceptableConstructors) {
-			MethodInvoker temp = MethodInvoker.buildInvoker(constructor, parameters);
-			int cost = temp.getCost();
-			if (cost == -1) {
-				continue;
-			} else if (cost == 0) {
-				lowestCost = temp;
-				break;
-			} else if (lowestCost == null || cost < lowestCost.getCost()) {
-				lowestCost = temp;
-			}
-		}
-
-		return lowestCost;
-	}
-
-	private MethodInvoker getBestMethod(List<Method> acceptableMethods, Class<?>[] parameters) {
-		MethodInvoker lowestCost = null;
-
-		for (Method method : acceptableMethods) {
-			MethodInvoker temp = MethodInvoker.buildInvoker(method, parameters);
+		for (AccessibleObject accessor: acceptableObjects) {
+			MethodInvoker temp = MethodInvoker.buildInvoker(accessor, parameters);
 			int cost = temp.getCost();
 			if (cost == -1) {
 				continue;
@@ -139,6 +121,9 @@ public class ReflectionEngine {
 	}
 
 	private Class<?>[] getClassParameters(Object[] parameters) {
+		if (parameters == null)
+			return null;
+
 		int size = parameters.length;
 		Class<?>[] classes = new Class<?>[size];
 
@@ -153,37 +138,50 @@ public class ReflectionEngine {
 		return classes;
 	}
 
-	public MethodInvoker getConstructor(Class<?> clazz, Class<?>[] parameters) {
-		MethodDescriptor mDescriptor = new MethodDescriptor(clazz.getName(), clazz, parameters);
+	public MethodInvoker getConstructor(Class<?> clazz, Class<?>... parameters) {
+		return getInvoker(clazz, null, parameters);
+	}
+
+	public MethodInvoker getMethod(Class<?> clazz, String name, Class<?>... parameters) {
+		return getInvoker(clazz, name, parameters);
+	}
+
+	private MethodInvoker getInvoker(Class<?> clazz, String name, Class<?>... parameters) {
+		boolean isConstructor = name == null;
+		if (isConstructor) {
+			name = clazz.getName();
+		}
+		MethodDescriptor mDescriptor = new MethodDescriptor(name, clazz, parameters);
 		MethodInvoker mInvoker = null;
-		List<Constructor<?>> acceptableConstructors = null;
+		List<AccessibleObject> accessibleObjects = null;
 		LRUCache<MethodDescriptor, MethodInvoker> cache = cacheHolder.get();
-
+	
 		mInvoker = cache.get(mDescriptor);
-
+	
 		if (mInvoker == null) {
-			acceptableConstructors = getConstructorsByLength(clazz, parameters.length);
-
-			if (acceptableConstructors.size() == 1) {
-				mInvoker = MethodInvoker.buildInvoker(acceptableConstructors.get(0), parameters);
+			int length = parameters == null ? 0 : parameters.length;
+			accessibleObjects = isConstructor ? getConstructorsByLength(clazz, length) :
+					getMethodsByNameAndLength(clazz, name, length);
+	
+			if (accessibleObjects.size() == 1) {
+				mInvoker = MethodInvoker.buildInvoker(accessibleObjects.get(0), parameters);
 			} else {
-				mInvoker = getBestConstructor(acceptableConstructors, parameters);
+				mInvoker = getBestAccessibleObject(accessibleObjects, parameters);
 			}
-
+	
 			if (mInvoker != null && mInvoker.getCost() != -1) {
 				cache.put(mDescriptor, mInvoker);
 			} else {
-				String errorMessage = "Constructor " + clazz.getName() + "(" + Arrays.toString(parameters)
-						+ ") does not exist";
+				String errorMessage = (isConstructor ? "Constructor " : "Method ") + name + "(" + Arrays.toString(parameters) + ") does not exist";
 				logger.log(Level.WARNING, errorMessage);
 				throw new Py4JException(errorMessage);
 			}
 		}
-
+	
 		return mInvoker;
 	}
 
-	public MethodInvoker getConstructor(String classFQN, Object[] parameters) {
+	public MethodInvoker getConstructor(String classFQN, Object... parameters) {
 		Class<?> clazz = null;
 
 		try {
@@ -196,15 +194,29 @@ public class ReflectionEngine {
 		return getConstructor(clazz, getClassParameters(parameters));
 	}
 
-	private List<Constructor<?>> getConstructorsByLength(Class<?> clazz, int length) {
-		List<Constructor<?>> methods = new ArrayList<Constructor<?>>();
+	private List<AccessibleObject> getConstructorsByLength(Class<?> clazz, int length) {
+		List<AccessibleObject> constructors = new ArrayList<AccessibleObject>();
 
 		for (Constructor<?> constructor : clazz.getConstructors()) {
-			if (constructor.getParameterTypes().length == length) {
-				methods.add(constructor);
+			int clength = constructor.getParameterTypes().length;
+			if (clength == length || (constructor.isVarArgs() && length >= clength - 1)) {
+				constructors.add(constructor);
 			}
 		}
 
+		return constructors;
+	}
+
+	private List<AccessibleObject> getMethodsByNameAndLength(Class<?> clazz, String name, int length) {
+		List<AccessibleObject> methods = new ArrayList<AccessibleObject>();
+	
+		for (Method method : clazz.getMethods()) {
+			int mlength = method.getParameterTypes().length;
+			if (method.getName().equals(name) && (mlength == length || (method.isVarArgs() && length >= mlength - 1))) {
+				methods.add(method);
+			}
+		}
+	
 		return methods;
 	}
 
@@ -293,40 +305,11 @@ public class ReflectionEngine {
 		return m;
 	}
 
-	public MethodInvoker getMethod(Class<?> clazz, String name, Class<?>[] parameters) {
-		MethodDescriptor mDescriptor = new MethodDescriptor(name, clazz, parameters);
-		MethodInvoker mInvoker = null;
-		List<Method> acceptableMethods = null;
-		LRUCache<MethodDescriptor, MethodInvoker> cache = cacheHolder.get();
-
-		mInvoker = cache.get(mDescriptor);
-
-		if (mInvoker == null) {
-			acceptableMethods = getMethodsByNameAndLength(clazz, name, parameters.length);
-
-			if (acceptableMethods.size() == 1) {
-				mInvoker = MethodInvoker.buildInvoker(acceptableMethods.get(0), parameters);
-			} else {
-				mInvoker = getBestMethod(acceptableMethods, parameters);
-			}
-
-			if (mInvoker != null && mInvoker.getCost() != -1) {
-				cache.put(mDescriptor, mInvoker);
-			} else {
-				String errorMessage = "Method " + name + "(" + Arrays.toString(parameters) + ") does not exist";
-				logger.log(Level.WARNING, errorMessage);
-				throw new Py4JException(errorMessage);
-			}
-		}
-
-		return mInvoker;
-	}
-
-	public MethodInvoker getMethod(Object object, String name, Object[] parameters) {
+	public MethodInvoker getMethod(Object object, String name, Object... parameters) {
 		return getMethod(object.getClass(), name, getClassParameters(parameters));
 	}
 
-	public MethodInvoker getMethod(String classFQN, String name, Object[] parameters) {
+	public MethodInvoker getMethod(String classFQN, String name, Object... parameters) {
 		Class<?> clazz = null;
 
 		try {
@@ -339,19 +322,7 @@ public class ReflectionEngine {
 		return getMethod(clazz, name, getClassParameters(parameters));
 	}
 
-	private List<Method> getMethodsByNameAndLength(Class<?> clazz, String name, int length) {
-		List<Method> methods = new ArrayList<Method>();
-
-		for (Method method : clazz.getMethods()) {
-			if (method.getName().equals(name) && method.getParameterTypes().length == length) {
-				methods.add(method);
-			}
-		}
-
-		return methods;
-	}
-
-	public Object invoke(Object object, MethodInvoker invoker, Object[] parameters) {
+	public static Object invoke(Object object, MethodInvoker invoker, Object... parameters) {
 		Object returnObject = null;
 
 		returnObject = invoker.invoke(object, parameters);
