@@ -61,6 +61,9 @@ if version_info[0] < 3:
     def strtobyte(b):
         return b
 
+    def bytestrrepr(obj):
+        return str(obj)
+
     import Queue
     Queue = Queue.Queue
 
@@ -107,6 +110,9 @@ else:
 
     def strtobyte(s):
         return bytes(s, encoding="ascii")
+
+    def bytestrrepr(obj):
+        return str(obj).encode("ascii")
 
     import queue
     Queue = queue.Queue
