@@ -269,7 +269,7 @@ public class ReflectionEngineTest {
 		
 		mInvoker = engine.getMethod(tester, "method1", new Object[] {1, 2});
 		assertArrayEquals(new Class[] {int[].class}, mInvoker.getMethod().getParameterTypes());
-		assertEquals(tester.method1(1, 2), mInvoker.invoke(tester, 1, 2));
+		assertEquals(tester.method1((int) 1, 2), mInvoker.invoke(tester, 1, 2));
 
 		mInvoker = engine.getMethod(tester, "method1", new Object[] {new int[] {1, 2}});
 		assertArrayEquals(new Class[] {int[].class}, mInvoker.getMethod().getParameterTypes());
