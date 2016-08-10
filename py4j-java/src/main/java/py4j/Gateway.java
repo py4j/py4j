@@ -233,7 +233,7 @@ public class Gateway {
 			Object[] parameters = args.toArray();
 
 			MethodInvoker method = rEngine.getConstructor(fqn, parameters);
-			Object object = rEngine.invoke(null, method, parameters);
+			Object object = ReflectionEngine.invoke(null, method, parameters);
 			returnObject = getReturnObject(object);
 		} catch (Py4JJavaException je) {
 			String id = putNewObject(je.getCause());
@@ -277,7 +277,7 @@ public class Gateway {
 				throw new Py4JException("Target Object ID does not exist for this gateway :" + targetObjectId);
 			}
 
-			Object object = rEngine.invoke(targetObject, method, parameters);
+			Object object = ReflectionEngine.invoke(targetObject, method, parameters);
 			returnObject = getReturnObject(object);
 		} catch (Py4JJavaException je) {
 			String id = putNewObject(je.getCause());

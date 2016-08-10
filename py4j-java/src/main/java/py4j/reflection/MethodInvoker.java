@@ -29,6 +29,8 @@
  *****************************************************************************/
 package py4j.reflection;
 
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -80,54 +82,94 @@ public class MethodInvoker {
 		return allNo;
 	}
 
-	private static int buildConverters(List<TypeConverter> converters, Class<?>[] parameters, Class<?>[] arguments) {
+	private static int buildConverters(List<TypeConverter> converters, AccessibleObject accessible, Class<?>[] arguments) {
 		int cost = 0;
 		int tempCost = -1;
 		int size = arguments.length;
+		Class<?>[] parameters = getParameterTypes(accessible);
+		boolean isVarArgs = isVarArgs(accessible);
 		for (int i = 0; i < size; i++) {
-			if (arguments[i] == null) {
-				if (parameters[i].isPrimitive()) {
-					tempCost = -1;
-				} else {
-					int distance = TypeUtil.computeDistance(Object.class, parameters[i]);
-					tempCost = Math.abs(MAX_DISTANCE - distance);
-					converters.add(TypeConverter.NO_CONVERTER);
+			Class<?> iClass = arguments[i]; // input or given class
+			Class<?> rClass = parameters[i]; // required or specified type
+
+			tempCost = convertArgument(converters, iClass, rClass);
+
+			if (tempCost == -1 &&  isVarArgs && i == parameters.length - 1) { // If we are the last argument and varargs, it can be an array
+				Class<?> arrayClass = rClass.getComponentType();
+				boolean varArgsOk = true;
+				List<TypeConverter> arrayConverters = new ArrayList<TypeConverter>();
+				for (int j = i; j < size; ++j) {
+					tempCost = convertArgument(arrayConverters, arrayClass, arguments[j]);
+					if (tempCost == -1) {
+						varArgsOk = false;
+						break;
+					}
 				}
-			} else if (parameters[i].isAssignableFrom(arguments[i])) {
-				tempCost = TypeUtil.computeDistance(parameters[i], arguments[i]);
-				converters.add(TypeConverter.NO_CONVERTER);
-			} else if (TypeUtil.isNumeric(parameters[i]) && TypeUtil.isNumeric(arguments[i])) {
-				tempCost = TypeUtil.computeNumericConversion(parameters[i], arguments[i], converters);
-			} else if (TypeUtil.isCharacter(parameters[i])) {
-				tempCost = TypeUtil.computeCharacterConversion(parameters[i], arguments[i], converters);
-			} else if (TypeUtil.isBoolean(parameters[i]) && TypeUtil.isBoolean(arguments[i])) {
-				tempCost = 0;
-				converters.add(TypeConverter.NO_CONVERTER);
+				tempCost = -1;
+				if (varArgsOk) {
+					converters.add(TypeConverter.VARARGS_CONVERTER);
+					break;
+				}
 			}
 
-			if (tempCost != -1) {
-				cost += tempCost;
-				tempCost = -1;
-			} else {
+			if (tempCost == -1) { // could not convert
 				cost = -1;
 				break;
 			}
+			cost += tempCost;
+			tempCost = -1;
+		}
+
+		if (cost == 0 && (parameters.length > size || isVarArgs)) {
+			cost += 1;
 		}
 		return cost;
 	}
 
-	public static MethodInvoker buildInvoker(Constructor<?> constructor, Class<?>[] arguments) {
-		MethodInvoker invoker = null;
-		int size = 0;
-		int cost = 0;
-
-		if (arguments != null) {
-			size = arguments.length;
+	private static int convertArgument(List<TypeConverter> converters, Class<?> iClass, Class<?> rClass) {
+		int tempCost = -1;
+		if (iClass == null) {
+			if (rClass.isPrimitive()) {
+				tempCost = -1;
+			} else {
+				int distance = TypeUtil.computeDistance(Object.class, rClass);
+				tempCost = Math.abs(MAX_DISTANCE - distance);
+				converters.add(TypeConverter.NO_CONVERTER);
+			}
+		} else if (rClass.isAssignableFrom(iClass)) {
+			tempCost = TypeUtil.computeDistance(rClass, iClass);
+			converters.add(TypeConverter.NO_CONVERTER);
+		} else if (TypeUtil.isNumeric(rClass) && TypeUtil.isNumeric(iClass)) {
+			tempCost = TypeUtil.computeNumericConversion(rClass, iClass, converters);
+		} else if (TypeUtil.isCharacter(rClass)) {
+			tempCost = TypeUtil.computeCharacterConversion(rClass, iClass, converters);
+		} else if (TypeUtil.isBoolean(rClass) && TypeUtil.isBoolean(iClass)) {
+			tempCost = 0;
+			converters.add(TypeConverter.NO_CONVERTER);
 		}
 
+		return tempCost;
+	}
+
+	/**
+	 * @param accessible Must be a Constructor or Method
+	 * @param arguments classes of given arguments (note primitives are boxed)
+	 * @return
+	 */
+	public static MethodInvoker buildInvoker(AccessibleObject accessible, Class<?>... arguments) {
+		if (!(accessible instanceof Constructor || accessible instanceof Method)) {
+			throw new IllegalArgumentException("AccessibleObject must be a Constructor or Method");
+		}
+
+		MethodInvoker invoker = null;
+		int size = arguments == null ? 0 : arguments.length;
+		int cost = 0;
+
 		List<TypeConverter> converters = new ArrayList<TypeConverter>();
-		if (arguments != null && size > 0) {
-			cost = buildConverters(converters, constructor.getParameterTypes(), arguments);
+		if (size > 0) {
+			cost = buildConverters(converters, accessible, arguments);
+		} else if (isVarArgs(accessible)) {
+			cost++; // increase cost to bias null invocations
 		}
 		if (cost == -1) {
 			invoker = INVALID_INVOKER;
@@ -136,62 +178,29 @@ public class MethodInvoker {
 			if (!allNoConverter(converters)) {
 				convertersArray = converters.toArray(new TypeConverter[0]);
 			}
-			invoker = new MethodInvoker(constructor, convertersArray, cost);
+			invoker = new MethodInvoker(accessible, convertersArray, cost);
 		}
 
 		return invoker;
 	}
 
-	public static MethodInvoker buildInvoker(Method method, Class<?>[] arguments) {
-		MethodInvoker invoker = null;
-		int size = 0;
-		int cost = 0;
-
-		if (arguments != null) {
-			size = arguments.length;
-		}
-
-		List<TypeConverter> converters = new ArrayList<TypeConverter>();
-		if (arguments != null && size > 0) {
-			cost = buildConverters(converters, method.getParameterTypes(), arguments);
-		}
-		if (cost == -1) {
-			invoker = INVALID_INVOKER;
-		} else {
-			TypeConverter[] convertersArray = null;
-			if (!allNoConverter(converters)) {
-				convertersArray = converters.toArray(new TypeConverter[0]);
-			}
-			invoker = new MethodInvoker(method, convertersArray, cost);
-		}
-
-		return invoker;
-	}
 
 	private int cost;
 
 	private List<TypeConverter> converters;
 
-	private Method method;
-
-	private Constructor<?> constructor;
+	private AccessibleObject accessible;
 
 	private final Logger logger = Logger.getLogger(MethodInvoker.class.getName());
 
-	public static final MethodInvoker INVALID_INVOKER = new MethodInvoker((Method) null, null, INVALID_INVOKER_COST);
+	public static final MethodInvoker INVALID_INVOKER = new MethodInvoker(null, null, INVALID_INVOKER_COST);
 
-	public MethodInvoker(Constructor<?> constructor, TypeConverter[] converters, int cost) {
+	public MethodInvoker(AccessibleObject accessible, TypeConverter[] converters, int cost) {
 		super();
-		this.constructor = constructor;
-		if (converters != null) {
-			this.converters = Collections.unmodifiableList(Arrays.asList(converters));
+		if (!(accessible == null || accessible instanceof Constructor || accessible instanceof Method)) {
+			throw new IllegalArgumentException("AccessibleObject must be a Constructor, Method or null");
 		}
-		this.cost = cost;
-	}
-
-	public MethodInvoker(Method method, TypeConverter[] converters, int cost) {
-		super();
-		this.method = method;
+		this.accessible = accessible;
 		if (converters != null) {
 			this.converters = Collections.unmodifiableList(Arrays.asList(converters));
 		}
@@ -199,45 +208,64 @@ public class MethodInvoker {
 	}
 
 	public Constructor<?> getConstructor() {
-		return constructor;
+		return (Constructor<?>) (accessible instanceof Constructor ? accessible : null);
 	}
 
 	public List<TypeConverter> getConverters() {
 		return converters;
 	}
 
+	/**
+	 * @return some metric for determining the amount of conversion needed (negative means cannot convert)
+	 */
 	public int getCost() {
 		return cost;
 	}
 
 	public Method getMethod() {
-		return method;
+		return (Method) (accessible instanceof Method ? accessible : null);
 	}
 
-	public Object invoke(Object obj, Object[] arguments) {
+	public Object invoke(Object obj, Object... arguments) {
 		Object returnObject = null;
 
 		try {
+			int size = arguments == null ? 0 : arguments.length;
+			Class<?>[] pTypes = getParameterTypes(accessible);
+			int count = pTypes.length;
 			Object[] newArguments = arguments;
 
 			if (converters != null) {
-				int size = arguments.length;
-				newArguments = new Object[size];
+				newArguments = Arrays.copyOf(newArguments, size);
 				for (int i = 0; i < size; i++) {
-					newArguments[i] = converters.get(i).convert(arguments[i]);
+					TypeConverter converter = converters.get(i);
+					if (i == count - 1 && converter.isVarArgs()) {
+						newArguments = converter.convert(pTypes[i].getComponentType(), i, newArguments);
+						break;
+					} else {
+						newArguments[i] = converter.convert(arguments[i]);
+					}
+				}
+			} else if (size == 0 && isVarArgs(accessible)) {
+				newArguments = new Object[] {null};
+			} else if (size == count - 1) {
+				if (isVarArgs(accessible)) { // pad with empty array
+					newArguments = Arrays.copyOf(newArguments, count);
+					newArguments[size] = Array.newInstance(pTypes[size].getComponentType(), 0);
 				}
 			}
-			if (method != null) {
+			if (accessible != null) {
 				AccessController.doPrivileged(new PrivilegedAction<Object>() {
 					public Object run() {
-						method.setAccessible(true);
+						accessible.setAccessible(true);
 						return null;
 					}
 				});
-				returnObject = method.invoke(obj, newArguments);
-			} else if (constructor != null) {
-				constructor.setAccessible(true);
-				returnObject = constructor.newInstance(newArguments);
+				if (accessible instanceof Method) {
+					returnObject = ((Method) accessible).invoke(obj, newArguments);
+				} else if (accessible instanceof Constructor) {
+					returnObject = ((Constructor<?>) accessible).newInstance(newArguments);
+				}
 			}
 		} catch (InvocationTargetException ie) {
 			logger.log(Level.WARNING, "Exception occurred in client code.", ie);
@@ -250,14 +278,23 @@ public class MethodInvoker {
 		return returnObject;
 	}
 
+	@SuppressWarnings("rawtypes")
+	private static boolean isVarArgs(AccessibleObject accessible) {
+		return accessible == null ? false : accessible instanceof Method ? ((Method) accessible).isVarArgs() : ((Constructor) accessible).isVarArgs();
+	}
+
+	@SuppressWarnings("rawtypes")
+	private static Class<?>[] getParameterTypes(AccessibleObject accessible) {
+		return accessible == null ? null : accessible instanceof Method ? ((Method) accessible).getParameterTypes() : ((Constructor) accessible).getParameterTypes();
+	}
+
 	public boolean isVoid() {
-		if (constructor != null) {
+		if (accessible instanceof Constructor) {
 			return false;
-		} else if (method != null) {
-			return method.getReturnType().equals(void.class);
+		} else if (accessible instanceof Method) {
+			return ((Method) accessible).getReturnType().equals(void.class);
 		} else {
 			throw new Py4JException("Null method or constructor");
 		}
 	}
-
 }

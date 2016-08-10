@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import p1.Cat;
+import p1.VarArgTester;
 
 public class ReflectionEngineTest {
 
@@ -202,6 +203,86 @@ public class ReflectionEngineTest {
 		}
 	}
 
+	@Test
+	public void testAssignable() {
+		// whether Integer is assignable from int and vice verse
+		assertFalse("Integer.class.isAssignable: ", Integer.class.isAssignableFrom(Number.class));
+		assertTrue("Number.class.isAssignable : ", Number.class.isAssignableFrom(Integer.class));
+		assertFalse("Double.class.isAssignable : ", Double.class.isAssignableFrom(Integer.class));
+		assertFalse("Integer.class.isAssignable: ", Integer.class.isAssignableFrom(Double.class));
+		assertFalse("Number.class.isAssignable : ", Number.class.isAssignableFrom(int.class));
+		assertFalse("Integer.class.isAssignable: ", Integer.class.isAssignableFrom(int.class));
+		assertFalse("int.class.isAssignable    : ", int.class.isAssignableFrom(Integer.class));
+	}
+
+	@Test
+	public void testVarArgsConstructor() {
+		ReflectionEngine engine = new ReflectionEngine();
+		MethodInvoker mInvoker = engine.getConstructor("p1.VarArgTester", new Object[] {});
+		assertArrayEquals(new Class[] {int[].class}, mInvoker.getConstructor().getParameterTypes());
+		VarArgTester tester = (VarArgTester) mInvoker.invoke(null);
+		assertEquals(1, tester.called());
+
+		mInvoker = engine.getConstructor("p1.VarArgTester", 1);
+		assertArrayEquals(new Class[] {int.class}, mInvoker.getConstructor().getParameterTypes());
+		tester = (VarArgTester) mInvoker.invoke(null, 1);
+		assertEquals(0, tester.called());
+
+		mInvoker = engine.getConstructor("p1.VarArgTester", new Object[] {1, 2});
+		assertArrayEquals(new Class[] {int[].class}, mInvoker.getConstructor().getParameterTypes());
+		tester = (VarArgTester) mInvoker.invoke(null, 1, 2);
+		assertEquals(1, tester.called());
+
+		mInvoker = engine.getConstructor("p1.VarArgTester", new Object[] {new int[] {1, 2}});
+		assertArrayEquals(new Class[] {int[].class}, mInvoker.getConstructor().getParameterTypes());
+		tester = (VarArgTester) mInvoker.invoke(null, new int[] {1, 2});
+		assertEquals(1, tester.called());
+
+		mInvoker = engine.getConstructor("p1.VarArgTester", new int[] {1, 2});
+		assertArrayEquals(new Class[] {int[].class}, mInvoker.getConstructor().getParameterTypes());
+		tester = (VarArgTester) mInvoker.invoke(null, new int[] {1, 2});
+		assertEquals(1, tester.called());
+
+		mInvoker = engine.getConstructor("p1.VarArgTester", new Object[] {1.5f});
+		assertArrayEquals(new Class[] {float.class, int[].class}, mInvoker.getConstructor().getParameterTypes());
+		tester = (VarArgTester) mInvoker.invoke(null, 1.5f);
+		assertEquals(2, tester.called());
+	}
+
+	@Test
+	public void testVarArgsMethod() {
+		ReflectionEngine engine = new ReflectionEngine();
+		VarArgTester tester = new VarArgTester();
+		MethodInvoker mInvoker;
+
+		mInvoker = engine.getMethod(tester, "method1", new Object[] {}); // gets #method1()
+		assertArrayEquals(new Class[] {}, mInvoker.getMethod().getParameterTypes());
+		assertEquals(tester.method1(), mInvoker.invoke(tester));
+
+		mInvoker = engine.getMethod(tester, "method1", (Object[]) null); // gets #method1()
+		assertArrayEquals(new Class[] {}, mInvoker.getMethod().getParameterTypes());
+		assertEquals(tester.method1(), mInvoker.invoke(tester, (Object[]) null));
+
+		mInvoker = engine.getMethod(tester, "method1", 1);
+		assertArrayEquals(new Class[] {int.class}, mInvoker.getMethod().getParameterTypes());
+		assertEquals(tester.method1(1), mInvoker.invoke(tester, 1));
+		
+		mInvoker = engine.getMethod(tester, "method1", new Object[] {1, 2});
+		assertArrayEquals(new Class[] {int[].class}, mInvoker.getMethod().getParameterTypes());
+		assertEquals(tester.method1((int) 1, 2), mInvoker.invoke(tester, 1, 2));
+
+		mInvoker = engine.getMethod(tester, "method1", new Object[] {new int[] {1, 2}});
+		assertArrayEquals(new Class[] {int[].class}, mInvoker.getMethod().getParameterTypes());
+		assertEquals(tester.method1(new int[] {1, 2}), mInvoker.invoke(tester, new int[] {1, 2}));
+		
+		mInvoker = engine.getMethod(tester, "method1", new int[] {1, 2});
+		assertArrayEquals(new Class[] {int[].class}, mInvoker.getMethod().getParameterTypes());
+		assertEquals(tester.method1(new int[] {1, 2}), mInvoker.invoke(tester, new int[] {1, 2}));
+		
+		mInvoker = engine.getMethod(tester, "method1", new Object[] {1.5f});
+		assertArrayEquals(new Class[] {float.class, int[].class}, mInvoker.getMethod().getParameterTypes());
+		assertEquals(tester.method1(1.5f), mInvoker.invoke(tester, 1.5f));
+	}
 }
 
 class TestEngine {

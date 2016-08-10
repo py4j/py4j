@@ -59,7 +59,7 @@ public class MethodDescriptor {
 		super();
 		this.name = name;
 		this.container = container;
-		this.parameters = Collections.unmodifiableList(Arrays.asList(parameters));
+		this.parameters = parameters == null ? null : Collections.unmodifiableList(Arrays.asList(parameters));
 		this.internalRepresentation = buildInternalRepresentation(container, name, this.parameters);
 	}
 
@@ -70,13 +70,15 @@ public class MethodDescriptor {
 		builder.append(DOT);
 		builder.append(name);
 		builder.append('(');
-		for (Class param : params) {
-			String paramName = "null";
-			if (param != null) {
-				paramName = param.getName();
+		if (params != null) {
+			for (Class param : params) {
+				String paramName = "null";
+				if (param != null) {
+					paramName = param.getName();
+				}
+				builder.append(paramName);
+				builder.append(DOT);
 			}
-			builder.append(paramName);
-			builder.append(DOT);
 		}
 		builder.append(')');
 
