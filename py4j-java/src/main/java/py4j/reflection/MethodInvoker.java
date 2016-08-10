@@ -231,7 +231,8 @@ public class MethodInvoker {
 
 		try {
 			int size = arguments == null ? 0 : arguments.length;
-			int count = getParameterCount(accessible);
+			Class<?>[] pTypes = getParameterTypes(accessible);
+			int count = pTypes.length;
 			Object[] newArguments = arguments;
 
 			if (converters != null) {
@@ -239,7 +240,7 @@ public class MethodInvoker {
 				for (int i = 0; i < size; i++) {
 					TypeConverter converter = converters.get(i);
 					if (i == count - 1 && converter.isVarArgs()) {
-						newArguments = converter.convert(getParameterTypes(accessible)[i].getComponentType(), i, newArguments);
+						newArguments = converter.convert(pTypes[i].getComponentType(), i, newArguments);
 						break;
 					} else {
 						newArguments[i] = converter.convert(arguments[i]);
@@ -250,7 +251,7 @@ public class MethodInvoker {
 			} else if (size == count - 1) {
 				if (isVarArgs(accessible)) { // pad with empty array
 					newArguments = Arrays.copyOf(newArguments, count);
-					newArguments[size] = Array.newInstance(getParameterTypes(accessible)[size].getComponentType(), 0);
+					newArguments[size] = Array.newInstance(pTypes[size].getComponentType(), 0);
 				}
 			}
 			if (accessible != null) {
@@ -285,11 +286,6 @@ public class MethodInvoker {
 	@SuppressWarnings("rawtypes")
 	private static Class<?>[] getParameterTypes(AccessibleObject accessible) {
 		return accessible == null ? null : accessible instanceof Method ? ((Method) accessible).getParameterTypes() : ((Constructor) accessible).getParameterTypes();
-	}
-
-	@SuppressWarnings("rawtypes")
-	private static int getParameterCount(AccessibleObject accessible) {
-		return accessible == null ? 0 : accessible instanceof Method ? ((Method) accessible).getParameterCount() : ((Constructor) accessible).getParameterCount();
 	}
 
 	public boolean isVoid() {
