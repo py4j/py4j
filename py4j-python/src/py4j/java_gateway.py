@@ -2283,7 +2283,7 @@ class PythonProxyPool(object):
             if force_id:
                 id = force_id
             else:
-                id = proto.PYTHON_PROXY_PREFIX + smart_decode(self.next_id)
+                id = self.next_id
                 self.next_id += 1
             self.dict[id] = object
         return id

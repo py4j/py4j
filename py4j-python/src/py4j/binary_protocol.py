@@ -311,7 +311,7 @@ class PythonProxyLongEncoder(object):
             return CANNOT_ENCODE
 
         pool = options["python_proxy_pool"]
-        proxy_id = pool.put(argument)
+        proxy_id = pack("!q", pool.put(argument))
         string_encoding = options.get(
             "string_encoding", DEFAULT_STRING_ENCODING)
         java_interfaces_bytes = get_encoded_string(

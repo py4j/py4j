@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from py4j import binary_protocol as bprotocol
+from py4j import java_gateway
 from py4j import compat
 
 import sys
@@ -119,3 +120,24 @@ def test_string_encoder():
     else:
         assert encoder.encode(value_bytestr, type(value_bytestr)) ==\
             bprotocol.CANNOT_ENCODE
+
+
+def test_python_proxy_long_encoder():
+    encoder = bprotocol.PythonProxyLongEncoder()
+
+    class MyClass(object):
+
+        class Java:
+            implements = ["com.package.Foo", "com.package.Bar"]
+
+    obj = object()
+    value = MyClass()
+    pool = java_gateway.PythonProxyPool()
+    suffix = bprotocol.get_encoded_string(
+        "com.package.Foo;com.package.Bar", "utf-8")
+
+    assert encoder.encode(obj, type(obj)) == bprotocol.CANNOT_ENCODE
+
+    encoded = encoder.encode(value, type(value), python_proxy_pool=pool)
+    assert encoded.type == bprotocol.PYTHON_REFERENCE_TYPE
+    assert encoded.size == 8 + len(suffix)
