@@ -9,7 +9,7 @@ References are signed longs, but the protocol will eventually be able to
 support UUIDs. Negative numbers are reserved for special cases.
 """
 
-from collections import deque, defaultdict, namedtuple
+from collections import deque, defaultdict, namedtuple, Sequence
 from decimal import Decimal
 from struct import pack
 
@@ -175,8 +175,9 @@ class EncoderRegistry(object):
             self.all_encoders.appendleft(encoder)
 
     def encode_command(
-            self, *commands, arguments=None, java_client=None,
+            self, commands, arguments=None, java_client=None,
             python_proxy_pool=None):
+        commands = force_sequence(commands)
         encoded_arguments = []
         for command in commands:
             encoded_arguments.append(
@@ -188,8 +189,9 @@ class EncoderRegistry(object):
         return encoded_arguments
 
     def encode_lazy_command(
-            self, *commands, arguments=None, java_client=None,
+            self, commands, arguments=None, java_client=None,
             python_proxy_pool=None):
+        commands = force_sequence(commands)
         for command in commands:
             yield EncodedArgument(COMMAND_TYPE, None, command)
 
@@ -355,6 +357,17 @@ def get_encoded_string(value, string_encoding):
     if isinstance(value, unicode):
         value = value.encode(string_encoding)
     return value
+
+
+def force_sequence(value):
+    """Convert a value to a sequence if it is a string or a non-sequence.
+    """
+    if isinstance(value, basestring):
+        return [value]
+    elif not isinstance(value, Sequence):
+        return [value]
+    else:
+        return value
 
 
 DEFAULT_ENCODERS = (

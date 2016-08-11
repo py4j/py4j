@@ -10,3 +10,4 @@ py4j.egg-info/
 /build
 /.cache
 /backup
+.coverage
