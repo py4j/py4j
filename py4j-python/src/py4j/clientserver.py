@@ -100,7 +100,7 @@ class PythonParameters(CallbackServerParameters):
             daemonize=False, daemonize_connections=False, eager_load=True,
             ssl_context=None, auto_gc=False,
             accept_timeout=DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-            read_timeout=None,):
+            read_timeout=None, encoder_registry=None):
         """
         :param address: the address to which the client will request a
             connection
@@ -137,10 +137,14 @@ class PythonParameters(CallbackServerParameters):
         :param read_timeout: if > 0, sets a timeout in seconds after
             which the socket stops waiting for a call or command from the
             Java side.
+
+        :param encoder_registry: the encoder registry to use to encode Python
+            arguments using Py4J binary protocol. If None, the default encoder
+            with Python collection encoders will be used.
         """
         super(PythonParameters, self).__init__(
             address, port, daemonize, daemonize_connections, eager_load,
-            ssl_context, accept_timeout, read_timeout)
+            ssl_context, accept_timeout, read_timeout, encoder_registry)
         self.auto_gc = auto_gc
 
 

@@ -21,5 +21,5 @@ test:
         parallel: true
     - deactivate; cd py4j-java && gradle clean && gradle check && gradle assemble && if [ $CIRCLE_NODE_INDEX != "0" ] ; then gradle jacocoTestReport && codecov; fi && sleep 1:
         parallel: true
-    - deactivate; cd py4j-python && nosetests --with-coverage --cover-html --cover-package=py4j -w src -c nose.cfg; if [ $CIRCLE_NODE_INDEX != "0" ] ; then codecov; fi:
+    - deactivate; cd py4j-python; pip install -r requirements-test.txt; nosetests --with-coverage --cover-html --cover-package=py4j -w src -c nose.cfg; if [ $CIRCLE_NODE_INDEX != "0" ] ; then codecov; fi:
         parallel: true

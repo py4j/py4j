@@ -20,8 +20,10 @@ from py4j.compat import (
     ispython3bytestr, basestring)
 from py4j.java_gateway import JavaObject, JavaMember, get_method, JavaClass
 from py4j import protocol as proto
+from py4j.binary_protocol import (
+    JavaObjectLongEncoder, CANNOT_ENCODE)
 from py4j.protocol import (
-    Py4JError, get_command_part, get_return_value, register_input_converter,
+    Py4JError, get_command_part, get_return_value,
     register_output_converter)
 
 
@@ -475,47 +477,70 @@ class JavaList(JavaObject, MutableSequence):
         return "[{0}]".format(", ".join(items))
 
 
-class SetConverter(object):
-    def can_convert(self, object):
-        return isinstance(object, Set)
+class PythonMapEncoder(object):
+    supported_types = [dict]
 
-    def convert(self, object, gateway_client):
-        JavaSet = JavaClass("java.util.HashSet", gateway_client)
-        java_set = JavaSet()
-        for element in object:
-            java_set.add(element)
-        return java_set
+    def encode_specific(self, argument, arg_type, **options):
+        return self.encode_map(argument, options["java_client"])
 
-
-class ListConverter(object):
-    def can_convert(self, object):
-        # Check for iterator protocol and should not be an instance of byte
-        # array (taken care of by protocol)
-        return hasattr2(object, "__iter__") and not isbytearray(object) and\
-            not ispython3bytestr(object) and not isinstance(object, basestring)
-
-    def convert(self, object, gateway_client):
-        ArrayList = JavaClass("java.util.ArrayList", gateway_client)
-        java_list = ArrayList()
-        for element in object:
-            java_list.add(element)
-        return java_list
-
-
-class MapConverter(object):
-    def can_convert(self, object):
-        return hasattr2(object, "keys") and hasattr2(object, "__getitem__")
-
-    def convert(self, object, gateway_client):
-        HashMap = JavaClass("java.util.HashMap", gateway_client)
+    def encode_map(argument, java_client):
+        HashMap = JavaClass("java.util.HashMap", java_client)
         java_map = HashMap()
-        for key in object.keys():
-            java_map[key] = object[key]
-        return java_map
+        for key in argument.keys():
+            java_map[key] = argument[key]
+        return JavaObjectLongEncoder.encode_java_object(
+            java_map._get_object_id())
 
-register_input_converter(SetConverter())
-register_input_converter(MapConverter())
-register_input_converter(ListConverter())
+    def encode(self, argument, arg_type, **options):
+        if hasattr2(argument, "keys") and hasattr2(argument, "__getitem__"):
+            return self.encode_map(argument, options["java_client"])
+        else:
+            return CANNOT_ENCODE
+
+
+class PythonListEncoder(object):
+    supported_types = [list]
+
+    def encode_specific(self, argument, arg_type, **options):
+        return self.encode_list(argument, options["java_client"])
+
+    def encode_list(argument, java_client):
+        ArrayList = JavaClass("java.util.ArrayList", java_client)
+        java_list = ArrayList()
+        for element in argument:
+            java_list.add(element)
+        return JavaObjectLongEncoder.encode_java_object(
+            java_list._get_object_id())
+
+    def encode(self, argument, arg_type, **options):
+        if hasattr2(argument, "__iter__") and not isbytearray(argument) and\
+                not ispython3bytestr(argument) and\
+                not isinstance(argument, basestring):
+            return self.encode_list(argument, options["java_client"])
+        else:
+            return CANNOT_ENCODE
+
+
+class PythonSetEncoder(object):
+    supported_types = [set]
+
+    def encode_specific(self, argument, arg_type, **options):
+        return self.encode_set(argument, options["java_client"])
+
+    def encode_set(argument, java_client):
+        JavaSet = JavaClass("java.util.HashSet", java_client)
+        java_set = JavaSet()
+        for element in argument:
+            java_set.add(element)
+        return JavaObjectLongEncoder.encode_java_object(
+            java_set._get_object_id())
+
+    def encode(self, argument, arg_type, **options):
+        if isinstance(argument, Set):
+            return self.encode_set(argument, options["java_client"])
+        else:
+            return CANNOT_ENCODE
+
 
 register_output_converter(
     proto.MAP_TYPE, lambda target_id, gateway_client:

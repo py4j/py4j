@@ -4,6 +4,7 @@ except ImportError:
     from distutils.core import setup
 import os
 import subprocess
+import sys
 
 
 DOC_DIR = os.path.join("py4j-python", "doc")
@@ -24,6 +25,13 @@ else:
 os.chdir("..")
 
 JAR_FILE_PATH = os.path.join("py4j-python", "py4j-java", JAR_FILE)
+
+test_requirements = [
+    "pytest~=2.9.2",
+]
+
+if sys.version_info[0:2] <= (3, 3):
+    test_requirements.append("mock~=2.0.0")
 
 setup(
     name="py4j",
@@ -61,5 +69,6 @@ setup(
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Object Brokering",
     ],
+    test_require=test_requirements,
 
 )

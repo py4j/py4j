@@ -29,6 +29,7 @@ from py4j.compat import (
     range, hasattr2, basestring, CompatThread, Queue, WeakSet)
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j import protocol as proto
+from py4j.binary_protocol import EncoderRegistry
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, escape_new_line, get_command_part,
     get_return_value, is_error, register_output_converter, smart_decode)
@@ -636,7 +637,7 @@ class GatewayParameters(object):
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
             auto_close=True, auto_convert=False, eager_load=False,
             ssl_context=None, enable_memory_management=True,
-            read_timeout=None):
+            read_timeout=None, encoder_registry=None):
         """
         :param address: the address to which the client will request a
             connection. If you're assing a `SSLContext` with
@@ -674,6 +675,9 @@ class GatewayParameters(object):
 
         :param read_timeout: if > 0, sets a timeout in seconds after
             which the socket stops waiting for a response from the Java side.
+
+        :param encoder_registry: the encoder registry to use to encode Python
+            arguments using Py4J binary protocol.
         """
         self.address = address
         self.port = port
@@ -684,6 +688,10 @@ class GatewayParameters(object):
         self.ssl_context = ssl_context
         self.enable_memory_management = enable_memory_management
         self.read_timeout = read_timeout
+        if not encoder_registry:
+            encoder_registry = EncoderRegistry.get_default_encoder_registry()
+            encoder_registry.add_python_collection_encoders()
+        self.encoder_registry = encoder_registry
 
 
 class CallbackServerParameters(object):
@@ -818,6 +826,7 @@ class GatewayClient(object):
         self.auto_close = gateway_parameters.auto_close
         self.gateway_property = gateway_property
         self.ssl_context = gateway_parameters.ssl_context
+        self.encoder_registry = gateway_parameters.encoder_registry
         self.deque = deque()
 
     def _get_connection(self):

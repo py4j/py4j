@@ -14,7 +14,7 @@ from decimal import Decimal
 from struct import pack
 
 from py4j.compat import (
-    int, long, bytestrrepr, basestring, unicode)
+    long, bytestrrepr, basestring, unicode)
 from py4j.protocol import Py4JError
 
 
@@ -56,8 +56,8 @@ LONG_TYPE = 13
 DOUBLE_TYPE = 15
 DECIMAL_TYPE = 16
 
-# String types
-STRING_TYPE = 20 (20-30)
+# String types (20-30)
+STRING_TYPE = 20
 
 # Collection types (30-50)
 ARRAY_TYPE = 30
@@ -82,13 +82,39 @@ END_TYPE = 77
 # Commands
 CALL_COMMAND = 0
 
+# Python types that dpend on Python 2 and 3 differences
+
+SUPPORTED_STRING_TYPES = [unicode]
+# For python 2
+if unicode != str:
+    SUPPORTED_STRING_TYPES.append(str)
+# For python 2
+if basestring != unicode:
+    SUPPORTED_STRING_TYPES.append(basestring)
+
+SUPPORTED_BYTE_TYPES = [bytearray]
+# For python 3
+if bytes != str:
+    SUPPORTED_BYTE_TYPES.append(bytes)
+
+SUPPORTED_INT_TYPES = [int]
+# For python 2
+if int != long:
+    SUPPORTED_INT_TYPES.append(long)
+
 
 EncodedArgument = namedtuple("EncodedArgument", ["type", "size", "value"])
 
 
-class EncoderRegister(object):
+class EncoderRegistry(object):
     """Registry that holds all possible encoders used to encode Python
     arguments to Py4J arguments.
+
+    This class is not thread-safe: if multiple thread tries to register
+    encoders at the same time, concurrent modification errors may be raised.
+
+    Multiple threads can call the encode method though if they are not
+    registering encoders at the same time.
     """
 
     def __init__(self, string_encoding=DEFAULT_STRING_ENCODING):
@@ -106,6 +132,17 @@ class EncoderRegister(object):
         for encoder_cls in DEFAULT_ENCODERS:
             registry.register_encoding_encoder(encoder_cls())
         return registry
+
+    def add_python_collection_encoders(self):
+        """Adds converters that copies the elements of a Python collection into
+        a Java collection. Both collections are not synchronized, i.e., a
+        change on the Java side is not reflected on the Python side.
+        """
+        from py4j.java_collections import (
+            PythonListEncoder, PythonMapEncoder, PythonSetEncoder)
+        self.register_encoding_encoder(PythonListEncoder())
+        self.register_encoding_encoder(PythonMapEncoder())
+        self.register_encoding_encoder(PythonSetEncoder())
 
     def register_encoding_encoder(self, encoder):
         """Registers a encoder to the registry. The encoder can be
@@ -135,19 +172,47 @@ class EncoderRegister(object):
                 self.type_encoders[supported_type].append(encoder)
             self.all_encoders.append(encoder)
         else:
-            self.all_encoders.prepend(encoder)
+            self.all_encoders.appendleft(encoder)
 
-    def encode(self, argument, python_proxy_pool):
+    def encode_command(
+            self, *commands, arguments=None, java_client=None,
+            python_proxy_pool=None):
+        encoded_arguments = []
+        for command in commands:
+            encoded_arguments.append(
+                EncodedArgument(COMMAND_TYPE, None, command))
+        for argument in arguments:
+            encoded_arguments.append(
+                self.encode(argument, java_client=java_client,
+                            python_proxy_pool=python_proxy_pool))
+        return encoded_arguments
+
+    def encode_lazy_command(
+            self, *commands, arguments=None, java_client=None,
+            python_proxy_pool=None):
+        for command in commands:
+            yield EncodedArgument(COMMAND_TYPE, None, command)
+
+        for argument in arguments:
+            yield self.encode(
+                argument, java_client=java_client,
+                python_proxy_pool=python_proxy_pool)
+
+    def encode(self, argument, java_client=None, python_proxy_pool=None):
         arg_type = type(argument)
         for encoder in self.type_encoders.get(arg_type, []):
             result = encoder.encode_specific(
-                argument, arg_type, python_proxy_pool=python_proxy_pool,
+                argument, arg_type,
+                java_client=java_client,
+                python_proxy_pool=python_proxy_pool,
                 string_encoding=self.string_encoding)
             if result != CANNOT_ENCODE:
                 return result
         for encoder in self.all_encoders:
             result = encoder.encode(
-                argument, arg_type, python_proxy_pool=python_proxy_pool,
+                argument, arg_type,
+                java_client=java_client,
+                python_proxy_pool=python_proxy_pool,
                 string_encoding=self.string_encoding)
             if result != CANNOT_ENCODE:
                 return result
@@ -156,10 +221,11 @@ class EncoderRegister(object):
                 argument, arg_type))
 
 
-def BaseEncoder(object):
+class BaseEncoder(object):
 
     def encode(self, argument, arg_type, **options):
-        if any((isinstance(argument, a_type) for a_type in self.types)):
+        if any((isinstance(argument, a_type) for
+                a_type in self.supported_types)):
             return self.encode_specific(argument, arg_type)
         else:
             return CANNOT_ENCODE
@@ -175,11 +241,7 @@ class NoneEncoder(BaseEncoder):
 
 class IntEncoder(BaseEncoder):
 
-    def __init__(self):
-        self.supported_types = [int]
-        # For python 2
-        if int != long:
-            self.types.append(long)
+    supported_types = SUPPORTED_INT_TYPES
 
     def encode_specific(self, argument, arg_type, **options):
         if argument <= JAVA_MAX_INT and argument >= JAVA_MIN_INT:
@@ -219,11 +281,7 @@ class DoubleEncoder(BaseEncoder):
 
 class BytesEncoder(BaseEncoder):
 
-    def __init__(self):
-        self.supported_types = [bytearray]
-        # For python 3
-        if bytes != str:
-            self.types.append(bytes)
+    supported_types = SUPPORTED_BYTE_TYPES
 
     def encode_specific(self, argument, arg_type, **options):
         return EncodedArgument(BYTES_TYPE, len(argument), argument)
@@ -231,14 +289,7 @@ class BytesEncoder(BaseEncoder):
 
 class StringEncoder(BaseEncoder):
 
-    def __init__(self):
-        self.supported_types = [unicode]
-        # For python 2
-        if unicode != str:
-            self.types.append(str)
-        # For python 2
-        if basestring != unicode:
-            self.types.append(basestring)
+    supported_types = SUPPORTED_STRING_TYPES
 
     def encode_specific(self, argument, arg_type, **options):
         string_encoding = options.get(
@@ -248,6 +299,8 @@ class StringEncoder(BaseEncoder):
 
 
 class PythonProxyLongEncoder(object):
+
+    supported_types = []
 
     def encode(self, argument, arg_type, **options):
         try:
@@ -267,6 +320,8 @@ class PythonProxyLongEncoder(object):
 
 class JavaObjectLongEncoder(object):
 
+    supported_types = []
+
     def __init__(self):
         # Circular import! Still more logical to put this encoder here instead
         # of inside the java_gateway module.
@@ -274,16 +329,17 @@ class JavaObjectLongEncoder(object):
         self.supported_types = JavaObject
 
     def encode_specific(self, argument, arg_type, **options):
-        return self._encode(argument._get_object_id())
+        return self.encode_java_object(argument._get_object_id())
 
-    def _encode(self, object_id):
+    @classmethod
+    def encode_java_object(cls, object_id):
         return EncodedArgument(
             JAVA_REFERENCE_TYPE, None, pack("!q", object_id))
 
     def encode(self, argument, arg_type, **options):
         try:
             object_id = self._get_object_id()
-            return self._encode(object_id)
+            return self.encode_java_object(object_id)
         except AttributeError:
             return CANNOT_ENCODE
 
@@ -299,23 +355,6 @@ def get_encoded_string(value, string_encoding):
     if isinstance(value, unicode):
         value = value.encode(string_encoding)
     return value
-
-
-def get_command_part(parameter, python_proxy_pool=None):
-    """Converts a Python object into a tuple of bytes respecting the
-    Py4J protocol.
-
-    The first tuple element is always a signed short representing the type. The
-
-    For example, the integer `1` is converted to two 4-byte parts: the integer
-    type (12) followed by the signed integer value (1)
-
-    :param parameter: the object to convert
-    :param python_proxy_pool: the pool of python objects sent to the Java side.
-        Used to retrieve the python references.
-    :rtype: bytes representing the parameter in the Py4J protocol.
-    """
-    pass
 
 
 DEFAULT_ENCODERS = (
