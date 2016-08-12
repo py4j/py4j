@@ -45,12 +45,14 @@ class LongReferenceType(object):
 
 
 # Basic Types (0-10)
-JAVA_REFERENCE_TYPE = 0
-PYTHON_REFERENCE_TYPE = 2
-VOID_TYPE = 3
-NULL_TYPE = 4
-BOOLEAN_TRUE_TYPE = 5
-BOOLEAN_FALSE_TYPE = 6
+JAVA_REFERENCE_LONG_TYPE = 0
+JAVA_REFERENCE_UUID_TYPE = 1
+PYTHON_REFERENCE_LONG_TYPE = 2
+PYTHON_REFERENCE_UUID_TYPE = 3
+VOID_TYPE = 4
+NULL_TYPE = 5
+BOOLEAN_TRUE_TYPE = 6
+BOOLEAN_FALSE_TYPE = 7
 
 # Int types (10-20)
 BYTES_TYPE = 10
@@ -120,20 +122,27 @@ class EncoderRegistry(object):
     registering encoders at the same time.
     """
 
-    def __init__(self, string_encoding=DEFAULT_STRING_ENCODING):
+    def __init__(
+            self, string_encoding=DEFAULT_STRING_ENCODING,
+            id_mode=LONG_ID_MODE):
         self.type_encoders = defaultdict(list)
         self.all_encoders = deque()
         self.string_encoding = string_encoding
+        self.id_mode = id_mode
 
     @classmethod
     def get_default_encoder_registry(
-            cls, string_encoding=DEFAULT_STRING_ENCODING):
+            cls, string_encoding=DEFAULT_STRING_ENCODING,
+            id_mode=LONG_ID_MODE):
         """Returns an Encoder Registry with default encoders and ordering.
         Can be use as a basis to add other encoders.
         """
-        registry = cls(string_encoding=string_encoding)
+        registry = cls(string_encoding=string_encoding, id_mode=id_mode)
         for encoder_cls in DEFAULT_ENCODERS:
             registry.register_encoding_encoder(encoder_cls())
+        for encoder_cls in DEFAULT_REFERENCE_ENCODERS[id_mode]:
+            registry.register_encoding_encoder(encoder_cls())
+
         return registry
 
     def add_python_collection_encoders(self):
@@ -170,6 +179,11 @@ class EncoderRegistry(object):
         must also support inheritance (e.g., if a custom type inherits from a
         base type), hence their inclusion in the list of all encoders.
         """
+        try:
+            encoder.set_encoder_registry = self
+        except AttributeError:
+            pass
+
         if encoder.supported_types:
             for supported_type in encoder.supported_types:
                 self.type_encoders[supported_type].append(encoder)
@@ -203,8 +217,13 @@ class EncoderRegistry(object):
                 argument, java_client=java_client,
                 python_proxy_pool=python_proxy_pool)
 
-    def encode(self, argument, java_client=None, python_proxy_pool=None):
-        arg_type = type(argument)
+    def encode(
+            self, argument, java_client=None, python_proxy_pool=None,
+            force_type=None):
+        if force_type:
+            arg_type = force_type
+        else:
+            arg_type = type(argument)
         for encoder in self.type_encoders.get(arg_type, []):
             result = encoder.encode_specific(
                 argument, arg_type,
@@ -320,7 +339,8 @@ class PythonProxyLongEncoder(object):
         java_interfaces_bytes = get_encoded_string(
             java_interfaces, string_encoding)
         value = proxy_id + java_interfaces_bytes
-        return EncodedArgument(PYTHON_REFERENCE_TYPE, len(value), value)
+        return EncodedArgument(
+            PYTHON_REFERENCE_LONG_TYPE, len(value), value)
 
 
 class JavaObjectLongEncoder(object):
@@ -330,8 +350,10 @@ class JavaObjectLongEncoder(object):
     def __init__(self):
         # Circular import! Still more logical to put this encoder here instead
         # of inside the java_gateway module.
+        # TODO Push JavaObject to binary protocol, but keep implementation in
+        # java_gateway?
         from py4j.java_gateway import JavaObject
-        self.supported_types = JavaObject
+        self.supported_types = [JavaObject]
 
     def encode_specific(self, argument, arg_type, **options):
         return self.encode_java_object(argument._get_object_id())
@@ -339,7 +361,7 @@ class JavaObjectLongEncoder(object):
     @classmethod
     def encode_java_object(cls, object_id):
         return EncodedArgument(
-            JAVA_REFERENCE_TYPE, None, pack("!q", object_id))
+            JAVA_REFERENCE_LONG_TYPE, None, pack("!q", object_id))
 
     def encode(self, argument, arg_type, **options):
         try:
@@ -381,6 +403,15 @@ DEFAULT_ENCODERS = (
     DoubleEncoder,
     BytesEncoder,
     StringEncoder,
-    PythonProxyLongEncoder,
-    JavaObjectLongEncoder
 )
+
+DEFAULT_REFERENCE_ENCODERS = {
+    LONG_ID_MODE: (
+        PythonProxyLongEncoder,
+        JavaObjectLongEncoder,
+    ),
+    UUID_ID_MODE: (  # TODO
+        PythonProxyLongEncoder,
+        JavaObjectLongEncoder,
+    )
+}

@@ -21,7 +21,7 @@ from py4j.compat import (
 from py4j.java_gateway import JavaObject, JavaMember, get_method, JavaClass
 from py4j import protocol as proto
 from py4j.binary_protocol import (
-    JavaObjectLongEncoder, CANNOT_ENCODE)
+    CANNOT_ENCODE, )
 from py4j.protocol import (
     Py4JError, get_command_part, get_return_value,
     register_output_converter)
@@ -477,19 +477,28 @@ class JavaList(JavaObject, MutableSequence):
         return "[{0}]".format(", ".join(items))
 
 
-class PythonMapEncoder(object):
+class PythonCollectionEncoder(object):
+
+    def __init__(self):
+        self.encoder_register = None
+
+    def set_encoder_registry(self, encoder_registry):
+        self.encoder_registry = encoder_registry
+
+
+class PythonMapEncoder(PythonCollectionEncoder):
     supported_types = [dict]
 
     def encode_specific(self, argument, arg_type, **options):
         return self.encode_map(argument, options["java_client"])
 
-    def encode_map(argument, java_client):
+    def encode_map(self, argument, java_client):
         HashMap = JavaClass("java.util.HashMap", java_client)
         java_map = HashMap()
         for key in argument.keys():
             java_map[key] = argument[key]
-        return JavaObjectLongEncoder.encode_java_object(
-            java_map._get_object_id())
+        return self.encoder_registry.encode(
+            java_map, java_client=java_client, force_type=JavaObject)
 
     def encode(self, argument, arg_type, **options):
         if hasattr2(argument, "keys") and hasattr2(argument, "__getitem__"):
@@ -498,20 +507,19 @@ class PythonMapEncoder(object):
             return CANNOT_ENCODE
 
 
-class PythonListEncoder(object):
+class PythonListEncoder(PythonCollectionEncoder):
     supported_types = [list]
 
     def encode_specific(self, argument, arg_type, **options):
         return self.encode_list(argument, options["java_client"])
 
-    @classmethod
-    def encode_list(cls, argument, java_client):
+    def encode_list(self, argument, java_client):
         ArrayList = JavaClass("java.util.ArrayList", java_client)
         java_list = ArrayList()
         for element in argument:
             java_list.add(element)
-        return JavaObjectLongEncoder.encode_java_object(
-            java_list._get_object_id())
+        return self.encoder_registry.encode(
+            java_list, java_client=java_client, force_type=JavaObject)
 
     def encode(self, argument, arg_type, **options):
         if hasattr2(argument, "__iter__") and not isbytearray(argument) and\
@@ -522,19 +530,19 @@ class PythonListEncoder(object):
             return CANNOT_ENCODE
 
 
-class PythonSetEncoder(object):
+class PythonSetEncoder(PythonCollectionEncoder):
     supported_types = [set]
 
     def encode_specific(self, argument, arg_type, **options):
         return self.encode_set(argument, options["java_client"])
 
-    def encode_set(argument, java_client):
+    def encode_set(self, argument, java_client):
         JavaSet = JavaClass("java.util.HashSet", java_client)
         java_set = JavaSet()
         for element in argument:
             java_set.add(element)
-        return JavaObjectLongEncoder.encode_java_object(
-            java_set._get_object_id())
+        return self.encoder_registry.encode(
+            java_set, java_client=java_client, force_type=JavaObject)
 
     def encode(self, argument, arg_type, **options):
         if isinstance(argument, Set):
