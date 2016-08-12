@@ -331,6 +331,8 @@ class PythonProxyLongEncoder(object):
             java_interfaces = ";".join(argument.Java.implements)
         except AttributeError:
             return CANNOT_ENCODE
+        except TypeError:
+            return CANNOT_ENCODE
 
         pool = options["python_proxy_pool"]
         proxy_id = pack("!q", pool.put(argument))

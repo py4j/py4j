@@ -130,13 +130,8 @@ def test_string_encoder():
 def test_python_proxy_long_encoder():
     encoder = bprotocol.PythonProxyLongEncoder()
 
-    class MyClass(object):
-
-        class Java:
-            implements = ["com.package.Foo", "com.package.Bar"]
-
     obj = object()
-    value = MyClass()
+    value = PythonJavaClass()
     pool = java_gateway.PythonProxyPool()
     suffix = bprotocol.get_encoded_string(
         "com.package.Foo;com.package.Bar", "utf-8")
@@ -167,3 +162,54 @@ def test_java_object_long_encoder():
     assert len(encoded_value.value) == 8
 
     assert encoder.encode(object(), object) == bprotocol.CANNOT_ENCODE
+
+
+def test_encoder_registry_basic():
+    registry = bprotocol.EncoderRegistry.get_default_encoder_registry()
+    registry.add_python_collection_encoders()
+    pool = java_gateway.PythonProxyPool()
+    java_object = Mock()
+    java_object._get_object_id.return_value = 1
+
+    # Test encode specifics
+    encoded = registry.encode(1)
+    assert encoded.type == bprotocol.INTEGER_TYPE
+
+    encoded = registry.encode(1000000000000)
+    assert encoded.type == bprotocol.LONG_TYPE
+
+    encoded = registry.encode("hello world")
+    assert encoded.type == bprotocol.STRING_TYPE
+
+    encoded = registry.encode(bytearray([1, 2, 3]))
+    assert encoded.type == bprotocol.BYTES_TYPE
+
+    # Test encode
+    encoded = registry.encode(FakeStr("hello world"))
+    assert encoded.type == bprotocol.STRING_TYPE
+
+    encoded = registry.encode(PythonJavaClass(), python_proxy_pool=pool)
+    assert encoded.type == bprotocol.PYTHON_REFERENCE_LONG_TYPE
+
+    encoded = registry.encode(java_object)
+    assert encoded.type == bprotocol.JAVA_REFERENCE_LONG_TYPE
+
+
+def test_encoder_registry_command():
+    # TODO
+    pass
+
+
+def test_encoder_registry_lazy_command():
+    # TODO
+    pass
+
+
+class PythonJavaClass(object):
+
+    class Java:
+        implements = ["com.package.Foo", "com.package.Bar"]
+
+
+class FakeStr(compat.basestring):
+    pass
