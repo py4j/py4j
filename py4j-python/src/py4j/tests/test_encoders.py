@@ -1,5 +1,10 @@
 from decimal import Decimal
 
+try:
+    from unittest.mock import Mock
+except ImportError:
+    from mock import Mock
+
 from py4j import binary_protocol as bprotocol
 from py4j import java_gateway
 from py4j import compat
@@ -141,3 +146,24 @@ def test_python_proxy_long_encoder():
     encoded = encoder.encode(value, type(value), python_proxy_pool=pool)
     assert encoded.type == bprotocol.PYTHON_REFERENCE_TYPE
     assert encoded.size == 8 + len(suffix)
+    assert len(encoded.value) == 8 + len(suffix)
+
+
+def test_java_object_long_encoder():
+    encoder = bprotocol.JavaObjectLongEncoder()
+
+    java_object = Mock()
+    java_object._get_object_id.return_value = 1
+
+    encoded_value = encoder.encode(java_object, java_gateway.JavaObject)
+    assert encoded_value.type == bprotocol.JAVA_REFERENCE_TYPE
+    assert encoded_value.size is None
+    assert len(encoded_value.value) == 8
+
+    encoded_value = encoder.encode_specific(
+        java_object, java_gateway.JavaObject)
+    assert encoded_value.type == bprotocol.JAVA_REFERENCE_TYPE
+    assert encoded_value.size is None
+    assert len(encoded_value.value) == 8
+
+    assert encoder.encode(object(), object) == bprotocol.CANNOT_ENCODE

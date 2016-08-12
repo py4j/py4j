@@ -504,7 +504,8 @@ class PythonListEncoder(object):
     def encode_specific(self, argument, arg_type, **options):
         return self.encode_list(argument, options["java_client"])
 
-    def encode_list(argument, java_client):
+    @classmethod
+    def encode_list(cls, argument, java_client):
         ArrayList = JavaClass("java.util.ArrayList", java_client)
         java_list = ArrayList()
         for element in argument:

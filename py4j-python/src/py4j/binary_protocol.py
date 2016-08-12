@@ -33,6 +33,9 @@ SERVER_OBJECT_ID_LONG = -2
 
 CANNOT_ENCODE = object()
 
+LONG_ID_MODE = "LONG_ID_MODE"
+UUID_ID_MODE = "UUID_ID_MODE"
+
 
 class LongReferenceType(object):
 
@@ -340,7 +343,7 @@ class JavaObjectLongEncoder(object):
 
     def encode(self, argument, arg_type, **options):
         try:
-            object_id = self._get_object_id()
+            object_id = argument._get_object_id()
             return self.encode_java_object(object_id)
         except AttributeError:
             return CANNOT_ENCODE
