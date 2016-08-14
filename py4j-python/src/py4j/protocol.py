@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 """
 The protocol module defines the primitives and the escaping used by
 Py4J protocol.

@@ -28,10 +28,11 @@ import weakref
 from py4j.compat import (
     range, hasattr2, basestring, CompatThread, Queue, WeakSet)
 from py4j.finalizer import ThreadSafeFinalizer
-from py4j import protocol as proto
-from py4j.binary_protocol import EncoderRegistry
+from py4j import protocol as proto, binary_protocol as bproto
+from py4j.binary_protocol import (
+    EncoderRegistry, send_encoded_command)
 from py4j.protocol import (
-    Py4JError, Py4JNetworkError, escape_new_line, get_command_part,
+    Py4JError, Py4JNetworkError, get_command_part,
     get_return_value, is_error, register_output_converter, smart_decode)
 from py4j.signals import Signal
 from py4j.version import __version__
@@ -169,10 +170,10 @@ def java_import(jvm_view, import_str):
                  (e.g., java.io.*) to import
     """
     gateway_client = jvm_view._gateway_client
-    command = proto.JVMVIEW_COMMAND_NAME + proto.JVM_IMPORT_SUB_COMMAND_NAME +\
-        jvm_view._id + "\n" + escape_new_line(import_str) + "\n" +\
-        proto.END_COMMAND_PART
-    answer = gateway_client.send_command(command)
+    encoder_registry = gateway_client.encoder_registry
+    encoded_command = encoder_registry.encode_command_lazy(
+        bproto.JVM_IMPORT_SUB_COMMAND, jvm_view._id, import_str)
+    answer = gateway_client.send_command(encoded_command)
     return_value = get_return_value(answer, gateway_client, None, None)
     return return_value
 
@@ -324,10 +325,11 @@ def get_field(java_object, field_name):
     :param java_object: the instance containing the field
     :param field_name: the name of the field to retrieve
     """
-    command = proto.FIELD_COMMAND_NAME + proto.FIELD_GET_SUBCOMMAND_NAME +\
-        java_object._target_id + "\n" + field_name + "\n" +\
-        proto.END_COMMAND_PART
-    answer = java_object._gateway_client.send_command(command)
+    encoder_registry = java_object._gateway_client.encoder_registry
+    # TODO Fix on the Java side: expected java object id, now: java object
+    encoded_command = encoder_registry.encode_command_lazy(
+        bproto.FIELD_GET_SUBCOMMAND, java_object, field_name)
+    answer = java_object._gateway_client.send_command(encoded_command)
 
     if answer == proto.NO_MEMBER_COMMAND or is_error(answer)[0]:
         raise Py4JError("no field {0} in object {1}".format(
@@ -1017,8 +1019,7 @@ class GatewayConnection(object):
            called directly by Py4J users: it is usually called by JavaMember
            instances.
 
-        :param command: the `string` command to send to the JVM. The command
-         must follow the Py4J protocol.
+        :param command: the encoded command from binary_protocol.
 
         :rtype: the `string` answer received from the JVM (The answer follows
          the Py4J protocol).
@@ -1027,7 +1028,7 @@ class GatewayConnection(object):
         try:
             # Write will only fail if remote is closed for large payloads or
             # if it sent a RST packet (SO_LINGER)
-            self.socket.sendall(command.encode("utf-8"))
+            send_encoded_command(command, self.socket)
         except Exception as e:
             logger.info("Error while sending.", exc_info=True)
             raise Py4JNetworkError(

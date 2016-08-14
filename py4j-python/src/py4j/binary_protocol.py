@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 """
 The binary protocol module defines the primitives used by the Py4J protocol.
 
@@ -9,8 +10,9 @@ References are signed longs, but the protocol will eventually be able to
 support UUIDs. Negative numbers are reserved for special cases.
 """
 
-from collections import deque, defaultdict, namedtuple, Sequence
+from collections import deque, defaultdict, namedtuple
 from decimal import Decimal
+import io
 from struct import pack
 
 from py4j.compat import (
@@ -84,12 +86,7 @@ RETURN_TYPE = 72
 COMMAND_TYPE = 73
 END_TYPE = 77
 
-# Commands
-CALL_COMMAND = 0
-CONSTRUCTOR_COMMAND = 1
-SHUTDOWN_GATEWAY = 2
-
-# Python types that dpend on Python 2 and 3 differences
+# Python types that depend on Python 2 and 3 differences
 
 SUPPORTED_STRING_TYPES = [unicode]
 # For python 2
@@ -110,7 +107,64 @@ if int != long:
     SUPPORTED_INT_TYPES.append(long)
 
 
+# Commands (1-20)
+CALL_COMMAND = 0
+CONSTRUCTOR_COMMAND = 1
+SHUTDOWN_GATEWAY = 2
+# TODO
+STREAM_COMMAND = 3
+
+# Array
+ARRAY_GET_SUB_COMMAND = 20
+ARRAY_SET_SUB_COMMAND = 21
+ARRAY_SLICE_SUB_COMMAND = 22
+ARRAY_LEN_SUB_COMMAND = 23
+ARRAY_CREATE_SUB_COMMAND = 24
+
+# List
+LIST_SORT_SUBCOMMAND = 30
+LIST_REVERSE_SUBCOMMAND = 31
+LIST_SLICE_SUBCOMMAND = 32
+LIST_CONCAT_SUBCOMMAND = 33
+LIST_MULT_SUBCOMMAND = 34
+LIST_IMULT_SUBCOMMAND = 35
+LIST_COUNT_SUBCOMMAND = 36
+
+# Fields
+FIELD_GET_SUBCOMMAND = 40
+FIELD_SET_SUBCOMMAND = 41
+
+# Memory
+MEMORY_DEL_SUBCOMMAND = 50
+MEMORY_ATTACH_SUBCOMMAND = 51
+
+# Help
+HELP_OBJECT_SUBCOMMAND = 60
+HELP_CLASS_SUBCOMMAND = 61
+
+# Dir
+DIR_FIELDS_SUBCOMMAND = 70
+DIR_METHODS_SUBCOMMAND = 71
+DIR_STATIC_SUBCOMMAND = 72
+DIR_JVMVIEW_SUBCOMMAND = 73
+
+# Reflection
+REFL_GET_UNKNOWN_SUB_COMMAND = 80
+REFL_GET_MEMBER_SUB_COMMAND = 81
+REFL_GET_JAVA_LANG_CLASS_SUB_COMMAND = 82
+
+JVM_CREATE_VIEW_SUB_COMMAND = 90
+JVM_IMPORT_SUB_COMMAND = 91
+JVM_SEARCH_SUB_COMMAND = 92
+REMOVE_IMPORT_SUB_COMMAND = 93
+
+# Python server commands
+PYTHON_CALL_COMMAND = 100
+
+
 EncodedArgument = namedtuple("EncodedArgument", ["type", "size", "value"])
+
+END_ARGUMENT = EncodedArgument(END_TYPE, None, None)
 
 
 class EncoderRegistry(object):
@@ -193,45 +247,33 @@ class EncoderRegistry(object):
         else:
             self.all_encoders.appendleft(encoder)
 
-    def encode_command(
-            self, commands, arguments=None, java_client=None,
-            python_proxy_pool=None):
-        commands = force_sequence(commands)
+    def encode_command(self, command, *args, **kwargs):
         encoded_arguments = []
-        for command in commands:
-            encoded_arguments.append(
-                EncodedArgument(COMMAND_TYPE, None, command))
-        for argument in arguments:
-            encoded_arguments.append(
-                self.encode(argument, java_client=java_client,
-                            python_proxy_pool=python_proxy_pool))
-        encoded_arguments.append(self.end_command())
+        encoded_arguments.append(self._encode_command(command))
+        for argument in args:
+            encoded_arguments.append(self.encode(argument, **kwargs))
         return encoded_arguments
 
-    def encode_command_lazy(
-            self, commands, arguments=None, java_client=None,
-            python_proxy_pool=None):
-        commands = force_sequence(commands)
-        for command in commands:
-            yield EncodedArgument(COMMAND_TYPE, None, command)
+    def encode_command_lazy(self, command, *args, **kwargs):
+        yield self._encode_command(command)
 
-        for argument in arguments:
-            yield self.encode(
-                argument, java_client=java_client,
-                python_proxy_pool=python_proxy_pool)
+        for argument in args:
+            yield self.encode(argument, **kwargs)
 
-        yield self.end_command()
-
-    def end_command(self):
-        return EncodedArgument(END_TYPE, None, None)
+    def _encode_command(self, command):
+        return EncodedArgument(COMMAND_TYPE, None, pack("!h", command))
 
     def encode(
             self, argument, java_client=None, python_proxy_pool=None,
             force_type=None):
+        if isinstance(argument, EncodedArgument):
+            return argument
+
         if force_type:
             arg_type = force_type
         else:
             arg_type = type(argument)
+
         for encoder in self.type_encoders.get(arg_type, []):
             result = encoder.encode_specific(
                 argument, arg_type,
@@ -240,6 +282,7 @@ class EncoderRegistry(object):
                 string_encoding=self.string_encoding)
             if result != CANNOT_ENCODE:
                 return result
+
         for encoder in self.all_encoders:
             result = encoder.encode(
                 argument, arg_type,
@@ -394,15 +437,29 @@ def get_encoded_string(value, string_encoding):
     return value
 
 
-def force_sequence(value):
-    """Convert a value to a sequence if it is a string or a non-sequence.
-    """
-    if isinstance(value, basestring):
-        return [value]
-    elif not isinstance(value, Sequence):
-        return [value]
-    else:
-        return value
+def send_encoded_command(encoded_command, socket_instance):
+    max_size = io.DEFAULT_BUFFER_SIZE
+    buffer = bytearray()
+    for arg in encoded_command:
+        buffer.extend(pack("!h", arg.type))
+        if arg.size:
+            buffer.extend(pack("!i", arg.size))
+        if arg.value:
+            if len(arg.value) > max_size:
+                socket_instance.sendall(buffer)
+                # clear() does not exist in python 2.x
+                buffer = bytearray()
+                socket_instance.sendall(arg.value)
+                continue
+            else:
+                buffer.extend(arg.value)
+        if len(buffer) > max_size:
+            socket_instance.sendall(buffer)
+            # clear() does not exist in python 2.x
+            buffer = bytearray()
+
+    if buffer:
+        socket_instance.sendall(buffer)
 
 
 DEFAULT_ENCODERS = (

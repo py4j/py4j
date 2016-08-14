@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 from decimal import Decimal
 from inspect import isgenerator
 
@@ -201,12 +202,12 @@ def test_encoder_registry_command():
     pool = java_gateway.PythonProxyPool()
     java_object = Mock()
     java_object._get_object_id.return_value = 1
-    encoded_args = registry.encode_command(
+    encoded_command = registry.encode_command(
         bprotocol.CALL_COMMAND,
-        [java_object, "testing", PythonJavaClass()],
+        java_object, "testing", PythonJavaClass(), bprotocol.END_ARGUMENT,
         python_proxy_pool=pool)
     # command + 3 args + END
-    assert len(encoded_args) == 5
+    assert len(encoded_command) == 5
 
 
 def test_encoder_registry_command_with_collections():
@@ -223,12 +224,12 @@ def test_encoder_registry_command_with_collections():
     JavaClassMock = Mock(return_value=ArrayListMock)
 
     with patch("py4j.java_collections.JavaClass", new=JavaClassMock):
-        encoded_args = registry.encode_command(
+        encoded_command = registry.encode_command(
             bprotocol.CALL_COMMAND,
-            [java_object, "testing", PythonJavaClass(), ["1", "2", 3]],
+            java_object, "testing", PythonJavaClass(), ["1", "2", 3],
             python_proxy_pool=pool, java_client=Mock())
-        # command + 4 args + END
-        assert len(encoded_args) == 6
+        # command + 4 args
+        assert len(encoded_command) == 5
 
 
 def test_encoder_registry_lazy_command():
@@ -236,16 +237,72 @@ def test_encoder_registry_lazy_command():
     pool = java_gateway.PythonProxyPool()
     java_object = Mock()
     java_object._get_object_id.return_value = 1
-    encoded_args = registry.encode_command_lazy(
+    encoded_command = registry.encode_command_lazy(
         bprotocol.CALL_COMMAND,
-        [java_object, "testing", PythonJavaClass()],
+        java_object, "testing", PythonJavaClass(),
         python_proxy_pool=pool)
 
-    assert isgenerator(encoded_args)
-    encoded_args_list = list(encoded_args)
+    assert isgenerator(encoded_command)
+    encoded_command_list = list(encoded_command)
 
-    # command + 3 args + END
-    assert len(encoded_args_list) == 5
+    # command + 3 args
+    assert len(encoded_command_list) == 4
+
+
+def test_send_encoded_command_basic():
+    registry = bprotocol.EncoderRegistry.get_default_encoder_registry()
+    pool = java_gateway.PythonProxyPool()
+    java_object = Mock()
+    java_object._get_object_id.return_value = 1
+    encoded_command = registry.encode_command_lazy(
+        bprotocol.CALL_COMMAND,
+        java_object, "testingé", PythonJavaClass(),
+        python_proxy_pool=pool)
+    buffer = bytearray()
+
+    def mock_sendall(payload):
+        buffer.extend(payload)
+
+    sock = Mock()
+    sock.sendall = mock_sendall
+
+    bprotocol.send_encoded_command(encoded_command, sock)
+
+    # CALL_COMMAND = 2 + 2
+    # Java Object = 2 + 8
+    # String: 2 + 4 + 9
+    # Python Java Class: 2 + 4 + (8 + 31)
+    assert len(buffer) == 74
+
+
+def test_send_encoded_command_small_buff():
+    registry = bprotocol.EncoderRegistry.get_default_encoder_registry()
+    pool = java_gateway.PythonProxyPool()
+    java_object = Mock()
+    java_object._get_object_id.return_value = 1
+    encoded_command = registry.encode_command_lazy(
+        bprotocol.CALL_COMMAND,
+        java_object, "testingé", PythonJavaClass(),
+        python_proxy_pool=pool)
+    buffer = bytearray()
+
+    def mock_sendall(payload):
+        buffer.extend(payload)
+
+    sock = Mock()
+    sock.sendall = mock_sendall
+
+    io_mock = Mock()
+    io_mock.DEFAULT_BUFFER_SIZE = 8
+
+    with patch("py4j.binary_protocol.io", new=io_mock):
+        bprotocol.send_encoded_command(encoded_command, sock)
+
+    # CALL_COMMAND = 2 + 2
+    # Java Object = 2 + 8
+    # String: 2 + 4 + 9
+    # Python Java Class: 2 + 4 + (8 + 31)
+    assert len(buffer) == 74
 
 
 class PythonJavaClass(object):
