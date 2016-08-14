@@ -72,12 +72,12 @@ SET_TYPE = 33
 MAP_TYPE = 34
 
 # Py4J Types (50-70)
-PACKAGE_TYPE = 5
+PACKAGE_TYPE = 50
 CLASS_TYPE = 51
 METHOD_TYPE = 52
 NO_MEMBER = 53
 
-# Protocol Types
+# Protocol Types (70-90)
 ERROR_TYPE = 70
 SUCCESS_TYPE = 71
 RETURN_TYPE = 72
@@ -86,6 +86,8 @@ END_TYPE = 77
 
 # Commands
 CALL_COMMAND = 0
+CONSTRUCTOR_COMMAND = 1
+SHUTDOWN_GATEWAY = 2
 
 # Python types that dpend on Python 2 and 3 differences
 
@@ -180,7 +182,7 @@ class EncoderRegistry(object):
         base type), hence their inclusion in the list of all encoders.
         """
         try:
-            encoder.set_encoder_registry = self
+            encoder.set_encoder_registry(self)
         except AttributeError:
             pass
 
@@ -203,9 +205,10 @@ class EncoderRegistry(object):
             encoded_arguments.append(
                 self.encode(argument, java_client=java_client,
                             python_proxy_pool=python_proxy_pool))
+        encoded_arguments.append(self.end_command())
         return encoded_arguments
 
-    def encode_lazy_command(
+    def encode_command_lazy(
             self, commands, arguments=None, java_client=None,
             python_proxy_pool=None):
         commands = force_sequence(commands)
@@ -216,6 +219,11 @@ class EncoderRegistry(object):
             yield self.encode(
                 argument, java_client=java_client,
                 python_proxy_pool=python_proxy_pool)
+
+        yield self.end_command()
+
+    def end_command(self):
+        return EncodedArgument(END_TYPE, None, None)
 
     def encode(
             self, argument, java_client=None, python_proxy_pool=None,

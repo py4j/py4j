@@ -1,9 +1,10 @@
 from decimal import Decimal
+from inspect import isgenerator
 
 try:
-    from unittest.mock import Mock
+    from unittest.mock import Mock, patch
 except ImportError:
-    from mock import Mock
+    from mock import Mock, patch
 
 from py4j import binary_protocol as bprotocol
 from py4j import java_gateway
@@ -196,13 +197,55 @@ def test_encoder_registry_basic():
 
 
 def test_encoder_registry_command():
-    # TODO
-    pass
+    registry = bprotocol.EncoderRegistry.get_default_encoder_registry()
+    pool = java_gateway.PythonProxyPool()
+    java_object = Mock()
+    java_object._get_object_id.return_value = 1
+    encoded_args = registry.encode_command(
+        bprotocol.CALL_COMMAND,
+        [java_object, "testing", PythonJavaClass()],
+        python_proxy_pool=pool)
+    # command + 3 args + END
+    assert len(encoded_args) == 5
+
+
+def test_encoder_registry_command_with_collections():
+    registry = bprotocol.EncoderRegistry.get_default_encoder_registry()
+    registry.add_python_collection_encoders()
+    pool = java_gateway.PythonProxyPool()
+    java_object = Mock()
+    java_object._get_object_id.return_value = 1
+
+    # JavaClass Mocking
+    ArrayListInstanceMock = Mock()
+    ArrayListInstanceMock._get_object_id.return_value = 1
+    ArrayListMock = Mock(return_value=ArrayListInstanceMock)
+    JavaClassMock = Mock(return_value=ArrayListMock)
+
+    with patch("py4j.java_collections.JavaClass", new=JavaClassMock):
+        encoded_args = registry.encode_command(
+            bprotocol.CALL_COMMAND,
+            [java_object, "testing", PythonJavaClass(), ["1", "2", 3]],
+            python_proxy_pool=pool, java_client=Mock())
+        # command + 4 args + END
+        assert len(encoded_args) == 6
 
 
 def test_encoder_registry_lazy_command():
-    # TODO
-    pass
+    registry = bprotocol.EncoderRegistry.get_default_encoder_registry()
+    pool = java_gateway.PythonProxyPool()
+    java_object = Mock()
+    java_object._get_object_id.return_value = 1
+    encoded_args = registry.encode_command_lazy(
+        bprotocol.CALL_COMMAND,
+        [java_object, "testing", PythonJavaClass()],
+        python_proxy_pool=pool)
+
+    assert isgenerator(encoded_args)
+    encoded_args_list = list(encoded_args)
+
+    # command + 3 args + END
+    assert len(encoded_args_list) == 5
 
 
 class PythonJavaClass(object):
@@ -211,5 +254,5 @@ class PythonJavaClass(object):
         implements = ["com.package.Foo", "com.package.Bar"]
 
 
-class FakeStr(compat.basestring):
+class FakeStr(compat.unicode):
     pass
