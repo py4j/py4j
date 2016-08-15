@@ -13,11 +13,11 @@ support UUIDs. Negative numbers are reserved for special cases.
 from collections import deque, defaultdict, namedtuple
 from decimal import Decimal
 import io
-from struct import pack
+from struct import pack, unpack
 
 from py4j.compat import (
     long, bytestrrepr, basestring, unicode)
-from py4j.protocol import Py4JError
+from py4j.protocol import Py4JError, Py4JProtocolError
 
 
 DEFAULT_STRING_ENCODING = "utf-8"
@@ -162,9 +162,89 @@ REMOVE_IMPORT_SUB_COMMAND = 93
 PYTHON_CALL_COMMAND = 100
 
 
+DecodedArgument = namedtuple("DecodedArgument", ["type", "value"])
+
 EncodedArgument = namedtuple("EncodedArgument", ["type", "size", "value"])
 
-END_ARGUMENT = EncodedArgument(END_TYPE, None, None)
+END_DECODED_ARGUMENT = DecodedArgument(END_TYPE, None)
+
+END_ENCODED_ARGUMENT = EncodedArgument(END_TYPE, None, None)
+
+
+class DecoderRegistry(object):
+    """Registry that holds all possible decoders used to decode Py4J arguments
+    to Python arguments.
+
+    This class is not thread-safe: if multiple thread tries to register
+    decoders at the same time, concurrent modification errors may be raised.
+
+    Multiple threads can call de decode methods though if they are not
+    registering decoders at the same time.
+    """
+
+    def __init__(
+            self, string_encoding=DEFAULT_STRING_ENCODING,
+            id_mode=LONG_ID_MODE):
+        self.type_decoders = {}
+        self.string_encoding = string_encoding
+        self.id_mode = id_mode
+
+    def get_default_decoder_registry(
+            cls, string_encoding=DEFAULT_STRING_ENCODING,
+            id_mode=LONG_ID_MODE):
+        # TODO
+        pass
+
+    def add_java_collection_decoders(self):
+        """TODO
+        """
+        pass
+
+    def register_decoder(self, decoder, force=False):
+        """Registers a decoder with this registry. Only one decoder can be
+        registered for a type at a time.
+
+        Decoder are responsible for keeping the input stream state clean: it
+        should not read more than it has too.
+
+        If a decoder is being registered for a type that is already associated
+        with another decoder, an exception is raised unless the ``force``
+        parameter is set to True: in that case, the new decoder replaces the
+        old one.
+        """
+        try:
+            decoder.set_decoder_registry(self)
+        except AttributeError:
+            pass
+
+        for supported_type in decoder.supported_types:
+            if supported_type in self.type_decoders and not force:
+                raise Py4JError(
+                    "This type, {0}, is already registered.".format(
+                        supported_type))
+            self.type_decoders[supported_type] = decoder
+
+    def decode_response(self, input_stream, *args, **kwargs):
+        """TODO
+        """
+        decoded_arguments = []
+        while True:
+            argument = self.decode_argument(input_stream, *args, **kwargs)
+            if argument == END_DECODED_ARGUMENT:
+                break
+            else:
+                decoded_arguments.append(argument)
+        return decoded_arguments
+
+    def decode_argument(self, input_stream, *args, **kwargs):
+        """TODO
+        """
+        arg_type = unpack("!h", input_stream.read(2))[0]
+        decoder = self.type_decoders.get(arg_type)
+        if not decoder:
+            raise Py4JProtocolError("Cannot decode {0}".format(arg_type))
+        value = decoder.decode(input_stream, arg_type, *args, **kwargs)
+        return DecodedArgument(arg_type, value)
 
 
 class EncoderRegistry(object):
@@ -174,7 +254,7 @@ class EncoderRegistry(object):
     This class is not thread-safe: if multiple thread tries to register
     encoders at the same time, concurrent modification errors may be raised.
 
-    Multiple threads can call the encode method though if they are not
+    Multiple threads can call the encode methods though if they are not
     registering encoders at the same time.
     """
 
@@ -195,9 +275,9 @@ class EncoderRegistry(object):
         """
         registry = cls(string_encoding=string_encoding, id_mode=id_mode)
         for encoder_cls in DEFAULT_ENCODERS:
-            registry.register_encoding_encoder(encoder_cls())
+            registry.register_encoder(encoder_cls())
         for encoder_cls in DEFAULT_REFERENCE_ENCODERS[id_mode]:
-            registry.register_encoding_encoder(encoder_cls())
+            registry.register_encoder(encoder_cls())
 
         return registry
 
@@ -208,12 +288,12 @@ class EncoderRegistry(object):
         """
         from py4j.java_collections import (
             PythonListEncoder, PythonMapEncoder, PythonSetEncoder)
-        self.register_encoding_encoder(PythonListEncoder())
-        self.register_encoding_encoder(PythonMapEncoder())
-        self.register_encoding_encoder(PythonSetEncoder())
+        self.register_encoder(PythonListEncoder())
+        self.register_encoder(PythonMapEncoder())
+        self.register_encoder(PythonSetEncoder())
 
-    def register_encoding_encoder(self, encoder):
-        """Registers a encoder to the registry. The encoder can be
+    def register_encoder(self, encoder):
+        """Registers an encoder with this registry. The encoder can be
         associated with specific types to speed up encoding.
 
         When a Python argument is sent for encoding, if its type matches a
@@ -291,7 +371,7 @@ class EncoderRegistry(object):
                 string_encoding=self.string_encoding)
             if result != CANNOT_ENCODE:
                 return result
-        raise Py4JError(
+        raise Py4JProtocolError(
             "Cannot encode argument {0} of type {1}".format(
                 argument, arg_type))
 

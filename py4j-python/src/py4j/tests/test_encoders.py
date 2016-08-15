@@ -204,7 +204,8 @@ def test_encoder_registry_command():
     java_object._get_object_id.return_value = 1
     encoded_command = registry.encode_command(
         bprotocol.CALL_COMMAND,
-        java_object, "testing", PythonJavaClass(), bprotocol.END_ARGUMENT,
+        java_object, "testing", PythonJavaClass(),
+        bprotocol.END_ENCODED_ARGUMENT,
         python_proxy_pool=pool)
     # command + 3 args + END
     assert len(encoded_command) == 5

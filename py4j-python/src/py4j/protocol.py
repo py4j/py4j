@@ -391,6 +391,13 @@ class Py4JError(Exception):
         self.cause = cause
 
 
+class Py4JProtocolError(Py4JError):
+    """Exception raised when an encoding or decoding problem occurs with
+    Py4J.
+    """
+    pass
+
+
 class Py4JNetworkError(Py4JError):
     """Exception raised when a network error occurs with Py4J."""
     def __init__(self, args=None, cause=None, when=None):
