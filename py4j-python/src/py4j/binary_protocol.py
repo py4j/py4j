@@ -22,6 +22,10 @@ from py4j.protocol import Py4JError, Py4JProtocolError
 
 DEFAULT_STRING_ENCODING = "utf-8"
 
+DEFAULT_SIZE_PACK_FORMAT = "!i"
+
+DEFAULT_SIZE_BYTES_SIZE = 4
+
 JAVA_MAX_INT = 2147483647
 JAVA_MIN_INT = -2147483648
 
@@ -105,6 +109,8 @@ SUPPORTED_INT_TYPES = [int]
 # For python 2
 if int != long:
     SUPPORTED_INT_TYPES.append(long)
+
+SUPPORTED_NONE_TYPES = [type(None)]
 
 
 # Commands (1-20)
@@ -236,14 +242,18 @@ class DecoderRegistry(object):
                 decoded_arguments.append(argument)
         return decoded_arguments
 
-    def decode_argument(self, input_stream, *args, **kwargs):
+    def decode_argument(
+            self, input_stream, java_client=None, python_proxy_pool=None):
         """TODO
         """
         arg_type = unpack("!h", input_stream.read(2))[0]
         decoder = self.type_decoders.get(arg_type)
         if not decoder:
             raise Py4JProtocolError("Cannot decode {0}".format(arg_type))
-        value = decoder.decode(input_stream, arg_type, *args, **kwargs)
+        value = decoder.decode(
+            input_stream, arg_type, java_client=java_client,
+            python_proxy_pool=python_proxy_pool,
+            string_encoding=self.string_encoding)
         return DecodedArgument(arg_type, value)
 
 
@@ -388,7 +398,7 @@ class BaseEncoder(object):
 
 class NoneEncoder(BaseEncoder):
 
-    supported_types = [type(None)]
+    supported_types = SUPPORTED_NONE_TYPES
 
     def encode_specific(self, argument, arg_type, **options):
         return EncodedArgument(NULL_TYPE, None, None)
@@ -504,6 +514,88 @@ class JavaObjectLongEncoder(object):
             return CANNOT_ENCODE
 
 
+class NoneDecoder(object):
+
+    supported_types = [NULL_TYPE]
+
+    def decode(self, input_stream, arg_type, **options):
+        return None
+
+
+class IntDecoder(object):
+
+    supported_types = [INTEGER_TYPE, LONG_TYPE]
+
+    def decode(self, input_stream, arg_type, **options):
+        if arg_type == INTEGER_TYPE:
+            return unpack("!i", input_stream.read(4))[0]
+        else:
+            return unpack("!q", input_stream.read(8))[0]
+
+
+class DoubleDecoder(object):
+
+    supported_types = [DOUBLE_TYPE]
+
+    def decode(self, input_stream, arg_type, *args, **kwargs):
+        return unpack("!d", input_stream.read(8))[0]
+
+
+class BoolDecoder(object):
+    supported_types = [BOOLEAN_TRUE_TYPE, BOOLEAN_FALSE_TYPE]
+
+    def decode(self, input_stream, arg_type, **options):
+        return arg_type == BOOLEAN_TRUE_TYPE
+
+
+class StringDecoder(object):
+    supported_types = [STRING_TYPE]
+
+    def decode(self, input_stream, arg_type, **options):
+        string_encoding = options.get(
+            "string_encoding", DEFAULT_STRING_ENCODING)
+
+        size = unpack(
+            DEFAULT_SIZE_PACK_FORMAT,
+            input_stream.read(DEFAULT_SIZE_BYTES_SIZE))[0]
+
+        unicode_string = unicode(input_stream.read(size), string_encoding)
+
+        return unicode_string
+
+
+class BytesDecoder(object):
+    supported_types = [BYTES_TYPE]
+
+    def decode(self, input_stream, arg_type, **options):
+        size = unpack(
+            DEFAULT_SIZE_PACK_FORMAT,
+            input_stream.read(DEFAULT_SIZE_BYTES_SIZE))[0]
+
+        return input_stream.read(size)
+
+
+class PythonProxyLongDecoder(object):
+    supported_types = [PYTHON_REFERENCE_LONG_TYPE]
+
+    def decode(self, input_stream, arg_type, **options):
+        proxy_id = unpack("!q", input_stream.read(8))[0]
+        # Will raise an exception if it no longer exists
+        return options["python_proxy_pool"][proxy_id]
+
+
+class JavaObjectLongDecoder(object):
+    supported_types = [JAVA_REFERENCE_LONG_TYPE]
+
+    def __init__(self):
+        from py4j.java_gateway import JavaObject
+        self.JavaObject = JavaObject
+
+    def decode(self, input_stream, arg_type, **options):
+        object_id = unpack("!q", input_stream.read(8))[0]
+        return self.JavaObject(object_id, options["java_client"])
+
+
 def get_encoded_string(value, string_encoding):
     """Returns a bytestring from a string. The string can be unicode
     (Python 3's base string or Python 2's unicode) or a bytestring
@@ -523,7 +615,8 @@ def send_encoded_command(encoded_command, socket_instance):
     for arg in encoded_command:
         buffer.extend(pack("!h", arg.type))
         if arg.size:
-            buffer.extend(pack("!i", arg.size))
+            buffer.extend(pack(
+                DEFAULT_SIZE_PACK_FORMAT, arg.size))
         if arg.value:
             if len(arg.value) > max_size:
                 socket_instance.sendall(buffer)
