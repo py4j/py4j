@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+from decimal import Decimal
 from io import BytesIO
 from math import isnan
 from struct import pack
@@ -24,6 +25,15 @@ def test_int_decoder():
 
     b = BytesIO(pack("!q", 23))
     assert decoder.decode(b, bprotocol.LONG_TYPE) == 23
+
+
+def test_decimal_decoder():
+    decoder = bprotocol.DecimalDecoder()
+    bin_s = b"1.23"
+    size = len(bin_s)
+    b = BytesIO(pack("!i", size) + bin_s)
+    value = decoder.decode(b, bprotocol.DECIMAL_TYPE)
+    assert value == Decimal("1.23")
 
 
 def test_double_decoder():
@@ -101,3 +111,26 @@ def test_java_object_long_decoder():
         assert java_object is not None
         java_object_mock.assert_called_once_with(
             45, java_client)
+
+
+def test_decoder_registry_decode_argument_basic():
+    registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
+
+    s = u"helloé"
+    bin_s = bprotocol.get_encoded_string(s, "utf-8")
+    size = len(bin_s)
+
+    b = BytesIO(
+        pack("!h", bprotocol.STRING_TYPE) +
+        pack("!i", size) +
+        bin_s +
+        pack("!h", bprotocol.INTEGER_TYPE) +
+        pack("!i", 23))
+
+    arg1 = registry.decode_argument(b)
+    arg2 = registry.decode_argument(b)
+
+    assert arg1 == bprotocol.DecodedArgument(
+        bprotocol.STRING_TYPE, s)
+    assert arg2 == bprotocol.DecodedArgument(
+        bprotocol.INTEGER_TYPE, 23)

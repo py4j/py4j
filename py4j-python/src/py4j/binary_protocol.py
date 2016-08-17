@@ -22,6 +22,8 @@ from py4j.protocol import Py4JError, Py4JProtocolError
 
 DEFAULT_STRING_ENCODING = "utf-8"
 
+DEFAULT_BYTESTRING_ENCODING = "ascii"
+
 DEFAULT_SIZE_PACK_FORMAT = "!i"
 
 DEFAULT_SIZE_BYTES_SIZE = 4
@@ -195,11 +197,14 @@ class DecoderRegistry(object):
         self.string_encoding = string_encoding
         self.id_mode = id_mode
 
+    @classmethod
     def get_default_decoder_registry(
             cls, string_encoding=DEFAULT_STRING_ENCODING,
             id_mode=LONG_ID_MODE):
-        # TODO
-        pass
+        registry = cls(string_encoding=string_encoding, id_mode=id_mode)
+        for decoder_cls in DEFAULT_DECODERS:
+            registry.register_decoder(decoder_cls())
+        return registry
 
     def add_java_collection_decoders(self):
         """TODO
@@ -533,6 +538,19 @@ class IntDecoder(object):
             return unpack("!q", input_stream.read(8))[0]
 
 
+class DecimalDecoder(object):
+
+    supported_types = [Decimal]
+
+    def decode(self, input_stream, arg_type, **options):
+        size = unpack(
+            DEFAULT_SIZE_PACK_FORMAT,
+            input_stream.read(DEFAULT_SIZE_BYTES_SIZE))[0]
+        unicode_string = unicode(
+            input_stream.read(size), DEFAULT_BYTESTRING_ENCODING)
+        return Decimal(unicode_string)
+
+
 class DoubleDecoder(object):
 
     supported_types = [DOUBLE_TYPE]
@@ -644,6 +662,19 @@ DEFAULT_ENCODERS = (
     BytesEncoder,
     StringEncoder,
 )
+
+DEFAULT_DECODERS = (
+    NoneDecoder,
+    BoolDecoder,
+    IntDecoder,
+    DecimalDecoder,
+    DoubleDecoder,
+    BytesDecoder,
+    StringDecoder,
+    JavaObjectLongDecoder,
+    PythonProxyLongDecoder,
+)
+
 
 DEFAULT_REFERENCE_ENCODERS = {
     LONG_ID_MODE: (
