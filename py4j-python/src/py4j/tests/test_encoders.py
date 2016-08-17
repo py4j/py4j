@@ -257,7 +257,7 @@ def test_send_encoded_command_basic():
     java_object._get_object_id.return_value = 1
     encoded_command = registry.encode_command_lazy(
         bprotocol.CALL_COMMAND,
-        java_object, "testingé", PythonJavaClass(),
+        java_object, u"testingé", PythonJavaClass(),
         python_proxy_pool=pool)
     buffer = bytearray()
 
@@ -283,7 +283,7 @@ def test_send_encoded_command_small_buff():
     java_object._get_object_id.return_value = 1
     encoded_command = registry.encode_command_lazy(
         bprotocol.CALL_COMMAND,
-        java_object, "testingé", PythonJavaClass(),
+        java_object, u"testingé", PythonJavaClass(),
         python_proxy_pool=pool)
     buffer = bytearray()
 
