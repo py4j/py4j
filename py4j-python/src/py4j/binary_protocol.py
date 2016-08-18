@@ -235,8 +235,18 @@ class DecoderRegistry(object):
                         supported_type))
             self.type_decoders[supported_type] = decoder
 
-    def decode_response(self, input_stream, *args, **kwargs):
-        """TODO
+    def decode_arguments(self, input_stream, *args, **kwargs):
+        """Reads arguments from the input stream until a END_TYPE is found.
+        Returns a list of DecodedArgument *whitout* the END_TYPE.
+
+        Users may want to call decode_argument directly if they know the number
+        of arguments associated with a particular command or response. This
+        method is only suitable for unknown number of arguemnts, e.g., when
+        receiving a call command.
+
+        :param input_stream:
+        :param java_client:
+        :param python_proxy_pool:
         """
         decoded_arguments = []
         while True:
@@ -249,7 +259,12 @@ class DecoderRegistry(object):
 
     def decode_argument(
             self, input_stream, java_client=None, python_proxy_pool=None):
-        """TODO
+        """Reads an argument from the input stream and returns a
+        DecodedArgument instance.
+
+        :param input_stream:
+        :param java_client:
+        :param python_proxy_pool:
         """
         arg_type = unpack("!h", input_stream.read(2))[0]
         decoder = self.type_decoders.get(arg_type)
@@ -519,6 +534,14 @@ class JavaObjectLongEncoder(object):
             return CANNOT_ENCODE
 
 
+class EndDecoder(object):
+
+    supported_types = [END_TYPE]
+
+    def decode(self, input_stream, arg_type, **options):
+        return None
+
+
 class NoneDecoder(object):
 
     supported_types = [NULL_TYPE]
@@ -664,6 +687,7 @@ DEFAULT_ENCODERS = (
 )
 
 DEFAULT_DECODERS = (
+    EndDecoder,
     NoneDecoder,
     BoolDecoder,
     IntDecoder,

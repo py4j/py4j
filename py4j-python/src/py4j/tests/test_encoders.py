@@ -2,12 +2,14 @@
 from decimal import Decimal
 from inspect import isgenerator
 
+import pytest
+
 try:
     from unittest.mock import Mock, patch
 except ImportError:
     from mock import Mock, patch
 
-from py4j import binary_protocol as bprotocol
+from py4j import protocol, binary_protocol as bprotocol
 from py4j import java_gateway
 from py4j import compat
 
@@ -164,6 +166,13 @@ def test_java_object_long_encoder():
     assert len(encoded_value.value) == 8
 
     assert encoder.encode(object(), object) == bprotocol.CANNOT_ENCODE
+
+
+def test_encoder_registry_encode_error():
+    registry = bprotocol.EncoderRegistry.get_default_encoder_registry()
+
+    with pytest.raises(protocol.Py4JProtocolError):
+        registry.encode(object())
 
 
 def test_encoder_registry_basic():

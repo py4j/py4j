@@ -4,12 +4,14 @@ from io import BytesIO
 from math import isnan
 from struct import pack
 
+import pytest
+
 try:
     from unittest.mock import Mock, patch
 except ImportError:
     from mock import Mock, patch
 
-from py4j import binary_protocol as bprotocol
+from py4j import protocol, binary_protocol as bprotocol
 
 
 def test_none_decoder():
@@ -113,6 +115,23 @@ def test_java_object_long_decoder():
             45, java_client)
 
 
+def test_decoder_registry_already_registered():
+    registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
+    with pytest.raises(protocol.Py4JError):
+        registry.register_decoder(bprotocol.NoneDecoder())
+
+    registry.register_decoder(bprotocol.NoneDecoder(), force=True)
+
+
+def test_decoder_registry_bad_type():
+    registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
+    b = BytesIO(
+        pack("!h", -25) +
+        pack("!i", 23))
+    with pytest.raises(protocol.Py4JProtocolError):
+        registry.decode_argument(b)
+
+
 def test_decoder_registry_decode_argument_basic():
     registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
 
@@ -134,3 +153,30 @@ def test_decoder_registry_decode_argument_basic():
         bprotocol.STRING_TYPE, s)
     assert arg2 == bprotocol.DecodedArgument(
         bprotocol.INTEGER_TYPE, 23)
+
+
+def test_decoder_registry_decode_arguments_basic():
+    registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
+
+    s = u"helloé"
+    bin_s = bprotocol.get_encoded_string(s, "utf-8")
+    size = len(bin_s)
+
+    b = BytesIO(
+        pack("!h", bprotocol.STRING_TYPE) +
+        pack("!i", size) +
+        bin_s +
+        pack("!h", bprotocol.BOOLEAN_TRUE_TYPE) +
+        pack("!h", bprotocol.NULL_TYPE) +
+        pack("!h", bprotocol.END_TYPE)
+    )
+
+    args = registry.decode_arguments(b)
+
+    assert 3 == len(args)
+    assert args[0] == bprotocol.DecodedArgument(
+        bprotocol.STRING_TYPE, s)
+    assert args[1] == bprotocol.DecodedArgument(
+        bprotocol.BOOLEAN_TRUE_TYPE, True)
+    assert args[2] == bprotocol.DecodedArgument(
+        bprotocol.NULL_TYPE, None)
