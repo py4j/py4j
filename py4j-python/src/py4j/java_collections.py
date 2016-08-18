@@ -21,10 +21,10 @@ from py4j.compat import (
 from py4j.java_gateway import JavaObject, JavaMember, get_method, JavaClass
 from py4j import protocol as proto
 from py4j.binary_protocol import (
-    CANNOT_ENCODE, )
+    CANNOT_ENCODE, JAVA_REFERENCE_LONG_TYPE, LONG_ID_MODE,
+    ITERATOR_TYPE, MAP_TYPE, SET_TYPE, LIST_TYPE, ARRAY_TYPE)
 from py4j.protocol import (
-    Py4JError, get_command_part, get_return_value,
-    register_output_converter)
+    Py4JError, get_command_part, get_return_value)
 
 
 class JavaIterator(JavaObject):
@@ -551,18 +551,60 @@ class PythonSetEncoder(PythonCollectionEncoder):
             return CANNOT_ENCODE
 
 
-register_output_converter(
-    proto.MAP_TYPE, lambda target_id, gateway_client:
-    JavaMap(target_id, gateway_client))
-register_output_converter(
-    proto.LIST_TYPE, lambda target_id, gateway_client:
-    JavaList(target_id, gateway_client))
-register_output_converter(
-    proto.ARRAY_TYPE, lambda target_id, gateway_client:
-    JavaArray(target_id, gateway_client))
-register_output_converter(
-    proto.SET_TYPE, lambda target_id, gateway_client:
-    JavaSet(target_id, gateway_client))
-register_output_converter(
-    proto.ITERATOR_TYPE, lambda target_id, gateway_client:
-    JavaIterator(target_id, gateway_client))
+class CollectionDecoder(object):
+
+    def __init__(self):
+        self.decoder_registry = None
+
+    def set_decoder_registry(self, decoder_registry):
+        self.decoder_registry = decoder_registry
+
+    def decode(self, input_stream, arg_type, **options):
+        id_mode = self.decoder_registry.id_mode
+        options["java_object_class"] = self.java_object_class
+        if id_mode == LONG_ID_MODE:
+            return self.decoder_registry.decode_argument_raw(
+                input_stream, JAVA_REFERENCE_LONG_TYPE,
+                **options)
+        else:
+            raise proto.Py4JProtocolError(
+                "ID mode not supported: {0}".format(id_mode))
+
+
+class JavaIteratorDecoder(CollectionDecoder):
+
+    supported_types = [ITERATOR_TYPE]
+    java_object_class = JavaIterator
+
+
+class JavaMapDecoder(CollectionDecoder):
+
+    supported_types = [MAP_TYPE]
+    java_object_class = JavaMap
+
+
+class JavaSetDecoder(CollectionDecoder):
+
+    supported_types = [SET_TYPE]
+    java_object_class = JavaSet
+
+
+class JavaListDecoder(CollectionDecoder):
+
+    supported_types = [LIST_TYPE]
+    java_object_class = JavaList
+
+
+class JavaArrayDecoder(CollectionDecoder):
+
+    supported_types = [ARRAY_TYPE]
+    java_object_class = JavaArray
+
+
+COLLECTION_DECODERS = [
+    JavaIteratorDecoder,
+    JavaMapDecoder,
+    JavaSetDecoder,
+    JavaListDecoder,
+    JavaArrayDecoder
+]

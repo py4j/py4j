@@ -201,15 +201,21 @@ class DecoderRegistry(object):
     def get_default_decoder_registry(
             cls, string_encoding=DEFAULT_STRING_ENCODING,
             id_mode=LONG_ID_MODE):
+        """TODO
+        """
         registry = cls(string_encoding=string_encoding, id_mode=id_mode)
         for decoder_cls in DEFAULT_DECODERS:
+            registry.register_decoder(decoder_cls())
+        for decoder_cls in DEFAULT_REFERENCE_DECODERS[id_mode]:
             registry.register_decoder(decoder_cls())
         return registry
 
     def add_java_collection_decoders(self):
-        """TODO
+        """Adds default Java collection decoders.
         """
-        pass
+        from py4j.java_collections import COLLECTION_DECODERS
+        for decoder_cls in COLLECTION_DECODERS:
+            self.register_decoder(decoder_cls(), force=True)
 
     def register_decoder(self, decoder, force=False):
         """Registers a decoder with this registry. Only one decoder can be
@@ -235,7 +241,7 @@ class DecoderRegistry(object):
                         supported_type))
             self.type_decoders[supported_type] = decoder
 
-    def decode_arguments(self, input_stream, *args, **kwargs):
+    def decode_arguments(self, input_stream, **options):
         """Reads arguments from the input stream until a END_TYPE is found.
         Returns a list of DecodedArgument *whitout* the END_TYPE.
 
@@ -250,7 +256,7 @@ class DecoderRegistry(object):
         """
         decoded_arguments = []
         while True:
-            argument = self.decode_argument(input_stream, *args, **kwargs)
+            argument = self.decode_argument(input_stream, **options)
             if argument == END_DECODED_ARGUMENT:
                 break
             else:
@@ -258,7 +264,7 @@ class DecoderRegistry(object):
         return decoded_arguments
 
     def decode_argument(
-            self, input_stream, java_client=None, python_proxy_pool=None):
+            self, input_stream, **options):
         """Reads an argument from the input stream and returns a
         DecodedArgument instance.
 
@@ -266,15 +272,20 @@ class DecoderRegistry(object):
         :param java_client:
         :param python_proxy_pool:
         """
+        options.setdefault("string_encoding", self.string_encoding)
         arg_type = unpack("!h", input_stream.read(2))[0]
+        value = self.decode_argument_raw(
+            input_stream, arg_type, **options)
+        return DecodedArgument(arg_type, value)
+
+    def decode_argument_raw(self, input_stream, arg_type, **options):
         decoder = self.type_decoders.get(arg_type)
         if not decoder:
             raise Py4JProtocolError("Cannot decode {0}".format(arg_type))
         value = decoder.decode(
-            input_stream, arg_type, java_client=java_client,
-            python_proxy_pool=python_proxy_pool,
-            string_encoding=self.string_encoding)
-        return DecodedArgument(arg_type, value)
+            input_stream, arg_type,
+            **options)
+        return value
 
 
 class EncoderRegistry(object):
@@ -373,32 +384,27 @@ class EncoderRegistry(object):
     def _encode_command(self, command):
         return EncodedArgument(COMMAND_TYPE, None, pack("!h", command))
 
-    def encode(
-            self, argument, java_client=None, python_proxy_pool=None,
-            force_type=None):
+    def encode(self, argument, **options):
+        """TODO
+
+        :param argument:
+        :param java_client:
+        :param python_proxy_pool:
+        :param force_type:
+        """
         if isinstance(argument, EncodedArgument):
             return argument
 
-        if force_type:
-            arg_type = force_type
-        else:
-            arg_type = type(argument)
+        arg_type = options.get("force_type", type(argument))
+        options.setdefault("string_encoding", self.string_encoding)
 
         for encoder in self.type_encoders.get(arg_type, []):
-            result = encoder.encode_specific(
-                argument, arg_type,
-                java_client=java_client,
-                python_proxy_pool=python_proxy_pool,
-                string_encoding=self.string_encoding)
+            result = encoder.encode_specific(argument, arg_type, **options)
             if result != CANNOT_ENCODE:
                 return result
 
         for encoder in self.all_encoders:
-            result = encoder.encode(
-                argument, arg_type,
-                java_client=java_client,
-                python_proxy_pool=python_proxy_pool,
-                string_encoding=self.string_encoding)
+            result = encoder.encode(argument, arg_type, **options)
             if result != CANNOT_ENCODE:
                 return result
         raise Py4JProtocolError(
@@ -626,7 +632,8 @@ class PythonProxyLongDecoder(object):
 
 
 class JavaObjectLongDecoder(object):
-    supported_types = [JAVA_REFERENCE_LONG_TYPE]
+    supported_types = [JAVA_REFERENCE_LONG_TYPE, MAP_TYPE, SET_TYPE,
+                       LIST_TYPE, ARRAY_TYPE, ITERATOR_TYPE]
 
     def __init__(self):
         from py4j.java_gateway import JavaObject
@@ -634,7 +641,8 @@ class JavaObjectLongDecoder(object):
 
     def decode(self, input_stream, arg_type, **options):
         object_id = unpack("!q", input_stream.read(8))[0]
-        return self.JavaObject(object_id, options["java_client"])
+        java_object_class = options.get("java_object_class", self.JavaObject)
+        return java_object_class(object_id, options["java_client"])
 
 
 def get_encoded_string(value, string_encoding):
@@ -695,9 +703,19 @@ DEFAULT_DECODERS = (
     DoubleDecoder,
     BytesDecoder,
     StringDecoder,
-    JavaObjectLongDecoder,
-    PythonProxyLongDecoder,
 )
+
+
+DEFAULT_REFERENCE_DECODERS = {
+    LONG_ID_MODE: (
+        PythonProxyLongDecoder,
+        JavaObjectLongDecoder,
+    ),
+    UUID_ID_MODE: (  # TODO
+        PythonProxyLongEncoder,
+        JavaObjectLongEncoder,
+    )
+}
 
 
 DEFAULT_REFERENCE_ENCODERS = {

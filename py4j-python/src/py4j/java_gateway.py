@@ -1061,7 +1061,9 @@ class JavaMember(object):
         self.container = container
         self.target_id = target_id
         self.gateway_client = gateway_client
-        self.command_header = self.target_id + "\n" + self.name + "\n"
+        # TODO!!!
+        # self.command_header = self.target_id + "\n" + self.name + "\n"
+        self.command_header = "TODO\n"
         self.pool = self.gateway_client.gateway_property.pool
         self.converters = self.gateway_client.converters
         self._gateway_doc = None
@@ -1168,9 +1170,10 @@ class JavaObject(object):
         self._fully_populated = False
         self._gateway_doc = None
 
-        key = smart_decode(self._gateway_client.address) +\
-            smart_decode(self._gateway_client.port) +\
-            self._target_id
+        key = "{0}{1}{2}".format(
+            smart_decode(self._gateway_client.address),
+            smart_decode(self._gateway_client.port),
+            self._target_id)
 
         if self._gateway_client.gateway_property.enable_memory_management:
             value = weakref.ref(

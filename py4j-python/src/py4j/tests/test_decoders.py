@@ -115,6 +115,19 @@ def test_java_object_long_decoder():
             45, java_client)
 
 
+def test_java_collection_long_decoder():
+    with patch("py4j.java_gateway.JavaObject") as java_object_mock:
+        decoder = bprotocol.JavaObjectLongDecoder()
+        java_client = Mock()
+        b = BytesIO(pack("!q", 45))
+        java_object = decoder.decode(
+            b, bprotocol.MAP_TYPE, java_client=java_client)
+
+        assert java_object is not None
+        java_object_mock.assert_called_once_with(
+            45, java_client)
+
+
 def test_decoder_registry_already_registered():
     registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
     with pytest.raises(protocol.Py4JError):
@@ -180,3 +193,32 @@ def test_decoder_registry_decode_arguments_basic():
         bprotocol.BOOLEAN_TRUE_TYPE, True)
     assert args[2] == bprotocol.DecodedArgument(
         bprotocol.NULL_TYPE, None)
+
+
+def test_decoder_registry_java_collections():
+    registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
+    registry.add_java_collection_decoders()
+
+    b = BytesIO(
+        pack("!h", bprotocol.ITERATOR_TYPE) +
+        pack("!q", 3) +
+        pack("!h", bprotocol.MAP_TYPE) +
+        pack("!i", 4) +
+        pack("!h", bprotocol.LIST_TYPE) +
+        pack("!i", 5) +
+        pack("!h", bprotocol.SET_TYPE) +
+        pack("!i", 6) +
+        pack("!h", bprotocol.ARRAY_TYPE) +
+        pack("!i", 7) +
+        pack("!h", bprotocol.END_TYPE))
+    java_client = Mock
+    java_client.address = "127.0.0.1"
+    java_client.port = 14000
+    java_client.gateway_property = Mock()
+    java_client.converters = Mock()
+    java_client.gateway_property.auto_field = False
+    java_client.gateway_property.enable_memory_management = False
+
+    args = registry.decode_arguments(b, java_client=java_client)
+
+    assert len(args) == 5
