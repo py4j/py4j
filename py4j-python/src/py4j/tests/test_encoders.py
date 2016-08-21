@@ -143,7 +143,7 @@ def test_python_proxy_long_encoder():
     assert encoder.encode(obj, type(obj)) == bprotocol.CANNOT_ENCODE
 
     encoded = encoder.encode(value, type(value), python_proxy_pool=pool)
-    assert encoded.type == bprotocol.PYTHON_REFERENCE_LONG_TYPE
+    assert encoded.type == bprotocol.PYTHON_REFERENCE_TYPE
     assert encoded.size == 8 + len(suffix)
     assert len(encoded.value) == 8 + len(suffix)
 
@@ -155,13 +155,13 @@ def test_java_object_long_encoder():
     java_object._get_object_id.return_value = 1
 
     encoded_value = encoder.encode(java_object, java_gateway.JavaObject)
-    assert encoded_value.type == bprotocol.JAVA_REFERENCE_LONG_TYPE
+    assert encoded_value.type == bprotocol.JAVA_REFERENCE_TYPE
     assert encoded_value.size is None
     assert len(encoded_value.value) == 8
 
     encoded_value = encoder.encode_specific(
         java_object, java_gateway.JavaObject)
-    assert encoded_value.type == bprotocol.JAVA_REFERENCE_LONG_TYPE
+    assert encoded_value.type == bprotocol.JAVA_REFERENCE_TYPE
     assert encoded_value.size is None
     assert len(encoded_value.value) == 8
 
@@ -200,10 +200,10 @@ def test_encoder_registry_basic():
     assert encoded.type == bprotocol.STRING_TYPE
 
     encoded = registry.encode(PythonJavaClass(), python_proxy_pool=pool)
-    assert encoded.type == bprotocol.PYTHON_REFERENCE_LONG_TYPE
+    assert encoded.type == bprotocol.PYTHON_REFERENCE_TYPE
 
     encoded = registry.encode(java_object)
-    assert encoded.type == bprotocol.JAVA_REFERENCE_LONG_TYPE
+    assert encoded.type == bprotocol.JAVA_REFERENCE_TYPE
 
 
 def test_encoder_registry_command():

@@ -100,7 +100,7 @@ class PythonParameters(CallbackServerParameters):
             daemonize=False, daemonize_connections=False, eager_load=True,
             ssl_context=None, auto_gc=False,
             accept_timeout=DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-            read_timeout=None, encoder_registry=None):
+            read_timeout=None, encoder_registry=None, decoder_registry=None):
         """
         :param address: the address to which the client will request a
             connection
@@ -141,10 +141,14 @@ class PythonParameters(CallbackServerParameters):
         :param encoder_registry: the encoder registry to use to encode Python
             arguments using Py4J binary protocol. If None, the default encoder
             with Python collection encoders will be used.
+
+        :param decoder_registry: the decoder registry to use to decode Python
+            arguments using Py4J binary protocol.
         """
         super(PythonParameters, self).__init__(
             address, port, daemonize, daemonize_connections, eager_load,
-            ssl_context, accept_timeout, read_timeout, encoder_registry)
+            ssl_context, accept_timeout, read_timeout, encoder_registry,
+            decoder_registry)
         self.auto_gc = auto_gc
 
 

@@ -15,7 +15,7 @@ from py4j import protocol, binary_protocol as bprotocol
 
 
 def test_none_decoder():
-    decoder = bprotocol.NoneDecoder()
+    decoder = bprotocol.SingleTypeDecoder()
     b = BytesIO(bytes())
     assert decoder.decode(b, bprotocol.NULL_TYPE) is None
 
@@ -97,7 +97,7 @@ def test_python_proxy_long_decoder():
     pool = {45: object()}
     b = BytesIO(pack("!q", 45))
     python_instance = decoder.decode(
-        b, bprotocol.PYTHON_REFERENCE_LONG_TYPE, python_proxy_pool=pool)
+        b, bprotocol.PYTHON_REFERENCE_TYPE, python_proxy_pool=pool)
 
     assert python_instance == pool[45]
 
@@ -108,9 +108,27 @@ def test_java_object_long_decoder():
         java_client = Mock()
         b = BytesIO(pack("!q", 45))
         java_object = decoder.decode(
-            b, bprotocol.JAVA_REFERENCE_LONG_TYPE, java_client=java_client)
+            b, bprotocol.JAVA_REFERENCE_TYPE, java_client=java_client)
 
         assert java_object is not None
+        java_object_mock.assert_called_once_with(
+            45, java_client)
+
+
+def test_error_with_exception_decoder():
+    with patch("py4j.java_gateway.JavaObject") as java_object_mock:
+        registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
+        java_client = Mock()
+        b = BytesIO(
+            pack("!h", bprotocol.EXCEPTION_TYPE) +
+            pack("!q", 45)
+        )
+        decoded_argument = registry.decode_argument(
+            b, java_client=java_client)
+
+        assert decoded_argument.type == bprotocol.EXCEPTION_TYPE
+        assert decoded_argument.value is not None
+
         java_object_mock.assert_called_once_with(
             45, java_client)
 
@@ -131,9 +149,9 @@ def test_java_collection_long_decoder():
 def test_decoder_registry_already_registered():
     registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
     with pytest.raises(protocol.Py4JError):
-        registry.register_decoder(bprotocol.NoneDecoder())
+        registry.register_decoder(bprotocol.SingleTypeDecoder())
 
-    registry.register_decoder(bprotocol.NoneDecoder(), force=True)
+    registry.register_decoder(bprotocol.SingleTypeDecoder(), force=True)
 
 
 def test_decoder_registry_bad_type():

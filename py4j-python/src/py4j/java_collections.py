@@ -21,7 +21,7 @@ from py4j.compat import (
 from py4j.java_gateway import JavaObject, JavaMember, get_method, JavaClass
 from py4j import protocol as proto
 from py4j.binary_protocol import (
-    CANNOT_ENCODE, JAVA_REFERENCE_LONG_TYPE, LONG_ID_MODE,
+    CANNOT_ENCODE, JAVA_REFERENCE_TYPE,
     ITERATOR_TYPE, MAP_TYPE, SET_TYPE, LIST_TYPE, ARRAY_TYPE)
 from py4j.protocol import (
     Py4JError, get_command_part, get_return_value)
@@ -560,15 +560,10 @@ class CollectionDecoder(object):
         self.decoder_registry = decoder_registry
 
     def decode(self, input_stream, arg_type, **options):
-        id_mode = self.decoder_registry.id_mode
         options["java_object_class"] = self.java_object_class
-        if id_mode == LONG_ID_MODE:
-            return self.decoder_registry.decode_argument_raw(
-                input_stream, JAVA_REFERENCE_LONG_TYPE,
-                **options)
-        else:
-            raise proto.Py4JProtocolError(
-                "ID mode not supported: {0}".format(id_mode))
+        return self.decoder_registry.decode_argument_raw(
+            input_stream, JAVA_REFERENCE_TYPE,
+            **options)
 
 
 class JavaIteratorDecoder(CollectionDecoder):

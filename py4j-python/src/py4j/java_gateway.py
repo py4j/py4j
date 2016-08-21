@@ -30,7 +30,7 @@ from py4j.compat import (
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j import protocol as proto, binary_protocol as bproto
 from py4j.binary_protocol import (
-    EncoderRegistry, send_encoded_command)
+    EncoderRegistry, DecoderRegistry, send_encoded_command)
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, get_command_part,
     get_return_value, is_error, register_output_converter, smart_decode)
@@ -46,7 +46,6 @@ null_handler = NullHandler()
 logging.getLogger("py4j").addHandler(null_handler)
 logger = logging.getLogger("py4j.java_gateway")
 
-BUFFER_SIZE = 4096
 DEFAULT_ADDRESS = "127.0.0.1"
 DEFAULT_PORT = 25333
 DEFAULT_PYTHON_PROXY_PORT = 25334
@@ -639,7 +638,7 @@ class GatewayParameters(object):
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
             auto_close=True, auto_convert=False, eager_load=False,
             ssl_context=None, enable_memory_management=True,
-            read_timeout=None, encoder_registry=None):
+            read_timeout=None, encoder_registry=None, decoder_registry=None):
         """
         :param address: the address to which the client will request a
             connection. If you're assing a `SSLContext` with
@@ -680,6 +679,9 @@ class GatewayParameters(object):
 
         :param encoder_registry: the encoder registry to use to encode Python
             arguments using Py4J binary protocol.
+
+        :param decoder_registry: the decoder registry to use to decode Python
+            arguments using Py4J binary protocol.
         """
         self.address = address
         self.port = port
@@ -693,7 +695,11 @@ class GatewayParameters(object):
         if not encoder_registry:
             encoder_registry = EncoderRegistry.get_default_encoder_registry()
             encoder_registry.add_python_collection_encoders()
+        if not decoder_registry:
+            decoder_registry = DecoderRegistry.get_default_decoder_registry()
+            decoder_registry.add_java_collection_decoders()
         self.encoder_registry = encoder_registry
+        self.decoder_registry = decoder_registry
 
 
 class CallbackServerParameters(object):
@@ -829,6 +835,7 @@ class GatewayClient(object):
         self.gateway_property = gateway_property
         self.ssl_context = gateway_parameters.ssl_context
         self.encoder_registry = gateway_parameters.encoder_registry
+        self.decoder_registry = gateway_parameters.decoder_registry
         self.deque = deque()
 
     def _get_connection(self):
@@ -868,12 +875,13 @@ class GatewayClient(object):
             logger.debug("Error while shutting down gateway.", exc_info=True)
             self.shutdown_gateway()
 
-    def send_command(self, command, retry=True, binary=False):
+    def send_command(
+            self, command, retry=True, binary=False, **options):
         """Sends a command to the JVM. This method is not intended to be
            called directly by Py4J users. It is usually called by
            :class:`JavaMember` instances.
 
-        :param command: the `string` command to send to the JVM. The command
+        :param command: the encoded command to send to the JVM. The command
          must follow the Py4J protocol.
 
         :param retry: if `True`, the GatewayClient tries to resend a message
@@ -885,13 +893,15 @@ class GatewayClient(object):
          responsible for closing the connection (or returning it this
          `GatewayClient` pool using `_give_back_connection`).
 
-        :rtype: the `string` answer received from the JVM (The answer follows
-         the Py4J protocol). The guarded `GatewayConnection` is also returned
-         if `binary` is `True`.
+        :rtype: the DecodedArgument response received from the JVM
+        (The answer follows the Py4J protocol). The guarded `GatewayConnection`
+        is also returned if `binary` is `True`.
+
         """
         connection = self._get_connection()
         try:
-            response = connection.send_command(command)
+            response = connection.send_command(command, **options)
+            # TODO DETERMINE IF THIS IS REALLY NEEDED
             if binary:
                 return response, self._create_connection_guard(connection)
             else:
@@ -904,10 +914,11 @@ class GatewayClient(object):
                 connection.close(reset)
             if self._should_retry(retry, connection, pne):
                 logging.info("Exception while sending command.", exc_info=True)
-                response = self.send_command(command, binary=binary)
+                response = self.send_command(command, binary=binary, **options)
             else:
                 logging.exception(
                     "Exception while sending command.")
+                # TODO
                 response = proto.ERROR
 
         return response
@@ -958,6 +969,7 @@ class GatewayConnection(object):
         if gateway_parameters.ssl_context:
             self.socket = gateway_parameters.ssl_context.wrap_socket(
                 self.socket, server_hostname=self.address)
+        self.decoder_registry = gateway_parameters.decoder_registry
         self.is_connected = False
         self.auto_close = gateway_parameters.auto_close
         self.gateway_property = gateway_property
@@ -1014,15 +1026,15 @@ class GatewayConnection(object):
             logger.debug("Exception occurred while shutting down gateway",
                          exc_info=True)
 
-    def send_command(self, command):
+    def send_command(self, command, **options):
         """Sends a command to the JVM. This method is not intended to be
            called directly by Py4J users: it is usually called by JavaMember
            instances.
 
         :param command: the encoded command from binary_protocol.
+        :param options: optional kwargs used to decode arguments.
 
-        :rtype: the `string` answer received from the JVM (The answer follows
-         the Py4J protocol).
+        :rtype: the DecodedArgument received from the JVM.
         """
         logger.debug("Command to send: {0}".format(command))
         try:
@@ -1035,16 +1047,22 @@ class GatewayConnection(object):
                 "Error while sending", e, proto.ERROR_ON_SEND)
 
         try:
-            answer = smart_decode(self.stream.readline()[:-1])
-            logger.debug("Answer received: {0}".format(answer))
-            if answer.startswith(proto.RETURN_MESSAGE):
-                answer = answer[1:]
-            # Happens when a the other end is dead. There might be an empty
-            # answer before the socket raises an error.
-            if answer.strip() == "":
-                raise Py4JNetworkError("Answer from Java side is empty")
-            return answer
+            response = self.decoder_registry.decode_argument(self.stream)
+
+            if response != bproto.RETURN_DECODED_ARGUMENT:
+                raise Py4JNetworkError(
+                    "Received non-return response: ".format(response))
+
+            response = self.decoder_registry.decode_argument(
+                self.stream, **options)
+
+            logger.debug("response received: {0}".format(response))
+
+            return response
         except Exception as e:
+            # Will happen if
+            # 1. the other end is dead and we cannot read from it.
+            # 2. the response is not a return response
             logger.info("Error while receiving.", exc_info=True)
             raise Py4JNetworkError(
                 "Error while receiving", e, proto.ERROR_ON_RECEIVE)

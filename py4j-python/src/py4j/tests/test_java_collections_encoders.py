@@ -8,7 +8,7 @@ from py4j import binary_protocol as bprotocol
 
 
 def assert_python_collection_long(encoded):
-    assert encoded.type == bprotocol.JAVA_REFERENCE_LONG_TYPE
+    assert encoded.type == bprotocol.JAVA_REFERENCE_TYPE
     assert encoded.size is None
     assert len(encoded.value) == 8
 

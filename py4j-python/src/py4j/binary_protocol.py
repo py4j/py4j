@@ -45,18 +45,9 @@ LONG_ID_MODE = "LONG_ID_MODE"
 UUID_ID_MODE = "UUID_ID_MODE"
 
 
-class LongReferenceType(object):
-
-    ENTRY_POINT_OBJECT_ID = ENTRY_POINT_OBJECT_ID_LONG
-
-    SERVER_OBJECT_ID = SERVER_OBJECT_ID_LONG
-
-
 # Basic Types (0-10)
-JAVA_REFERENCE_LONG_TYPE = 0
-JAVA_REFERENCE_UUID_TYPE = 1
-PYTHON_REFERENCE_LONG_TYPE = 2
-PYTHON_REFERENCE_UUID_TYPE = 3
+JAVA_REFERENCE_TYPE = 0
+PYTHON_REFERENCE_TYPE = 2
 VOID_TYPE = 4
 NULL_TYPE = 5
 BOOLEAN_TRUE_TYPE = 6
@@ -87,10 +78,11 @@ NO_MEMBER = 53
 
 # Protocol Types (70-90)
 ERROR_TYPE = 70
-SUCCESS_TYPE = 71
-RETURN_TYPE = 72
-COMMAND_TYPE = 73
-END_TYPE = 77
+EXCEPTION_TYPE = 71
+SUCCESS_TYPE = 75
+RETURN_TYPE = 76
+COMMAND_TYPE = 77
+END_TYPE = 78
 
 # Python types that depend on Python 2 and 3 differences
 
@@ -176,7 +168,11 @@ EncodedArgument = namedtuple("EncodedArgument", ["type", "size", "value"])
 
 END_DECODED_ARGUMENT = DecodedArgument(END_TYPE, None)
 
+RETURN_DECODED_ARGUMENT = DecodedArgument(RETURN_TYPE, None)
+
 END_ENCODED_ARGUMENT = EncodedArgument(END_TYPE, None, None)
+
+# TODO Write encoder for exceptions!
 
 
 class DecoderRegistry(object):
@@ -509,7 +505,7 @@ class PythonProxyLongEncoder(object):
             java_interfaces, string_encoding)
         value = proxy_id + java_interfaces_bytes
         return EncodedArgument(
-            PYTHON_REFERENCE_LONG_TYPE, len(value), value)
+            PYTHON_REFERENCE_TYPE, len(value), value)
 
 
 class JavaObjectLongEncoder(object):
@@ -530,7 +526,7 @@ class JavaObjectLongEncoder(object):
     @classmethod
     def encode_java_object(cls, object_id):
         return EncodedArgument(
-            JAVA_REFERENCE_LONG_TYPE, None, pack("!q", object_id))
+            JAVA_REFERENCE_TYPE, None, pack("!q", object_id))
 
     def encode(self, argument, arg_type, **options):
         try:
@@ -540,17 +536,25 @@ class JavaObjectLongEncoder(object):
             return CANNOT_ENCODE
 
 
-class EndDecoder(object):
+class ExceptionDecoder(object):
 
-    supported_types = [END_TYPE]
+    supported_types = [EXCEPTION_TYPE]
+
+    def __init__(self):
+        self.decoder_registry = None
+
+    def set_decoder_registry(self, decoder_registry):
+        self.decoder_registry = decoder_registry
 
     def decode(self, input_stream, arg_type, **options):
-        return None
+        return self.decoder_registry.decode_argument_raw(
+            input_stream, JAVA_REFERENCE_TYPE,
+            **options)
 
 
-class NoneDecoder(object):
+class SingleTypeDecoder(object):
 
-    supported_types = [NULL_TYPE]
+    supported_types = [NULL_TYPE, RETURN_TYPE, END_TYPE, ERROR_TYPE]
 
     def decode(self, input_stream, arg_type, **options):
         return None
@@ -623,7 +627,7 @@ class BytesDecoder(object):
 
 
 class PythonProxyLongDecoder(object):
-    supported_types = [PYTHON_REFERENCE_LONG_TYPE]
+    supported_types = [PYTHON_REFERENCE_TYPE]
 
     def decode(self, input_stream, arg_type, **options):
         proxy_id = unpack("!q", input_stream.read(8))[0]
@@ -632,7 +636,7 @@ class PythonProxyLongDecoder(object):
 
 
 class JavaObjectLongDecoder(object):
-    supported_types = [JAVA_REFERENCE_LONG_TYPE, MAP_TYPE, SET_TYPE,
+    supported_types = [JAVA_REFERENCE_TYPE, MAP_TYPE, SET_TYPE,
                        LIST_TYPE, ARRAY_TYPE, ITERATOR_TYPE]
 
     def __init__(self):
@@ -695,14 +699,14 @@ DEFAULT_ENCODERS = (
 )
 
 DEFAULT_DECODERS = (
-    EndDecoder,
-    NoneDecoder,
+    SingleTypeDecoder,
     BoolDecoder,
     IntDecoder,
     DecimalDecoder,
     DoubleDecoder,
     BytesDecoder,
     StringDecoder,
+    ExceptionDecoder,
 )
 
 
