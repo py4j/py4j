@@ -64,6 +64,9 @@ if version_info[0] < 3:
     def bytestrrepr(obj):
         return str(obj)
 
+    def add_traceback(error, traceback):
+        error.__traceback__ = traceback
+
     import Queue
     Queue = Queue.Queue
 
@@ -113,6 +116,9 @@ else:
 
     def bytestrrepr(obj):
         return str(obj).encode("ascii")
+
+    def add_traceback(error, traceback):
+        pass
 
     import queue
     Queue = queue.Queue

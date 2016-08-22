@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from decimal import Decimal
 from inspect import isgenerator
+import sys
 
 import pytest
 
@@ -13,7 +14,6 @@ from py4j import protocol, binary_protocol as bprotocol
 from py4j import java_gateway
 from py4j import compat
 
-import sys
 
 VERSION_INFO = sys.version_info
 IS_PYTHON_2 = VERSION_INFO[0] == 2
@@ -146,6 +146,20 @@ def test_python_proxy_long_encoder():
     assert encoded.type == bprotocol.PYTHON_REFERENCE_TYPE
     assert encoded.size == 8 + len(suffix)
     assert len(encoded.value) == 8 + len(suffix)
+
+
+def test_exception_encoder():
+    registry = bprotocol.EncoderRegistry.get_default_encoder_registry()
+    pool = java_gateway.PythonProxyPool()
+    try:
+        raise ValueError("Hello")
+    except Exception as e:
+        (_, _, tb) = sys.exc_info()
+        error = e
+        compat.add_traceback(e, tb)
+
+    encoded_arg = registry.encode(error, python_proxy_pool=pool)
+    assert encoded_arg.type == bprotocol.EXCEPTION_TYPE
 
 
 def test_java_object_long_encoder():

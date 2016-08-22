@@ -480,7 +480,7 @@ class JavaList(JavaObject, MutableSequence):
 class PythonCollectionEncoder(object):
 
     def __init__(self):
-        self.encoder_register = None
+        self.encoder_registry = None
 
     def set_encoder_registry(self, encoder_registry):
         self.encoder_registry = encoder_registry

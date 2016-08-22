@@ -14,6 +14,7 @@ from collections import deque, defaultdict, namedtuple
 from decimal import Decimal
 import io
 from struct import pack, unpack
+from traceback import format_exception
 
 from py4j.compat import (
     long, bytestrrepr, basestring, unicode)
@@ -508,6 +509,30 @@ class PythonProxyLongEncoder(object):
             PYTHON_REFERENCE_TYPE, len(value), value)
 
 
+class PythonExceptionEncoder(object):
+    supported_types = []
+
+    def __init__(self):
+        self.encoder_registry = None
+
+    def set_encoder_registry(self, encoder_registry):
+        self.encoder_registry = encoder_registry
+
+    def encode(self, argument, arg_type, **options):
+        # XXX We only propagate:
+        # 1. non-system-exiting exceptions
+        # 2. exceptions that have been raised
+        # And we only catch Exception-derived types anyway
+        if isinstance(argument, Exception) and getattr(
+                argument, "__traceback__", None) is not None:
+            wrapper = PythonErrorWrapper(argument)
+            encoded_arg = self.encoder_registry.encode(wrapper, **options)
+            return EncodedArgument(
+                EXCEPTION_TYPE, encoded_arg.size, encoded_arg.value)
+        else:
+            return CANNOT_ENCODE
+
+
 class JavaObjectLongEncoder(object):
 
     supported_types = []
@@ -649,6 +674,32 @@ class JavaObjectLongDecoder(object):
         return java_object_class(object_id, options["java_client"])
 
 
+class PythonErrorWrapper(object):
+    """Exception wrapper that can be used by the Java side to inspect a Python
+    exception.
+    """
+
+    def __init__(self, error):
+        self.error = error
+        self.error_type = type(error)
+
+    def getExceptionType(self):
+        return self.error_type.__name__
+
+    def getStackTrace(self):
+        value = "".join(format_exception(
+            etype=self.error_type, value=self.error,
+            tb=self.error.__traceback__))
+        return value
+
+    def getMessage(self):
+        value = unicode(self.error)
+        return value
+
+    class Java:
+        implements = ["py4j.PythonExceptionWrapper"]
+
+
 def get_encoded_string(value, string_encoding):
     """Returns a bytestring from a string. The string can be unicode
     (Python 3's base string or Python 2's unicode) or a bytestring
@@ -696,6 +747,7 @@ DEFAULT_ENCODERS = (
     DoubleEncoder,
     BytesEncoder,
     StringEncoder,
+    PythonExceptionEncoder
 )
 
 DEFAULT_DECODERS = (
@@ -716,8 +768,8 @@ DEFAULT_REFERENCE_DECODERS = {
         JavaObjectLongDecoder,
     ),
     UUID_ID_MODE: (  # TODO
-        PythonProxyLongEncoder,
-        JavaObjectLongEncoder,
+        PythonProxyLongDecoder,
+        JavaObjectLongDecoder,
     )
 }
 
