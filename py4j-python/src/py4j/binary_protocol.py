@@ -75,7 +75,7 @@ MAP_TYPE = 34
 PACKAGE_TYPE = 50
 CLASS_TYPE = 51
 METHOD_TYPE = 52
-NO_MEMBER = 53
+NO_MEMBER_TYPE = 53
 
 # Protocol Types (70-90)
 ERROR_TYPE = 70
@@ -171,9 +171,9 @@ END_DECODED_ARGUMENT = DecodedArgument(END_TYPE, None)
 
 RETURN_DECODED_ARGUMENT = DecodedArgument(RETURN_TYPE, None)
 
-END_ENCODED_ARGUMENT = EncodedArgument(END_TYPE, None, None)
+NO_MEMBER_DECODED_ARGUMENT = DecodedArgument(NO_MEMBER_TYPE, None)
 
-# TODO Write encoder for exceptions!
+END_ENCODED_ARGUMENT = EncodedArgument(END_TYPE, None, None)
 
 
 class DecoderRegistry(object):
@@ -194,6 +194,17 @@ class DecoderRegistry(object):
         self.string_encoding = string_encoding
         self.id_mode = id_mode
 
+    def set_error_types(self, error_type_set):
+        """Replaces the set of error types
+        """
+        self.error_types = error_type_set
+
+    def is_error_argument(self, decoded_argument):
+        """Returns True if the decoded argument's type is considered to be an
+        error. Typically this means that the type is Error or Exception.
+        """
+        return decoded_argument.type in self.error_types
+
     @classmethod
     def get_default_decoder_registry(
             cls, string_encoding=DEFAULT_STRING_ENCODING,
@@ -205,6 +216,9 @@ class DecoderRegistry(object):
             registry.register_decoder(decoder_cls())
         for decoder_cls in DEFAULT_REFERENCE_DECODERS[id_mode]:
             registry.register_decoder(decoder_cls())
+
+        registry.set_error_types(DEFAULT_ERROR_TYPES)
+
         return registry
 
     def add_java_collection_decoders(self):
@@ -579,7 +593,9 @@ class ExceptionDecoder(object):
 
 class SingleTypeDecoder(object):
 
-    supported_types = [NULL_TYPE, RETURN_TYPE, END_TYPE, ERROR_TYPE]
+    supported_types = [
+        NULL_TYPE, RETURN_TYPE, END_TYPE, ERROR_TYPE,
+        SUCCESS_TYPE, NO_MEMBER_TYPE]
 
     def decode(self, input_stream, arg_type, **options):
         return None
@@ -738,6 +754,13 @@ def send_encoded_command(encoded_command, socket_instance):
     if buffer:
         socket_instance.sendall(buffer)
 
+
+DEFAULT_ERROR_TYPES = frozenset(
+    (
+        ERROR_TYPE,
+        EXCEPTION_TYPE,
+    )
+)
 
 DEFAULT_ENCODERS = (
     NoneEncoder,

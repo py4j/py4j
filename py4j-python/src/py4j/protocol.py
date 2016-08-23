@@ -294,6 +294,10 @@ def get_command_part(parameter, python_proxy_pool=None):
     return command_part
 
 
+# TODO
+# Place in decoder registry
+# Will extract the value from the response and raise an exception if
+# appropriate
 def get_return_value(answer, gateway_client, target_id=None, name=None):
     """Converts an answer received from the Java gateway into a Python object.
 

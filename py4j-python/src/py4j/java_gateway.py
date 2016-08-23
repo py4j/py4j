@@ -172,8 +172,9 @@ def java_import(jvm_view, import_str):
     encoder_registry = gateway_client.encoder_registry
     encoded_command = encoder_registry.encode_command_lazy(
         bproto.JVM_IMPORT_SUB_COMMAND, jvm_view._id, import_str)
-    answer = gateway_client.send_command(encoded_command)
-    return_value = get_return_value(answer, gateway_client, None, None)
+    response = gateway_client.send_command(encoded_command)
+    # TODO No longer necessary??
+    return_value = get_return_value(response, gateway_client, None, None)
     return return_value
 
 
@@ -328,14 +329,16 @@ def get_field(java_object, field_name):
     # TODO Fix on the Java side: expected java object id, now: java object
     encoded_command = encoder_registry.encode_command_lazy(
         bproto.FIELD_GET_SUBCOMMAND, java_object, field_name)
-    answer = java_object._gateway_client.send_command(encoded_command)
+    response = java_object._gateway_client.send_command(encoded_command)
 
-    if answer == proto.NO_MEMBER_COMMAND or is_error(answer)[0]:
+    if response.type == bproto.NO_MEMBER_TYPE or\
+            encoder_registry.is_error_argument(response):
         raise Py4JError("no field {0} in object {1}".format(
             field_name, java_object._target_id))
     else:
+        # TODO No longer necessary? What is the usual return type here?
         return get_return_value(
-            answer, java_object._gateway_client, java_object._target_id,
+            response, java_object._gateway_client, java_object._target_id,
             field_name)
 
 
@@ -1056,7 +1059,8 @@ class GatewayConnection(object):
             response = self.decoder_registry.decode_argument(
                 self.stream, **options)
 
-            logger.debug("response received: {0}".format(response))
+            # Common case, do not print the value!
+            logger.debug("response received: {0}".format(response.type))
 
             return response
         except Exception as e:

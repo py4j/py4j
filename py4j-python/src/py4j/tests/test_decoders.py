@@ -132,6 +132,8 @@ def test_error_with_exception_decoder():
         java_object_mock.assert_called_once_with(
             45, java_client)
 
+        assert registry.is_error_argument(decoded_argument)
+
 
 def test_java_collection_long_decoder():
     with patch("py4j.java_gateway.JavaObject") as java_object_mock:
