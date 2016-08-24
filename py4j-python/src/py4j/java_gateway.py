@@ -797,7 +797,7 @@ class GatewayConnectionGuard(object):
             self._connection.close()
 
 
-class GatewayClient(object):
+class JavaClient(object):
     """Responsible for managing connections to the JavaGateway.
 
     This implementation is thread-safe and connections are created on-demand.
@@ -948,6 +948,8 @@ class GatewayClient(object):
                 quiet_close(connection)
             except IndexError:
                 pass
+
+GatewayClient = JavaClient
 
 
 class GatewayConnection(object):

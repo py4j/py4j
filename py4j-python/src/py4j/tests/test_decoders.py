@@ -215,6 +215,31 @@ def test_decoder_registry_decode_arguments_basic():
         bprotocol.NULL_TYPE, None)
 
 
+def test_get_return_value():
+    registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
+
+    assert registry.get_return_value(
+        bprotocol.DecodedArgument(bprotocol.VOID_TYPE, None)) is None
+
+    assert 11 == registry.get_return_value(
+        bprotocol.DecodedArgument(bprotocol.INTEGER_TYPE, 11))
+
+    with pytest.raises(protocol.Py4JJavaError):
+        registry.get_return_value(
+            bprotocol.DecodedArgument(
+                bprotocol.EXCEPTION_TYPE, Mock()), 123, "foo")
+
+    with pytest.raises(protocol.Py4JError):
+        registry.get_return_value(
+            bprotocol.DecodedArgument(
+                bprotocol.ERROR_TYPE, None), 123, "foo")
+
+    with pytest.raises(protocol.Py4JError):
+        registry.get_return_value(
+            bprotocol.DecodedArgument(
+                bprotocol.ERROR_TYPE, None))
+
+
 def test_decoder_registry_java_collections():
     registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
     registry.add_java_collection_decoders()

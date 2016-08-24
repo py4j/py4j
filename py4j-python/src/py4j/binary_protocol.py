@@ -18,7 +18,8 @@ from traceback import format_exception
 
 from py4j.compat import (
     long, bytestrrepr, basestring, unicode)
-from py4j.protocol import Py4JError, Py4JProtocolError
+from py4j.protocol import (
+    Py4JError, Py4JProtocolError, Py4JJavaError)
 
 
 DEFAULT_STRING_ENCODING = "utf-8"
@@ -264,6 +265,8 @@ class DecoderRegistry(object):
         :param input_stream:
         :param java_client:
         :param python_proxy_pool:
+        :param string_encoding:
+        :param java_object_class:
         """
         decoded_arguments = []
         while True:
@@ -282,6 +285,8 @@ class DecoderRegistry(object):
         :param input_stream:
         :param java_client:
         :param python_proxy_pool:
+        :param string_encoding:
+        :param java_object_class:
         """
         options.setdefault("string_encoding", self.string_encoding)
         arg_type = unpack("!h", input_stream.read(2))[0]
@@ -290,6 +295,14 @@ class DecoderRegistry(object):
         return DecodedArgument(arg_type, value)
 
     def decode_argument_raw(self, input_stream, arg_type, **options):
+        """TODO
+        :param input_stream:
+        :param arg_type:
+        :param java_client:
+        :param python_proxy_pool:
+        :param string_encoding:
+        :param java_object_class:
+        """
         decoder = self.type_decoders.get(arg_type)
         if not decoder:
             raise Py4JProtocolError("Cannot decode {0}".format(arg_type))
@@ -297,6 +310,31 @@ class DecoderRegistry(object):
             input_stream, arg_type,
             **options)
         return value
+
+    def get_return_value(
+            self, decoded_argument, target_id=None, name=None):
+        """Converts a response received from the Java Client into a Python object.
+
+        :param decoded_argument: the response sent by the Java Client
+        :param target_id: the name of the object from which the answer comes
+            from (e.g., *object1* in `object1.hello()`). Optional.
+        :param name: the name of the member from which the answer comes from
+            (e.g., *hello* in `object1.hello()`). Optional.
+        """
+        if self.is_error_argument(decoded_argument):
+            if decoded_argument.type == EXCEPTION_TYPE:
+                raise Py4JJavaError(
+                    "An error occurred while calling {0}{1}{2}.\n".
+                    format(target_id, ".", name), decoded_argument.value)
+            else:
+                if target_id and name:
+                    raise Py4JError(
+                        "An error occurred while calling {0}{1}{2}.".
+                        format(target_id, ".", name))
+                else:
+                    raise Py4JError("An error occurred.")
+        else:
+            return decoded_argument.value
 
 
 class EncoderRegistry(object):
@@ -595,7 +633,7 @@ class SingleTypeDecoder(object):
 
     supported_types = [
         NULL_TYPE, RETURN_TYPE, END_TYPE, ERROR_TYPE,
-        SUCCESS_TYPE, NO_MEMBER_TYPE]
+        SUCCESS_TYPE, NO_MEMBER_TYPE, VOID_TYPE]
 
     def decode(self, input_stream, arg_type, **options):
         return None
