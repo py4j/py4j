@@ -371,6 +371,23 @@ class EncoderRegistry(object):
 
         return registry
 
+    def is_entry_point(self, target_id):
+        """Returns True if the target id belongs to an entry point.
+        """
+        if self.id_mode == LONG_ID_MODE:
+            return target_id == ENTRY_POINT_OBJECT_ID_LONG
+        else:
+            raise Py4JError("Not implemented")
+
+    def is_server(self, target_id):
+        """Returns True if the target id belongs to a server (JavaServer or
+        PythonServer).
+        """
+        if self.id_mode == LONG_ID_MODE:
+            return target_id == SERVER_OBJECT_ID_LONG
+        else:
+            raise Py4JError("Not implemented")
+
     def add_python_collection_encoders(self):
         """Adds converters that copies the elements of a Python collection into
         a Java collection. Both collections are not synchronized, i.e., a
@@ -550,7 +567,7 @@ class PythonProxyLongEncoder(object):
         except TypeError:
             return CANNOT_ENCODE
 
-        pool = options["python_proxy_pool"]
+        pool = get_python_proxy_pool(options)
         proxy_id = pack("!q", pool.put(argument))
         string_encoding = options.get(
             "string_encoding", DEFAULT_STRING_ENCODING)
@@ -711,7 +728,7 @@ class PythonProxyLongDecoder(object):
     def decode(self, input_stream, arg_type, **options):
         proxy_id = unpack("!q", input_stream.read(8))[0]
         # Will raise an exception if it no longer exists
-        return options["python_proxy_pool"][proxy_id]
+        return get_python_proxy_pool(options)[proxy_id]
 
 
 class JavaObjectLongDecoder(object):
@@ -752,6 +769,18 @@ class PythonErrorWrapper(object):
 
     class Java:
         implements = ["py4j.PythonExceptionWrapper"]
+
+
+def get_python_proxy_pool(options):
+    """Shortcut to get the proxy pool from a options that may contain a
+    reference to the pool or to JavaClient, which contains a reference to the
+    pool.
+    """
+    pool = options.get("python_proxy_pool")
+    if pool is None:
+        # Fetch it through java_client
+        pool = options["java_client"].gateway_property.pool
+    return pool
 
 
 def get_encoded_string(value, string_encoding):

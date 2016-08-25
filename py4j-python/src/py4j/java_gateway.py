@@ -168,14 +168,13 @@ def java_import(jvm_view, import_str):
     :import_str: The class (e.g., java.util.List) or the package
                  (e.g., java.io.*) to import
     """
-    gateway_client = jvm_view._gateway_client
-    encoder_registry = gateway_client.encoder_registry
+    java_client = jvm_view._gateway_client
+    encoder_registry = java_client.encoder_registry
     encoded_command = encoder_registry.encode_command_lazy(
-        bproto.JVM_IMPORT_SUB_COMMAND, jvm_view._id, import_str)
-    response = gateway_client.send_command(encoded_command)
-    # TODO No longer necessary??
-    return_value = get_return_value(response, gateway_client, None, None)
-    return return_value
+        bproto.JVM_IMPORT_SUB_COMMAND, jvm_view._id, import_str,
+        java_client=java_client)
+    response = java_client.send_command(encoded_command)
+    return java_client.decoder_registry.get_return_value(response)
 
 
 def find_jar_path():
@@ -325,21 +324,20 @@ def get_field(java_object, field_name):
     :param java_object: the instance containing the field
     :param field_name: the name of the field to retrieve
     """
-    encoder_registry = java_object._gateway_client.encoder_registry
+    java_client = java_object._gateway_client
+    encoder_registry = java_client.encoder_registry
     # TODO Fix on the Java side: expected java object id, now: java object
     encoded_command = encoder_registry.encode_command_lazy(
-        bproto.FIELD_GET_SUBCOMMAND, java_object, field_name)
-    response = java_object._gateway_client.send_command(encoded_command)
+        bproto.FIELD_GET_SUBCOMMAND, java_object, field_name,
+        java_client=java_client)
+    response = java_client.send_command(encoded_command)
 
-    if response.type == bproto.NO_MEMBER_TYPE or\
-            encoder_registry.is_error_argument(response):
+    if response.type == bproto.NO_MEMBER_TYPE:
         raise Py4JError("no field {0} in object {1}".format(
             field_name, java_object._target_id))
     else:
-        # TODO No longer necessary? What is the usual return type here?
-        return get_return_value(
-            response, java_object._gateway_client, java_object._target_id,
-            field_name)
+        return java_object._gateway_client.decoder_registry.get_return_value(
+            response, java_object._target_id, field_name)
 
 
 def set_field(java_object, field_name, value):
@@ -352,22 +350,20 @@ def set_field(java_object, field_name, value):
     :param field_name: the name of the field to set
     :param value: the value to assign to the field
     """
+    java_client = java_object._gateway_client
+    encoder_registry = java_client.encoder_registry
+    # TODO Fix on the Java side: expected java object id, now: java object
+    encoded_command = encoder_registry.encode_command_lazy(
+        bproto.FIELD_SET_SUBCOMMAND, java_object, field_name, value,
+        java_client=java_client)
+    response = java_client.send_command(encoded_command)
 
-    command_part = get_command_part(
-        value,
-        java_object._gateway_client.gateway_property.pool)
-
-    command = proto.FIELD_COMMAND_NAME + proto.FIELD_SET_SUBCOMMAND_NAME +\
-        java_object._target_id + "\n" + field_name + "\n" +\
-        command_part + "\n" + proto.END_COMMAND_PART
-
-    answer = java_object._gateway_client.send_command(command)
-    if answer == proto.NO_MEMBER_COMMAND or is_error(answer)[0]:
+    if response.type == bproto.NO_MEMBER_TYPE:
         raise Py4JError("no field {0} in object {1}".format(
             field_name, java_object._target_id))
-    return get_return_value(
-        answer, java_object._gateway_client, java_object._target_id,
-        field_name)
+    else:
+        return java_object._gateway_client.decoder_registry.get_return_value(
+            response, java_object._target_id, field_name)
 
 
 def get_method(java_object, method_name):
@@ -508,25 +504,22 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True,
      page similar to the `help` command in Python. If False, the page is
      returned as a string.
     """
+    encoder_registry = gateway_client.encoder_registry
+
     if hasattr2(var, "_get_object_id"):
-        command = proto.HELP_COMMAND_NAME +\
-            proto.HELP_OBJECT_SUBCOMMAND_NAME +\
-            var._get_object_id() + "\n" +\
-            get_command_part(pattern) +\
-            get_command_part(short_name) +\
-            proto.END_COMMAND_PART
-        answer = gateway_client.send_command(command)
+        # TODO sending Java Object now
+        encoded_command = encoder_registry.encode_command_lazy(
+            bproto.HELP_OBJECT_SUBCOMMAND, var, pattern, short_name,
+            java_client=gateway_client)
+        response = gateway_client.send_command(encoded_command)
     elif hasattr2(var, "_fqn"):
-        command = proto.HELP_COMMAND_NAME +\
-            proto.HELP_CLASS_SUBCOMMAND_NAME +\
-            var._fqn + "\n" +\
-            get_command_part(pattern) +\
-            get_command_part(short_name) +\
-            proto.END_COMMAND_PART
-        answer = gateway_client.send_command(command)
+        encoded_command = encoder_registry.encode_command_lazy(
+            bproto.HELP_CLASS_SUBCOMMAND, var._fqn, pattern, short_name,
+            java_client=gateway_client)
+        response = gateway_client.send_command(encoded_command)
     elif hasattr2(var, "container") and hasattr2(var, "name"):
         if pattern is not None:
-            raise Py4JError("pattern should be None with var is a JavaMember")
+            raise Py4JError("pattern should be None when var is a JavaMember")
         pattern = var.name + "(*"
         var = var.container
         return gateway_help(
@@ -534,9 +527,9 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True,
             display=display)
     else:
         raise Py4JError(
-            "var is none of Java Object, Java Class or Java Member")
+            "var is none or not a Java Object, Java Class or Java Member")
 
-    help_page = get_return_value(answer, gateway_client, None, None)
+    help_page = gateway_client.decoder_registry.get_return_value(response)
     if (display):
         pager(help_page)
     else:
@@ -549,15 +542,16 @@ def _garbage_collect_object(gateway_client, target_id):
             smart_decode(gateway_client.address) +
             smart_decode(gateway_client.port) +
             target_id)
-        if target_id != proto.ENTRY_POINT_OBJECT_ID and\
-                target_id != proto.GATEWAY_SERVER_OBJECT_ID and\
+        encoder_registry = gateway_client.encoder_registry
+        if not encoder_registry.is_entry_point(target_id) and\
+                not encoder_registry.is_server(target_id) and\
                 gateway_client.is_connected:
             try:
-                gateway_client.send_command(
-                    proto.MEMORY_COMMAND_NAME +
-                    proto.MEMORY_DEL_SUBCOMMAND_NAME +
-                    target_id +
-                    "\ne\n")
+                encoded_command = encoder_registry.encode_command_lazy(
+                    bproto.MEMORY_DEL_SUBCOMMAND, target_id,
+                    java_client=gateway_client)
+                response = gateway_client.send_command(encoded_command)
+                return gateway_client.get_return_value(response)
             except Exception:
                 logger.debug("Exception while garbage collecting an object",
                              exc_info=True)
