@@ -537,7 +537,7 @@ Using the traditional JavaGateway/GatewayServer
 
   # Make sure that the python code is started first.
   # Then execute: java -cp py4j.jar py4j.examples.SingleThreadClientApplication
-  from py4j.java_gateway import Gateway, CallbackServerParameters
+  from py4j.java_gateway import JavaGateway, CallbackServerParameters
   simple_hello = SimpleHello()
   gateway = JavaGateway(
       callback_server_parameters=CallbackServerParameters(),
