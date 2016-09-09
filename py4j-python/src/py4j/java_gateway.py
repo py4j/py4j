@@ -541,7 +541,7 @@ def _garbage_collect_object(gateway_client, target_id):
         ThreadSafeFinalizer.remove_finalizer(
             smart_decode(gateway_client.address) +
             smart_decode(gateway_client.port) +
-            target_id)
+            smart_decode(target_id))
         encoder_registry = gateway_client.encoder_registry
         if not encoder_registry.is_entry_point(target_id) and\
                 not encoder_registry.is_server(target_id) and\
@@ -551,7 +551,8 @@ def _garbage_collect_object(gateway_client, target_id):
                     bproto.MEMORY_DEL_SUBCOMMAND, target_id,
                     java_client=gateway_client)
                 response = gateway_client.send_command(encoded_command)
-                return gateway_client.get_return_value(response)
+                return gateway_client.decoder_registry.get_return_value(
+                    response)
             except Exception:
                 logger.debug("Exception while garbage collecting an object",
                              exc_info=True)
