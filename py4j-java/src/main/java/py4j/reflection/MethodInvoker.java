@@ -80,7 +80,14 @@ public class MethodInvoker {
 		return allNo;
 	}
 
-	private static int buildConverters(List<TypeConverter> converters, Class<?>[] parameters, Class<?>[] arguments) {
+	/**
+	 * <p>Builds a list of converters used to convert the arguments into the parameters.</p>
+	 * @param converters
+	 * @param parameters
+	 * @param arguments
+	 * @return
+	 */
+	public static int buildConverters(List<TypeConverter> converters, Class<?>[] parameters, Class<?>[] arguments) {
 		int cost = 0;
 		int tempCost = -1;
 		int size = arguments.length;

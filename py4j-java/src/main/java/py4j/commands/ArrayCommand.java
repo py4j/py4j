@@ -35,12 +35,15 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
 import py4j.Protocol;
 import py4j.Py4JException;
 import py4j.ReturnObject;
+import py4j.reflection.MethodInvoker;
+import py4j.reflection.TypeConverter;
 
 /**
  * <p>
@@ -138,8 +141,26 @@ public class ArrayCommand extends AbstractCommand {
 		// Read end
 		reader.readLine();
 
-		Array.set(arrayObject, index, objectToSet);
+		Object convertedObject = convertArgument(arrayObject.getClass().getComponentType(), objectToSet);
+
+		Array.set(arrayObject, index, convertedObject);
 		return RETURN_VOID;
+	}
+
+	private Object convertArgument(Class<?> arrayClass, Object objectToSet) {
+		Object newObject = null;
+		List<TypeConverter> converters = new ArrayList<TypeConverter>();
+		Class<?>[] parameterClasses = { arrayClass };
+		Class<?>[] argumentClasses = { objectToSet.getClass() };
+		int cost = MethodInvoker.buildConverters(converters, parameterClasses, argumentClasses);
+
+		if (cost >= 0) {
+			newObject = converters.get(0).convert(objectToSet);
+		} else {
+			throw new Py4JException("Cannot convert " + argumentClasses[0].getName() + " to " + arrayClass.getName());
+		}
+
+		return newObject;
 	}
 
 	private String sliceArray(BufferedReader reader) throws IOException {

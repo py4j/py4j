@@ -52,6 +52,24 @@ class ArrayTest(unittest.TestCase):
         self.assertEqual(3, len(string_array))
         self.assertEqual(5, len(string_array[0]))
 
+    def testDoubleArray(self):
+        double_class = self.gateway.jvm.double
+        double_array = self.gateway.new_array(double_class, 2)
+        double_array[0] = 2.2
+        self.assertAlmostEqual(double_array[0], 2.2)
+
+    def testFloatArray(self):
+        float_class = self.gateway.jvm.float
+        float_array = self.gateway.new_array(float_class, 2)
+        float_array[0] = 2.2
+        self.assertAlmostEqual(float_array[0], 2.2)
+
+    def testCharArray(self):
+        char_class = self.gateway.jvm.char
+        char_array = self.gateway.new_array(char_class, 2)
+        char_array[0] = "a"
+        self.assertAlmostEqual(char_array[0], "a")
+
 
 if __name__ == "__main__":
     unittest.main()
