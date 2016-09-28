@@ -49,6 +49,7 @@ UUID_ID_MODE = "UUID_ID_MODE"
 
 # Basic Types (0-10)
 JAVA_REFERENCE_TYPE = 0
+JAVA_CLASS_TYPE = 1
 PYTHON_REFERENCE_TYPE = 2
 VOID_TYPE = 4
 NULL_TYPE = 5
@@ -625,7 +626,43 @@ class JavaObjectLongEncoder(object):
     def encode(self, argument, arg_type, **options):
         try:
             object_id = argument._get_object_id()
-            return self.encode_java_object(object_id)
+            if isinstance(object_id, int):
+                return self.encode_java_object(object_id)
+            else:
+                return CANNOT_ENCODE
+        except AttributeError:
+            return CANNOT_ENCODE
+
+
+class JavaClassEncoder(object):
+
+    supported_types = []
+
+    def __init__(self):
+        # Circular import! Still more logical to put this encoder here instead
+        # of inside the java_gateway module.
+        # TODO Push JavaObject to binary protocol, but keep implementation in
+        # java_gateway?
+        from py4j.java_gateway import JavaClass
+        self.supported_types = [JavaClass]
+
+    def encode_specific(self, argument, arg_type, **options):
+        return self.encode_java_class(argument._fqn, options)
+
+    @classmethod
+    def encode_java_class(cls, fqn, options):
+        string_encoding = options.get(
+            "string_encoding", DEFAULT_STRING_ENCODING)
+        value = get_encoded_string(fqn, string_encoding)
+        return EncodedArgument(JAVA_CLASS_TYPE, len(value), value)
+
+    def encode(self, argument, arg_type, **options):
+        try:
+            fqn = argument._fqn
+            if isinstance(fqn, basestring):
+                return self.encode_java_class(fqn, options)
+            else:
+                return CANNOT_ENCODE
         except AttributeError:
             return CANNOT_ENCODE
 
@@ -729,6 +766,26 @@ class PythonProxyLongDecoder(object):
         proxy_id = unpack("!q", input_stream.read(8))[0]
         # Will raise an exception if it no longer exists
         return get_python_proxy_pool(options)[proxy_id]
+
+
+class JavaClassDecoder(object):
+    supported_types = [JAVA_CLASS_TYPE]
+
+    def __init__(self):
+        from py4j.java_gateway import JavaClass
+        self.JavaClass = JavaClass
+
+    def decode(self, input_stream, arg_type, **options):
+        string_encoding = options.get(
+            "string_encoding", DEFAULT_STRING_ENCODING)
+
+        size = unpack(
+            DEFAULT_SIZE_PACK_FORMAT,
+            input_stream.read(DEFAULT_SIZE_BYTES_SIZE))[0]
+
+        fqn = unicode(input_stream.read(size), string_encoding)
+
+        return self.JavaClass(fqn, options["java_client"])
 
 
 class JavaObjectLongDecoder(object):
@@ -837,7 +894,8 @@ DEFAULT_ENCODERS = (
     DoubleEncoder,
     BytesEncoder,
     StringEncoder,
-    PythonExceptionEncoder
+    PythonExceptionEncoder,
+    JavaClassEncoder
 )
 
 DEFAULT_DECODERS = (
@@ -849,6 +907,7 @@ DEFAULT_DECODERS = (
     BytesDecoder,
     StringDecoder,
     ExceptionDecoder,
+    JavaClassDecoder,
 )
 
 

@@ -252,3 +252,28 @@ def test_garbage_collect_object_errors():
             bprotocol.EXCEPTION_TYPE, 123))
     assert java_gateway._garbage_collect_object(java_client, target_id) is None
     assert java_client.send_command.called
+
+
+def test_java_member():
+    class JavaObjectMock(object):
+        def __init__(self, target_id):
+            self.target_id = target_id
+
+        def _get_object_id(self):
+            return self.target_id
+
+    encoder_registry = bprotocol.EncoderRegistry.get_default_encoder_registry()
+    decoder_registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
+    java_client = Mock()
+    java_client.send_command = Mock(
+        return_value=bprotocol.DecodedArgument(
+            bprotocol.STRING_TYPE, "Hello World"))
+    java_client.decoder_registry = decoder_registry
+    java_client.encoder_registry = encoder_registry
+    java_object = JavaObjectMock(123)
+
+    java_member = java_gateway.JavaMember(
+        "say_hello_world", java_object, java_client)
+
+    response = java_member()
+    assert response == "Hello World"

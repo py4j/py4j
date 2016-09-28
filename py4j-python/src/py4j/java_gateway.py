@@ -377,8 +377,7 @@ def get_method(java_object, method_name):
     :param method_name: the name of the method to retrieve
     """
     return JavaMember(
-        method_name, java_object, java_object._target_id,
-        java_object._gateway_client)
+        method_name, java_object, java_object._gateway_client)
 
 
 def is_instance_of(gateway, java_object, java_class):
@@ -504,32 +503,33 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True,
      page similar to the `help` command in Python. If False, the page is
      returned as a string.
     """
-    encoder_registry = gateway_client.encoder_registry
+    java_client = gateway_client
+    encoder_registry = java_client.encoder_registry
 
     if hasattr2(var, "_get_object_id"):
         # TODO sending Java Object now
         encoded_command = encoder_registry.encode_command_lazy(
             bproto.HELP_OBJECT_SUBCOMMAND, var, pattern, short_name,
-            java_client=gateway_client)
-        response = gateway_client.send_command(encoded_command)
+            java_client=java_client)
+        response = java_client.send_command(encoded_command)
     elif hasattr2(var, "_fqn"):
         encoded_command = encoder_registry.encode_command_lazy(
             bproto.HELP_CLASS_SUBCOMMAND, var._fqn, pattern, short_name,
-            java_client=gateway_client)
-        response = gateway_client.send_command(encoded_command)
+            java_client=java_client)
+        response = java_client.send_command(encoded_command)
     elif hasattr2(var, "container") and hasattr2(var, "name"):
         if pattern is not None:
             raise Py4JError("pattern should be None when var is a JavaMember")
         pattern = var.name + "(*"
         var = var.container
         return gateway_help(
-            gateway_client, var, pattern, short_name=short_name,
+            java_client, var, pattern, short_name=short_name,
             display=display)
     else:
         raise Py4JError(
             "var is none or not a Java Object, Java Class or Java Member")
 
-    help_page = gateway_client.decoder_registry.get_return_value(response)
+    help_page = java_client.decoder_registry.get_return_value(response)
     if (display):
         pager(help_page)
     else:
@@ -537,21 +537,22 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True,
 
 
 def _garbage_collect_object(gateway_client, target_id):
+    java_client = gateway_client
     try:
         ThreadSafeFinalizer.remove_finalizer(
-            smart_decode(gateway_client.address) +
-            smart_decode(gateway_client.port) +
+            smart_decode(java_client.address) +
+            smart_decode(java_client.port) +
             smart_decode(target_id))
-        encoder_registry = gateway_client.encoder_registry
+        encoder_registry = java_client.encoder_registry
         if not encoder_registry.is_entry_point(target_id) and\
                 not encoder_registry.is_server(target_id) and\
-                gateway_client.is_connected:
+                java_client.is_connected:
             try:
                 encoded_command = encoder_registry.encode_command_lazy(
                     bproto.MEMORY_DEL_SUBCOMMAND, target_id,
-                    java_client=gateway_client)
-                response = gateway_client.send_command(encoded_command)
-                return gateway_client.decoder_registry.get_return_value(
+                    java_client=java_client)
+                response = java_client.send_command(encoded_command)
+                return java_client.decoder_registry.get_return_value(
                     response)
             except Exception:
                 logger.debug("Exception while garbage collecting an object",
@@ -567,7 +568,7 @@ def _garbage_collect_connection(socket_instance):
     This is an acceptable practice if you know that your Python VM implements
     garbage collection and closing sockets immediately is not a concern.
     Otherwise, it is always better (because it is predictable) to explicitly
-    close the socket by calling `GatewayConnection.close()`.
+    close the socket by calling `JavaConnection.close()`.
     """
     if socket_instance is not None:
         quiet_shutdown(socket_instance)
@@ -800,7 +801,7 @@ class JavaClient(object):
     messages are sent to and processed concurrently by the Java Gateway.
 
     When creating a custom :class:`JavaGateway`, it is recommended to pass an
-    instance of :class:`GatewayClient` instead of a :class:`GatewayConnection`:
+    instance of :class:`JavaClient` instead of a :class:`JavaConnection`:
     both have the same interface, but the client supports multiple threads and
     connections, which is essential when using callbacks.  """
 
@@ -846,7 +847,7 @@ class JavaClient(object):
         return connection
 
     def _create_connection(self):
-        connection = GatewayConnection(
+        connection = JavaConnection(
             self.gateway_parameters, self.gateway_property)
         connection.start()
         return connection
@@ -892,7 +893,7 @@ class JavaClient(object):
          `GatewayClient` pool using `_give_back_connection`).
 
         :rtype: the DecodedArgument response received from the JVM
-        (The answer follows the Py4J protocol). The guarded `GatewayConnection`
+        (The answer follows the Py4J protocol). The guarded `JavaConnection`
         is also returned if `binary` is `True`.
 
         """
@@ -947,7 +948,7 @@ class JavaClient(object):
 GatewayClient = JavaClient
 
 
-class GatewayConnection(object):
+class JavaConnection(object):
     """Default gateway connection (socket based) responsible for communicating
        with the Java Virtual Machine."""
 
@@ -1069,22 +1070,27 @@ class GatewayConnection(object):
                 "Error while receiving", e, proto.ERROR_ON_RECEIVE)
 
 
+GatewayConnection = JavaConnection
+
+
 class JavaMember(object):
     """Represents a member (i.e., method) of a :class:`JavaObject`. For now,
        only methods are supported. Fields are retrieved directly and are not
        contained in a JavaMember.
     """
 
-    def __init__(self, name, container, target_id, gateway_client):
+    def __init__(self, name, container, gateway_client):
         self.name = name
         self.container = container
-        self.target_id = target_id
+        if container is not None:
+            try:
+                self.target_id = container._get_object_id()
+            except AttributeError:
+                self.target_id = None
+        # Backward compatibility
         self.gateway_client = gateway_client
-        # TODO!!!
-        # self.command_header = self.target_id + "\n" + self.name + "\n"
-        self.command_header = "TODO\n"
-        self.pool = self.gateway_client.gateway_property.pool
-        self.converters = self.gateway_client.converters
+        self.java_client = gateway_client
+        self.pool = self.java_client.gateway_property.pool
         self._gateway_doc = None
 
     @property
@@ -1093,45 +1099,16 @@ class JavaMember(object):
         # help string, therefore provide useful help
         if self._gateway_doc is None:
             self._gateway_doc = gateway_help(
-                self.gateway_client, self, display=False)
+                self.java_client, self, display=False)
         return self._gateway_doc
-
-    def _get_args(self, args):
-        temp_args = []
-        new_args = []
-        for arg in args:
-            if not isinstance(arg, JavaObject):
-                for converter in self.gateway_client.converters:
-                    if converter.can_convert(arg):
-                        temp_arg = converter.convert(arg, self.gateway_client)
-                        temp_args.append(temp_arg)
-                        new_args.append(temp_arg)
-                        break
-                else:
-                    new_args.append(arg)
-            else:
-                new_args.append(arg)
-
-        return (new_args, temp_args)
-
-    def _build_args(self, *args):
-        if self.converters is not None and len(self.converters) > 0:
-            (new_args, temp_args) = self._get_args(args)
-        else:
-            new_args = args
-            temp_args = []
-
-        args_command = "".join(
-            [get_command_part(arg, self.pool) for arg in new_args])
-
-        return args_command, temp_args
 
     def stream(self, *args):
         """
         Call the method using the 'binary' protocol.
 
-        :rtype: The `GatewayConnection` that the call command was sent to.
+        :rtype: The `JavaConnection` that the call command was sent to.
         """
+        # TODO if we keep it!
 
         args_command, temp_args = self._build_args(*args)
 
@@ -1152,19 +1129,13 @@ class JavaMember(object):
         return connection
 
     def __call__(self, *args):
-        args_command, temp_args = self._build_args(*args)
+        # TODO Call command will receive a java object OR  a java class.
+        command = self.java_client.encoder_registry.encode_command_lazy(
+            bproto.CALL_COMMAND, self.container, self.name, *args)
 
-        command = proto.CALL_COMMAND_NAME +\
-            self.command_header +\
-            args_command +\
-            proto.END_COMMAND_PART
-
-        answer = self.gateway_client.send_command(command)
-        return_value = get_return_value(
-            answer, self.gateway_client, self.target_id, self.name)
-
-        for temp_arg in temp_args:
-            temp_arg._detach()
+        answer = self.java_client.send_command(command)
+        return_value = self.java_client.decoder_registry.get_return_value(
+            answer, self.target_id, self.name)
 
         return return_value
 
@@ -1235,8 +1206,7 @@ class JavaObject(object):
                     return return_value
             # Theoretically, not thread safe, but the worst case scenario is
             # cache miss or double overwrite of the same method...
-            self._methods[name] = JavaMember(
-                name, self, self._target_id, self._gateway_client)
+            self._methods[name] = JavaMember(name, self, self._gateway_client)
 
         # The name is a method
         return self._methods[name]
@@ -1272,7 +1242,7 @@ class JavaObject(object):
             for name in names:
                 if name not in self._methods:
                     self._methods[name] = JavaMember(
-                        name, self, self._target_id, self._gateway_client)
+                        name, self, self._gateway_client)
 
             self._fully_populated = True
 
@@ -1322,8 +1292,8 @@ class JavaClass(object):
         self._fqn = fqn
         self._gateway_client = gateway_client
         self._pool = self._gateway_client.gateway_property.pool
-        self._command_header = fqn + "\n"
-        self._converters = self._gateway_client.converters
+        # self._command_header = fqn + "\n"
+        # self._converters = self._gateway_client.converters
         self._gateway_doc = None
         self._statics = None
 
@@ -1382,8 +1352,7 @@ class JavaClass(object):
         if len(answer) > 1 and answer[0] == proto.SUCCESS:
             if answer[1] == proto.METHOD_TYPE:
                 return JavaMember(
-                    name, None, proto.STATIC_PREFIX + self._fqn,
-                    self._gateway_client)
+                    name, self, self._gateway_client)
             elif answer[1].startswith(proto.CLASS_TYPE):
                 return JavaClass(
                     self._fqn + "$" + name, self._gateway_client)

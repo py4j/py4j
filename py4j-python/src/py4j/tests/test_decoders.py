@@ -148,6 +148,21 @@ def test_java_collection_long_decoder():
             45, java_client)
 
 
+def test_java_class_decoder():
+    with patch("py4j.java_gateway.JavaClass") as java_class_mock:
+        decoder = bprotocol.JavaClassDecoder()
+        java_client = Mock()
+        bin_s = bprotocol.get_encoded_string("java.util.Random", "utf-8")
+        size = len(bin_s)
+        b = BytesIO(pack("!i", size) + bin_s)
+        java_class = decoder.decode(
+            b, bprotocol.JAVA_CLASS_TYPE, java_client=java_client)
+
+        assert java_class is not None
+        java_class_mock.assert_called_once_with(
+            "java.util.Random", java_client)
+
+
 def test_decoder_registry_already_registered():
     registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
     with pytest.raises(protocol.Py4JError):

@@ -182,6 +182,24 @@ def test_java_object_long_encoder():
     assert encoder.encode(object(), object) == bprotocol.CANNOT_ENCODE
 
 
+def test_java_class_encoder():
+    encoder = bprotocol.JavaClassEncoder()
+    java_class = Mock()
+    java_class._fqn = "java.util.Random"
+    bin_string = bprotocol.get_encoded_string(java_class._fqn, "utf-8")
+
+    encoded_value = encoder.encode(java_class, java_gateway.JavaClass)
+    assert encoded_value.type == bprotocol.JAVA_CLASS_TYPE
+    assert encoded_value.size == len(bin_string)
+    assert encoded_value.value == bin_string
+
+    encoded_value = encoder.encode_specific(
+        java_class, java_gateway.JavaClass)
+    assert encoded_value.type == bprotocol.JAVA_CLASS_TYPE
+    assert encoded_value.size == len(bin_string)
+    assert encoded_value.value == bin_string
+
+
 def test_encoder_registry_encode_error():
     registry = bprotocol.EncoderRegistry.get_default_encoder_registry()
 
