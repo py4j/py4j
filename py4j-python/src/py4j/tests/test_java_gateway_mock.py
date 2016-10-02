@@ -254,7 +254,7 @@ def test_garbage_collect_object_errors():
     assert java_client.send_command.called
 
 
-def test_java_member():
+def test_java_member_instance():
     class JavaObjectMock(object):
         def __init__(self, target_id):
             self.target_id = target_id
@@ -275,5 +275,36 @@ def test_java_member():
     java_member = java_gateway.JavaMember(
         "say_hello_world", java_object, java_client)
 
-    response = java_member()
+    response = java_member("Testing")
     assert response == "Hello World"
+    call_arguments = list(java_client.send_command.call_args[0][0])
+    assert call_arguments[0].type == bprotocol.COMMAND_TYPE
+    assert call_arguments[1].type == bprotocol.JAVA_REFERENCE_TYPE
+    assert call_arguments[2].type == bprotocol.STRING_TYPE
+    assert call_arguments[3].type == bprotocol.STRING_TYPE
+
+
+def test_java_member_class():
+    class JavaClassMock(object):
+        def __init__(self, fqn):
+            self._fqn = fqn
+
+    encoder_registry = bprotocol.EncoderRegistry.get_default_encoder_registry()
+    decoder_registry = bprotocol.DecoderRegistry.get_default_decoder_registry()
+    java_client = Mock()
+    java_client.send_command = Mock(
+        return_value=bprotocol.DecodedArgument(
+            bprotocol.INTEGER_TYPE, 3))
+    java_client.decoder_registry = decoder_registry
+    java_client.encoder_registry = encoder_registry
+    java_class = JavaClassMock("java.util.Random")
+
+    java_member = java_gateway.JavaMember(
+        "nextInt", java_class, java_client)
+
+    response = java_member()
+    assert response == 3
+    call_arguments = list(java_client.send_command.call_args[0][0])
+    assert call_arguments[0].type == bprotocol.COMMAND_TYPE
+    assert call_arguments[1].type == bprotocol.JAVA_CLASS_TYPE
+    assert call_arguments[2].type == bprotocol.STRING_TYPE
