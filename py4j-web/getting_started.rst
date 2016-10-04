@@ -152,7 +152,7 @@ in your favorite development environment and check that you see the message
 
      from py4j.java_gateway import JavaGateway, GatewayParameters
 
-     gateway = JavaGateway(GatewayParameters(port=25335))
+     gateway = JavaGateway(gateway_parameters=GatewayParameters(port=25335))
 
 
 You are now done. Because your program will wait for connections, it will never

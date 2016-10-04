@@ -691,7 +691,7 @@ collections to Java Collections when calling a Java method: just set
 
 ::
 
-  >>> gateway = JavaGateway(GatewayParameters(auto_convert=True))
+  >>> gateway = JavaGateway(gateway_parameters=GatewayParameters(auto_convert=True))
   >>> my_list
   [3, 2, 1]
   >>> gateway.jvm.java.util.Collections.sort(my_list)

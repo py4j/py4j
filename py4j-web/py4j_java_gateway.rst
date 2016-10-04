@@ -72,7 +72,7 @@ Then we play with the class using the two possible values of auto_field:
   u'Hello World'
   >>> get_field(example,'member')
   1
-  >>> java_gateway2 = JavaGateway(GatewayParameters(auto_field=True))
+  >>> java_gateway2 = JavaGateway(gateway_parameters=GatewayParameters(auto_field=True))
   >>> example2 = java_gateway2.jvm.py4j.examples.ExampleWithField()
   >>> example2.member
   1

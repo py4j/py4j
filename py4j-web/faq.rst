@@ -80,7 +80,7 @@ Or you can also set the :ref:`auto_field <api_gatewayparameters>` parameter to
 
 ::
 
-  >>> gateway = JavaGateway(GatewayParameters(auto_field=True))
+  >>> gateway = JavaGateway(gateway_parameters=GatewayParameters(auto_field=True))
   >>> object = gateway.entry_point.getObject()
   >>> field_value = object.public_field
 
