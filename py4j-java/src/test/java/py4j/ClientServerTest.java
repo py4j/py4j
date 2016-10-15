@@ -54,14 +54,13 @@ public class ClientServerTest {
 		} catch (Exception e) {
 
 		}
-		// Started, PreShutdown, Error, Stopped, PostShutdown
+		// Started, PreShutdown, Stopped, PostShutdown
 		// But order cannot be guaranteed because two threads are competing.
 		assertTrue(listener.values.contains(new Long(1)));
 		assertTrue(listener.values.contains(new Long(10)));
-		assertTrue(listener.values.contains(new Long(100)));
 		assertTrue(listener.values.contains(new Long(1000)));
 		assertTrue(listener.values.contains(new Long(10000)));
-		assertEquals(5, listener.values.size());
+		assertEquals(4, listener.values.size());
 	}
 
 	@Test
