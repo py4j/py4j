@@ -5,6 +5,22 @@ The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
 
+Py4J 0.10.4
+-----------
+
+- Release date: October 14th 2016
+- Setting a value in a Java array now correctly converts the Python type to
+  Java type. For example, it is now possible to set a value in a java float
+  array. Before that change, Python type and Java Array value type had to
+  exactly match.
+- Java side: the serverError callback in the GatewayServerListener is no longer
+  called when "java.net.SocketException: Socket closed" exception is raised
+  when the GatewayServer is shutting down. The server_connection_error signal
+  on the Python side was already ignoring that spurious error.
+- `tickets closed for 0.10.4 release
+  <https://github.com/bartdag/py4j/milestone/21?closed=1>`_
+
+
 Py4J 0.10.3
 -----------
 
