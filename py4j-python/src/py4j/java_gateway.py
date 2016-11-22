@@ -279,8 +279,10 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     logger.debug("Launching gateway with command {0}".format(command))
 
     # stderr redirection
+    close_stderr = False
     if redirect_stderr is None:
         stderr = open(os.devnull, "w")
+        close_stderr = True
     elif isinstance(redirect_stderr, Queue) or\
             isinstance(redirect_stderr, deque):
         stderr = PIPE
@@ -310,6 +312,12 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         OutputConsumer(
             redirect_stderr, proc.stderr, daemon=daemonize_redirect).start()
     ProcessConsumer(proc, [redirect_stdout], daemon=daemonize_redirect).start()
+
+    if close_stderr:
+        # XXX This will quiet ResourceWarning in Python 3.5
+        # This only close the fd in this process, not in the JVM process, which
+        # makes sense.
+        quiet_close(stderr)
 
     return _port
 
