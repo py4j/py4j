@@ -194,6 +194,9 @@ def find_jar_path():
         os.path.realpath(__file__)), "../share/py4j/" + jar_file))
     paths.append("../../../current-release/" + jar_file)
     paths.append(os.path.join(sys.prefix, "share/py4j/" + jar_file))
+    # pip install --user
+    paths.append(os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), "../../../../share/py4j/" + jar_file))
 
     for path in paths:
         if os.path.exists(path):
