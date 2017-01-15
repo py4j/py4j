@@ -196,10 +196,12 @@ def find_jar_path():
     paths.append("../../../current-release/" + jar_file)
     paths.append(os.path.join(sys.prefix, "share/py4j/" + jar_file))
     # pip install py4j # On Ubuntu 16.04, where virtualenvepath=/usr/local
-    #   this file is here: virtualenvpath/lib/pythonX/dist-packages/py4j/java_gateway.py
+    #   this file is here:
+    #     virtualenvpath/lib/pythonX/dist-packages/py4j/java_gateway.py
     #   the jar file is here: virtualenvpath/share/py4j/py4j.jar
     # pip install --user py4j # On Ubuntu 16.04, where virtualenvepath=~/.local
-    #   this file is here: virtualenvpath/lib/pythonX/site-packages/py4j/java_gateway.py
+    #   this file is here:
+    #     virtualenvpath/lib/pythonX/site-packages/py4j/java_gateway.py
     #   the jar file is here: virtualenvpath/share/py4j/py4j.jar
     paths.append(os.path.join(os.path.dirname(
             os.path.realpath(__file__)), "../../../../share/py4j/" + jar_file))
