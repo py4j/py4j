@@ -606,6 +606,13 @@ class TypeConversionTest(unittest.TestCase):
         self.assertEqual(4, ex.method8(3))
         self.assertEqual(long(4), ex.method8(long(3)))
         self.assertEqual(long(4), ex.method9(long(3)))
+        try:
+            ex.method8(3000000000000000000000000000000000000)
+            self.fail("Should not be able to convert overflowing long")
+        except Py4JError:
+            self.assertTrue(True)
+        # Check that the connection is not broken (refs #265)
+        self.assertEqual(4, ex.method8(3))
 
     def testBigDecimal(self):
         ex = self.gateway.getNewExample()
