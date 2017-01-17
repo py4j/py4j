@@ -126,9 +126,9 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		}
 	}
 
-	protected void quietSendError(BufferedWriter writer, Throwable exception) {
+	protected void quietSendFatalError(BufferedWriter writer, Throwable exception) {
 		try {
-			String returnCommand = Protocol.getOutputErrorCommand(exception);
+			String returnCommand = Protocol.getOutputFatalErrorCommand(exception);
 			logger.fine("Trying to return error: " + returnCommand);
 			writer.write(returnCommand);
 			writer.flush();
@@ -171,7 +171,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 			error = e;
 		} finally {
 			if (error != null && executing && writer != null) {
-				quietSendError(writer, error);
+				quietSendFatalError(writer, error);
 			}
 			shutdown(reset);
 		}
