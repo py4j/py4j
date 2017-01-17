@@ -2207,7 +2207,7 @@ class CallbackConnection(Thread):
                         proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                 else:
                     logger.error("Unknown command {0}".format(command))
-                    # We're sending something to prevent blocking, but at this
+                    # We're sending something to prevent blokincg, but at this
                     # point, the protocol is broken.
                     self.socket.sendall(
                         proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
@@ -2217,10 +2217,7 @@ class CallbackConnection(Thread):
                 "Timeout while callback connection was waiting for"
                 "a message", exc_info=True)
         except Exception:
-            # Exception in Py4J code while executing or waiting.
-            # In any case, we need to close the connection and the other
-            # side may not be aware of it so reset it.
-            reset = True
+            # This is a normal exception...
             logger.info(
                 "Error while callback connection was waiting for"
                 "a message", exc_info=True)

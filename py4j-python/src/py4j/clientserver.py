@@ -475,10 +475,7 @@ class ClientServerConnection(object):
                 "Timeout while python server was waiting for"
                 "a message", exc_info=True)
         except Exception:
-            # Exception in Py4J code while executing or waiting.
-            # In any case, we need to close the connection and the other
-            # side may not be aware of it so reset it.
-            reset = True
+            # This is a normal exception...
             logger.info(
                 "Error while python server was waiting for"
                 "a message", exc_info=True)

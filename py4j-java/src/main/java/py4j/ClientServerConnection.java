@@ -168,7 +168,6 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 			error = ste;
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
-			reset = true;
 			error = e;
 		} finally {
 			if (error != null && executing && writer != null) {

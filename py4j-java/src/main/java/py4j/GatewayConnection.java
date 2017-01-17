@@ -223,7 +223,6 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 			reset = true;
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
-			reset = true;
 			error = e;
 		} finally {
 			if (error != null && executing && writer != null) {
