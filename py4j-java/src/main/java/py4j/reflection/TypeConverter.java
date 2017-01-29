@@ -47,8 +47,10 @@ public class TypeConverter {
 	public final static int INT_TO_BYTE = 2;
 	public final static int STRING_TO_CHAR = 3;
 	public final static int NUM_TO_LONG = 4;
+	public final static int STRING_TO_ENUM = 5;
 
 	private final int conversion;
+	private Class<? extends Enum<?>> enumClass;
 
 	public final static TypeConverter NO_CONVERTER = new TypeConverter();
 	public final static TypeConverter FLOAT_CONVERTER = new TypeConverter(DOUBLE_TO_FLOAT);
@@ -63,6 +65,11 @@ public class TypeConverter {
 
 	public TypeConverter(int conversion) {
 		this.conversion = conversion;
+	}
+
+	public TypeConverter(Class<? extends Enum<?>> enumClass) {
+		this.conversion = STRING_TO_ENUM;
+		this.enumClass = enumClass;
 	}
 
 	public Object convert(Object obj) {
@@ -86,6 +93,12 @@ public class TypeConverter {
 			break;
 		case NUM_TO_LONG:
 			newObject = Long.parseLong(obj.toString());
+			break;
+		case STRING_TO_ENUM:
+			// erase type of generic wildcarded enum with cast
+			@SuppressWarnings({ "unchecked", "rawtypes" })
+			Enum<?> e = Enum.valueOf((Class<? extends Enum>) enumClass, (String) obj);
+			newObject = e;
 			break;
 		default:
 			newObject = null;

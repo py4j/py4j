@@ -110,6 +110,11 @@ public class MethodInvoker {
 			} else if (TypeUtil.isBoolean(parameters[i]) && TypeUtil.isBoolean(arguments[i])) {
 				tempCost = 0;
 				converters.add(TypeConverter.NO_CONVERTER);
+			} else if (parameters[i].isEnum() && arguments[i].isAssignableFrom(String.class)) {
+				tempCost = 0;
+				@SuppressWarnings("unchecked")
+				Class<? extends Enum<?>> enumClass = (Class<? extends Enum<?>>) parameters[i];
+				converters.add(new TypeConverter(enumClass));
 			}
 
 			if (tempCost != -1) {
