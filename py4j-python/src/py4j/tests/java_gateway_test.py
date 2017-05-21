@@ -623,6 +623,10 @@ class TypeConversionTest(unittest.TestCase):
         java_nan = self.gateway.jvm.java.lang.Double.parseDouble("NaN")
         self.assertTrue(math.isnan(java_nan))
 
+        python_double = 17.133574204226083
+        java_float = self.gateway.jvm.java.lang.Double(python_double)
+        self.assertAlmostEqual(python_double, java_float, 15)
+
     def testUnboxingInt(self):
         ex = self.gateway.getNewExample()
         self.assertEqual(4, ex.getInteger(4))
