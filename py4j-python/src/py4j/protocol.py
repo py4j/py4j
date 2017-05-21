@@ -213,7 +213,7 @@ def smart_decode(s):
 
 
 def encode_float(float_value):
-    float_str = smart_decode(float_value)
+    float_str = smart_decode(repr(float_value))
     if float_str == "-inf":
         float_str = JAVA_NEGATIVE_INFINITY
     elif float_str == "inf":
