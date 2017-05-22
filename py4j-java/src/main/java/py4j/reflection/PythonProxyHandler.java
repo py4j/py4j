@@ -31,10 +31,14 @@ package py4j.reflection;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import py4j.Gateway;
 import py4j.Protocol;
+import py4j.Py4JException;
+import py4j.Py4JJavaException;
 
 /**
  * <p>
@@ -102,7 +106,28 @@ public class PythonProxyHandler implements InvocationHandler {
 
 		String returnCommand = gateway.getCallbackClient().sendCommand(sBuilder.toString());
 
-		return Protocol.getReturnValue(returnCommand, gateway);
+		Object output = Protocol.getReturnValue(returnCommand, gateway);
+		Object convertedOutput = convertOutput(method, output);
+		return convertedOutput;
+	}
+
+	private Object convertOutput(Method method, Object output) {
+		Class<?> returnType = method.getReturnType();
+		Class<?> outputType = output.getClass();
+		if (returnType.equals(Void.TYPE)) {
+			// Do not convert void
+			return output;
+		}
+		Class<?>[] parameters = { returnType };
+		Class<?>[] arguments = { outputType };
+		List<TypeConverter> converters = new ArrayList<TypeConverter>();
+		int cost = MethodInvoker.buildConverters(converters, parameters, arguments);
+		if (cost == -1) {
+			// This will be wrapped into Py4JJavaException if the Java code is being called by Python.
+			throw new Py4JException(
+					"Incompatible output type. Expected: " + returnType.getName() + " Actual: " + outputType.getName());
+		}
+		return converters.get(0).convert(output);
 	}
 
 }
