@@ -95,6 +95,21 @@ def start_example_app_process3():
     return p
 
 
+class Returner(object):
+
+    def getChar(self):
+        return "a"
+
+    def getFloat(self):
+        return 1.25
+
+    def doNothing(self):
+        print("Doing nothing")
+
+    class Java:
+        implements = ["py4j.examples.IReturnConverter"]
+
+
 class FalseAddition(object):
     def doOperation(self, i, j, k=None):
         if k is None:
@@ -252,6 +267,27 @@ class IntegrationTest(unittest.TestCase):
             example.callHello2(impl))
         self.gateway.shutdown()
         self.assertEqual(0, len(self.gateway.gateway_property.pool))
+
+    def testProxyReturnerFloat(self):
+        sleep()
+        example = self.gateway.jvm.py4j.examples.ReturnerExample()
+        returner = Returner()
+        output = example.computeFloat(returner)
+        self.assertAlmostEqual(output, 1.25)
+
+    def testProxyReturnerChar(self):
+        sleep()
+        example = self.gateway.jvm.py4j.examples.ReturnerExample()
+        returner = Returner()
+        output = example.computeChar(returner)
+        self.assertEqual(output, "a")
+
+    def testProxyReturnerVoid(self):
+        sleep()
+        example = self.gateway.jvm.py4j.examples.ReturnerExample()
+        returner = Returner()
+        output = example.computeNothing(returner)
+        self.assertEqual(output, 1)
 
     def testProxy(self):
         sleep()
