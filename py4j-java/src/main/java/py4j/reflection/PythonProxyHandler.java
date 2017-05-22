@@ -117,14 +117,13 @@ public class PythonProxyHandler implements InvocationHandler {
 			// Do not convert void
 			return output;
 		}
-		Class<?>[] parameters = {returnType};
-		Class<?>[] arguments = {outputType};
+		Class<?>[] parameters = { returnType };
+		Class<?>[] arguments = { outputType };
 		List<TypeConverter> converters = new ArrayList<TypeConverter>();
 		int cost = MethodInvoker.buildConverters(converters, parameters, arguments);
 		if (cost == -1) {
 			throw new Py4JJavaException(
-					"Incompatible output type. Expected: " + returnType.getName() +
-					" Actual: " + outputType.getName());
+					"Incompatible output type. Expected: " + returnType.getName() + " Actual: " + outputType.getName());
 		}
 		return converters.get(0).convert(output);
 	}
