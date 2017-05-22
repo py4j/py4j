@@ -290,7 +290,6 @@ class IntegrationTest(unittest.TestCase):
         output = example.computeFloat(returner)
         self.assertAlmostEqual(output, 1.25)
 
-
     def testProxyReturnerChar(self):
         sleep()
         example = self.gateway.jvm.py4j.examples.ReturnerExample()
