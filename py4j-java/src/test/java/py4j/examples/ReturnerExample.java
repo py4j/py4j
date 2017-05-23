@@ -39,6 +39,10 @@ public class ReturnerExample {
 		return returner.getChar();
 	}
 
+	public int computeInt(IReturnConverter returner) {
+		return returner.getInt();
+	}
+
 	public int computeNothing(IReturnConverter returner) {
 		return 1;
 	}

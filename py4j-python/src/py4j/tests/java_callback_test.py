@@ -110,6 +110,12 @@ class Returner(object):
         else:
             return 1.25
 
+    def getInt(self):
+        if self.bad_type:
+            return 1111111111111111111111111111
+        else:
+            return 25
+
     def doNothing(self):
         print("Doing nothing")
 
@@ -281,6 +287,14 @@ class IntegrationTest(unittest.TestCase):
         returner = Returner(bad_type=True)
         self.assertRaises(
             Py4JJavaError, example.computeFloat,
+            returner)
+
+    def testProxyReturnerIntOverflow(self):
+        sleep()
+        example = self.gateway.jvm.py4j.examples.ReturnerExample()
+        returner = Returner(bad_type=True)
+        self.assertRaises(
+            Py4JJavaError, example.computeInt,
             returner)
 
     def testProxyReturnerFloat(self):
