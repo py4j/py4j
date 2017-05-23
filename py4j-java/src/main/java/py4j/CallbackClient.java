@@ -384,11 +384,13 @@ public class CallbackClient implements Py4JPythonClient {
 	}
 
 	protected void setupCleaner() {
-		executor.scheduleAtFixedRate(new Runnable() {
-			public void run() {
-				periodicCleanup();
-			}
-		}, minConnectionTime, minConnectionTime, minConnectionTimeUnit);
+		if (minConnectionTime > 0) {
+			executor.scheduleAtFixedRate(new Runnable() {
+				public void run() {
+					periodicCleanup();
+				}
+			}, minConnectionTime, minConnectionTime, minConnectionTimeUnit);
+		}
 	}
 
 	/**

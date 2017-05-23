@@ -264,7 +264,7 @@ class IntegrationTest(unittest.TestCase):
         self.p.join()
         sleep()
 
-#    Does not work when combined with other tests... because of TCP_WAIT
+    # Does not work when combined with other tests... because of TCP_WAIT
     def testShutdown(self):
         example = self.gateway.entry_point.getNewExample()
         impl = IHelloImpl()
