@@ -116,6 +116,7 @@ public class Protocol {
 
 	// OUTPUT VALUES
 	public final static char ERROR = 'x';
+	public final static char FATAL_ERROR = 'z';
 	public final static char SUCCESS = 'y';
 
 	// SHORTCUT
@@ -346,6 +347,16 @@ public class Protocol {
 		StringBuilder builder = new StringBuilder();
 		builder.append(RETURN_MESSAGE);
 		builder.append(ERROR);
+		builder.append(Protocol.STRING_TYPE);
+		builder.append(StringUtil.escape(getThrowableAsString(throwable)));
+		builder.append(END_OUTPUT);
+		return builder.toString();
+	}
+
+	public final static String getOutputFatalErrorCommand(Throwable throwable) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(RETURN_MESSAGE);
+		builder.append(FATAL_ERROR);
 		builder.append(Protocol.STRING_TYPE);
 		builder.append(StringUtil.escape(getThrowableAsString(throwable)));
 		builder.append(END_OUTPUT);

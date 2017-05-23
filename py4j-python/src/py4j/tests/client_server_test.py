@@ -256,6 +256,21 @@ class IntegrationTest(unittest.TestCase):
             self.assertTrue(ms > 0)
             client_server.shutdown()
 
+    def testErrorInPy4J(self):
+        with clientserver_example_app_process():
+            client_server = ClientServer(
+                JavaParameters(), PythonParameters())
+            try:
+                client_server.jvm.java.lang.Math.abs(
+                    3000000000000000000000000000000000000)
+                self.fail("Should not be able to convert overflowing long")
+            except Py4JError:
+                self.assertTrue(True)
+            # Check that the connection is not broken (refs #265)
+            val = client_server.jvm.java.lang.Math.abs(-4)
+            self.assertEqual(4, val)
+            client_server.shutdown()
+
     def testStream(self):
         with clientserver_example_app_process():
             client_server = ClientServer(

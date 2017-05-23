@@ -31,7 +31,8 @@ from py4j.finalizer import ThreadSafeFinalizer
 from py4j import protocol as proto
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, escape_new_line, get_command_part,
-    get_return_value, is_error, register_output_converter, smart_decode)
+    get_return_value, is_error, register_output_converter, smart_decode,
+    is_fatal_error)
 from py4j.signals import Signal
 from py4j.version import __version__
 
@@ -901,6 +902,8 @@ class GatewayClient(object):
             response = connection.send_command(command)
             if binary:
                 return response, self._create_connection_guard(connection)
+            elif is_fatal_error(response):
+                connection.close(False)
             else:
                 self._give_back_connection(connection)
         except Py4JNetworkError as pne:

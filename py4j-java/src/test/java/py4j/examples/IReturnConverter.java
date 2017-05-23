@@ -35,6 +35,8 @@ public interface IReturnConverter {
 
 	float getFloat();
 
+	int getInt();
+
 	void doNothing();
 
 }

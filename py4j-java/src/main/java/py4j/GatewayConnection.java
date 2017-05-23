@@ -186,9 +186,9 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		}
 	}
 
-	protected void quietSendError(BufferedWriter writer, Throwable exception) {
+	protected void quietSendFatalError(BufferedWriter writer, Throwable exception) {
 		try {
-			String returnCommand = Protocol.getOutputErrorCommand(exception);
+			String returnCommand = Protocol.getOutputFatalErrorCommand(exception);
 			logger.fine("Trying to return error: " + returnCommand);
 			writer.write(returnCommand);
 			writer.flush();
@@ -226,7 +226,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 			error = e;
 		} finally {
 			if (error != null && executing && writer != null) {
-				quietSendError(writer, error);
+				quietSendFatalError(writer, error);
 			}
 			shutdown(reset);
 		}
