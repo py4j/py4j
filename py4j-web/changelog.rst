@@ -5,6 +5,23 @@ The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
 
+Py4J 0.10.5
+-----------
+
+- Release date: May 28th 2017
+- Python side: added path for pip install --user
+- Python side: doubles are no longer truncated in Python 2.7
+- Python side: passing integers larger than Long.MAX_VALUE no longer stalls
+  connection.
+- Java side: spurious server error signal no longer sent when GatewayServer is
+  shutting down.
+- Java side: allow disabling automatic connection cleanup in CallbackClient.
+- Java side: return types of Python proxies are correctly converted to the
+  expected type (e.g., a double can be converted to a float)
+- `tickets closed for 0.10.5 release
+  <https://github.com/bartdag/py4j/milestone/22?closed=1>`_
+
+
 Py4J 0.10.4
 -----------
 
