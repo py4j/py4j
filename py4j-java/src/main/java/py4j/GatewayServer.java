@@ -483,7 +483,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 
 	protected void fireServerError(Exception e) {
 		boolean sendEvent = false;
-		if (e.getMessage().contains("Socket closed")) {
+		if (e.getMessage().toLowerCase().contains("socket closed")) {
 			// This is just an internal error that will always be thrown when
 			// closing a server socket that is accepting a connection
 			logger.log(Level.FINE, "Gateway Server Error", e);
