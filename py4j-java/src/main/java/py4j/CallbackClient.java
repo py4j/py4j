@@ -69,7 +69,7 @@ public class CallbackClient implements Py4JPythonClient {
 
 	protected final Deque<Py4JClientConnection> connections = new ArrayDeque<Py4JClientConnection>();
 
-	private final Lock lock = new ReentrantLock(true);
+	protected final Lock lock = new ReentrantLock(true);
 
 	private final Logger logger = Logger.getLogger(CallbackClient.class.getName());
 
