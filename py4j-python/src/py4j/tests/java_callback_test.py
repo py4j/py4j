@@ -119,6 +119,9 @@ class Returner(object):
     def doNothing(self):
         print("Doing nothing")
 
+    def getNull(self):
+        return None
+    
     class Java:
         implements = ["py4j.examples.IReturnConverter"]
 
@@ -317,6 +320,13 @@ class IntegrationTest(unittest.TestCase):
         returner = Returner()
         output = example.computeNothing(returner)
         self.assertEqual(output, 1)
+
+    def testProxyReturnerNull(self):
+        sleep()
+        example = self.gateway.jvm.py4j.examples.ReturnerExample()
+        returner = Returner()
+        output = example.computeNull(returner)
+        self.assertEqual(output, None)
 
     def testProxy(self):
         sleep()
