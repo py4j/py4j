@@ -10,6 +10,7 @@ Jacek Bzdak <jbzdak@gmail.com>
 Barthelemy Dagenais <barthelemy@infobart.com>
 Frankie Dintino <fdintino@theatlantic.com>
 Matthew Farrellee <matt@redhat.com>
+Nicholas Gates <nickgatzgates@gmail.com>
 Matthew Gerring <matthew.gerring@gmail.com>
 Jonah Graham <jonah@kichwacoders.com>
 Alex Grönholm <alex.gronholm+git@nextday.fi>

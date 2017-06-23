@@ -202,9 +202,31 @@ public class ReflectionEngineTest {
 		}
 	}
 
+	@Test
+	public void testGetMethodDeepInheritance() {
+		try {
+			ReflectionEngine engine = new ReflectionEngine();
+			MethodInvoker mInvoker;
+
+			TestEngine2 tEngine2 = new TestEngine2();
+			mInvoker = engine.getMethod(tEngine2, "method3", new Object[] { tEngine2 });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { TestInterface.class });
+
+			TestEngine3 tEngine3 = new TestEngine3();
+			mInvoker = engine.getMethod(tEngine3, "method3", new Object[] { tEngine3 });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { TestInterface.class });
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
 }
 
-class TestEngine {
+interface TestInterface {
+}
+
+class TestEngine implements TestInterface {
 
 	public int method1(Object obj1, Object obj2) {
 		return 2;
@@ -247,6 +269,16 @@ class TestEngine2 extends TestEngine {
 
 	public void method1(Object obj1, Boolean b2) {
 
+	}
+
+	public void method3(TestInterface ti) {
+	}
+
+}
+
+class TestEngine3 extends TestEngine2 {
+
+	public void method3(TestInterface ti) {
 	}
 
 }
