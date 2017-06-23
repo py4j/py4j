@@ -159,15 +159,6 @@ public class ReflectionEngineTest {
 			mInvoker = engine.getMethod(tEngine, "method1", new Object[] {});
 			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] {});
 
-			// Test deep-inheritence of interfaces
-			TestEngine2 tEngine2 = new TestEngine2();
-			mInvoker = engine.getMethod(tEngine2, "method3", new Object[] { tEngine2 });
-			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { TestInterface.class });
-
-			TestEngine3 tEngine3 = new TestEngine3();
-			mInvoker = engine.getMethod(tEngine3, "method3", new Object[] { tEngine3 });
-			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { TestInterface.class });
-
 			// Test no match
 			try {
 				mInvoker = engine.getMethod(tEngine, "method3", new Object[] { new Object() });
@@ -205,6 +196,26 @@ public class ReflectionEngineTest {
 			// during reflection.
 			mInvoker = engine.getMethod(tEngine, "method1", new Object[] { "2", true });
 			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { Object.class, Boolean.class });
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
+	public void testGetMethodDeepInheritance() {
+		try {
+			ReflectionEngine engine = new ReflectionEngine();
+			MethodInvoker mInvoker;
+
+			TestEngine2 tEngine2 = new TestEngine2();
+			mInvoker = engine.getMethod(tEngine2, "method3", new Object[] { tEngine2 });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { TestInterface.class });
+
+			TestEngine3 tEngine3 = new TestEngine3();
+			mInvoker = engine.getMethod(tEngine3, "method3", new Object[] { tEngine3 });
+			assertArrayEquals(mInvoker.getMethod().getParameterTypes(), new Class[] { TestInterface.class });
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

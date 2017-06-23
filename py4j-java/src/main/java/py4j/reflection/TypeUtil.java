@@ -143,7 +143,7 @@ public class TypeUtil {
 				getNextInterfaces(grandChild, nextInterfaces, visitedInterfaces);
 			}
 
-			if (nextInterfaces.size() > 0) {
+			if (nextInterfaces.size() > 0 || grandChild != null) {
 				int newDistance = computeInterfaceDistance(parent, grandChild, visitedInterfaces, nextInterfaces);
 				if (newDistance != -1) {
 					distance = newDistance + 1;
