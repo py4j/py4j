@@ -14,6 +14,7 @@ Matthew Gerring <matthew.gerring@gmail.com>
 Jonah Graham <jonah@kichwacoders.com>
 Alex Grönholm <alex.gronholm+git@nextday.fi>
 Chris Kanich <ckanich@uic.edu>
+Scott Lewis <scottslewis@gmail.com>
 Chetan Narsude <@243826>
 Josh Rosen <rosenville@gmail.com>
 Isaac Sánchez Barrera <isaac@isb1009.es>
