@@ -38,7 +38,6 @@ import java.util.logging.Logger;
 import py4j.Gateway;
 import py4j.Protocol;
 import py4j.Py4JException;
-import py4j.Py4JJavaException;
 
 /**
  * <p>
@@ -113,11 +112,13 @@ public class PythonProxyHandler implements InvocationHandler {
 
 	private Object convertOutput(Method method, Object output) {
 		Class<?> returnType = method.getReturnType();
-		Class<?> outputType = output.getClass();
-		if (returnType.equals(Void.TYPE)) {
+		// If output is None/null or expected return type is 
+		// Void then return output with no conversion
+		if (output == null || returnType.equals(Void.TYPE)) {
 			// Do not convert void
 			return output;
 		}
+		Class<?> outputType = output.getClass();
 		Class<?>[] parameters = { returnType };
 		Class<?>[] arguments = { outputType };
 		List<TypeConverter> converters = new ArrayList<TypeConverter>();

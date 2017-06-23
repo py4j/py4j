@@ -39,4 +39,5 @@ public interface IReturnConverter {
 
 	void doNothing();
 
+	Object getNull();
 }

@@ -46,4 +46,8 @@ public class ReturnerExample {
 	public int computeNothing(IReturnConverter returner) {
 		return 1;
 	}
+	
+	public Object computeNull(IReturnConverter returner) {
+		return returner.getNull();
+	}
 }
