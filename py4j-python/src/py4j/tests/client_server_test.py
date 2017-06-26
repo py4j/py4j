@@ -37,15 +37,24 @@ def start_java_clientserver_example_server():
         "py4j.examples.SingleThreadClientApplication"])
 
 
-def start_clientserver_example_app_process(start_java_client=False,
-                                           start_short_timeout=False):
+def start_java_clientserver_gc_example_server():
+    subprocess.call([
+        "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
+        "py4j.examples.SingleThreadClientGCApplication"])
+
+
+def start_clientserver_example_app_process(
+        start_java_client=False, start_short_timeout=False,
+        start_gc_test=False):
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
-    if not start_java_client and not start_short_timeout:
-        p = Process(target=start_clientserver_example_server)
-    elif start_short_timeout:
+    if start_short_timeout:
         p = Process(target=start_short_timeout_clientserver_example_server)
-    else:
+    elif start_java_client:
         p = Process(target=start_java_clientserver_example_server)
+    elif start_gc_test:
+        p = Process(target=start_java_clientserver_gc_example_server)
+    else:
+        p = Process(target=start_clientserver_example_server)
     p.start()
     sleep()
     check_connection()
@@ -54,13 +63,15 @@ def start_clientserver_example_app_process(start_java_client=False,
 
 @contextmanager
 def clientserver_example_app_process(
-        start_java_client=False, start_short_timeout=False):
+        start_java_client=False, start_short_timeout=False,
+        start_gc_test=False, join=True):
     p = start_clientserver_example_app_process(
-        start_java_client, start_short_timeout)
+        start_java_client, start_short_timeout, start_gc_test)
     try:
         yield p
     finally:
-        p.join()
+        if join:
+            p.join()
 
 
 def start_java_multi_client_server_app():
@@ -89,6 +100,43 @@ def java_multi_client_server_app_process():
         yield p
     finally:
         p.join()
+
+
+class HelloObjects(object):
+    def __init__(self):
+        self.calls = 0
+
+    def sendObject(self, o1, o2):
+        # make a cycle between the objects,
+        # this ensure the objects are not collected as
+        # soon as the functions return and require
+        # a full gc to be cleared
+        o1.cycle = o2
+        o2.cycle = o1
+        self.calls += 1
+        return ""
+
+    class Java:
+        implements = ["py4j.examples.IHelloObject"]
+
+
+class GarbageCollectionTest(unittest.TestCase):
+
+    def testSendObjects(self):
+        """This test receives 1000 calls creating object cycles.
+        Typically, the garbage collector will starts in the middle of
+        Py4J connection code, which will create an error if the garbage
+        collection is done on the same thread.
+        """
+        hello = HelloObjects()
+        client_server = ClientServer(
+            JavaParameters(), PythonParameters(), hello)
+
+        with clientserver_example_app_process(
+                start_gc_test=True, join=False) as p:
+            p.join()
+            client_server.shutdown()
+            self.assertEquals(1000, hello.calls)
 
 
 class RetryTest(unittest.TestCase):

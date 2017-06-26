@@ -9,7 +9,6 @@ code calls some Java code, the Java code will be executed in the UI thread.
 
 from __future__ import unicode_literals, absolute_import
 
-import gc
 import logging
 import socket
 from threading import local, Thread
@@ -23,12 +22,33 @@ from py4j.java_gateway import (
     DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
     server_connection_stopped)
 from py4j import protocol as proto
+from py4j.compat import Queue
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
     get_return_value)
 
 
 logger = logging.getLogger("py4j.clientserver")
+
+
+SHUTDOWN_FINALIZER_WORKER = "__shutdown__"
+
+
+class FinalizerWorker(Thread):
+
+    def __init__(self, queue):
+        self.queue = queue
+        super(FinalizerWorker, self).__init__()
+
+    def run(self):
+        while(True):
+            task = self.queue.get()
+            if task == SHUTDOWN_FINALIZER_WORKER:
+                break
+            else:
+                (java_client, target_id) = task
+                java_client.garbage_collect_object(
+                    target_id, False)
 
 
 class JavaParameters(GatewayParameters):
@@ -39,7 +59,7 @@ class JavaParameters(GatewayParameters):
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
             auto_close=True, auto_convert=False, eager_load=False,
             ssl_context=None, enable_memory_management=True, auto_gc=False,
-            read_timeout=None):
+            read_timeout=None, daemonize_memory_management=True):
         """
 
         :param address: the address to which the client will request a
@@ -79,15 +99,23 @@ class JavaParameters(GatewayParameters):
         :param auto_gc: if True, call gc.collect() before sending a command to
             the Java side. This should prevent the gc from running between
             sending the command and waiting for an anwser. False by default
-            because this case is extremely unlikely.
+            because this case is extremely unlikely. Legacy option no longer
+            used.
 
         :param read_timeout: if > 0, sets a timeout in seconds after
             which the socket stops waiting for a response from the Java side.
+
+        :param daemonize_memory_management: if True, the worker Thread making
+            the garbage collection requests will be daemonized. This means that
+            the Python side might not send all garbage collection requests if
+            it exits. If False, memory management will block the Python program
+            exit until all requests are sent.
         """
         super(JavaParameters, self).__init__(
             address, port, auto_field, auto_close, auto_convert, eager_load,
             ssl_context, enable_memory_management, read_timeout)
         self.auto_gc = auto_gc
+        self.daemonize_memory_management = daemonize_memory_management
 
 
 class PythonParameters(CallbackServerParameters):
@@ -126,7 +154,7 @@ class PythonParameters(CallbackServerParameters):
             to the Java side. This should prevent the gc from running between
             sending the response and waiting for a new command. False by
             default because this case is extremely unlikely but could break
-            communication.
+            communication. Legacy option no longer used.
 
         :param accept_timeout: if > 0, sets a timeout in seconds after which
             the callbackserver stops waiting for a connection, sees if the
@@ -152,7 +180,8 @@ class JavaClient(GatewayClient):
     """
 
     def __init__(
-            self, java_parameters, python_parameters, gateway_property=None):
+            self, java_parameters, python_parameters, gateway_property=None,
+            finalizer_queue=None):
         """
         :param java_parameters: collection of parameters and flags used to
             configure the JavaGateway (Java client)
@@ -162,6 +191,9 @@ class JavaClient(GatewayClient):
 
         :param gateway_property: used to keep gateway preferences without a
             cycle with the JavaGateway
+
+        :param finalizer_queue: Queue used to manage garbage collection
+            requests.
         """
         super(JavaClient, self).__init__(
             java_parameters,
@@ -169,6 +201,18 @@ class JavaClient(GatewayClient):
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
         self.thread_connection = local()
+        self.finalizer_queue = finalizer_queue
+
+    def garbage_collect_object(self, target_id, enqueue=True):
+        """Tells the Java side that there is no longer a reference to this
+        JavaObject on the Python side. If enqueue is True, sends the request
+        to the FinalizerWorker queue. Otherwise, sends the request to the Java
+        side.
+        """
+        if enqueue:
+            self.finalizer_queue.put((self, target_id))
+        else:
+            super(JavaClient, self).garbage_collect_object(target_id)
 
     def set_thread_connection(self, connection):
         """Associates a ClientServerConnection with the current thread.
@@ -177,6 +221,12 @@ class JavaClient(GatewayClient):
             current thread.
         """
         self.thread_connection.connection = weakref.ref(connection)
+
+    def shutdown_gateway(self):
+        try:
+            super(JavaClient, self).shutdown_gateway()
+        finally:
+            self.finalizer_queue.put(SHUTDOWN_FINALIZER_WORKER)
 
     def get_thread_connection(self):
         """Returns the ClientServerConnection associated with this thread. Can
@@ -317,12 +367,6 @@ class ClientServerConnection(object):
         self.python_server = python_server
         self.initiated_from_client = False
 
-    def _auto_gc(self, from_client=False):
-        if from_client and self.java_parameters.auto_gc:
-            gc.collect()
-        elif not from_client and self.python_parameters.auto_gc:
-            gc.collect()
-
     def connect_to_java_server(self):
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -381,7 +425,6 @@ class ClientServerConnection(object):
         # TODO At some point extract common code from wait_for_commands
         logger.debug("Command to send: {0}".format(command))
         try:
-            self._auto_gc(True)
             self.socket.sendall(command.encode("utf-8"))
         except Exception as e:
             logger.info("Error while sending or receiving.", exc_info=True)
@@ -404,12 +447,10 @@ class ClientServerConnection(object):
 
                     if command == proto.CALL_PROXY_COMMAND_NAME:
                         return_message = self._call_proxy(obj_id, self.stream)
-                        self._auto_gc(True)
                         self.socket.sendall(return_message.encode("utf-8"))
                     elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                         self.stream.readline()
                         del(self.pool[obj_id])
-                        self._auto_gc(True)
                         self.socket.sendall(
                             proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                     else:
@@ -455,12 +496,10 @@ class ClientServerConnection(object):
                     break
                 if command == proto.CALL_PROXY_COMMAND_NAME:
                     return_message = self._call_proxy(obj_id, self.stream)
-                    self._auto_gc()
                     self.socket.sendall(return_message.encode("utf-8"))
                 elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                     self.stream.readline()
                     del(self.pool[obj_id])
-                    self._auto_gc()
                     self.socket.sendall(
                         proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                 else:
@@ -539,8 +578,18 @@ class ClientServer(JavaGateway):
             python_server_entry_point=python_server_entry_point
         )
 
+    def _create_finalizer_worker(self):
+        queue = Queue()
+        worker = FinalizerWorker(queue)
+        worker.daemon = self.java_parameters.daemonize_memory_management
+        worker.start()
+        return queue
+
     def _create_gateway_client(self):
-        java_client = JavaClient(self.java_parameters, self.python_parameters)
+        queue = self._create_finalizer_worker()
+        java_client = JavaClient(
+            self.java_parameters, self.python_parameters,
+            finalizer_queue=queue)
         return java_client
 
     def _create_callback_server(self, callback_server_parameters):
