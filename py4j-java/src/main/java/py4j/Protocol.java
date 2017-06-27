@@ -32,10 +32,8 @@ package py4j;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 
-import py4j.reflection.PythonProxyHandler;
 import py4j.reflection.ReflectionUtil;
 
 /**
@@ -414,14 +412,7 @@ public class Protocol {
 			}
 		}
 
-		Object proxy = getPythonProxyHandler(ReflectionUtil.getClassLoader(), interfaces, parts[0], gateway);
-
-		return proxy;
-	}
-
-	public static Object getPythonProxyHandler(ClassLoader classLoader, Class[] interfacesToImplement, String objectId,
-			Gateway gateway) {
-		return Proxy.newProxyInstance(classLoader, interfacesToImplement, new PythonProxyHandler(objectId, gateway));
+		return gateway.createProxy(ReflectionUtil.getClassLoader(), interfaces, parts[0]);
 	}
 
 	/**
