@@ -34,6 +34,8 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 
+import py4j.reflection.ClassLoadingStrategy;
+import py4j.reflection.CurrentThreadClassLoadingStrategy;
 import py4j.reflection.ReflectionUtil;
 
 /**
@@ -400,9 +402,16 @@ public class Protocol {
 			throw new Py4JException("Invalid Python Proxy.");
 		}
 
+	    ClassLoadingStrategy classLoadingStrategy = gateway.getClassLoadingStrategy();
+	    if (classLoadingStrategy == null) 
+	        classLoadingStrategy = ReflectionUtil.getClassLoadingStrategy();
+	    // Just in case
+	    if (classLoadingStrategy == null)
+	        classLoadingStrategy = new CurrentThreadClassLoadingStrategy();
+
 		for (int i = 1; i < length; i++) {
 			try {
-				interfaces[i - 1] = ReflectionUtil.classForName(parts[i]);
+				interfaces[i - 1] = classLoadingStrategy.classForName(parts[i]);
 				if (!interfaces[i - 1].isInterface()) {
 					throw new Py4JException(
 							"This class " + parts[i] + " is not an interface and cannot be used as a Python Proxy.");
