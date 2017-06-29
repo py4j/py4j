@@ -43,7 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
-import py4j.reflection.ClassLoadingStrategy;
 import py4j.reflection.MethodInvoker;
 import py4j.reflection.PythonProxyHandler;
 import py4j.reflection.ReflectionEngine;
@@ -392,10 +391,6 @@ public class Gateway {
 			bindings.put(Protocol.ENTRY_POINT_OBJECT_ID, entryPoint);
 		}
 		bindings.put(Protocol.DEFAULT_JVM_OBJECT_ID, defaultJVMView);
-	}
-
-	public ClassLoadingStrategy getClassLoadingStrategy() {
-		return null;
 	}
 
 }
