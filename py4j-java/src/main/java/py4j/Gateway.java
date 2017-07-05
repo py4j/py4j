@@ -30,6 +30,7 @@
 package py4j;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -43,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import py4j.reflection.MethodInvoker;
+import py4j.reflection.PythonProxyHandler;
 import py4j.reflection.ReflectionEngine;
 
 /**
@@ -347,6 +349,27 @@ public class Gateway {
 
 	public void setStarted(boolean isStarted) {
 		this.isStarted = isStarted;
+	}
+
+	/**
+	 * <p>
+	 * Creates a proxy implementing the provided interfaces with the provided class loader.
+	 * </p>
+	 * <p>
+	 * This method is part of the Gateway instance to allow overriding or customizing per Gateway instance.
+	 * </p>
+	 * @param classLoader
+	 * @param interfacesToImplement
+	 * @param objectId
+	 * @return
+	 */
+	public Object createProxy(ClassLoader classLoader, @SuppressWarnings("rawtypes") Class[] interfacesToImplement,
+			String objectId) {
+		return Proxy.newProxyInstance(classLoader, interfacesToImplement, createPythonProxyHandler(objectId));
+	}
+
+	protected PythonProxyHandler createPythonProxyHandler(String id) {
+		return new PythonProxyHandler(id, this);
 	}
 
 	/**

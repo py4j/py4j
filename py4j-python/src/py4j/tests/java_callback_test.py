@@ -121,7 +121,7 @@ class Returner(object):
 
     def getNull(self):
         return None
-
+    
     class Java:
         implements = ["py4j.examples.IReturnConverter"]
 

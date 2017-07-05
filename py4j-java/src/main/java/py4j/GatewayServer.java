@@ -427,6 +427,35 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		this.sSocketFactory = sSocketFactory;
 	}
 
+	/*
+	 * @param gateway gateway instance (or subclass).  Must not be <code>null</code>.
+	 * @param port the host port to usu
+	 * @param address the host address to use
+	 * @param connectTimeout the connect timeout (ms)
+	 * @param readTimeout the read timeout (ms)
+	 * @param customCommands any customCommands to use.  May be <code>null</code>
+	 * @param sSocketFactory socketFactory to use.  Must not be <code>null</code>
+	 */
+	public GatewayServer(Gateway gateway, int port, InetAddress address, int connectTimeout, int readTimeout,
+			List<Class<? extends Command>> customCommands, ServerSocketFactory sSocketFactory) {
+		super();
+		this.port = port;
+		this.address = address;
+		this.connectTimeout = connectTimeout;
+		this.readTimeout = readTimeout;
+		this.gateway = gateway;
+		this.pythonPort = gateway.getCallbackClient().getPort();
+		this.pythonAddress = gateway.getCallbackClient().getAddress();
+		this.gateway.putObject(GATEWAY_SERVER_ID, this);
+		if (customCommands != null) {
+			this.customCommands = customCommands;
+		} else {
+			this.customCommands = new ArrayList<Class<? extends Command>>();
+		}
+		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
+		this.sSocketFactory = sSocketFactory;
+	}
+
 	public void addListener(GatewayServerListener listener) {
 		listeners.addIfAbsent(listener);
 	}
@@ -754,7 +783,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	 * @param interfacesToImplement
 	 * @return
 	 */
-	public Object getPythonServerEntryPoint(Class[] interfacesToImplement) {
+	public Object getPythonServerEntryPoint(@SuppressWarnings("rawtypes") Class[] interfacesToImplement) {
 		return getCallbackClient().getPythonServerEntryPoint(gateway, interfacesToImplement);
 	}
 
@@ -824,6 +853,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		private InetAddress javaAddress;
 		private int connectTimeout;
 		private int readTimeout;
+		private Gateway gateway;
 		private ServerSocketFactory serverSocketFactory;
 		private Object entryPoint;
 		private Py4JPythonClient callbackClient;
@@ -842,12 +872,30 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 			this.entryPoint = entryPoint;
 		}
 
+		/**
+		 * <p>
+		 * Builds a GatewayServer instance using the provided parameters. If gateway is provided,
+		 * some parameters will be ignored (callbackClient and entryPoint).
+		 * </p>
+		 *
+		 * @return
+		 */
 		public GatewayServer build() {
-			if (callbackClient == null) {
-				callbackClient = new CallbackClient(GatewayServer.DEFAULT_PYTHON_PORT);
+			if (gateway == null) {
+				if (callbackClient == null) {
+					callbackClient = new CallbackClient(GatewayServer.DEFAULT_PYTHON_PORT);
+				}
+				return new GatewayServer(entryPoint, javaPort, javaAddress, connectTimeout, readTimeout, customCommands,
+						callbackClient, serverSocketFactory);
+			} else {
+				return new GatewayServer(gateway, javaPort, javaAddress, connectTimeout, readTimeout, customCommands,
+						serverSocketFactory);
 			}
-			return new GatewayServer(entryPoint, javaPort, javaAddress, connectTimeout, readTimeout, customCommands,
-					callbackClient, serverSocketFactory);
+		}
+
+		public GatewayServerBuilder gateway(Gateway gateway) {
+			this.gateway = gateway;
+			return this;
 		}
 
 		public GatewayServerBuilder javaPort(int javaPort) {

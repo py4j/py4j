@@ -373,9 +373,10 @@ public class CallbackClient implements Py4JPythonClient {
 	}
 
 	@Override
-	public Object getPythonServerEntryPoint(Gateway gateway, Class[] interfacesToImplement) {
-		Object proxy = Protocol.getPythonProxyHandler(ReflectionUtil.getClassLoader(), interfacesToImplement,
-				Protocol.ENTRY_POINT_OBJECT_ID, gateway);
+	public Object getPythonServerEntryPoint(Gateway gateway,
+			@SuppressWarnings("rawtypes") Class[] interfacesToImplement) {
+		Object proxy = gateway.createProxy(ReflectionUtil.getClassLoader(), interfacesToImplement,
+				Protocol.ENTRY_POINT_OBJECT_ID);
 		return proxy;
 	}
 
