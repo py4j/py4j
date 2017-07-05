@@ -5,6 +5,24 @@ The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
 
+Py4J 0.10.6
+-----------
+
+- Release date: July 5th 2017
+- Python side: refactored memory management in ClientServer. Garbage collection
+  requests are now handled by a dedicated thread, i.e., when a JavaObject is no
+  longer used on the Python side, a garbage collection request is sent to a
+  queue and a management thread is responsible for sending these requests to
+  the Java side.
+- Java side: surrounded connection array access in ClientServer with lock to
+  prevent concurrent modification.
+- Java side: fixed deep inheritance argument resolution
+- Java side: fixed regression where Python proxy tried to convert null values.
+- Java side: added a GatewayServer constructor that accepts a Gateway instance.
+- `tickets closed for 0.10.6 release
+  <https://github.com/bartdag/py4j/milestone/23?closed=1>`_
+
+
 Py4J 0.10.5
 -----------
 
