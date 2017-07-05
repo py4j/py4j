@@ -563,18 +563,7 @@ def _garbage_collect_object(gateway_client, target_id):
             smart_decode(gateway_client.address) +
             smart_decode(gateway_client.port) +
             target_id)
-        if target_id != proto.ENTRY_POINT_OBJECT_ID and\
-                target_id != proto.GATEWAY_SERVER_OBJECT_ID and\
-                gateway_client.is_connected:
-            try:
-                gateway_client.send_command(
-                    proto.MEMORY_COMMAND_NAME +
-                    proto.MEMORY_DEL_SUBCOMMAND_NAME +
-                    target_id +
-                    "\ne\n")
-            except Exception:
-                logger.debug("Exception while garbage collecting an object",
-                             exc_info=True)
+        gateway_client.garbage_collect_object(target_id)
     except Exception:
         logger.debug("Exception while garbage collecting an object",
                      exc_info=True)
@@ -838,6 +827,23 @@ class GatewayClient(object):
         self.gateway_property = gateway_property
         self.ssl_context = gateway_parameters.ssl_context
         self.deque = deque()
+
+    def garbage_collect_object(self, target_id):
+        """Tells the Java side that there is no longer a reference to this
+        JavaObject on the Python side.
+        """
+        if target_id != proto.ENTRY_POINT_OBJECT_ID and\
+                target_id != proto.GATEWAY_SERVER_OBJECT_ID and\
+                self.is_connected:
+            try:
+                self.send_command(
+                    proto.MEMORY_COMMAND_NAME +
+                    proto.MEMORY_DEL_SUBCOMMAND_NAME +
+                    target_id +
+                    "\ne\n")
+            except Exception:
+                logger.debug("Exception while garbage collecting an object",
+                             exc_info=True)
 
     def _get_connection(self):
         if not self.is_connected:
