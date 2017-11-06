@@ -449,16 +449,17 @@ public class Protocol {
 		return gateway.getObject(reference);
 	}
 
-	public final static Object getReturnValue(String returnMessage, Gateway gateway) {
-		Object returnValue = null;
-
+	public final static Object getReturnValue(String returnMessage, Gateway gateway) throws Throwable {
+		final Object result = getObject(returnMessage.substring(1), gateway);
 		if (isError(returnMessage)) {
-			throw new Py4JException("An exception was raised by the Python Proxy. Return Message: " + returnMessage);
+			if (result instanceof Throwable) {
+				throw (Throwable) result;
+			} else {
+				throw new Py4JException("An exception was raised by the Python Proxy. Return Message: " + result);
+			}
 		} else {
-			returnValue = getObject(returnMessage.substring(1), gateway);
+			return result;
 		}
-
-		return returnValue;
 	}
 
 	public final static Throwable getRootThrowable(Throwable throwable, boolean skipInvocation) {

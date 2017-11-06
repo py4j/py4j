@@ -11,7 +11,7 @@ from py4j.clientserver import (
 from py4j.java_gateway import GatewayConnectionGuard, is_instance_of, \
     GatewayParameters, DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT
 from py4j.protocol import Py4JError, Py4JJavaError, smart_decode
-from py4j.tests.java_callback_test import IHelloImpl
+from py4j.tests.java_callback_test import IHelloImpl, IHelloFailingImpl
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, check_connection, sleep, WaitOperator)
 from py4j.tests.py4j_callback_recursive_example import (
@@ -72,6 +72,14 @@ def clientserver_example_app_process(
     finally:
         if join:
             p.join()
+
+
+@contextmanager
+def shutting_down(what):
+    try:
+        yield what
+    finally:
+        what.shutdown()
 
 
 def start_java_multi_client_server_app():
@@ -317,6 +325,59 @@ class IntegrationTest(unittest.TestCase):
             # Check that the connection is not broken (refs #265)
             val = client_server.jvm.java.lang.Math.abs(-4)
             self.assertEqual(4, val)
+            client_server.shutdown()
+
+    def testErrorInPythonCallback(self):
+        with clientserver_example_app_process():
+            client_server = ClientServer(
+                JavaParameters(), PythonParameters(
+                    propagate_java_exceptions=True))
+            example = client_server.entry_point.getNewExample()
+
+            try:
+                example.callHello(IHelloFailingImpl(
+                    ValueError('My interesting Python exception')))
+                self.fail()
+            except Py4JJavaError as e:
+                self.assertTrue(is_instance_of(
+                    client_server, e.java_exception,
+                    'py4j.Py4JException'))
+                self.assertTrue('interesting Python exception' in str(e))
+
+            try:
+                example.callHello(IHelloFailingImpl(
+                    Py4JJavaError(
+                        '',
+                        client_server.jvm.java.lang.IllegalStateException(
+                            'My IllegalStateException'))))
+                self.fail()
+            except Py4JJavaError as e:
+                self.assertTrue(is_instance_of(
+                    client_server, e.java_exception,
+                    'java.lang.IllegalStateException'))
+
+            client_server.shutdown()
+
+    def testErrorInPythonCallbackNoPropagate(self):
+        with clientserver_example_app_process():
+            client_server = ClientServer(
+                JavaParameters(), PythonParameters(
+                    propagate_java_exceptions=False))
+            example = client_server.entry_point.getNewExample()
+
+            try:
+                example.callHello(IHelloFailingImpl(
+                    Py4JJavaError(
+                        '',
+                        client_server.jvm.java.lang.IllegalStateException(
+                            'My IllegalStateException'))))
+                self.fail()
+            except Py4JJavaError as e:
+                self.assertTrue(is_instance_of(
+                    client_server, e.java_exception,
+                    'py4j.Py4JException'))
+                self.assertTrue('My IllegalStateException' in str(e))
+
             client_server.shutdown()
 
     def testStream(self):
