@@ -68,7 +68,7 @@ class ArrayTest(unittest.TestCase):
         char_class = self.gateway.jvm.char
         char_array = self.gateway.new_array(char_class, 2)
         char_array[0] = "a"
-        self.assertAlmostEqual(char_array[0], "a")
+        self.assertEqual(char_array[0], "a")
 
 
 if __name__ == "__main__":
