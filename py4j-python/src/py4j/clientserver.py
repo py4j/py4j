@@ -12,6 +12,7 @@ from __future__ import unicode_literals, absolute_import
 import logging
 import socket
 from threading import local, Thread
+import traceback
 import weakref
 
 from py4j.java_gateway import (
@@ -128,7 +129,7 @@ class PythonParameters(CallbackServerParameters):
             daemonize=False, daemonize_connections=False, eager_load=True,
             ssl_context=None, auto_gc=False,
             accept_timeout=DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-            read_timeout=None,):
+            read_timeout=None, propagate_java_exceptions=False):
         """
         :param address: the address to which the client will request a
             connection
@@ -165,10 +166,19 @@ class PythonParameters(CallbackServerParameters):
         :param read_timeout: if > 0, sets a timeout in seconds after
             which the socket stops waiting for a call or command from the
             Java side.
+
+        :param propagate_java_exceptions: if `True`, any `Py4JJavaError` raised
+            by a Python callback will cause the nested `java_exception` to be
+            thrown on the Java side. If `False`, the `Py4JJavaError` will
+            manifest as a `Py4JException` on the Java side, just as with any
+            other kind of Python exception. Setting this option is useful if
+            you need to implement a Java interface where the user of the
+            interface has special handling for specific Java exception types.
         """
         super(PythonParameters, self).__init__(
             address, port, daemonize, daemonize_connections, eager_load,
-            ssl_context, accept_timeout, read_timeout)
+            ssl_context, accept_timeout, read_timeout,
+            propagate_java_exceptions)
         self.auto_gc = auto_gc
 
 
@@ -521,18 +531,28 @@ class ClientServerConnection(object):
         self.close(reset)
 
     def _call_proxy(self, obj_id, input):
-        return_message = proto.ERROR_RETURN_MESSAGE
-        if obj_id in self.pool:
-            try:
-                method = smart_decode(input.readline())[:-1]
-                params = self._get_params(input)
-                return_value = getattr(self.pool[obj_id], method)(*params)
-                return_message = proto.RETURN_MESSAGE + proto.SUCCESS +\
-                    get_command_part(return_value, self.pool)
-            except Exception:
-                logger.exception("There was an exception while executing the "
-                                 "Python Proxy on the Python Side.")
-        return return_message
+        if obj_id not in self.pool:
+            return proto.RETURN_MESSAGE + proto.ERROR +\
+                get_command_part('Object ID unknown', self.pool)
+
+        try:
+            method = smart_decode(input.readline())[:-1]
+            params = self._get_params(input)
+            return_value = getattr(self.pool[obj_id], method)(*params)
+            return proto.RETURN_MESSAGE + proto.SUCCESS +\
+                get_command_part(return_value, self.pool)
+        except Exception as e:
+            logger.exception("There was an exception while executing the "
+                             "Python Proxy on the Python Side.")
+
+            if self.python_parameters.propagate_java_exceptions and\
+               isinstance(e, proto.Py4JJavaError):
+                java_exception = e.java_exception
+            else:
+                java_exception = traceback.format_exc()
+
+            return proto.RETURN_MESSAGE + proto.ERROR +\
+                get_command_part(java_exception, self.pool)
 
     def _get_params(self, input):
         params = []

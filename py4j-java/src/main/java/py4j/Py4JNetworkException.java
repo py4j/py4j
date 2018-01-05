@@ -59,11 +59,11 @@ public class Py4JNetworkException extends Py4JException {
 	}
 
 	public Py4JNetworkException(String message) {
-		this(null, null, ErrorTime.OTHER);
+		this(message, null, ErrorTime.OTHER);
 	}
 
 	public Py4JNetworkException(String message, ErrorTime when) {
-		this(null, null, when);
+		this(message, null, when);
 	}
 
 	public Py4JNetworkException(String message, Throwable cause) {

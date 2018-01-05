@@ -22,6 +22,7 @@ import struct
 from subprocess import Popen, PIPE
 import subprocess
 import sys
+import traceback
 from threading import Thread, RLock
 import weakref
 
@@ -30,9 +31,10 @@ from py4j.compat import (
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j import protocol as proto
 from py4j.protocol import (
-    Py4JError, Py4JNetworkError, escape_new_line, get_command_part,
-    get_return_value, is_error, register_output_converter, smart_decode,
-    is_fatal_error)
+    Py4JError, Py4JJavaError, Py4JNetworkError,
+    get_command_part, get_return_value,
+    register_output_converter, smart_decode, escape_new_line,
+    is_fatal_error, is_error)
 from py4j.signals import Signal
 from py4j.version import __version__
 
@@ -704,7 +706,7 @@ class CallbackServerParameters(object):
             daemonize=False, daemonize_connections=False, eager_load=True,
             ssl_context=None,
             accept_timeout=DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-            read_timeout=None):
+            read_timeout=None, propagate_java_exceptions=False):
         """
         :param address: the address to which the client will request a
             connection
@@ -735,6 +737,14 @@ class CallbackServerParameters(object):
         :param read_timeout: if > 0, sets a timeout in seconds after
             which the socket stops waiting for a call or command from the
             Java side.
+
+        :param propagate_java_exceptions: if `True`, any `Py4JJavaError` raised
+            by a Python callback will cause the nested `java_exception` to be
+            thrown on the Java side. If `False`, the `Py4JJavaError` will
+            manifest as a `Py4JException` on the Java side, just as with any
+            other kind of Python exception. Setting this option is useful if
+            you need to implement a Java interface where the user of the
+            interface has special handling for specific Java exception types.
         """
         self.address = address
         self.port = port
@@ -749,6 +759,7 @@ class CallbackServerParameters(object):
             accept_timeout = DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT
         self.accept_timeout = accept_timeout
         self.read_timeout = read_timeout
+        self.propagate_java_exceptions = propagate_java_exceptions
 
 
 class DummyRLock(object):
@@ -2249,18 +2260,27 @@ class CallbackConnection(Thread):
                 self.callback_server, connection=self)
 
     def _call_proxy(self, obj_id, input):
-        return_message = proto.ERROR_RETURN_MESSAGE
-        if obj_id in self.pool:
-            try:
-                method = smart_decode(input.readline())[:-1]
-                params = self._get_params(input)
-                return_value = getattr(self.pool[obj_id], method)(*params)
-                return_message = proto.RETURN_MESSAGE + proto.SUCCESS +\
-                    get_command_part(return_value, self.pool)
-            except Exception:
-                logger.exception("There was an exception while executing the "
-                                 "Python Proxy on the Python Side.")
-        return return_message
+        if obj_id not in self.pool:
+            return proto.RETURN_MESSAGE + proto.ERROR +\
+                get_command_part('Object ID unknown', self.pool)
+
+        try:
+            method = smart_decode(input.readline())[:-1]
+            params = self._get_params(input)
+            return_value = getattr(self.pool[obj_id], method)(*params)
+            return proto.RETURN_MESSAGE + proto.SUCCESS +\
+                get_command_part(return_value, self.pool)
+        except Exception as e:
+            logger.exception("There was an exception while executing the "
+                             "Python Proxy on the Python Side.")
+            if self.callback_server_parameters.propagate_java_exceptions and\
+               isinstance(e, Py4JJavaError):
+                java_exception = e.java_exception
+            else:
+                java_exception = traceback.format_exc()
+
+            return proto.RETURN_MESSAGE + proto.ERROR +\
+                get_command_part(java_exception, self.pool)
 
     def _get_params(self, input):
         params = []

@@ -15,7 +15,7 @@ import unittest
 from py4j.compat import range
 from py4j.java_gateway import (
     JavaGateway, PythonProxyPool, CallbackServerParameters,
-    set_default_callback_accept_timeout)
+    set_default_callback_accept_timeout, is_instance_of)
 from py4j.protocol import Py4JJavaError
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, safe_shutdown, sleep, check_connection)
@@ -212,6 +212,17 @@ class IHelloImpl(object):
         implements = ["py4j.examples.IHello"]
 
 
+class IHelloFailingImpl(object):
+    def __init__(self, exception):
+        self.exception = exception
+
+    def sayHello(self, i=None, s=None):
+        raise self.exception
+
+    class Java:
+        implements = ["py4j.examples.IHello"]
+
+
 class PythonEntryPointTest(unittest.TestCase):
 
     def test_python_entry_point(self):
@@ -265,7 +276,8 @@ class IntegrationTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
         self.gateway = JavaGateway(
-            callback_server_parameters=CallbackServerParameters())
+            callback_server_parameters=CallbackServerParameters(
+                propagate_java_exceptions=True))
         sleep()
 
     def tearDown(self):
@@ -337,6 +349,29 @@ class IntegrationTest(unittest.TestCase):
             "This is Hello;\n10MyMy!\n;",
             example.callHello2(impl))
 
+    def testProxyError(self):
+        sleep()
+        example = self.gateway.entry_point.getNewExample()
+
+        try:
+            example.callHello(IHelloFailingImpl(
+                ValueError('My interesting Python exception')))
+            self.fail()
+        except Py4JJavaError as e:
+            self.assertTrue('interesting Python exception' in str(e))
+
+        try:
+            example.callHello(IHelloFailingImpl(
+                Py4JJavaError(
+                    '',
+                    self.gateway.jvm.java.lang.IllegalStateException(
+                        'My IllegalStateException'))))
+            self.fail()
+        except Py4JJavaError as e:
+            self.assertTrue(is_instance_of(
+                self.gateway, e.java_exception,
+                'java.lang.IllegalStateException'))
+
     def testGC(self):
         # This will only work with some JVM.
         sleep()
@@ -376,6 +411,37 @@ class IntegrationTest(unittest.TestCase):
         # Test constructor
         oe2 = self.gateway.jvm.py4j.examples.OperatorExample(goodAddition)
         self.assertTrue(oe2 is not None)
+
+
+class NoPropagateTest(unittest.TestCase):
+    def setUp(self):
+        self.p = start_example_app_process()
+        self.gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters(
+                propagate_java_exceptions=False))
+        sleep()
+
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+        sleep()
+
+    def testProxyError(self):
+        sleep()
+        example = self.gateway.entry_point.getNewExample()
+
+        try:
+            example.callHello(IHelloFailingImpl(
+                Py4JJavaError(
+                    '',
+                    self.gateway.jvm.java.lang.IllegalStateException(
+                        'My IllegalStateException'))))
+            self.fail()
+        except Py4JJavaError as e:
+            self.assertTrue(is_instance_of(
+                self.gateway, e.java_exception,
+                'py4j.Py4JException'))
+            self.assertTrue('My IllegalStateException' in str(e))
 
 
 class ResetCallbackClientTest(unittest.TestCase):
