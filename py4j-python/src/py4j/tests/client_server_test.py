@@ -74,6 +74,14 @@ def clientserver_example_app_process(
             p.join()
 
 
+@contextmanager
+def shutting_down(what):
+    try:
+        yield what
+    finally:
+        what.shutdown()
+
+
 def start_java_multi_client_server_app():
     subprocess.call([
         "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
