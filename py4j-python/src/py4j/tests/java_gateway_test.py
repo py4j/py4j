@@ -45,6 +45,10 @@ PY4J_JAVA_PATHS = [
     os.path.join(PY4J_PREFIX_PATH,
                  "../../../../py4j-java/build/classes/test"),  # gradle
     os.path.join(PY4J_PREFIX_PATH,
+                 "../../../../py4j-java/build/classes/java/main"),  # gradle 4
+    os.path.join(PY4J_PREFIX_PATH,
+                 "../../../../py4j-java/build/classes/java/test"),  # gradle 4
+    os.path.join(PY4J_PREFIX_PATH,
                  "../../../../py4j-java/build/resources/main"),  # gradle
     os.path.join(PY4J_PREFIX_PATH,
                  "../../../../py4j-java/build/resources/test"),  # gradle
