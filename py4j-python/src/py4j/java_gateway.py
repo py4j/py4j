@@ -327,7 +327,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     ProcessConsumer(proc, [redirect_stdout], daemon=daemonize_redirect).start()
 
     if close_stderr:
-        # XXX This will quiet ResourceWarning in Python 3.5
+        # XXX This will quiet ResourceWarning in Python 3.5+
         # This only close the fd in this process, not in the JVM process, which
         # makes sense.
         quiet_close(stderr)
