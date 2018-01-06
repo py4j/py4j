@@ -33,12 +33,12 @@ information.
 .. image:: https://img.shields.io/circleci/project/bartdag/py4j.svg
     :target: https://circleci.com/gh/bartdag/py4j
 
+
 .. image:: https://img.shields.io/pypi/v/py4j.svg
     :target: https://pypi.python.org/pypi/py4j
 
-.. image:: https://img.shields.io/pypi/l/py4j.svg
 
-.. image:: https://img.shields.io/pypi/dm/py4j.svg
+.. image:: https://img.shields.io/pypi/l/py4j.svg
 
 .. image:: https://img.shields.io/pypi/pyversions/py4j.svg
 

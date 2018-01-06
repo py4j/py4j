@@ -5,6 +5,25 @@ The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
 
+Py4J 0.10.7 - to be released
+----------------------------
+
+- Release date:
+- Both sides: Python exception trace is now propagated to the Java side as a
+  string. If the Python exception is caused by a Java exception it is possible
+  to rethrow the Java exception on the Java side, making it easy to implement
+  Java protocols in Python (e.g., Iterator protocol). Because this could break
+  backward compatibily, Java exceptions are only rethrown if
+  propagate_java_exceptions is True in CallbackServerParameters.
+- Both sides: small fixes to the code examples on documentation front page.
+- Python side: support for Python 3.6
+- Java side: ClientServer now uses the passed SocketFactory in
+  PythonClient instead of always falling back to the default socket factory.
+- Java side: support for Gradle 4.x
+- `tickets closed for 0.10.7 release
+  <https://github.com/bartdag/py4j/milestone/24?closed=1>`_
+
+
 Py4J 0.10.6
 -----------
 
