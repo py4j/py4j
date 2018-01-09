@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2018, Scott Lewis and individual contributors.
+ * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Class to represent a Python-based Exception.  Parses the String returned 
@@ -160,7 +159,8 @@ public class PythonThrowable extends Throwable {
 	}
 
 	public PythonThrowable(String pythonErrorString, boolean useJavaStackFormat) {
-		Objects.requireNonNull(pythonErrorString, "Error must not be null");
+		if (pythonErrorString == null)
+			throw new NullPointerException("pythonErrorString must not be null");
 		String[] lines = pythonErrorString.split("\\n");
 		if (lines.length > 0) {
 			String lastLine = lines[lines.length - 1];
