@@ -36,29 +36,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class to represent a Python-based Exception. Parses the String returned from
- * traceback.format_exc() and prints it in Python form...e.g.:
+ * Class to represent a Python-based Exception. Parses the String returned from traceback.format_exc() and prints it in
+ * Python form...e.g.:
  * 
- * Traceback (most recent call last): File "pydevd.py", line 1621, in
- * <moduleName> main() File "pydevd.py", line 1615, in main globals =
- * debugger.run(setup['fileName'], None, None, is_module) File "pydevd.py", line
- * 1022, in run pydev_imports.execfile(fileName, globals, locals) # execute the
- * script File "run.py", line 9, in <moduleName> from osgiservicebridge.protobuf
- * import protobuf_remote_service, protobuf_remote_service_method,\
- * ImportError:cannot import name PythonServiceExporter
+ * Traceback (most recent call last): File "pydevd.py", line 1621, in <moduleName> main() File "pydevd.py", line 1615,
+ * in main globals = debugger.run(setup['fileName'], None, None, is_module) File "pydevd.py", line 1022, in run
+ * pydev_imports.execfile(fileName, globals, locals) # execute the script File "run.py", line 9, in <moduleName> from
+ * osgiservicebridge.protobuf import protobuf_remote_service, protobuf_remote_service_method,\ ImportError:cannot import
+ * name PythonServiceExporter
  *
  * or the same information in a Java-like stack trace:
  * 
- * Python exception - ImportError: cannot import name PythonServiceExporter at
- * run.py:9 <moduleName> from osgiservicebridge.protobuf import
- * protobuf_remote_service, protobuf_remote_service_method,\ at pydevd.py:1022
- * run pydev_imports.execfile(fileName, globals, locals) # execute the script---
- * at pydevd.py:1615 main globals = debugger.run(setup['fileName'], None, None,
- * is_module) at pydevd.py:1621 <moduleName> main()
+ * Python exception - ImportError: cannot import name PythonServiceExporter at run.py:9 <moduleName> from
+ * osgiservicebridge.protobuf import protobuf_remote_service, protobuf_remote_service_method,\ at pydevd.py:1022 run
+ * pydev_imports.execfile(fileName, globals, locals) # execute the script--- at pydevd.py:1615 main globals =
+ * debugger.run(setup['fileName'], None, None, is_module) at pydevd.py:1621 <moduleName> main()
  * 
- * Both of these forms can be accessed via printStackTracePython(...) or
- * printStackTraceJava(...). Also the form returned by the inherited
- * printStackTrace(...) methods can also be set by using this constructor:
+ * Both of these forms can be accessed via printStackTracePython(...) or printStackTraceJava(...). Also the form
+ * returned by the inherited printStackTrace(...) methods can also be set by using this constructor:
  * 
  * oublic PythonThrowable(String pythonErrorString, boolean useJavaStackFormat)
  * 
@@ -127,7 +122,7 @@ public class PythonThrowable extends Throwable {
 					this.line = Integer.parseInt(fileLineParts[1].substring(LINENO_PREFIX.length()).trim());
 				} catch (NumberFormatException e) {
 					// should not happen
-					throw new RuntimeException("Cannot parse line number from fileLine="+fileLine);
+					throw new RuntimeException("Cannot parse line number from fileLine=" + fileLine);
 				}
 				this.moduleName = fileLineParts[2].substring(MOD_PREFIX.length()).trim();
 			}
