@@ -35,50 +35,45 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class to represent a Python-based Exception.  Parses the String returned 
- * from traceback.format_exc() and prints it in Python form...e.g.:
+ * Class to represent a Python-based Exception. Parses the String returned from
+ * traceback.format_exc() and prints it in Python form...e.g.:
  * 
- * Traceback (most recent call last):
- * File "pydevd.py", line 1621, in <moduleName>
- *   main()
- * File "pydevd.py", line 1615, in main
- *   globals = debugger.run(setup['fileName'], None, None, is_module)
- * File "pydevd.py", line 1022, in run
- *   pydev_imports.execfile(fileName, globals, locals)  # execute the script
- * File "run.py", line 9, in <moduleName>
- *   from osgiservicebridge.protobuf import protobuf_remote_service, protobuf_remote_service_method,\
+ * Traceback (most recent call last): File "pydevd.py", line 1621, in
+ * <moduleName> main() File "pydevd.py", line 1615, in main globals =
+ * debugger.run(setup['fileName'], None, None, is_module) File "pydevd.py", line
+ * 1022, in run pydev_imports.execfile(fileName, globals, locals) # execute the
+ * script File "run.py", line 9, in <moduleName> from osgiservicebridge.protobuf
+ * import protobuf_remote_service, protobuf_remote_service_method,\
  * ImportError:cannot import name PythonServiceExporter
  *
  * or the same information in a Java-like stack trace:
  * 
- * Python exception - ImportError: cannot import name PythonServiceExporter
- *       at run.py:9 <moduleName>
- *           from osgiservicebridge.protobuf import protobuf_remote_service, protobuf_remote_service_method,\
- *       at pydevd.py:1022 run
- *           pydev_imports.execfile(fileName, globals, locals)  # execute the script---
- *       at pydevd.py:1615 main
- *           globals = debugger.run(setup['fileName'], None, None, is_module)
- *       at pydevd.py:1621 <moduleName>
- *           main()
+ * Python exception - ImportError: cannot import name PythonServiceExporter at
+ * run.py:9 <moduleName> from osgiservicebridge.protobuf import
+ * protobuf_remote_service, protobuf_remote_service_method,\ at pydevd.py:1022
+ * run pydev_imports.execfile(fileName, globals, locals) # execute the script---
+ * at pydevd.py:1615 main globals = debugger.run(setup['fileName'], None, None,
+ * is_module) at pydevd.py:1621 <moduleName> main()
  * 
- * Both of these forms can be accessed via printStackTracePython(...) or printStackTraceJava(...).  Also the form returned
- * by the inherited printStackTrace(...) methods can also be set by using this constructor:  
+ * Both of these forms can be accessed via printStackTracePython(...) or
+ * printStackTraceJava(...). Also the form returned by the inherited
+ * printStackTrace(...) methods can also be set by using this constructor:
  * 
  * oublic PythonThrowable(String pythonErrorString, boolean useJavaStackFormat)
  * 
  */
 public class PythonThrowable extends Throwable {
 
+	private static final String FILE_PREFIX = "  File \"";
 	private static final String PYTHON_FIRST_LINE = "Traceback (most recent call last):";
 
 	private static final long serialVersionUID = -1622656943236338778L;
 
 	public static class PythonStackTraceElement {
-		public static final String FILE_PREFIX = "  File \"";
-		public static final String LINENO_PREFIX = " line ";
-		public static final String MOD_PREFIX = " in ";
-		public static final String JAVA_FILE_PREFIX = "        at ";
-		public static final String JAVA_CODE_PREFIX = "            ";
+		private static final String LINENO_PREFIX = " line ";
+		private static final String MOD_PREFIX = " in ";
+		private static final String JAVA_FILE_PREFIX = "        at ";
+		private static final String JAVA_CODE_PREFIX = "            ";
 
 		private String fileName;
 		private int line;
@@ -96,20 +91,22 @@ public class PythonThrowable extends Throwable {
 				}
 				this.moduleName = fileLineParts[2].substring(MOD_PREFIX.length()).trim();
 			}
-			this.codeLine = codeLine.trim();
+			if (codeLine != null)
+				this.codeLine = codeLine.trim();
 		}
 
 		public String toPythonString() {
 			StringBuffer buf = new StringBuffer(FILE_PREFIX);
 			buf.append(this.fileName).append("\"").append(",");
 			buf.append(LINENO_PREFIX).append(this.line).append(",");
-			buf.append(MOD_PREFIX).append(this.moduleName).append("\n");
-			buf.append("    ").append(this.codeLine);
+			buf.append(MOD_PREFIX).append(this.moduleName);
+			if (this.codeLine != null)
+				buf.append("\n").append("    ").append(this.codeLine);
 			return buf.toString();
 		}
 
 		String getJavaCodeLine() {
-			return JAVA_CODE_PREFIX + this.codeLine;
+			return (this.codeLine == null) ? null : JAVA_CODE_PREFIX + this.codeLine;
 		}
 
 		String getJavaFileLine() {
@@ -127,7 +124,7 @@ public class PythonThrowable extends Throwable {
 	private final String pythonExceptionMsg;
 	private final PythonStackTraceElement[] stackTraceElements;
 	private final boolean useJavaStackFormat;
-	
+
 	public PythonStackTraceElement[] getPythonStackTraceElements() {
 		return stackTraceElements;
 	}
@@ -147,13 +144,15 @@ public class PythonThrowable extends Throwable {
 
 	public static PythonStackTraceElement[] parsePythonStackTraceElements(String[] stackLines) {
 		List<PythonStackTraceElement> results = new ArrayList<PythonStackTraceElement>();
-		if (stackLines.length % 2 == 0) {
-			// even number...take by two
-			for (int index = 0; index < stackLines.length; index += 2) {
-				String fileLine = stackLines[index];
-				String codeLine = stackLines[index + 1];
-				results.add(new PythonStackTraceElement(fileLine, codeLine));
-			}
+		for (int index = 0; index < stackLines.length;) {
+			String fileLine = stackLines[index];
+			String codeLine = null;
+			if (index + 1 < stackLines.length && !stackLines[index + 1].startsWith(FILE_PREFIX)) {
+				codeLine = stackLines[index + 1];
+				index += 2;
+			} else
+				index += 1;
+			results.add(new PythonStackTraceElement(fileLine, codeLine));
 		}
 		return results.toArray(new PythonStackTraceElement[results.size()]);
 	}
@@ -180,13 +179,14 @@ public class PythonThrowable extends Throwable {
 		}
 		this.useJavaStackFormat = useJavaStackFormat;
 	}
-	
+
 	public PythonThrowable(String pythonErrorString) {
-		this(pythonErrorString,false);
+		this(pythonErrorString, false);
 	}
 
 	private abstract static class PrintStreamOrWriter {
 		abstract Object lock();
+
 		abstract void println(Object o);
 	}
 
@@ -266,7 +266,9 @@ public class PythonThrowable extends Throwable {
 			if (this.stackTraceElements != null)
 				for (int i = this.stackTraceElements.length - 1; i >= 0; i--) {
 					s.println(this.stackTraceElements[i].getJavaFileLine());
-					s.println(this.stackTraceElements[i].getJavaCodeLine());
+					String codeLine = this.stackTraceElements[i].getJavaCodeLine();
+					if (codeLine != null)
+						s.println(codeLine);
 				}
 		}
 	}
@@ -274,11 +276,11 @@ public class PythonThrowable extends Throwable {
 	public void printStackTracePython(PrintStream ps) {
 		printStackTracePython(new WrappedPrintStream(ps));
 	}
-	
+
 	public void printStackTracePython(PrintWriter pw) {
 		printStackTracePython(new WrappedPrintWriter(pw));
 	}
-	
+
 	private void printStackTrace(PrintStreamOrWriter s) {
 		if (this.useJavaStackFormat)
 			printStackTraceJava(s);
