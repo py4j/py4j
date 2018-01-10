@@ -124,9 +124,10 @@ public class PythonThrowable extends Throwable {
 			if (fileLineParts.length >= 3) {
 				this.fileName = fileLineParts[0].substring(FILE_PREFIX.length(), fileLineParts[0].length() - 1).trim();
 				try {
-					this.line = Integer.valueOf(fileLineParts[1].substring(LINENO_PREFIX.length()).trim()).intValue();
+					this.line = Integer.parseInt(fileLineParts[1].substring(LINENO_PREFIX.length()).trim());
 				} catch (NumberFormatException e) {
 					// should not happen
+					throw new RuntimeException("Cannot parse line number from fileLine="+fileLine);
 				}
 				this.moduleName = fileLineParts[2].substring(MOD_PREFIX.length()).trim();
 			}
@@ -201,7 +202,7 @@ public class PythonThrowable extends Throwable {
 	private final boolean useJavaStackFormat;
 
 	public PythonStackTraceElement[] getPythonStackTraceElements() {
-		return stackTraceElements;
+		return stackTraceElements.clone();
 	}
 
 	public static String[] parseExceptionLine(String exceptionLine) {
