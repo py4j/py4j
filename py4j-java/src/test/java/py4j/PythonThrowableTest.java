@@ -29,6 +29,7 @@
  *****************************************************************************/
 package py4j;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -36,6 +37,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.junit.Test;
+
+import py4j.PythonThrowable.PythonStackTraceElement;
 
 public class PythonThrowableTest {
 
@@ -51,14 +54,21 @@ public class PythonThrowableTest {
 				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.protobuf.hello\\python-src\\run.py\", line 9, in <moduleName>\r\n"
 				+ "    from osgiservicebridge.protobuf import protobuf_remote_service, protobuf_remote_service_method,\\\r\n"
 				+ "ImportError: cannot import name PythonServiceExporter";
-
+		int originalLines = pythonString.split("\\n").length;
 		StringWriter sw = new StringWriter();
 		PythonThrowable pt = new PythonThrowable(pythonString);
 		assertNotNull(pt.getMessage());
 		assertNull(pt.getCause());
 		pt.printStackTrace(new PrintWriter(sw));
-		assertNotNull(sw.toString());
-		System.out.println(sw.toString());
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		// number of lines should be same
+		assertEquals(stackTrace.split("\\n").length, originalLines);
+
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toPythonString());
+		System.out.println(stackTrace);
 	}
 
 	@Test
@@ -74,18 +84,55 @@ public class PythonThrowableTest {
 				+ "    hellomsg = create_hellomsgcontent('saying hello from python to java service')\r\n"
 				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.protobuf.hello\\python-src\\run.py\", line 25, in create_hellomsgcontent\r\n"
 				+ "    tuple()[1]\r\n" + "IndexError: tuple index out of range\r\n" + "";
-
+		int originalLines = pythonString.split("\\n").length;
 		StringWriter sw = new StringWriter();
 		PythonThrowable pt = new PythonThrowable(pythonString);
 		assertNotNull(pt.getMessage());
 		assertNull(pt.getCause());
 		pt.printStackTrace(new PrintWriter(sw));
-		assertNotNull(sw.toString());
-		System.out.println(sw.toString());
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		// number of lines should be same
+		assertEquals(stackTrace.split("\\n").length, originalLines);
+
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toPythonString());
+		System.out.println(stackTrace);
 	}
 
 	@Test
 	public void testPythonException3() {
+		String pythonString = "Traceback (most recent call last):\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1621, in <moduleName>\r\n"
+				+ "    main()\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1615, in main\r\n"
+				+ "    globals = debugger.run(setup['fileName'], None, None, is_module)\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1022, in run\r\n"
+				+ "    pydev_imports.execfile(fileName, globals, locals)  # execute the script\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.protobuf.hello\\python-src\\run.py\", line 67, in <moduleName>\r\n"
+				+ "    hellomsg = create_hellomsgcontent('saying hello from python to java service')\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.protobuf.hello\\python-src\\run.py\", line 25, in create_hellomsgcontent\r\n"
+				+ "    tuple()[1]\r\n" + "IndexError: tuple index out of range\r\n" + "";
+		int originalLines = pythonString.split("\\n").length;
+		StringWriter sw = new StringWriter();
+		PythonThrowable pt = new PythonThrowable(pythonString);
+		assertNotNull(pt.getMessage());
+		assertNull(pt.getCause());
+		pt.printStackTrace(new PrintWriter(sw));
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		// number of lines should be same
+		assertEquals(stackTrace.split("\\n").length, originalLines);
+
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toPythonString());
+		System.out.println(stackTrace);
+	}
+
+	@Test
+	public void testPythonException4() {
 		String pythonString = "Traceback (most recent call last):\n" + "  File \"<stdin>\", line 20, in <module>\r\n"
 				+ "  File \"<stdin>\", line 10, in foo\r\n"
 				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1022, in run\r\n"
@@ -94,14 +141,21 @@ public class PythonThrowableTest {
 				+ "    hellomsg = create_hellomsgcontent('saying hello from python to java service')\r\n"
 				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.protobuf.hello\\python-src\\run.py\", line 25, in create_hellomsgcontent\r\n"
 				+ "    tuple()[1]\r\n" + "IndexError: tuple index out of range\r\n" + "";
-
+		int originalLines = pythonString.split("\\n").length;
 		StringWriter sw = new StringWriter();
 		PythonThrowable pt = new PythonThrowable(pythonString);
 		assertNotNull(pt.getMessage());
 		assertNull(pt.getCause());
 		pt.printStackTrace(new PrintWriter(sw));
-		assertNotNull(sw.toString());
-		System.out.println(sw.toString());
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		// number of lines should be same
+		assertEquals(stackTrace.split("\\n").length, originalLines);
+
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toPythonString());
+		System.out.println(stackTrace);
 	}
 
 	@Test
@@ -116,13 +170,16 @@ public class PythonThrowableTest {
 				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.protobuf.hello\\python-src\\run.py\", line 9, in <moduleName>\r\n"
 				+ "    from osgiservicebridge.protobuf import protobuf_remote_service, protobuf_remote_service_method,\\\r\n"
 				+ "ImportError: cannot import name PythonServiceExporter";
-
 		StringWriter sw = new StringWriter();
 		PythonThrowable pt = new PythonThrowable(pythonString, true);
 		assertNotNull(pt.getMessage());
 		assertNull(pt.getCause());
 		pt.printStackTrace(new PrintWriter(sw));
 		assertNotNull(sw.toString());
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toJavaString());
 		System.out.println(sw.toString());
 	}
 
@@ -139,13 +196,16 @@ public class PythonThrowableTest {
 				+ "    hellomsg = create_hellomsgcontent('saying hello from python to java service')\r\n"
 				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.protobuf.hello\\python-src\\run.py\", line 25, in create_hellomsgcontent\r\n"
 				+ "    tuple()[1]\r\n" + "IndexError: tuple index out of range\r\n" + "";
-
 		StringWriter sw = new StringWriter();
 		PythonThrowable pt = new PythonThrowable(pythonString, true);
 		assertNotNull(pt.getMessage());
 		assertNull(pt.getCause());
 		pt.printStackTrace(new PrintWriter(sw));
 		assertNotNull(sw.toString());
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toJavaString());
 		System.out.println(sw.toString());
 	}
 
@@ -159,14 +219,41 @@ public class PythonThrowableTest {
 				+ "    hellomsg = create_hellomsgcontent('saying hello from python to java service')\r\n"
 				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.protobuf.hello\\python-src\\run.py\", line 25, in create_hellomsgcontent\r\n"
 				+ "    tuple()[1]\r\n" + "IndexError: tuple index out of range\r\n" + "";
-
 		StringWriter sw = new StringWriter();
 		PythonThrowable pt = new PythonThrowable(pythonString, true);
 		assertNotNull(pt.getMessage());
 		assertNull(pt.getCause());
 		pt.printStackTrace(new PrintWriter(sw));
 		assertNotNull(sw.toString());
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toJavaString());
 		System.out.println(sw.toString());
+	}
+
+	@Test
+	public void testJavaException4() {
+		String pythonString = "Traceback (most recent call last):\n" + "  File \"<stdin>\", line 20, in <module>\r\n"
+				+ "  File \"<stdin>\", line 10, in foo\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1022, in run\r\n"
+				+ "    pydev_imports.execfile(fileName, globals, locals)  # execute the script\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.protobuf.hello\\python-src\\run.py\", line 67, in <moduleName>\r\n"
+				+ "    hellomsg = create_hellomsgcontent('saying hello from python to java service')\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.protobuf.hello\\python-src\\run.py\", line 25, in create_hellomsgcontent\r\n"
+				+ "    tuple()[1]\r\n" + "IndexError: tuple index out of range\r\n" + "";
+		StringWriter sw = new StringWriter();
+		PythonThrowable pt = new PythonThrowable(pythonString);
+		assertNotNull(pt.getMessage());
+		assertNull(pt.getCause());
+		pt.printStackTrace(new PrintWriter(sw));
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toPythonString());
+		System.out.println(stackTrace);
 	}
 
 }

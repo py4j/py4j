@@ -31,6 +31,7 @@ package py4j;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,6 +70,44 @@ public class PythonThrowable extends Throwable {
 
 	private static final long serialVersionUID = -1622656943236338778L;
 
+	private abstract static class PrintStreamOrWriter {
+		abstract Object lock();
+
+		abstract void println(Object o);
+	}
+
+	private static class WrappedPrintStream extends PrintStreamOrWriter {
+		private final PrintStream printStream;
+
+		WrappedPrintStream(PrintStream printStream) {
+			this.printStream = printStream;
+		}
+
+		Object lock() {
+			return printStream;
+		}
+
+		void println(Object o) {
+			printStream.println(o);
+		}
+	}
+
+	private static class WrappedPrintWriter extends PrintStreamOrWriter {
+		private final PrintWriter printWriter;
+
+		WrappedPrintWriter(PrintWriter printWriter) {
+			this.printWriter = printWriter;
+		}
+
+		Object lock() {
+			return printWriter;
+		}
+
+		void println(Object o) {
+			printWriter.println(o);
+		}
+	}
+
 	public static class PythonStackTraceElement {
 		private static final String LINENO_PREFIX = " line ";
 		private static final String MOD_PREFIX = " in ";
@@ -96,23 +135,43 @@ public class PythonThrowable extends Throwable {
 		}
 
 		public String toPythonString() {
+			StringWriter sw = new StringWriter();
+			WrappedPrintWriter pw = new WrappedPrintWriter(new PrintWriter(sw));
+			writePythonFileLine(pw);
+			writePythonCodeLine(pw);
+			return sw.toString();
+		}
+
+		public String toJavaString() {
+			StringWriter sw = new StringWriter();
+			WrappedPrintWriter pw = new WrappedPrintWriter(new PrintWriter(sw));
+			writeJavaFileLine(pw);
+			writeJavaCodeLine(pw);
+			return sw.toString();
+		}
+
+		void writeJavaCodeLine(PrintStreamOrWriter ps) {
+			if (this.codeLine != null)
+				ps.println(JAVA_CODE_PREFIX + this.codeLine);
+		}
+
+		void writeJavaFileLine(PrintStreamOrWriter ps) {
+			StringBuffer buf = new StringBuffer(JAVA_FILE_PREFIX);
+			buf.append(this.fileName).append(":").append(this.line).append(" ").append(this.moduleName);
+			ps.println(buf.toString());
+		}
+
+		void writePythonFileLine(PrintStreamOrWriter ps) {
 			StringBuffer buf = new StringBuffer(FILE_PREFIX);
 			buf.append(this.fileName).append("\"").append(",");
 			buf.append(LINENO_PREFIX).append(this.line).append(",");
 			buf.append(MOD_PREFIX).append(this.moduleName);
+			ps.println(buf.toString());
+		}
+
+		void writePythonCodeLine(PrintStreamOrWriter ps) {
 			if (this.codeLine != null)
-				buf.append("\n").append("    ").append(this.codeLine);
-			return buf.toString();
-		}
-
-		String getJavaCodeLine() {
-			return (this.codeLine == null) ? null : JAVA_CODE_PREFIX + this.codeLine;
-		}
-
-		String getJavaFileLine() {
-			StringBuffer buf = new StringBuffer(JAVA_FILE_PREFIX);
-			buf.append(this.fileName).append(":").append(this.line).append(" ").append(this.moduleName);
-			return buf.toString();
+				ps.println("    " + this.codeLine);
 		}
 
 		public String toString() {
@@ -184,44 +243,6 @@ public class PythonThrowable extends Throwable {
 		this(pythonErrorString, false);
 	}
 
-	private abstract static class PrintStreamOrWriter {
-		abstract Object lock();
-
-		abstract void println(Object o);
-	}
-
-	private static class WrappedPrintStream extends PrintStreamOrWriter {
-		private final PrintStream printStream;
-
-		WrappedPrintStream(PrintStream printStream) {
-			this.printStream = printStream;
-		}
-
-		Object lock() {
-			return printStream;
-		}
-
-		void println(Object o) {
-			printStream.println(o);
-		}
-	}
-
-	private static class WrappedPrintWriter extends PrintStreamOrWriter {
-		private final PrintWriter printWriter;
-
-		WrappedPrintWriter(PrintWriter printWriter) {
-			this.printWriter = printWriter;
-		}
-
-		Object lock() {
-			return printWriter;
-		}
-
-		void println(Object o) {
-			printWriter.println(o);
-		}
-	}
-
 	public void printStackTrace() {
 		printStackTrace(System.err);
 	}
@@ -242,8 +263,10 @@ public class PythonThrowable extends Throwable {
 		synchronized (s.lock()) {
 			s.println(PYTHON_FIRST_LINE);
 			if (this.stackTraceElements != null)
-				for (PythonStackTraceElement pste : this.stackTraceElements)
-					s.println(pste.toPythonString());
+				for (PythonStackTraceElement pste : this.stackTraceElements) {
+					pste.writePythonFileLine(s);
+					pste.writePythonCodeLine(s);
+				}
 			s.println(this.pythonExceptionType + ": " + this.pythonExceptionMsg);
 		}
 	}
@@ -265,10 +288,8 @@ public class PythonThrowable extends Throwable {
 			s.println("Python exception - " + this.pythonExceptionType + ": " + this.pythonExceptionMsg);
 			if (this.stackTraceElements != null)
 				for (int i = this.stackTraceElements.length - 1; i >= 0; i--) {
-					s.println(this.stackTraceElements[i].getJavaFileLine());
-					String codeLine = this.stackTraceElements[i].getJavaCodeLine();
-					if (codeLine != null)
-						s.println(codeLine);
+					this.stackTraceElements[i].writeJavaFileLine(s);
+					this.stackTraceElements[i].writeJavaCodeLine(s);
 				}
 		}
 	}
