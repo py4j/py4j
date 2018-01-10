@@ -134,6 +134,22 @@ public class PythonThrowable extends Throwable {
 				this.codeLine = codeLine.trim();
 		}
 
+		public String getFilename() {
+			return this.fileName;
+		}
+
+		public int getLine() {
+			return this.line;
+		}
+
+		public String getModuleName() {
+			return this.moduleName;
+		}
+
+		public String getCodeLine() {
+			return this.codeLine;
+		}
+
 		public String toPythonString() {
 			StringWriter sw = new StringWriter();
 			WrappedPrintWriter pw = new WrappedPrintWriter(new PrintWriter(sw));
@@ -257,6 +273,14 @@ public class PythonThrowable extends Throwable {
 
 	public String getMessage() {
 		return this.pythonExceptionMsg;
+	}
+
+	public String getExceptionType() {
+		return this.pythonExceptionType;
+	}
+
+	public boolean useJavaStackFormat() {
+		return this.useJavaStackFormat;
 	}
 
 	private void printStackTracePython(PrintStreamOrWriter s) {
