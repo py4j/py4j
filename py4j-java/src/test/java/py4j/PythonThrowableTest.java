@@ -32,6 +32,7 @@ package py4j;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -128,7 +129,9 @@ public class PythonThrowableTest {
 
 		for (PythonStackTraceElement e : stack)
 			System.out.println(e.toPythonString());
-		System.out.println(stackTrace);
+
+		System.out.println("---");
+		pt.printStackTrace();
 	}
 
 	@Test
@@ -156,6 +159,40 @@ public class PythonThrowableTest {
 		for (PythonStackTraceElement e : stack)
 			System.out.println(e.toPythonString());
 		System.out.println(stackTrace);
+	}
+
+	@Test
+	public void testPythonException5() {
+		String pythonString = "Traceback (most recent call last):\r\n" + "  File \"<stdin>\", line 3, in compute\r\n"
+				+ "ZeroDivisionError: division by zero\r\n" + "\r\n"
+				+ "During handling of the above exception, another exception occurred:\r\n" + "\r\n"
+				+ "Traceback (most recent call last):\r\n" + "  File \"<stdin>\", line 1, in <module>\r\n"
+				+ "  File \"<stdin>\", line 5, in compute\r\n" + "  File \"<stdin>\", line 2, in log\r\n"
+				+ "FileNotFoundError: [Errno 2] No such file or directory: 'logfile.txt'";
+		int originalLines = pythonString.split("\\n").length;
+		PythonThrowable pt = new PythonThrowable(pythonString);
+		assertNotNull(pt.getMessage());
+		Throwable c = pt.getCause();
+		assertTrue(c instanceof PythonThrowable);
+		PythonThrowable cause = (PythonThrowable) c;
+		System.out.println("--Cause--");
+		cause.printStackTrace();
+		System.out.println("--End Cause---");
+		StringWriter sw = new StringWriter();
+		pt.printStackTrace(new PrintWriter(sw));
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		// number of lines should be same
+		assertEquals(stackTrace.split("\\n").length, originalLines);
+		System.out.println("--Stack Trace--");
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toPythonString());
+		System.out.println(stackTrace);
+		System.out.println("--End Stack Trace--");
+		System.out.println("--Full Stack--");
+		pt.printStackTrace();
+		System.out.println("--End Full Stack---");
 	}
 
 	@Test
@@ -254,6 +291,37 @@ public class PythonThrowableTest {
 		for (PythonStackTraceElement e : stack)
 			System.out.println(e.toPythonString());
 		System.out.println(stackTrace);
+	}
+
+	@Test
+	public void testPythonExceptionJava5() {
+		String pythonString = "Traceback (most recent call last):\r\n" + "  File \"<stdin>\", line 3, in compute\r\n"
+				+ "ZeroDivisionError: division by zero\r\n" + "\r\n"
+				+ "During handling of the above exception, another exception occurred:\r\n" + "\r\n"
+				+ "Traceback (most recent call last):\r\n" + "  File \"<stdin>\", line 1, in <module>\r\n"
+				+ "  File \"<stdin>\", line 5, in compute\r\n" + "  File \"<stdin>\", line 2, in log\r\n"
+				+ "FileNotFoundError: [Errno 2] No such file or directory: 'logfile.txt'";
+		PythonThrowable pt = new PythonThrowable(pythonString);
+		assertNotNull(pt.getMessage());
+		Throwable c = pt.getCause();
+		assertTrue(c instanceof PythonThrowable);
+		PythonThrowable cause = (PythonThrowable) c;
+		System.out.println("--Cause--");
+		cause.printStackTraceJava();
+		System.out.println("--End Cause---");
+		StringWriter sw = new StringWriter();
+		pt.printStackTraceJava(new PrintWriter(sw));
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		System.out.println("--Stack Trace--");
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toJavaString());
+		System.out.println(stackTrace);
+		System.out.println("--End Stack Trace--");
+		System.out.println("--Full Stack--");
+		pt.printStackTraceJava();
+		System.out.println("--End Full Stack---");
 	}
 
 }

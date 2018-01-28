@@ -36,30 +36,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class to represent a Python-based Exception. Parses the String returned from traceback.format_exc() and prints it in
- * Python form...e.g.:
+ * Class to represent a Python Exceptions. Parses the String returned from traceback.format_exc() and prints it in
+ * Python form or Java form. Both of these forms can be accessed via printStackTracePython(...) or
+ * printStackTraceJava(...). The form returned by the inherited printStackTrace(...) methods can also be set by
+ * explicitly using this constructor:
  * 
- * Traceback (most recent call last): File "pydevd.py", line 1621, in <moduleName> main() File "pydevd.py", line 1615,
- * in main globals = debugger.run(setup['fileName'], None, None, is_module) File "pydevd.py", line 1022, in run
- * pydev_imports.execfile(fileName, globals, locals) # execute the script File "run.py", line 9, in <moduleName> from
- * osgiservicebridge.protobuf import protobuf_remote_service, protobuf_remote_service_method,\ ImportError:cannot import
- * name PythonServiceExporter
- *
- * or the same information in a Java-like stack trace:
- * 
- * Python exception - ImportError: cannot import name PythonServiceExporter at run.py:9 <moduleName> from
- * osgiservicebridge.protobuf import protobuf_remote_service, protobuf_remote_service_method,\ at pydevd.py:1022 run
- * pydev_imports.execfile(fileName, globals, locals) # execute the script--- at pydevd.py:1615 main globals =
- * debugger.run(setup['fileName'], None, None, is_module) at pydevd.py:1621 <moduleName> main()
- * 
- * Both of these forms can be accessed via printStackTracePython(...) or printStackTraceJava(...). Also the form
- * returned by the inherited printStackTrace(...) methods can also be set by using this constructor:
- * 
- * oublic PythonThrowable(String pythonErrorString, boolean useJavaStackFormat)
+ * public PythonThrowable(String pythonErrorString, boolean useJavaStackFormat)
  * 
  */
 public class PythonThrowable extends Throwable {
 
+	private static String NEWLINE = System.getProperty("line.separator");
 	private static final String FILE_PREFIX = "  File \"";
 	private static final String PYTHON_FIRST_LINE = "Traceback (most recent call last):";
 
@@ -193,8 +180,9 @@ public class PythonThrowable extends Throwable {
 
 	private final String pythonExceptionType;
 	private final String pythonExceptionMsg;
-	private final PythonStackTraceElement[] stackTraceElements;
+	private PythonStackTraceElement[] stackTraceElements;
 	private final boolean useJavaStackFormat;
+	private final String pythonCauseMessage;
 
 	public PythonStackTraceElement[] getPythonStackTraceElements() {
 		return stackTraceElements.clone();
@@ -213,34 +201,75 @@ public class PythonThrowable extends Throwable {
 		return result;
 	}
 
-	public static PythonStackTraceElement[] parsePythonStackTraceElements(String[] stackLines) {
+	public static void parsePythonStackTrace(PythonThrowable t, String[] stackLines) {
+		int firstTraceback = -1;
+		// Find first occurrence of line with 'Traceback (most recent call first):'
+		for (int index = stackLines.length - 1; index >= 0; index--) {
+			if (stackLines[index].startsWith(PYTHON_FIRST_LINE)) {
+				firstTraceback = index;
+				break;
+			}
+		}
+		// If not found, we don't have a valid stack trace
+		if (firstTraceback < 0)
+			throw new NullPointerException("Python stack trace not formatted correctly");
+		String[] ourStackLines = null;
+		// If the first traceback is > 0, it means we have a chained exception
+		if (firstTraceback > 0) {
+			// Get the description of the type of chained exception
+			// see https://www.python.org/dev/peps/pep-3134/#id30
+			ourStackLines = new String[stackLines.length - firstTraceback - 1];
+			System.arraycopy(stackLines, firstTraceback + 1, ourStackLines, 0, stackLines.length - firstTraceback - 1);
+			// Then create a cause exception if possible
+			String msgLine = stackLines[firstTraceback - 2];
+			int causeLinesLength = firstTraceback - 3;
+			String[] causeLines = new String[causeLinesLength];
+			System.arraycopy(stackLines, 0, causeLines, 0, causeLinesLength);
+			StringBuffer buf = new StringBuffer();
+			for (int i = 0; i < causeLines.length; i++) {
+				buf.append(causeLines[i]);
+				if (i + 1 < causeLines.length)
+					buf.append(NEWLINE);
+			}
+			// Create new PythonThrowable and set as cause
+			t.initCause(new PythonThrowable(msgLine, buf.toString(), t.useJavaStackFormat));
+		} else {
+			// No chained exceptions so we
+			ourStackLines = new String[stackLines.length - 1];
+			// take off top line i.e. PYTHON_FIRST_LINE
+			System.arraycopy(stackLines, 1, ourStackLines, 0, stackLines.length - 1);
+		}
+		// Then we process our stack
 		List<PythonStackTraceElement> results = new ArrayList<PythonStackTraceElement>();
-		for (int index = 0; index < stackLines.length;) {
-			String fileLine = stackLines[index];
+		for (int index = 0; index < ourStackLines.length;) {
+			String fileLine = ourStackLines[index];
 			String codeLine = null;
-			if (index + 1 < stackLines.length && !stackLines[index + 1].startsWith(FILE_PREFIX)) {
-				codeLine = stackLines[index + 1];
+			if (index + 1 < ourStackLines.length && !ourStackLines[index + 1].startsWith(FILE_PREFIX)) {
+				codeLine = ourStackLines[index + 1];
 				index += 2;
 			} else
 				index += 1;
 			results.add(new PythonStackTraceElement(fileLine, codeLine));
 		}
-		return results.toArray(new PythonStackTraceElement[results.size()]);
+		// Set stack trace elements
+		t.stackTraceElements = results.toArray(new PythonStackTraceElement[results.size()]);
 	}
 
-	public PythonThrowable(String pythonErrorString, boolean useJavaStackFormat) {
+	protected PythonThrowable(String pythonCauseMessage, String pythonErrorString, boolean useJavaStackFormat) {
 		if (pythonErrorString == null)
 			throw new NullPointerException("pythonErrorString must not be null");
+		this.pythonCauseMessage = (pythonCauseMessage != null) ? pythonCauseMessage.trim() : null;
 		String[] lines = pythonErrorString.split("\\n");
+		this.useJavaStackFormat = useJavaStackFormat;
 		if (lines.length > 0) {
 			String lastLine = lines[lines.length - 1];
 			String[] parsedLastLine = parseExceptionLine(lastLine);
 			this.pythonExceptionType = parsedLastLine[0].trim();
 			this.pythonExceptionMsg = parsedLastLine[1].trim();
-			if (lines.length > 2) {
-				String[] stackLines = new String[lines.length - 2];
-				System.arraycopy(lines, 1, stackLines, 0, lines.length - 2);
-				this.stackTraceElements = parsePythonStackTraceElements(stackLines);
+			if (lines.length > 1) {
+				String[] stackLines = new String[lines.length - 1];
+				System.arraycopy(lines, 0, stackLines, 0, lines.length - 1);
+				parsePythonStackTrace(this, stackLines);
 			} else
 				this.stackTraceElements = null;
 		} else {
@@ -248,7 +277,10 @@ public class PythonThrowable extends Throwable {
 			this.pythonExceptionMsg = null;
 			this.stackTraceElements = null;
 		}
-		this.useJavaStackFormat = useJavaStackFormat;
+	}
+
+	public PythonThrowable(String pythonErrorString, boolean useJavaStackFormat) {
+		this(null, pythonErrorString, useJavaStackFormat);
 	}
 
 	public PythonThrowable(String pythonErrorString) {
@@ -281,6 +313,14 @@ public class PythonThrowable extends Throwable {
 
 	private void printStackTracePython(PrintStreamOrWriter s) {
 		synchronized (s.lock()) {
+			Throwable t = getCause();
+			if (t != null && t.getClass().isAssignableFrom(PythonThrowable.class)) {
+				PythonThrowable tc = (PythonThrowable) t;
+				tc.printStackTracePython(s);
+				s.println("");
+				s.println(tc.pythonCauseMessage);
+				s.println("");
+			}
 			s.println(PYTHON_FIRST_LINE);
 			if (this.stackTraceElements != null)
 				for (PythonStackTraceElement pste : this.stackTraceElements) {
@@ -292,25 +332,35 @@ public class PythonThrowable extends Throwable {
 	}
 
 	public void printStackTraceJava(PrintStream s) {
-		printStackTraceJava(new WrappedPrintStream(s));
+		printStackTraceJava(false, new WrappedPrintStream(s));
 	}
 
 	public void printStackTraceJava(PrintWriter w) {
-		printStackTraceJava(new WrappedPrintWriter(w));
+		printStackTraceJava(false, new WrappedPrintWriter(w));
 	}
 
 	public void printStackTraceJava() {
 		printStackTraceJava(System.out);
 	}
 
-	private void printStackTraceJava(PrintStreamOrWriter s) {
+	private void printStackTraceJava(boolean cause, PrintStreamOrWriter s) {
 		synchronized (s.lock()) {
-			s.println("Python exception - " + this.pythonExceptionType + ": " + this.pythonExceptionMsg);
+			StringBuffer buf = new StringBuffer();
+			if (cause)
+				buf.append("Caused By: ");
+			buf.append("Python exception - ").append(this.pythonExceptionType).append(": ")
+					.append(this.pythonExceptionMsg);
+			s.println(buf.toString());
 			if (this.stackTraceElements != null)
 				for (int i = this.stackTraceElements.length - 1; i >= 0; i--) {
 					this.stackTraceElements[i].writeJavaFileLine(s);
 					this.stackTraceElements[i].writeJavaCodeLine(s);
 				}
+			Throwable t = getCause();
+			if (t != null && t.getClass().isAssignableFrom(PythonThrowable.class)) {
+				PythonThrowable c = (PythonThrowable) t;
+				c.printStackTraceJava(true, s);
+			}
 		}
 	}
 
@@ -324,7 +374,7 @@ public class PythonThrowable extends Throwable {
 
 	private void printStackTrace(PrintStreamOrWriter s) {
 		if (this.useJavaStackFormat)
-			printStackTraceJava(s);
+			printStackTraceJava(false, s);
 		else
 			printStackTracePython(s);
 	}
