@@ -56,6 +56,8 @@ public class PythonThrowable extends Throwable {
 		abstract Object lock();
 
 		abstract void println(Object o);
+
+		abstract void print(Object o);
 	}
 
 	private static class WrappedPrintStream extends PrintStreamOrWriter {
@@ -71,6 +73,10 @@ public class PythonThrowable extends Throwable {
 
 		void println(Object o) {
 			printStream.println(o);
+		}
+
+		void print(Object o) {
+			printStream.print(o);
 		}
 	}
 
@@ -88,6 +94,11 @@ public class PythonThrowable extends Throwable {
 		void println(Object o) {
 			printWriter.println(o);
 		}
+
+		void print(Object o) {
+			printWriter.print(o);
+		}
+
 	}
 
 	public static class PythonStackTraceElement {
@@ -273,7 +284,7 @@ public class PythonThrowable extends Throwable {
 			printOurStackTraceJava(s);
 			String prefix = "        ";
 			s.println(prefix + "---Python Stack---");
-			printStackTracePython(prefix, s);
+			printStackTracePython(prefix, s, false);
 		}
 	}
 
@@ -316,7 +327,7 @@ public class PythonThrowable extends Throwable {
 		return this.useJavaStackFormat;
 	}
 
-	private void printStackTracePython(String prefix, PrintStreamOrWriter s) {
+	private void printStackTracePython(String prefix, PrintStreamOrWriter s, boolean trailingNewline) {
 		synchronized (s.lock()) {
 			Throwable t = getCause();
 			if (t != null && t.getClass().isAssignableFrom(PythonThrowable.class)) {
@@ -335,8 +346,16 @@ public class PythonThrowable extends Throwable {
 			StringBuffer buf = new StringBuffer(this.pythonExceptionType);
 			if (!"".equals(this.pythonExceptionMsg))
 				buf.append(": ").append(this.pythonExceptionMsg);
-			s.println(prefix + buf.toString());
+			String lastLine = prefix + buf.toString();
+			if (trailingNewline)
+				s.println(lastLine);
+			else
+				s.print(lastLine);
 		}
+	}
+
+	private void printStackTracePython(String prefix, PrintStreamOrWriter s) {
+		printStackTracePython(prefix, s, true);
 	}
 
 	public void printStackTraceJava(PrintStream s) {
