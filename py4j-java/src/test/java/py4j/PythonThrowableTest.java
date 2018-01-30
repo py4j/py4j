@@ -196,6 +196,135 @@ public class PythonThrowableTest {
 	}
 
 	@Test
+	public void testPythonException6() {
+		String pythonString = "Exception: two\r\n" + "\r\n"
+				+ "The above exception was the direct cause of the following exception:\r\n" + "\r\n"
+				+ "Traceback (most recent call last):\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1621, in <module>\r\n"
+				+ "    main()\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1615, in main\r\n"
+				+ "    globals = debugger.run(setup['file'], None, None, is_module)\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1022, in run\r\n"
+				+ "    pydev_imports.execfile(file, globals, locals)  # execute the script\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\_pydev_imps\\_pydev_execfile.py\", line 25, in execfile\r\n"
+				+ "    exec(compile(contents+\"\\n\", file, 'exec'), glob, loc)\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\run.py\", line 14, in <module>\r\n"
+				+ "    raise Exception('one') from Exception('two')\r\n" + "Exception: one";
+		int originalLines = pythonString.split("\\n").length;
+		PythonThrowable pt = new PythonThrowable(pythonString);
+		assertNotNull(pt.getMessage());
+		Throwable c = pt.getCause();
+		assertTrue(c instanceof PythonThrowable);
+		PythonThrowable cause = (PythonThrowable) c;
+		System.out.println("--Cause--");
+		cause.printStackTrace();
+		System.out.println("--End Cause---");
+		StringWriter sw = new StringWriter();
+		pt.printStackTrace(new PrintWriter(sw));
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		// number of lines should be same
+		assertEquals(stackTrace.split("\\n").length, originalLines);
+		System.out.println("--Stack Trace--");
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toPythonString());
+		System.out.println(stackTrace);
+		System.out.println("--End Stack Trace--");
+		System.out.println("--Full Stack--");
+		pt.printStackTrace();
+		System.out.println("--End Full Stack---");
+	}
+
+	@Test
+	public void testPythonException7() {
+		String pythonString = "Exception\r\n" + "\r\n"
+				+ "The above exception was the direct cause of the following exception:\r\n" + "\r\n"
+				+ "Traceback (most recent call last):\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1621, in <module>\r\n"
+				+ "    main()\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1615, in main\r\n"
+				+ "    globals = debugger.run(setup['file'], None, None, is_module)\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1022, in run\r\n"
+				+ "    pydev_imports.execfile(file, globals, locals)  # execute the script\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\_pydev_imps\\_pydev_execfile.py\", line 25, in execfile\r\n"
+				+ "    exec(compile(contents+\"\\n\", file, 'exec'), glob, loc)\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\run.py\", line 14, in <module>\r\n"
+				+ "    raise Exception from Exception\r\n" + "Exception";
+		int originalLines = pythonString.split("\\n").length;
+		PythonThrowable pt = new PythonThrowable(pythonString);
+		assertNotNull(pt.getMessage());
+		Throwable c = pt.getCause();
+		assertTrue(c instanceof PythonThrowable);
+		PythonThrowable cause = (PythonThrowable) c;
+		System.out.println("--Cause--");
+		cause.printStackTrace();
+		System.out.println("--End Cause---");
+		StringWriter sw = new StringWriter();
+		pt.printStackTrace(new PrintWriter(sw));
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		// number of lines should be same
+		assertEquals(stackTrace.split("\\n").length, originalLines);
+		System.out.println("--Stack Trace--");
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toPythonString());
+		System.out.println(stackTrace);
+		System.out.println("--End Stack Trace--");
+		System.out.println("--Full Stack--");
+		pt.printStackTrace();
+		System.out.println("--End Full Stack---");
+	}
+
+	@Test
+	public void testPythonException8() {
+		String pythonString = "Traceback (most recent call last):\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\a.py\", line 14, in run\r\n"
+				+ "    b.run()\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\b.py\", line 9, in run\r\n"
+				+ "    1 / 0\r\n" + "ZeroDivisionError: division by zero\r\n" + "\r\n"
+				+ "The above exception was the direct cause of the following exception:\r\n" + "\r\n"
+				+ "Traceback (most recent call last):\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1621, in <module>\r\n"
+				+ "    main()\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1615, in main\r\n"
+				+ "    globals = debugger.run(setup['file'], None, None, is_module)\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1022, in run\r\n"
+				+ "    pydev_imports.execfile(file, globals, locals)  # execute the script\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\_pydev_imps\\_pydev_execfile.py\", line 25, in execfile\r\n"
+				+ "    exec(compile(contents+\"\\n\", file, 'exec'), glob, loc)\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\run.py\", line 18, in <module>\r\n"
+				+ "    a.run()\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\a.py\", line 16, in run\r\n"
+				+ "    raise Exception('exeception in class A') from exc\r\n" + "Exception: exeception in class A";
+		int originalLines = pythonString.split("\\n").length;
+		PythonThrowable pt = new PythonThrowable(pythonString);
+		assertNotNull(pt.getMessage());
+		Throwable c = pt.getCause();
+		assertTrue(c instanceof PythonThrowable);
+		PythonThrowable cause = (PythonThrowable) c;
+		System.out.println("--Cause--");
+		cause.printStackTrace();
+		System.out.println("--End Cause---");
+		StringWriter sw = new StringWriter();
+		pt.printStackTrace(new PrintWriter(sw));
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		// number of lines should be same
+		assertEquals(stackTrace.split("\\n").length, originalLines);
+		System.out.println("--Stack Trace--");
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toPythonString());
+		System.out.println(stackTrace);
+		System.out.println("--End Stack Trace--");
+		System.out.println("--Full Stack--");
+		pt.printStackTrace();
+		System.out.println("--End Full Stack---");
+	}
+
+	@Test
 	public void testPythonExceptionJava1() {
 		String pythonString = "Traceback (most recent call last):\r\n"
 				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1621, in <moduleName>\r\n"
@@ -301,6 +430,126 @@ public class PythonThrowableTest {
 				+ "Traceback (most recent call last):\r\n" + "  File \"<stdin>\", line 1, in <module>\r\n"
 				+ "  File \"<stdin>\", line 5, in compute\r\n" + "  File \"<stdin>\", line 2, in log\r\n"
 				+ "FileNotFoundError: [Errno 2] No such file or directory: 'logfile.txt'";
+		PythonThrowable pt = new PythonThrowable(pythonString);
+		assertNotNull(pt.getMessage());
+		Throwable c = pt.getCause();
+		assertTrue(c instanceof PythonThrowable);
+		PythonThrowable cause = (PythonThrowable) c;
+		System.out.println("--Cause--");
+		cause.printStackTraceJava();
+		System.out.println("--End Cause---");
+		StringWriter sw = new StringWriter();
+		pt.printStackTraceJava(new PrintWriter(sw));
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		System.out.println("--Stack Trace--");
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toJavaString());
+		System.out.println(stackTrace);
+		System.out.println("--End Stack Trace--");
+		System.out.println("--Full Stack--");
+		pt.printStackTraceJava();
+		System.out.println("--End Full Stack---");
+	}
+
+	@Test
+	public void testPythonExceptionJava6() {
+		String pythonString = "Exception: two\r\n" + "\r\n"
+				+ "The above exception was the direct cause of the following exception:\r\n" + "\r\n"
+				+ "Traceback (most recent call last):\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1621, in <module>\r\n"
+				+ "    main()\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1615, in main\r\n"
+				+ "    globals = debugger.run(setup['file'], None, None, is_module)\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1022, in run\r\n"
+				+ "    pydev_imports.execfile(file, globals, locals)  # execute the script\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\_pydev_imps\\_pydev_execfile.py\", line 25, in execfile\r\n"
+				+ "    exec(compile(contents+\"\\n\", file, 'exec'), glob, loc)\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\run.py\", line 14, in <module>\r\n"
+				+ "    raise Exception('one') from Exception('two')\r\n" + "Exception: one";
+		PythonThrowable pt = new PythonThrowable(pythonString);
+		assertNotNull(pt.getMessage());
+		Throwable c = pt.getCause();
+		assertTrue(c instanceof PythonThrowable);
+		PythonThrowable cause = (PythonThrowable) c;
+		System.out.println("--Cause--");
+		cause.printStackTraceJava();
+		System.out.println("--End Cause---");
+		StringWriter sw = new StringWriter();
+		pt.printStackTraceJava(new PrintWriter(sw));
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		System.out.println("--Stack Trace--");
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toJavaString());
+		System.out.println(stackTrace);
+		System.out.println("--End Stack Trace--");
+		System.out.println("--Full Stack--");
+		pt.printStackTraceJava();
+		System.out.println("--End Full Stack---");
+	}
+
+	@Test
+	public void testPythonExceptionJava7() {
+		String pythonString = "Exception\r\n" + "\r\n"
+				+ "The above exception was the direct cause of the following exception:\r\n" + "\r\n"
+				+ "Traceback (most recent call last):\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1621, in <module>\r\n"
+				+ "    main()\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1615, in main\r\n"
+				+ "    globals = debugger.run(setup['file'], None, None, is_module)\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1022, in run\r\n"
+				+ "    pydev_imports.execfile(file, globals, locals)  # execute the script\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\_pydev_imps\\_pydev_execfile.py\", line 25, in execfile\r\n"
+				+ "    exec(compile(contents+\"\\n\", file, 'exec'), glob, loc)\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\run.py\", line 14, in <module>\r\n"
+				+ "    raise Exception from Exception\r\n" + "Exception";
+		PythonThrowable pt = new PythonThrowable(pythonString);
+		assertNotNull(pt.getMessage());
+		Throwable c = pt.getCause();
+		assertTrue(c instanceof PythonThrowable);
+		PythonThrowable cause = (PythonThrowable) c;
+		System.out.println("--Cause--");
+		cause.printStackTraceJava();
+		System.out.println("--End Cause---");
+		StringWriter sw = new StringWriter();
+		pt.printStackTraceJava(new PrintWriter(sw));
+		String stackTrace = sw.toString();
+		assertNotNull(stackTrace);
+		PythonStackTraceElement[] stack = pt.getPythonStackTraceElements();
+		System.out.println("--Stack Trace--");
+		for (PythonStackTraceElement e : stack)
+			System.out.println(e.toJavaString());
+		System.out.println(stackTrace);
+		System.out.println("--End Stack Trace--");
+		System.out.println("--Full Stack--");
+		pt.printStackTraceJava();
+		System.out.println("--End Full Stack---");
+	}
+
+	@Test
+	public void testPythonExceptionJava8() {
+		String pythonString = "Traceback (most recent call last):\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\a.py\", line 14, in run\r\n"
+				+ "    b.run()\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\b.py\", line 9, in run\r\n"
+				+ "    1 / 0\r\n" + "ZeroDivisionError: division by zero\r\n" + "\r\n"
+				+ "The above exception was the direct cause of the following exception:\r\n" + "\r\n"
+				+ "Traceback (most recent call last):\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1621, in <module>\r\n"
+				+ "    main()\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1615, in main\r\n"
+				+ "    globals = debugger.run(setup['file'], None, None, is_module)\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\pydevd.py\", line 1022, in run\r\n"
+				+ "    pydev_imports.execfile(file, globals, locals)  # execute the script\r\n"
+				+ "  File \"C:\\eclipse.oxygen.2\\eclipse\\plugins\\org.python.pydev_6.2.0.201711281614\\pysrc\\_pydev_imps\\_pydev_execfile.py\", line 25, in execfile\r\n"
+				+ "    exec(compile(contents+\"\\n\", file, 'exec'), glob, loc)\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\run.py\", line 18, in <module>\r\n"
+				+ "    a.run()\r\n"
+				+ "  File \"C:\\Users\\slewis\\git\\Py4j-RemoteServicesProvider\\examples\\org.eclipse.ecf.examples.importhook.main\\src\\a.py\", line 16, in run\r\n"
+				+ "    raise Exception('exeception in class A') from exc\r\n" + "Exception: exeception in class A";
 		PythonThrowable pt = new PythonThrowable(pythonString);
 		assertNotNull(pt.getMessage());
 		Throwable c = pt.getCause();
