@@ -454,6 +454,9 @@ class Py4JJavaError(Py4JError):
 
     `str(py4j_java_error)` returns the error message and the stack trace
     available on the Java side (similar to printStackTrace()).
+
+    Note that `str(py4j_java_error)` in Python 2 might not automatically handle
+    a non-ascii unicode string but throw an error if the exception contains it.
     """
 
     def __init__(self, msg, java_exception):
@@ -467,4 +470,7 @@ class Py4JJavaError(Py4JError):
         gateway_client = self.java_exception._gateway_client
         answer = gateway_client.send_command(self.exception_cmd)
         return_value = get_return_value(answer, gateway_client, None, None)
+        # Note: technically this should return a bytestring 'str' rather than
+        # unicodes in Python 2; however, it can return unicodes for now.
+        # See https://github.com/bartdag/py4j/issues/306 for more details.
         return "{0}: {1}".format(self.errmsg, return_value)
