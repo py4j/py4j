@@ -83,6 +83,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 
 	private final static List<Class<? extends Command>> baseCommands;
 	protected final Socket socket;
+	protected final String authToken;
 	protected final BufferedWriter writer;
 	protected final BufferedReader reader;
 	protected final Map<String, Command> commands;
@@ -123,8 +124,14 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 
 	public GatewayConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
 			List<GatewayServerListener> listeners) throws IOException {
+		this(gateway, socket, null, customCommands, listeners);
+	}
+
+	public GatewayConnection(Gateway gateway, Socket socket, String authToken,
+			List<Class<? extends Command>> customCommands, List<GatewayServerListener> listeners) throws IOException {
 		super();
 		this.socket = socket;
+		this.authToken = authToken;
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
 		this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String, Command>();
@@ -203,6 +210,19 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		boolean reset = false;
 		Throwable error = null;
 		try {
+			if (authToken != null) {
+				String clientToken = reader.readLine();
+				if (authToken.equals(clientToken)) {
+					writer.write(Protocol.getOutputSuccessCommand());
+					writer.flush();
+				} else {
+					logger.log(Level.WARNING, "Client authentication unsuccessful, closing connection.");
+					writer.write(Protocol.getOutputErrorCommand());
+					writer.flush();
+					reset = true;
+					return;
+				}
+			}
 			logger.info("Gateway Connection ready to receive messages");
 			String commandLine = null;
 			do {

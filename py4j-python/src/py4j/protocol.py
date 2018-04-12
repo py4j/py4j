@@ -181,8 +181,11 @@ def escape_new_line(original):
 
     :rtype: an escaped string
     """
-    return smart_decode(original).replace("\\", "\\\\").replace("\r", "\\r").\
-        replace("\n", "\\n")
+    if original:
+        return smart_decode(original).replace("\\", "\\\\").\
+            replace("\r", "\\r").replace("\n", "\\n")
+    else:
+        return original
 
 
 def unescape_new_line(escaped):
@@ -196,11 +199,14 @@ def unescape_new_line(escaped):
 
     :rtype: the original string
     """
-    return ESCAPE_CHAR.join(
-        "\n".join(
-            ("\r".join(p.split(ESCAPE_CHAR + "r")))
-            .split(ESCAPE_CHAR + "n"))
-        for p in escaped.split(ESCAPE_CHAR + ESCAPE_CHAR))
+    if escaped:
+        return ESCAPE_CHAR.join(
+            "\n".join(
+                ("\r".join(p.split(ESCAPE_CHAR + "r")))
+                .split(ESCAPE_CHAR + "n"))
+            for p in escaped.split(ESCAPE_CHAR + ESCAPE_CHAR))
+    else:
+        return escaped
 
 
 def smart_decode(s):

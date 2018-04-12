@@ -34,7 +34,7 @@ from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError,
     get_command_part, get_return_value,
     register_output_converter, smart_decode, escape_new_line,
-    is_fatal_error, is_error)
+    is_fatal_error, is_error, unescape_new_line)
 from py4j.signals import Signal
 from py4j.version import __version__
 
@@ -192,7 +192,7 @@ def find_jar_path():
     # maven
     paths.append(os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
-        "../../../py4j-java/target" + maven_jar_file))
+        "../../../py4j-java/target/" + maven_jar_file))
     paths.append(os.path.join(os.path.dirname(
         os.path.realpath(__file__)), "../share/py4j/" + jar_file))
     paths.append("../../../current-release/" + jar_file)
@@ -217,7 +217,8 @@ def find_jar_path():
 def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
                    die_on_exit=False, redirect_stdout=None,
                    redirect_stderr=None, daemonize_redirect=True,
-                   java_path="java", create_new_process_group=False):
+                   java_path="java", create_new_process_group=False,
+                   enable_auth=False):
     """Launch a `Gateway` in a new Java process.
 
     The redirect parameters accept file-like objects, Queue, or deque. When
@@ -263,8 +264,11 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         Ctrl-C/SIGINT won't interrupt the JVM. If the python process dies, the
         Java process will stay alive, which may be a problem for some scenarios
         though.
+    :param enable_auth: If True, the server will require clients to provide an
+        authentication token when connecting.
 
-    :rtype: the port number of the `Gateway` server.
+    :rtype: the port number of the `Gateway` server or, when auth enabled,
+            a 2-tuple with the port number and the auth token.
     """
     popen_kwargs = {}
 
@@ -288,6 +292,8 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
               ["py4j.GatewayServer"]
     if die_on_exit:
         command.append("--die-on-broken-pipe")
+    if enable_auth:
+        command.append("--enable-auth")
     command.append(str(port))
     logger.debug("Launching gateway with command {0}".format(command))
 
@@ -318,6 +324,11 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     # ephemeral ports)
     _port = int(proc.stdout.readline())
 
+    # Read the auth token from the server if enabled.
+    _auth_token = None
+    if enable_auth:
+        _auth_token = proc.stdout.readline()[:-1]
+
     # Start consumer threads so process does not deadlock/hangs
     OutputConsumer(
         redirect_stdout, proc.stdout, daemon=daemonize_redirect).start()
@@ -332,7 +343,10 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         # makes sense.
         quiet_close(stderr)
 
-    return _port
+    if enable_auth:
+        return (_port, _auth_token)
+    else:
+        return _port
 
 
 def get_field(java_object, field_name):
@@ -646,7 +660,7 @@ class GatewayParameters(object):
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
             auto_close=True, auto_convert=False, eager_load=False,
             ssl_context=None, enable_memory_management=True,
-            read_timeout=None):
+            read_timeout=None, auth_token=None):
         """
         :param address: the address to which the client will request a
             connection. If you're assing a `SSLContext` with
@@ -684,6 +698,9 @@ class GatewayParameters(object):
 
         :param read_timeout: if > 0, sets a timeout in seconds after
             which the socket stops waiting for a response from the Java side.
+
+        :param auth_token: if provided, an authentication that token clients
+            must provide to the server when connecting.
         """
         self.address = address
         self.port = port
@@ -694,6 +711,7 @@ class GatewayParameters(object):
         self.ssl_context = ssl_context
         self.enable_memory_management = enable_memory_management
         self.read_timeout = read_timeout
+        self.auth_token = escape_new_line(auth_token)
 
 
 class CallbackServerParameters(object):
@@ -706,7 +724,8 @@ class CallbackServerParameters(object):
             daemonize=False, daemonize_connections=False, eager_load=True,
             ssl_context=None,
             accept_timeout=DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-            read_timeout=None, propagate_java_exceptions=False):
+            read_timeout=None, propagate_java_exceptions=False,
+            auth_token=None):
         """
         :param address: the address to which the client will request a
             connection
@@ -745,6 +764,9 @@ class CallbackServerParameters(object):
             other kind of Python exception. Setting this option is useful if
             you need to implement a Java interface where the user of the
             interface has special handling for specific Java exception types.
+
+        :param auth_token: if provided, an authentication token that clients
+            must provide to the server when connecting.
         """
         self.address = address
         self.port = port
@@ -760,6 +782,7 @@ class CallbackServerParameters(object):
         self.accept_timeout = accept_timeout
         self.read_timeout = read_timeout
         self.propagate_java_exceptions = propagate_java_exceptions
+        self.auth_token = escape_new_line(auth_token)
 
 
 class DummyRLock(object):
@@ -999,8 +1022,17 @@ class GatewayConnection(object):
         """
         try:
             self.socket.connect((self.address, self.port))
-            self.is_connected = True
             self.stream = self.socket.makefile("rb")
+            self.is_connected = True
+
+            if self.gateway_parameters.auth_token:
+                answer = self.send_command(
+                    self.gateway_parameters.auth_token + "\n")
+                err, _ = proto.is_error(answer)
+                if err:
+                    self.close(reset=True)
+                    raise Py4JNetworkError(
+                        "Failed to authenticate with gateway server.")
         except Exception as e:
             msg = "An error occurred while trying to connect to the Java "\
                 "server ({0}:{1})".format(self.address, self.port)
@@ -1629,8 +1661,10 @@ class JavaGateway(object):
         self.callback_server_parameters = callback_server_parameters
         if not callback_server_parameters:
             # No parameters were provided so do not autostart callback server.
+            raw_token = unescape_new_line(self.gateway_parameters.auth_token)
             self.callback_server_parameters = CallbackServerParameters(
-                port=python_proxy_port, eager_load=False)
+                port=python_proxy_port, eager_load=False,
+                auth_token=raw_token)
 
         # Check for deprecation warnings
         if auto_field:
@@ -1934,7 +1968,7 @@ class JavaGateway(object):
             cls, port=0, jarpath="", classpath="", javaopts=[],
             die_on_exit=False, redirect_stdout=None,
             redirect_stderr=None, daemonize_redirect=True, java_path="java",
-            create_new_process_group=False):
+            create_new_process_group=False, enable_auth=False):
         """Launch a `Gateway` in a new Java process and create a default
         :class:`JavaGateway <py4j.java_gateway.JavaGateway>` to connect to
         it.
@@ -1978,17 +2012,25 @@ class JavaGateway(object):
             Ctrl-C/SIGINT won't interrupt the JVM. If the python process dies,
             the Java process will stay alive, which may be a problem for some
             scenarios though.
-
+        :param enable_auth: If True, the server will require clients to provide
+            an authentication token when connecting.
 
         :rtype: a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
             connected to the `Gateway` server.
         """
-        _port = launch_gateway(
+        _ret = launch_gateway(
             port, jarpath, classpath, javaopts, die_on_exit,
             redirect_stdout=redirect_stdout, redirect_stderr=redirect_stderr,
             daemonize_redirect=daemonize_redirect, java_path=java_path,
-            create_new_process_group=create_new_process_group)
-        gateway = JavaGateway(gateway_parameters=GatewayParameters(port=_port))
+            create_new_process_group=create_new_process_group,
+            enable_auth=enable_auth)
+        if enable_auth:
+            _port, _auth_token = _ret
+        else:
+            _port, _auth_token = _ret, None
+        gateway = JavaGateway(
+            gateway_parameters=GatewayParameters(port=_port,
+                                                 auth_token=_auth_token))
         return gateway
 
 
@@ -2208,6 +2250,20 @@ class CallbackConnection(Thread):
     def run(self):
         logger.info("Callback Connection ready to receive messages")
         reset = False
+
+        if self.callback_server_parameters.auth_token:
+            # If auth is enabled, the first input line must be the auth token.
+            client_token = smart_decode(self.input.readline()[:-1])
+            if self.callback_server_parameters.auth_token == client_token:
+                success = proto.SUCCESS_RETURN_MESSAGE.encode("utf-8")
+                self.socket.sendall(success)
+            else:
+                logger.warning("Auth error, closing connection.")
+                error = proto.ERROR_RETURN_MESSAGE.encode("utf-8")
+                self.socket.sendall(error)
+                self.close(True)
+                return
+
         try:
             while True:
                 command = smart_decode(self.input.readline())[:-1]

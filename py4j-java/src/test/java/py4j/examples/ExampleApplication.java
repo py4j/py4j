@@ -61,8 +61,14 @@ public class ExampleApplication {
 	public static class ExamplePythonEntryPointApplication {
 
 		public static void main(String[] args) {
+			String authToken = null;
+			if (args.length > 0) {
+				authToken = args[0];
+			}
 			GatewayServer.turnLoggingOff();
-			GatewayServer server = new GatewayServer();
+			GatewayServer server = new GatewayServer.GatewayServerBuilder()
+					.callbackClient(GatewayServer.DEFAULT_PYTHON_PORT, GatewayServer.defaultAddress(), authToken)
+					.build();
 			server.start();
 			IHello hello = (IHello) server.getPythonServerEntryPoint(new Class[] { IHello.class });
 			try {

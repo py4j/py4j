@@ -36,10 +36,11 @@ def start_no_mem_example_server():
         "py4j.examples.ExampleApplication$ExampleNoMemManagementApplication"])
 
 
-def start_python_entry_point_server():
-    subprocess.call([
+def start_python_entry_point_server(*args):
+    java_args = [
         "java", "-cp", PY4J_JAVA_PATH,
-        "py4j.examples.ExampleApplication$ExamplePythonEntryPointApplication"])
+        "py4j.examples.ExampleApplication$ExamplePythonEntryPointApplication"]
+    subprocess.call(java_args + list(args))
 
 
 def start_example_server2():
@@ -54,7 +55,7 @@ def start_example_server3():
         "py4j.examples.InterfaceExample"])
 
 
-def start_example_app_process(app=None):
+def start_example_app_process(app=None, args=()):
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     if not app:
         target = start_example_server
@@ -62,7 +63,7 @@ def start_example_app_process(app=None):
         target = start_no_mem_example_server
     elif app == "pythonentrypoint":
         target = start_python_entry_point_server
-    p = Process(target=target)
+    p = Process(target=target, args=args)
     p.start()
     sleep()
     check_connection()
@@ -70,8 +71,8 @@ def start_example_app_process(app=None):
 
 
 @contextmanager
-def gateway_example_app_process(app=None):
-    p = start_example_app_process(app)
+def gateway_example_app_process(app=None, args=()):
+    p = start_example_app_process(app, args)
     try:
         yield p
     finally:
@@ -226,14 +227,24 @@ class IHelloFailingImpl(object):
 class PythonEntryPointTest(unittest.TestCase):
 
     def test_python_entry_point(self):
+        self._run_test()
+
+    def test_python_entry_point_with_auth(self):
+        self._run_test("secret-token")
+
+    def _run_test(self, auth_token=None):
         from py4j.tests.py4j_callback_recursive_example import (
             HelloState)
         hello_state = HelloState()
+        cb_params = CallbackServerParameters(auth_token=auth_token)
         gateway = JavaGateway(
-            callback_server_parameters=CallbackServerParameters(),
+            callback_server_parameters=cb_params,
             python_server_entry_point=hello_state)
 
-        with gateway_example_app_process("pythonentrypoint"):
+        args = []
+        if auth_token:
+            args = [auth_token]
+        with gateway_example_app_process("pythonentrypoint", args):
             gateway.shutdown()
 
         # Check that Java correctly called Python
