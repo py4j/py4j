@@ -211,16 +211,11 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		Throwable error = null;
 		try {
 			if (authToken != null) {
-				String clientToken = reader.readLine();
-				if (authToken.equals(clientToken)) {
-					writer.write(Protocol.getOutputSuccessCommand());
-					writer.flush();
-				} else {
-					logger.log(Level.WARNING, "Client authentication unsuccessful, closing connection.");
-					writer.write(Protocol.getOutputErrorCommand());
-					writer.flush();
+				try {
+					NetworkUtil.authClient(reader, writer, authToken);
+				} catch (IOException ioe) {
 					reset = true;
-					return;
+					throw ioe;
 				}
 			}
 			logger.info("Gateway Connection ready to receive messages");

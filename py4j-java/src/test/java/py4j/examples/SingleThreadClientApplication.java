@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2018, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,17 @@ public class SingleThreadClientApplication {
 
 	public static void main(String[] args) {
 		GatewayServer.turnLoggingOff();
-		ClientServer clientServer = new ClientServer(null);
+
+		String authToken = null;
+		for (int i = 0; i < args.length; i += 2) {
+			if (args[i].equals("--auth-token")) {
+				authToken = args[i + 1];
+			} else {
+				throw new IllegalArgumentException(args[i]);
+			}
+		}
+
+		ClientServer clientServer = new ClientServer.ClientServerBuilder().authToken(authToken).build();
 		IHello hello = (IHello) clientServer.getPythonServerEntryPoint(new Class[] { IHello.class });
 		try {
 			hello.sayHello();

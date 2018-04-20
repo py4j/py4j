@@ -155,7 +155,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 
 	private final ServerSocketFactory sSocketFactory;
 
-	private final String authToken;
+	protected final String authToken;
 
 	private ServerSocket sSocket;
 
@@ -415,7 +415,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		this(entryPoint, port, address, connectTimeout, readTimeout, customCommands, cbClient, sSocketFactory, null);
 	}
 
-	private GatewayServer(Object entryPoint, int port, InetAddress address, int connectTimeout, int readTimeout,
+	GatewayServer(Object entryPoint, int port, InetAddress address, int connectTimeout, int readTimeout,
 			List<Class<? extends Command>> customCommands, Py4JPythonClient cbClient,
 			ServerSocketFactory sSocketFactory, String authToken) {
 		super();
@@ -434,7 +434,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		}
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 		this.sSocketFactory = sSocketFactory;
-		this.authToken = StringUtil.escape(authToken);
+		this.authToken = authToken;
 	}
 
 	/**
@@ -1004,7 +1004,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		 * authentication is disabled.
 		 */
 		public GatewayServerBuilder authToken(String authToken) {
-			this.authToken = authToken;
+			this.authToken = StringUtil.escape(authToken);
 			return this;
 		}
 	}

@@ -573,6 +573,17 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True,
         return help_page
 
 
+def do_client_auth(inf, sock, auth_token):
+    client_token = smart_decode(inf.readline()[:-1])
+    if auth_token == client_token:
+        success = proto.OUTPUT_VOID_COMMAND.encode("utf-8")
+        sock.sendall(success)
+    else:
+        error = proto.ERROR_RETURN_MESSAGE.encode("utf-8")
+        sock.sendall(error)
+        raise Py4JError("Client authentication failed.")
+
+
 def _garbage_collect_object(gateway_client, target_id):
     try:
         ThreadSafeFinalizer.remove_finalizer(
@@ -2250,21 +2261,15 @@ class CallbackConnection(Thread):
     def run(self):
         logger.info("Callback Connection ready to receive messages")
         reset = False
-
-        if self.callback_server_parameters.auth_token:
-            # If auth is enabled, the first input line must be the auth token.
-            client_token = smart_decode(self.input.readline()[:-1])
-            if self.callback_server_parameters.auth_token == client_token:
-                success = proto.SUCCESS_RETURN_MESSAGE.encode("utf-8")
-                self.socket.sendall(success)
-            else:
-                logger.warning("Auth error, closing connection.")
-                error = proto.ERROR_RETURN_MESSAGE.encode("utf-8")
-                self.socket.sendall(error)
-                self.close(True)
-                return
-
         try:
+            if self.callback_server_parameters.auth_token:
+                try:
+                    do_client_auth(self.input, self.socket,
+                                   self.callback_server_parameters.auth_token)
+                except Exception:
+                    reset = True
+                    raise
+
             while True:
                 command = smart_decode(self.input.readline())[:-1]
                 obj_id = smart_decode(self.input.readline())[:-1]

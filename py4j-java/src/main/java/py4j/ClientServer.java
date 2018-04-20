@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2018, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,8 @@ public class ClientServer {
 
 	protected final boolean enableMemoryManagement;
 
+	protected final String authToken;
+
 	protected final Logger logger = Logger.getLogger(ClientServer.class.getName());
 
 	/**
@@ -119,6 +121,13 @@ public class ClientServer {
 	public ClientServer(int javaPort, InetAddress javaAddress, int pythonPort, InetAddress pythonAddress,
 			int connectTimeout, int readTimeout, ServerSocketFactory sSocketFactory, SocketFactory socketFactory,
 			Object entryPoint, boolean autoStartJavaServer, boolean enableMemoryManagement) {
+		this(javaPort, javaAddress, pythonPort, pythonAddress, connectTimeout, readTimeout, sSocketFactory,
+				socketFactory, entryPoint, autoStartJavaServer, enableMemoryManagement, null);
+	}
+
+	private ClientServer(int javaPort, InetAddress javaAddress, int pythonPort, InetAddress pythonAddress,
+			int connectTimeout, int readTimeout, ServerSocketFactory sSocketFactory, SocketFactory socketFactory,
+			Object entryPoint, boolean autoStartJavaServer, boolean enableMemoryManagement, String authToken) {
 		this.javaPort = javaPort;
 		this.javaAddress = javaAddress;
 		this.pythonPort = pythonPort;
@@ -128,6 +137,7 @@ public class ClientServer {
 		this.sSocketFactory = sSocketFactory;
 		this.socketFactory = socketFactory;
 		this.enableMemoryManagement = enableMemoryManagement;
+		this.authToken = authToken;
 		this.pythonClient = createPythonClient();
 		this.javaServer = createJavaServer(entryPoint, pythonClient);
 
@@ -145,11 +155,11 @@ public class ClientServer {
 
 	protected Py4JPythonClientPerThread createPythonClient() {
 		return new PythonClient(null, null, pythonPort, pythonAddress, CallbackClient.DEFAULT_MIN_CONNECTION_TIME,
-				TimeUnit.SECONDS, this.socketFactory, null, enableMemoryManagement, readTimeout);
+				TimeUnit.SECONDS, this.socketFactory, null, enableMemoryManagement, readTimeout, authToken);
 	}
 
 	protected Py4JJavaServer createJavaServer(Object entryPoint, Py4JPythonClientPerThread pythonClient) {
-		return new JavaServer(entryPoint, javaPort, connectTimeout, readTimeout, null, pythonClient);
+		return new JavaServer(entryPoint, javaPort, connectTimeout, readTimeout, null, pythonClient, authToken);
 	}
 
 	public Py4JJavaServer getJavaServer() {
@@ -229,6 +239,7 @@ public class ClientServer {
 		private Object entryPoint;
 		private boolean autoStartJavaServer;
 		private boolean enableMemoryManagement;
+		private String authToken;
 
 		public ClientServerBuilder() {
 			this(null);
@@ -250,7 +261,8 @@ public class ClientServer {
 
 		public ClientServer build() {
 			return new ClientServer(javaPort, javaAddress, pythonPort, pythonAddress, connectTimeout, readTimeout,
-					serverSocketFactory, socketFactory, entryPoint, autoStartJavaServer, enableMemoryManagement);
+					serverSocketFactory, socketFactory, entryPoint, autoStartJavaServer, enableMemoryManagement,
+					authToken);
 		}
 
 		public ClientServerBuilder javaPort(int javaPort) {
@@ -305,6 +317,11 @@ public class ClientServer {
 
 		public ClientServerBuilder enableMemoryManagement(boolean enableMemoryManagement) {
 			this.enableMemoryManagement = enableMemoryManagement;
+			return this;
+		}
+
+		public ClientServerBuilder authToken(String authToken) {
+			this.authToken = StringUtil.escape(authToken);
 			return this;
 		}
 	}

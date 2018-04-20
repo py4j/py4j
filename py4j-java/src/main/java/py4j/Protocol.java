@@ -331,10 +331,6 @@ public class Protocol {
 		return ERROR_COMMAND;
 	}
 
-	public final static String getOutputSuccessCommand() {
-		return "" + RETURN_MESSAGE + SUCCESS + END_OUTPUT;
-	}
-
 	public final static String getOutputErrorCommand(String errorMessage) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(RETURN_MESSAGE);

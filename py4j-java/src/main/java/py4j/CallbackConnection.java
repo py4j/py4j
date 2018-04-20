@@ -229,14 +229,11 @@ public class CallbackConnection implements Py4JClientConnection {
 		writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 
 		if (authToken != null) {
-			writer.write(authToken);
-			writer.write("\n");
-			writer.flush();
-
-			String reply = reader.readLine();
-			if (reply == null || !reply.equals(Protocol.getOutputSuccessCommand().trim())) {
+			try {
+				NetworkUtil.authToServer(reader, writer, authToken);
+			} catch (IOException ioe) {
 				shutdown(true);
-				throw new IOException("Authentication with callback server unsuccessful.");
+				throw ioe;
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2018, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,9 +58,16 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	protected final Py4JPythonClientPerThread pythonClient;
 	protected final int blockingReadTimeout;
 	protected final int nonBlockingReadTimeout;
+	protected final String authToken;
 
 	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
 			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer, int readTimeout) throws IOException {
+		this(gateway, socket, customCommands, pythonClient, javaServer, readTimeout, null);
+	}
+
+	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
+			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer, int readTimeout, String authToken)
+					throws IOException {
 		super();
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
@@ -78,9 +85,10 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		} else {
 			this.nonBlockingReadTimeout = CallbackConnection.DEFAULT_NONBLOCKING_SO_TIMEOUT;
 		}
+		this.authToken = authToken;
 	}
 
-	public void startServerConnection() {
+	public void startServerConnection() throws IOException {
 		Thread t = new Thread(this);
 		t.start();
 	}
@@ -147,6 +155,9 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		boolean executing = false;
 		Throwable error = null;
 		try {
+			if (authToken != null) {
+				NetworkUtil.authClient(reader, writer, authToken);
+			}
 			logger.info("Gateway Connection ready to receive messages");
 			String commandLine = null;
 			do {
@@ -250,7 +261,14 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 
 	@Override
 	public void start() throws IOException {
-
+		if (authToken != null) {
+			try {
+				NetworkUtil.authToServer(reader, writer, authToken);
+			} catch (IOException ioe) {
+				shutdown(true);
+				throw ioe;
+			}
+		}
 	}
 
 	@Override
@@ -296,4 +314,5 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 
 		return returnCommand;
 	}
+
 }
