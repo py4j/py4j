@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import py4j.commands.ArrayCommand;
+import py4j.commands.AuthCommand;
 import py4j.commands.CallCommand;
 import py4j.commands.Command;
 import py4j.commands.ConstructorCommand;
@@ -84,6 +85,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 	private final static List<Class<? extends Command>> baseCommands;
 	protected final Socket socket;
 	protected final String authToken;
+	protected final AuthCommand authCommand;
 	protected final BufferedWriter writer;
 	protected final BufferedReader reader;
 	protected final Map<String, Command> commands;
@@ -132,12 +134,20 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		super();
 		this.socket = socket;
 		this.authToken = authToken;
+		if (authToken != null) {
+			this.authCommand = new AuthCommand(authToken);
+		} else {
+			this.authCommand = null;
+		}
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
 		this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String, Command>();
 		initCommands(gateway, baseCommands);
 		if (customCommands != null) {
 			initCommands(gateway, customCommands);
+		}
+		if (authCommand != null) {
+			initCommand(gateway, authCommand);
 		}
 		this.listeners = listeners;
 	}
@@ -181,8 +191,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		for (Class<? extends Command> clazz : commandsClazz) {
 			try {
 				Command cmd = clazz.newInstance();
-				cmd.init(gateway, this);
-				commands.put(cmd.getCommandName(), cmd);
+				initCommand(gateway, cmd);
 			} catch (Exception e) {
 				String name = "null";
 				if (clazz != null) {
@@ -191,6 +200,11 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 				logger.log(Level.SEVERE, "Could not initialize command " + name, e);
 			}
 		}
+	}
+
+	private void initCommand(Gateway gateway, Command cmd) {
+		cmd.init(gateway, this);
+		commands.put(cmd.getCommandName(), cmd);
 	}
 
 	protected void quietSendFatalError(BufferedWriter writer, Throwable exception) {
@@ -210,14 +224,6 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		boolean reset = false;
 		Throwable error = null;
 		try {
-			if (authToken != null) {
-				try {
-					NetworkUtil.authClient(reader, writer, authToken);
-				} catch (IOException ioe) {
-					reset = true;
-					throw ioe;
-				}
-			}
 			logger.info("Gateway Connection ready to receive messages");
 			String commandLine = null;
 			do {
@@ -226,7 +232,17 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 				logger.fine("Received command: " + commandLine);
 				Command command = commands.get(commandLine);
 				if (command != null) {
-					command.execute(commandLine, reader, writer);
+					if (authCommand != null && !authCommand.isAuthenticated()) {
+						try {
+							authCommand.execute(commandLine, reader, writer);
+						} catch (Py4JException pe) {
+							logger.log(Level.INFO, "Authentication error.", pe);
+							reset = true;
+							return;
+						}
+					} else {
+						command.execute(commandLine, reader, writer);
+					}
 					executing = false;
 				} else {
 					logger.log(Level.WARNING, "Unknown command " + commandLine);

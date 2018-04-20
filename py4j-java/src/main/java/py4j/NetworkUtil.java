@@ -39,6 +39,8 @@ import java.net.SocketTimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import py4j.commands.AuthCommand;
+
 /**
  * <p>
  * Utility class used to perform network operations.
@@ -134,6 +136,8 @@ public class NetworkUtil {
 	 * @throws IOException On I/O error, or if authentication fails.
 	 */
 	static void authToServer(BufferedReader reader, BufferedWriter writer, String authToken) throws IOException {
+		writer.write(AuthCommand.COMMAND_NAME);
+		writer.write("\n");
 		writer.write(authToken);
 		writer.write("\n");
 		writer.flush();
@@ -141,26 +145,6 @@ public class NetworkUtil {
 		String reply = reader.readLine();
 		if (reply == null || !reply.equals(Protocol.getOutputVoidCommand().trim())) {
 			throw new IOException("Authentication with callback server unsuccessful.");
-		}
-	}
-
-	/**
-	 * Performs authentication of a client connection.
-	 *
-	 * @param reader Reader connected to the remote endpoint.
-	 * @param writer Writer connected to the remote endpoint.
-	 * @param authToken The auth token.
-	 * @throws IOException On I/O error, or if authentication fails.
-	 */
-	static void authClient(BufferedReader reader, BufferedWriter writer, String authToken) throws IOException {
-		String clientToken = reader.readLine();
-		if (authToken.equals(clientToken)) {
-			writer.write(Protocol.getOutputVoidCommand());
-			writer.flush();
-		} else {
-			writer.write(Protocol.getOutputErrorCommand());
-			writer.flush();
-			throw new IOException("Client authentication unsuccessful.");
 		}
 	}
 

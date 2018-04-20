@@ -391,8 +391,11 @@ class ClientServerConnection(object):
             self.initiated_from_client = True
 
             if self.java_parameters.auth_token:
-                answer = self.send_command(
-                    self.java_parameters.auth_token + "\n")
+                cmd = "{0}\n{1}\n".format(
+                    proto.AUTH_COMMAND_NAME,
+                    self.java_parameters.auth_token
+                )
+                answer = self.send_command(cmd)
                 err, _ = proto.is_error(answer)
                 if err:
                     self.close(reset=True)
@@ -504,17 +507,21 @@ class ClientServerConnection(object):
     def wait_for_commands(self):
         logger.info("Python Server ready to receive messages")
         reset = False
+        authenticated = self.python_parameters.auth_token is None
         try:
-            if self.python_parameters.auth_token:
-                try:
-                    do_client_auth(self.stream, self.socket,
-                                   self.python_parameters.auth_token)
-                except Exception:
-                    reset = True
-                    raise
-
             while True:
                 command = smart_decode(self.stream.readline())[:-1]
+                if not authenticated:
+                    try:
+                        do_client_auth(command, self.stream, self.socket,
+                                       self.python_parameters.auth_token)
+                        authenticated = True
+                        continue
+                    except Exception:
+                        traceback.print_exc()
+                        reset = True
+                        raise
+
                 obj_id = smart_decode(self.stream.readline())[:-1]
                 logger.info(
                     "Received command {0} on object id {1}".

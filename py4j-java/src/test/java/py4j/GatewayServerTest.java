@@ -30,6 +30,7 @@
 package py4j;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -46,6 +47,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.junit.Test;
 
+import py4j.commands.AuthCommand;
 import py4j.commands.HelpPageCommand;
 
 public class GatewayServerTest {
@@ -169,6 +171,7 @@ public class GatewayServerTest {
 		BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream(), "UTF-8"));
 
 		if (authToken != null) {
+			out.println(AuthCommand.COMMAND_NAME);
 			out.println(authToken);
 			out.flush();
 
@@ -194,6 +197,11 @@ public class GatewayServerTest {
 
 			// Throw an IOException since that's what the test above expects in this case.
 			throw new IOException("Auth unsuccessful.");
+		} else {
+			assertTrue(Protocol.isReturnMessage(reply));
+			if (Protocol.isError(reply.substring(1))) {
+				throw new IOException("Error from server.");
+			}
 		}
 	}
 

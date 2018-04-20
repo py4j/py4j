@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import py4j.commands.AuthCommand;
 import py4j.commands.Command;
 
 public class ClientServerConnection implements Py4JServerConnection, Py4JClientConnection, Runnable {
@@ -59,6 +60,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	protected final int blockingReadTimeout;
 	protected final int nonBlockingReadTimeout;
 	protected final String authToken;
+	protected final AuthCommand authCommand;
 
 	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
 			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer, int readTimeout) throws IOException {
@@ -86,6 +88,12 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 			this.nonBlockingReadTimeout = CallbackConnection.DEFAULT_NONBLOCKING_SO_TIMEOUT;
 		}
 		this.authToken = authToken;
+		if (authToken != null) {
+			this.authCommand = new AuthCommand(authToken);
+			initCommand(gateway, authCommand);
+		} else {
+			this.authCommand = null;
+		}
 	}
 
 	public void startServerConnection() throws IOException {
@@ -110,8 +118,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		for (Class<? extends Command> clazz : commandsClazz) {
 			try {
 				Command cmd = clazz.newInstance();
-				cmd.init(gateway, this);
-				commands.put(cmd.getCommandName(), cmd);
+				initCommand(gateway, cmd);
 			} catch (Exception e) {
 				String name = "null";
 				if (clazz != null) {
@@ -120,6 +127,11 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 				logger.log(Level.SEVERE, "Could not initialize command " + name, e);
 			}
 		}
+	}
+
+	private void initCommand(Gateway gateway, Command cmd) {
+		cmd.init(gateway, this);
+		commands.put(cmd.getCommandName(), cmd);
 	}
 
 	protected void fireConnectionStopped() {
@@ -155,9 +167,6 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		boolean executing = false;
 		Throwable error = null;
 		try {
-			if (authToken != null) {
-				NetworkUtil.authClient(reader, writer, authToken);
-			}
 			logger.info("Gateway Connection ready to receive messages");
 			String commandLine = null;
 			do {
@@ -165,8 +174,19 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 				executing = true;
 				logger.fine("Received command: " + commandLine);
 				Command command = commands.get(commandLine);
+
 				if (command != null) {
-					command.execute(commandLine, reader, writer);
+					if (authCommand != null && !authCommand.isAuthenticated()) {
+						try {
+							authCommand.execute(commandLine, reader, writer);
+						} catch (Py4JException pe) {
+							logger.log(Level.INFO, "Authentication error.", pe);
+							reset = true;
+							return;
+						}
+					} else {
+						command.execute(commandLine, reader, writer);
+					}
 					executing = false;
 				} else {
 					logger.log(Level.WARNING, "Unknown command " + commandLine);

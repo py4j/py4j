@@ -573,7 +573,11 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True,
         return help_page
 
 
-def do_client_auth(inf, sock, auth_token):
+def do_client_auth(command, inf, sock, auth_token):
+    if command != proto.AUTH_COMMAND_NAME:
+        raise Py4JError("Expected {}, received {}.".format(
+            proto.AUTH_COMMAND_NAME, command))
+
     client_token = smart_decode(inf.readline()[:-1])
     if auth_token == client_token:
         success = proto.OUTPUT_VOID_COMMAND.encode("utf-8")
@@ -1037,8 +1041,11 @@ class GatewayConnection(object):
             self.is_connected = True
 
             if self.gateway_parameters.auth_token:
-                answer = self.send_command(
-                    self.gateway_parameters.auth_token + "\n")
+                cmd = "{0}\n{1}\n".format(
+                    proto.AUTH_COMMAND_NAME,
+                    self.gateway_parameters.auth_token
+                )
+                answer = self.send_command(cmd)
                 err, _ = proto.is_error(answer)
                 if err:
                     self.close(reset=True)
@@ -2261,17 +2268,21 @@ class CallbackConnection(Thread):
     def run(self):
         logger.info("Callback Connection ready to receive messages")
         reset = False
+        authenticated = self.callback_server_parameters.auth_token is None
         try:
-            if self.callback_server_parameters.auth_token:
-                try:
-                    do_client_auth(self.input, self.socket,
-                                   self.callback_server_parameters.auth_token)
-                except Exception:
-                    reset = True
-                    raise
-
             while True:
                 command = smart_decode(self.input.readline())[:-1]
+                if not authenticated:
+                    try:
+                        token = self.callback_server_parameters.auth_token
+                        do_client_auth(command, self.input, self.socket,
+                                       token)
+                        authenticated = True
+                        continue
+                    except Exception:
+                        reset = True
+                        raise
+
                 obj_id = smart_decode(self.input.readline())[:-1]
                 logger.info(
                     "Received command {0} on object id {1}".
