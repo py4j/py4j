@@ -18,55 +18,64 @@ from py4j.tests.py4j_callback_recursive_example import (
     PythonPing, HelloState)
 
 
-def start_clientserver_example_server():
+def start_clientserver_example_server(*args):
     subprocess.call([
         "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
-        "py4j.examples.SingleThreadApplication"])
+        "py4j.examples.SingleThreadApplication"] + list(args))
 
 
-def start_short_timeout_clientserver_example_server():
+def start_short_timeout_clientserver_example_server(*args):
     subprocess.call([
         "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
         "py4j.examples.SingleThreadApplication$"
-        "SingleThreadShortTimeoutApplication"])
+        "SingleThreadShortTimeoutApplication"] + list(args))
 
 
-def start_java_clientserver_example_server():
+def start_java_clientserver_example_server(*args):
     subprocess.call([
         "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
-        "py4j.examples.SingleThreadClientApplication"])
+        "py4j.examples.SingleThreadClientApplication"] + list(args))
 
 
-def start_java_clientserver_gc_example_server():
+def start_java_clientserver_gc_example_server(*args):
     subprocess.call([
         "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
-        "py4j.examples.SingleThreadClientGCApplication"])
+        "py4j.examples.SingleThreadClientGCApplication"] + list(args))
 
 
 def start_clientserver_example_app_process(
         start_java_client=False, start_short_timeout=False,
-        start_gc_test=False):
+        start_gc_test=False, auth_token=None):
+    args = ()
+    gw_params = GatewayParameters()
+    if auth_token:
+        args = ("--auth-token", auth_token)
+        gw_params = GatewayParameters(auth_token=auth_token)
+
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     if start_short_timeout:
-        p = Process(target=start_short_timeout_clientserver_example_server)
+        p = Process(target=start_short_timeout_clientserver_example_server,
+                    args=args)
     elif start_java_client:
-        p = Process(target=start_java_clientserver_example_server)
+        p = Process(target=start_java_clientserver_example_server, args=args)
     elif start_gc_test:
-        p = Process(target=start_java_clientserver_gc_example_server)
+        p = Process(target=start_java_clientserver_gc_example_server,
+                    args=args)
     else:
-        p = Process(target=start_clientserver_example_server)
+        p = Process(target=start_clientserver_example_server, args=args)
     p.start()
     sleep()
-    check_connection()
+
+    check_connection(gateway_parameters=gw_params)
     return p
 
 
 @contextmanager
 def clientserver_example_app_process(
         start_java_client=False, start_short_timeout=False,
-        start_gc_test=False, join=True):
+        start_gc_test=False, join=True, auth_token=None):
     p = start_clientserver_example_app_process(
-        start_java_client, start_short_timeout, start_gc_test)
+        start_java_client, start_short_timeout, start_gc_test, auth_token)
     try:
         yield p
     finally:
@@ -284,12 +293,18 @@ class RetryTest(unittest.TestCase):
 class IntegrationTest(unittest.TestCase):
 
     def testJavaClientPythonServer(self):
+        self._testJavaClientPythonServer()
+
+    def testJavaClientPythonServerWithAuth(self):
+        self._testJavaClientPythonServer(auth_token="secret")
+
+    def _testJavaClientPythonServer(self, auth_token=None):
         hello_state = HelloState()
         client_server = ClientServer(
-            JavaParameters(), PythonParameters(), hello_state)
+            JavaParameters(), PythonParameters(), hello_state, auth_token)
 
-        with clientserver_example_app_process(True):
-            client_server.shutdown()
+        with clientserver_example_app_process(True, auth_token=auth_token):
+            client_server.shutdown(raise_exception=True)
 
         # Check that Java correctly called Python
         self.assertEqual(2, len(hello_state.calls))

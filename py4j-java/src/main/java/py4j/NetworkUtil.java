@@ -30,6 +30,7 @@
 package py4j;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -38,13 +39,15 @@ import java.net.SocketTimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import py4j.commands.AuthCommand;
+
 /**
  * <p>
  * Utility class used to perform network operations.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class NetworkUtil {
 
@@ -121,6 +124,27 @@ public class NetworkUtil {
 			socket.setSoLinger(true, 0);
 		} catch (Exception e) {
 			logger.log(Level.FINE, "Cannot set linger on socket.", e);
+		}
+	}
+
+	/**
+	 * Performs authentication on the reader / writer representing a connection to a server.
+	 *
+	 * @param reader Reader connected to the remote endpoint.
+	 * @param writer Writer connected to the remote endpoint.
+	 * @param authToken The auth token.
+	 * @throws IOException On I/O error, or if authentication fails.
+	 */
+	static void authToServer(BufferedReader reader, BufferedWriter writer, String authToken) throws IOException {
+		writer.write(AuthCommand.COMMAND_NAME);
+		writer.write("\n");
+		writer.write(authToken);
+		writer.write("\n");
+		writer.flush();
+
+		String reply = reader.readLine();
+		if (reply == null || !reply.equals(Protocol.getOutputVoidCommand().trim())) {
+			throw new IOException("Authentication with callback server unsuccessful.");
 		}
 	}
 

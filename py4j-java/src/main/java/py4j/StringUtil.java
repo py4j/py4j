@@ -33,16 +33,20 @@ package py4j;
  * <p>
  * String utility class providing operations to escape and unescape new lines.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class StringUtil {
 
 	public final static char ESCAPE_CHAR = '\\';
 
 	public static String escape(String original) {
-		return original.replace("\\", "\\\\").replace("\r", "\\r").replace("\n", "\\n");
+		if (original != null) {
+			return original.replace("\\", "\\\\").replace("\r", "\\r").replace("\n", "\\n");
+		} else {
+			return null;
+		}
 	}
 
 	public static String unescape(String escaped) {

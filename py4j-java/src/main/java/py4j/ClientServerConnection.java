@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import py4j.commands.AuthCommand;
 import py4j.commands.Command;
 
 public class ClientServerConnection implements Py4JServerConnection, Py4JClientConnection, Runnable {
@@ -58,9 +59,17 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	protected final Py4JPythonClientPerThread pythonClient;
 	protected final int blockingReadTimeout;
 	protected final int nonBlockingReadTimeout;
+	protected final String authToken;
+	protected final AuthCommand authCommand;
 
 	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
 			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer, int readTimeout) throws IOException {
+		this(gateway, socket, customCommands, pythonClient, javaServer, readTimeout, null);
+	}
+
+	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
+			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer, int readTimeout, String authToken)
+					throws IOException {
 		super();
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
@@ -78,9 +87,16 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		} else {
 			this.nonBlockingReadTimeout = CallbackConnection.DEFAULT_NONBLOCKING_SO_TIMEOUT;
 		}
+		this.authToken = authToken;
+		if (authToken != null) {
+			this.authCommand = new AuthCommand(authToken);
+			initCommand(gateway, authCommand);
+		} else {
+			this.authCommand = null;
+		}
 	}
 
-	public void startServerConnection() {
+	public void startServerConnection() throws IOException {
 		Thread t = new Thread(this);
 		t.start();
 	}
@@ -102,8 +118,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		for (Class<? extends Command> clazz : commandsClazz) {
 			try {
 				Command cmd = clazz.newInstance();
-				cmd.init(gateway, this);
-				commands.put(cmd.getCommandName(), cmd);
+				initCommand(gateway, cmd);
 			} catch (Exception e) {
 				String name = "null";
 				if (clazz != null) {
@@ -112,6 +127,11 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 				logger.log(Level.SEVERE, "Could not initialize command " + name, e);
 			}
 		}
+	}
+
+	private void initCommand(Gateway gateway, Command cmd) {
+		cmd.init(gateway, this);
+		commands.put(cmd.getCommandName(), cmd);
 	}
 
 	protected void fireConnectionStopped() {
@@ -154,8 +174,19 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 				executing = true;
 				logger.fine("Received command: " + commandLine);
 				Command command = commands.get(commandLine);
+
 				if (command != null) {
-					command.execute(commandLine, reader, writer);
+					if (authCommand != null && !authCommand.isAuthenticated()) {
+						try {
+							authCommand.execute(commandLine, reader, writer);
+						} catch (Py4JException pe) {
+							logger.log(Level.INFO, "Authentication error.", pe);
+							reset = true;
+							return;
+						}
+					} else {
+						command.execute(commandLine, reader, writer);
+					}
 					executing = false;
 				} else {
 					logger.log(Level.WARNING, "Unknown command " + commandLine);
@@ -250,7 +281,14 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 
 	@Override
 	public void start() throws IOException {
-
+		if (authToken != null) {
+			try {
+				NetworkUtil.authToServer(reader, writer, authToken);
+			} catch (IOException ioe) {
+				shutdown(true);
+				throw ioe;
+			}
+		}
 	}
 
 	@Override
@@ -296,4 +334,5 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 
 		return returnCommand;
 	}
+
 }

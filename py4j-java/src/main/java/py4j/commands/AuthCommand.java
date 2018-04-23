@@ -27,32 +27,57 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-package py4j.examples;
+package py4j.commands;
 
-import py4j.ClientServer;
-import py4j.GatewayServer;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 
-public class SingleThreadClientApplication {
+import py4j.Protocol;
+import py4j.Py4JException;
 
-	public static void main(String[] args) {
-		GatewayServer.turnLoggingOff();
+/**
+ * The auth command is responsible for checking that the client knows the server's auth
+ * secret.
+ */
+public class AuthCommand extends AbstractCommand {
 
-		String authToken = null;
-		for (int i = 0; i < args.length; i += 2) {
-			if (args[i].equals("--auth-token")) {
-				authToken = args[i + 1];
-			} else {
-				throw new IllegalArgumentException(args[i]);
-			}
+	public static final String COMMAND_NAME = "A";
+
+	private final String authToken;
+	private volatile boolean hasAuthenticated;
+
+	public AuthCommand(String authToken) {
+		this.commandName = COMMAND_NAME;
+		this.authToken = authToken;
+		this.hasAuthenticated = false;
+	}
+
+	@Override
+	public void execute(String commandName, BufferedReader reader, BufferedWriter writer)
+			throws Py4JException, IOException {
+		// Check the command name since socket handlers will always call this command first when
+		// authentication is enabled, regardless of the command actually sent by the client.
+		if (!COMMAND_NAME.equals(commandName)) {
+			writer.write(Protocol.getOutputErrorCommand());
+			writer.flush();
+			throw new Py4JException(String.format("Expected %s, got %s instead.", COMMAND_NAME, commandName));
 		}
 
-		ClientServer clientServer = new ClientServer.ClientServerBuilder().authToken(authToken).build();
-		IHello hello = (IHello) clientServer.getPythonServerEntryPoint(new Class[] { IHello.class });
-		try {
-			hello.sayHello();
-			hello.sayHello(2, "Hello World");
-		} catch (Exception e) {
-			e.printStackTrace();
+		String clientToken = reader.readLine();
+		if (authToken.equals(clientToken)) {
+			writer.write(Protocol.getOutputVoidCommand());
+			writer.flush();
+			hasAuthenticated = true;
+		} else {
+			writer.write(Protocol.getOutputErrorCommand());
+			writer.flush();
+			throw new Py4JException("Client authentication unsuccessful.");
 		}
 	}
+
+	public boolean isAuthenticated() {
+		return hasAuthenticated;
+	}
+
 }

@@ -1073,6 +1073,8 @@ recursion), or if you want to control which thread will execute the calls, you
 should use the :ref:`single threading model <clientserver>`, which provide a
 more efficient threading model.
 
+.. _security:
+
 TLS
 ---
 
@@ -1125,6 +1127,24 @@ takes a `SSLSocketFactory`. You can get an instance of this via `getDefault()`
 or a `SSLContext` instance similarly.
 
 A runnable example is in `py4j.examples.ExampleSSLApplication`.
+
+Authentication
+--------------
+
+By default, Py4J does not authenticate client connections. This allows any
+user who can open a connection to the Py4J daemons to potentially execute
+code as the user running those daemons.
+
+Authentication can be enabled by providing an authentication token to the
+different servers. See the API documentation for how to provide the
+authentication token through the API.
+
+Py4J leaves it to the application to generate and distribute the authentication
+tokens to all the needed processes.
+
+The authentication protocol transfers the token over the socket connection,
+so it relies on transport-level encryption for secrecy. This means that for
+proper security, connections should use loopback addresses, or use TLS.
 
 Boxing
 ------

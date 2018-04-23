@@ -38,6 +38,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -153,6 +154,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	private final CopyOnWriteArrayList<GatewayServerListener> listeners;
 
 	private final ServerSocketFactory sSocketFactory;
+
+	protected final String authToken;
 
 	private ServerSocket sSocket;
 
@@ -409,6 +412,12 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	public GatewayServer(Object entryPoint, int port, InetAddress address, int connectTimeout, int readTimeout,
 			List<Class<? extends Command>> customCommands, Py4JPythonClient cbClient,
 			ServerSocketFactory sSocketFactory) {
+		this(entryPoint, port, address, connectTimeout, readTimeout, customCommands, cbClient, sSocketFactory, null);
+	}
+
+	GatewayServer(Object entryPoint, int port, InetAddress address, int connectTimeout, int readTimeout,
+			List<Class<? extends Command>> customCommands, Py4JPythonClient cbClient,
+			ServerSocketFactory sSocketFactory, String authToken) {
 		super();
 		this.port = port;
 		this.address = address;
@@ -425,9 +434,10 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		}
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 		this.sSocketFactory = sSocketFactory;
+		this.authToken = authToken;
 	}
 
-	/*
+	/**
 	 * @param gateway gateway instance (or subclass).  Must not be <code>null</code>.
 	 * @param port the host port to usu
 	 * @param address the host address to use
@@ -438,6 +448,11 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	 */
 	public GatewayServer(Gateway gateway, int port, InetAddress address, int connectTimeout, int readTimeout,
 			List<Class<? extends Command>> customCommands, ServerSocketFactory sSocketFactory) {
+		this(gateway, port, address, connectTimeout, readTimeout, customCommands, sSocketFactory, null);
+	}
+
+	private GatewayServer(Gateway gateway, int port, InetAddress address, int connectTimeout, int readTimeout,
+			List<Class<? extends Command>> customCommands, ServerSocketFactory sSocketFactory, String authToken) {
 		super();
 		this.port = port;
 		this.address = address;
@@ -454,6 +469,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		}
 		this.listeners = new CopyOnWriteArrayList<GatewayServerListener>();
 		this.sSocketFactory = sSocketFactory;
+		this.authToken = authToken;
 	}
 
 	public void addListener(GatewayServerListener listener) {
@@ -483,7 +499,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	 * @throws IOException
 	 */
 	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket) throws IOException {
-		GatewayConnection connection = new GatewayConnection(gateway, socket, customCommands, listeners);
+		GatewayConnection connection = new GatewayConnection(gateway, socket, authToken, customCommands, listeners);
 		connection.startConnection();
 		return connection;
 	}
@@ -793,27 +809,56 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 	 * The listening port is printed to stdout so that clients can start
 	 * servers on ephemeral ports.
 	 * </p>
+	 *
+	 * <p>
+	 * If authentication is enabled, the server will create an auth secret with 256 bits of entropy
+	 * and print it to stdout after the server port. Clients should then provide this secret when
+	 * connecting to the server. Note that no second line of output is printed if authentication is
+	 * not enabled.
+	 * </p>
 	 */
 	public static void main(String[] args) {
 		int port;
 		boolean dieOnBrokenPipe = false;
-		String usage = "usage: [--die-on-broken-pipe] port";
+		boolean enableAuth = false;
+		String usage = "usage: [--die-on-broken-pipe] [--enable-auth] port";
+
 		if (args.length == 0) {
 			System.err.println(usage);
 			System.exit(1);
-		} else if (args.length == 2) {
-			if (!args[0].equals("--die-on-broken-pipe")) {
+		}
+
+		for (int i = 0; i < args.length - 1; i++) {
+			String opt = args[i];
+			if (opt.equals("--die-on-broken-pipe")) {
+				dieOnBrokenPipe = true;
+			} else if (opt.equals("--enable-auth")) {
+				enableAuth = true;
+			} else {
 				System.err.println(usage);
 				System.exit(1);
 			}
-			dieOnBrokenPipe = true;
 		}
+
 		port = Integer.parseInt(args[args.length - 1]);
-		GatewayServer gatewayServer = new GatewayServer(null, port);
+
+		String authToken = null;
+		if (enableAuth) {
+			SecureRandom rnd = new SecureRandom();
+			byte[] token = new byte[256 / Byte.SIZE];
+			rnd.nextBytes(token);
+			authToken = Base64.encodeToString(token, false);
+		}
+
+		GatewayServer gatewayServer = new GatewayServerBuilder().javaPort(port).authToken(authToken).build();
 		gatewayServer.start();
 		/* Print out the listening port so that clients can discover it. */
 		int listening_port = gatewayServer.getListeningPort();
 		System.out.println("" + listening_port);
+
+		if (authToken != null) {
+			System.out.println(authToken);
+		}
 
 		if (dieOnBrokenPipe) {
 			/* Exit on EOF or broken pipe.  This ensures that the server dies
@@ -858,6 +903,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		private Object entryPoint;
 		private Py4JPythonClient callbackClient;
 		private List<Class<? extends Command>> customCommands;
+		private String authToken;
 
 		public GatewayServerBuilder() {
 			this(null);
@@ -886,10 +932,10 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 					callbackClient = new CallbackClient(GatewayServer.DEFAULT_PYTHON_PORT);
 				}
 				return new GatewayServer(entryPoint, javaPort, javaAddress, connectTimeout, readTimeout, customCommands,
-						callbackClient, serverSocketFactory);
+						callbackClient, serverSocketFactory, authToken);
 			} else {
 				return new GatewayServer(gateway, javaPort, javaAddress, connectTimeout, readTimeout, customCommands,
-						serverSocketFactory);
+						serverSocketFactory, authToken);
 			}
 		}
 
@@ -910,6 +956,16 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 
 		public GatewayServerBuilder callbackClient(int pythonPort, InetAddress pythonAddress) {
 			callbackClient = new CallbackClient(pythonPort, pythonAddress);
+			return this;
+		}
+
+		/**
+		 * Set up the callback client to talk to the server running at the given address and port,
+		 * authenticating with the given token. If the token is null, no authentication will be
+		 * attempted.
+		 */
+		public GatewayServerBuilder callbackClient(int pythonPort, InetAddress pythonAddress, String authToken) {
+			callbackClient = new CallbackClient(pythonPort, pythonAddress, authToken);
 			return this;
 		}
 
@@ -940,6 +996,15 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 
 		public GatewayServerBuilder customCommands(List<Class<? extends Command>> customCommands) {
 			this.customCommands = customCommands;
+			return this;
+		}
+
+		/**
+		 * Authentication token that clients must provide to the server when connecting. If null,
+		 * authentication is disabled.
+		 */
+		public GatewayServerBuilder authToken(String authToken) {
+			this.authToken = StringUtil.escape(authToken);
 			return this;
 		}
 	}

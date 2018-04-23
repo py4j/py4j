@@ -1100,6 +1100,32 @@ class GatewayLauncherTest(unittest.TestCase):
             os.unlink(outpath)
             os.unlink(errpath)
 
+    def testGatewayAuth(self):
+        self.gateway = JavaGateway.launch_gateway(enable_auth=True)
+
+        # Make sure the default client can connect to the server.
+        klass = self.gateway.jvm.java.lang.String
+        help_page = self.gateway.help(klass, short_name=True, display=False)
+        self.assertTrue(len(help_page) > 1)
+
+        # Replace the client with one that does not authenticate.
+        # Make sure it fails.
+        bad_client = GatewayClient(gateway_parameters=GatewayParameters(
+            address=self.gateway.gateway_parameters.address,
+            port=self.gateway.gateway_parameters.port))
+        self.gateway.set_gateway_client(bad_client)
+        try:
+            self.gateway.help(klass, short_name=True, display=False)
+            self.fail("Expected failure to communicate with gateway server.")
+        except Exception:
+            # Expected
+            pass
+        finally:
+            # Restore a good client. This allows the gateway to be shut down.
+            good_client = GatewayClient(
+                gateway_parameters=self.gateway.gateway_parameters)
+            self.gateway.set_gateway_client(good_client)
+
 
 class WaitOperator(object):
 
