@@ -574,7 +574,7 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True,
         return help_page
 
 
-def do_client_auth(command, inf, sock, auth_token):
+def do_client_auth(command, input_stream, sock, auth_token):
     """Receives and decodes a auth token.
 
     - If the token does not match, an exception is raised.
@@ -587,8 +587,9 @@ def do_client_auth(command, inf, sock, auth_token):
             raise Py4JAuthenticationError("Expected {}, received {}.".format(
                 proto.AUTH_COMMAND_NAME, command))
 
-        client_token = smart_decode(inf.readline()[:-1])
-        if auth_token == client_token:
+        client_token = smart_decode(input_stream.readline()[:-1])
+        end = smart_decode(input_stream.readline()[:-1])
+        if auth_token == client_token and end == proto.END::
             success = proto.OUTPUT_VOID_COMMAND.encode("utf-8")
             sock.sendall(success)
         else:

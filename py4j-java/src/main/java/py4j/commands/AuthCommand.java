@@ -29,6 +29,8 @@
  *****************************************************************************/
 package py4j.commands;
 
+import static py4j.Protocol.AUTH_COMMAND_NAME;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -42,7 +44,7 @@ import py4j.Py4JException;
  */
 public class AuthCommand extends AbstractCommand {
 
-	public static final String COMMAND_NAME = "A";
+	public static final String COMMAND_NAME = AUTH_COMMAND_NAME;
 
 	private final String authToken;
 	private volatile boolean hasAuthenticated;

@@ -136,15 +136,12 @@ public class NetworkUtil {
 	 * @throws IOException On I/O error, or if authentication fails.
 	 */
 	static void authToServer(BufferedReader reader, BufferedWriter writer, String authToken) throws IOException {
-		// TODO AUTH Check that this is the way we send commands
-		writer.write(AuthCommand.COMMAND_NAME);
-		writer.write("\n");
-		writer.write(authToken);
-		writer.write("\n");
+		writer.write(Protocol.getAuthCommand(authToken));
 		writer.flush();
 
-		String reply = reader.readLine();
-		if (reply == null || !reply.equals(Protocol.getOutputVoidCommand().trim())) {
+		String returnCommand = reader.readLine();
+		if (returnCommand == null || !returnCommand.equals(Protocol.getOutputVoidCommand().trim())) {
+			logger.log(Level.SEVERE, "Could not authenticate connection. Received this response: " + returnCommand);
 			throw new IOException("Authentication with callback server unsuccessful.");
 		}
 	}

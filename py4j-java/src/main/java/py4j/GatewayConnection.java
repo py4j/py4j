@@ -238,8 +238,8 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 							// command.execute
 							authCommand.execute(commandLine, reader, writer);
 						} catch (Py4JException pe) {
-						    // TODO AUTH Py4JAuthException?
-						    // Caught below...
+							// TODO AUTH Py4JAuthException?
+							// Caught below...
 							logger.log(Level.INFO, "Authentication error.", pe);
 							reset = true;
 							return;
