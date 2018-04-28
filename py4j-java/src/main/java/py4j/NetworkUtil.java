@@ -136,6 +136,7 @@ public class NetworkUtil {
 	 * @throws IOException On I/O error, or if authentication fails.
 	 */
 	static void authToServer(BufferedReader reader, BufferedWriter writer, String authToken) throws IOException {
+		// TODO AUTH Check that this is the way we send commands
 		writer.write(AuthCommand.COMMAND_NAME);
 		writer.write("\n");
 		writer.write(authToken);

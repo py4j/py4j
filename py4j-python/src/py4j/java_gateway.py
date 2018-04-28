@@ -32,6 +32,7 @@ from py4j.finalizer import ThreadSafeFinalizer
 from py4j import protocol as proto
 from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError,
+    Py4JAuthenticationError,
     get_command_part, get_return_value,
     register_output_converter, smart_decode, escape_new_line,
     is_fatal_error, is_error, unescape_new_line)
@@ -574,18 +575,34 @@ def gateway_help(gateway_client, var, pattern=None, short_name=True,
 
 
 def do_client_auth(command, inf, sock, auth_token):
-    if command != proto.AUTH_COMMAND_NAME:
-        raise Py4JError("Expected {}, received {}.".format(
-            proto.AUTH_COMMAND_NAME, command))
+    """Receives and decodes a auth token.
 
-    client_token = smart_decode(inf.readline()[:-1])
-    if auth_token == client_token:
-        success = proto.OUTPUT_VOID_COMMAND.encode("utf-8")
-        sock.sendall(success)
-    else:
-        error = proto.ERROR_RETURN_MESSAGE.encode("utf-8")
-        sock.sendall(error)
-        raise Py4JError("Client authentication failed.")
+    - If the token does not match, an exception is raised.
+    - If the command received is not an Auth command, an exception is raised.
+    - If an exception occurs, it is wrapped in a Py4JAuthenticationError.
+    - Otherwise, it returns True.
+    """
+    try:
+        if command != proto.AUTH_COMMAND_NAME:
+            raise Py4JAuthenticationError("Expected {}, received {}.".format(
+                proto.AUTH_COMMAND_NAME, command))
+
+        client_token = smart_decode(inf.readline()[:-1])
+        if auth_token == client_token:
+            success = proto.OUTPUT_VOID_COMMAND.encode("utf-8")
+            sock.sendall(success)
+        else:
+            error = proto.ERROR_RETURN_MESSAGE.encode("utf-8")
+            sock.sendall(error)
+            raise Py4JAuthenticationError("Client authentication failed.")
+    except Py4JAuthenticationError:
+        raise
+    except Exception as e:
+        logger.exception(
+            "An exception occurred while trying to authenticate "
+            "a connection")
+        raise Py4JAuthenticationError(cause=e)
+    return True
 
 
 def _garbage_collect_object(gateway_client, target_id):
@@ -1040,22 +1057,30 @@ class GatewayConnection(object):
             self.stream = self.socket.makefile("rb")
             self.is_connected = True
 
-            if self.gateway_parameters.auth_token:
-                cmd = "{0}\n{1}\n".format(
-                    proto.AUTH_COMMAND_NAME,
-                    self.gateway_parameters.auth_token
-                )
-                answer = self.send_command(cmd)
-                err, _ = proto.is_error(answer)
-                if err:
-                    self.close(reset=True)
-                    raise Py4JNetworkError(
-                        "Failed to authenticate with gateway server.")
+            self._authenticate_connection()
+        except Py4JAuthenticationError:
+            logger.exception("Cannot authenticate with gateway server.")
+            raise
         except Exception as e:
             msg = "An error occurred while trying to connect to the Java "\
                 "server ({0}:{1})".format(self.address, self.port)
             logger.exception(msg)
             raise Py4JNetworkError(msg, e)
+
+    def _authenticate_connection(self):
+        if self.gateway_parameters.auth_token:
+            cmd = "{0}\n{1}\n".format(
+                proto.AUTH_COMMAND_NAME,
+                self.gateway_parameters.auth_token
+            )
+            answer = self.send_command(cmd)
+            error, _ = proto.is_error(answer)
+            if error:
+                # At this point we do not expect the caller to clean
+                # the connection so we clean ourselves.
+                self.close(reset=True)
+                raise Py4JAuthenticationError(
+                    "Failed to authenticate with gateway server.")
 
     def close(self, reset=False):
         """Closes the connection by closing the socket.
@@ -1679,6 +1704,7 @@ class JavaGateway(object):
         self.callback_server_parameters = callback_server_parameters
         if not callback_server_parameters:
             # No parameters were provided so do not autostart callback server.
+            # TODO BASE 64
             raw_token = unescape_new_line(self.gateway_parameters.auth_token)
             self.callback_server_parameters = CallbackServerParameters(
                 port=python_proxy_port, eager_load=False,
@@ -2273,15 +2299,11 @@ class CallbackConnection(Thread):
             while True:
                 command = smart_decode(self.input.readline())[:-1]
                 if not authenticated:
-                    try:
-                        token = self.callback_server_parameters.auth_token
-                        do_client_auth(command, self.input, self.socket,
-                                       token)
-                        authenticated = True
-                        continue
-                    except Exception:
-                        reset = True
-                        raise
+                    token = self.callback_server_parameters.auth_token
+                    # Will raise an exception if auth fails in any way.
+                    authenticated = do_client_auth(
+                        command, self.input, self.socket, token)
+                    continue
 
                 obj_id = smart_decode(self.input.readline())[:-1]
                 logger.info(
@@ -2303,6 +2325,9 @@ class CallbackConnection(Thread):
                     # point, the protocol is broken.
                     self.socket.sendall(
                         proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
+        except Py4JAuthenticationError:
+            reset = True
+            logger.exception("Could not authenticate connection.")
         except socket.timeout:
             reset = True
             logger.info(

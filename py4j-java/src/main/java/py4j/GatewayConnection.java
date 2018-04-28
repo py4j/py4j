@@ -234,8 +234,12 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 				if (command != null) {
 					if (authCommand != null && !authCommand.isAuthenticated()) {
 						try {
+							// TODO AUTH Refactor this part to only call
+							// command.execute
 							authCommand.execute(commandLine, reader, writer);
 						} catch (Py4JException pe) {
+						    // TODO AUTH Py4JAuthException?
+						    // Caught below...
 							logger.log(Level.INFO, "Authentication error.", pe);
 							reset = true;
 							return;

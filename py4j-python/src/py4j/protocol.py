@@ -403,6 +403,13 @@ class Py4JError(Exception):
         self.cause = cause
 
 
+class Py4JAuthenticationError(Py4JError):
+    """Exception raised when Py4J cannot authenticate a connection."""
+    def __init__(self, args=None, cause=None):
+        super(Py4JNetworkError, self).__init__(args)
+        self.cause = cause
+
+
 class Py4JNetworkError(Py4JError):
     """Exception raised when a network error occurs with Py4J."""
     def __init__(self, args=None, cause=None, when=None):

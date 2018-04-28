@@ -26,7 +26,7 @@ from py4j import protocol as proto
 from py4j.compat import Queue
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
-    get_return_value, escape_new_line)
+    get_return_value, escape_new_line, Py4JAuthenticationError)
 
 
 logger = logging.getLogger("py4j.clientserver")
@@ -390,24 +390,27 @@ class ClientServerConnection(object):
             self.is_connected = True
             self.initiated_from_client = True
 
-            if self.java_parameters.auth_token:
-                cmd = "{0}\n{1}\n".format(
-                    proto.AUTH_COMMAND_NAME,
-                    self.java_parameters.auth_token
-                )
-                answer = self.send_command(cmd)
-                err, _ = proto.is_error(answer)
-                if err:
-                    self.close(reset=True)
-                    raise Py4JNetworkError(
-                        "Failed to authenticate with gateway server.")
-        except Exception:
-            quiet_close(self.socket)
-            quiet_close(self.stream)
-            self.socket = None
-            self.stream = None
+            self._authenticate_connection()
+        except Py4JAuthenticationError:
+            self.close(reset=True)
             self.is_connected = False
             raise
+        except Exception:
+            self.close()
+            self.is_connected = False
+            raise
+
+    def _authenticate_connection(self):
+        if self.java_parameters.auth_token:
+            cmd = "{0}\n{1}\n".format(
+                proto.AUTH_COMMAND_NAME,
+                self.java_parameters.auth_token
+            )
+            answer = self.send_command(cmd)
+            error, _ = proto.is_error(answer)
+            if error:
+                raise Py4JAuthenticationError(
+                    "Failed to authenticate with gateway server.")
 
     def init_socket_from_python_server(self, socket, stream):
         self.socket = socket
@@ -512,15 +515,11 @@ class ClientServerConnection(object):
             while True:
                 command = smart_decode(self.stream.readline())[:-1]
                 if not authenticated:
-                    try:
-                        do_client_auth(command, self.stream, self.socket,
-                                       self.python_parameters.auth_token)
-                        authenticated = True
-                        continue
-                    except Exception:
-                        traceback.print_exc()
-                        reset = True
-                        raise
+                    # Will raise an exception if auth fails in any way.
+                    authenticated = do_client_auth(
+                        command, self.stream, self.socket,
+                        self.python_parameters.auth_token)
+                    continue
 
                 obj_id = smart_decode(self.stream.readline())[:-1]
                 logger.info(
@@ -542,6 +541,9 @@ class ClientServerConnection(object):
                     # point, the protocol is broken.
                     self.socket.sendall(
                         proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
+        except Py4JAuthenticationError:
+            reset = True
+            logger.exception("Could not authenticate connection.")
         except socket.timeout:
             reset = True
             logger.info(
