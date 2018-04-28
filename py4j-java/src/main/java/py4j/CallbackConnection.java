@@ -47,9 +47,9 @@ import javax.net.SocketFactory;
  * Default implementation of the CommunicationChannel interface using TCP
  * sockets.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class CallbackConnection implements Py4JClientConnection {
 
@@ -74,6 +74,8 @@ public class CallbackConnection implements Py4JClientConnection {
 
 	private final int nonBlockingReadTimeout;
 
+	private final String authToken;
+
 	public CallbackConnection(int port, InetAddress address) {
 		this(port, address, SocketFactory.getDefault());
 	}
@@ -94,6 +96,23 @@ public class CallbackConnection implements Py4JClientConnection {
 	 *            must absolutely be non-blocking.
 	 */
 	public CallbackConnection(int port, InetAddress address, SocketFactory socketFactory, int readTimeout) {
+		this(port, address, socketFactory, readTimeout, null);
+	}
+
+	/**
+	 *
+	 * @param port The port used to connect to the Python side.
+	 * @param address The address used to connect to the Java side.
+	 * @param socketFactory The socket factory used to create a socket (connection) to the Python side.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once connected to the Python side,
+	 *            if the Java side does not receive a response after this time, the connection with the Python
+	 *            program is closed. If readTimeout = 0, a default readTimeout of 1000 is used for operations that
+	 *            must absolutely be non-blocking.
+	 * @param authToken Token for authenticating with the callback server.
+	 */
+	public CallbackConnection(int port, InetAddress address, SocketFactory socketFactory, int readTimeout,
+			String authToken) {
 		super();
 		this.port = port;
 		this.address = address;
@@ -104,6 +123,7 @@ public class CallbackConnection implements Py4JClientConnection {
 		} else {
 			this.nonBlockingReadTimeout = DEFAULT_NONBLOCKING_SO_TIMEOUT;
 		}
+		this.authToken = authToken;
 	}
 
 	public String sendCommand(String command) {
@@ -207,6 +227,15 @@ public class CallbackConnection implements Py4JClientConnection {
 		socket.setSoTimeout(blockingReadTimeout);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
 		writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
+
+		if (authToken != null) {
+			try {
+				NetworkUtil.authToServer(reader, writer, authToken);
+			} catch (IOException ioe) {
+				shutdown(true);
+				throw ioe;
+			}
+		}
 	}
 
 	public boolean wasUsed() {

@@ -144,7 +144,9 @@ REMOVE_IMPORT_SUB_COMMAND_NAME = "r\n"
 PYTHON_PROXY_PREFIX = "p"
 ERROR_RETURN_MESSAGE = RETURN_MESSAGE + ERROR + NULL_TYPE + "\n"
 SUCCESS_RETURN_MESSAGE = RETURN_MESSAGE + SUCCESS + "\n"
+OUTPUT_VOID_COMMAND = RETURN_MESSAGE + SUCCESS + VOID_TYPE + "\n"
 
+AUTH_COMMAND_NAME = "A"
 CALL_PROXY_COMMAND_NAME = "c"
 GARBAGE_COLLECT_PROXY_COMMAND_NAME = "g"
 
@@ -181,8 +183,11 @@ def escape_new_line(original):
 
     :rtype: an escaped string
     """
-    return smart_decode(original).replace("\\", "\\\\").replace("\r", "\\r").\
-        replace("\n", "\\n")
+    if original:
+        return smart_decode(original).replace("\\", "\\\\").\
+            replace("\r", "\\r").replace("\n", "\\n")
+    else:
+        return original
 
 
 def unescape_new_line(escaped):
@@ -196,11 +201,14 @@ def unescape_new_line(escaped):
 
     :rtype: the original string
     """
-    return ESCAPE_CHAR.join(
-        "\n".join(
-            ("\r".join(p.split(ESCAPE_CHAR + "r")))
-            .split(ESCAPE_CHAR + "n"))
-        for p in escaped.split(ESCAPE_CHAR + ESCAPE_CHAR))
+    if escaped:
+        return ESCAPE_CHAR.join(
+            "\n".join(
+                ("\r".join(p.split(ESCAPE_CHAR + "r")))
+                .split(ESCAPE_CHAR + "n"))
+            for p in escaped.split(ESCAPE_CHAR + ESCAPE_CHAR))
+    else:
+        return escaped
 
 
 def smart_decode(s):

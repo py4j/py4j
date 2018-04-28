@@ -100,8 +100,36 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 	public PythonClient(Gateway gateway, List<Class<? extends Command>> customCommands, int pythonPort,
 			InetAddress pythonAddress, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory, Py4JJavaServer javaServer, boolean enableMemoryManagement, int readTimeout) {
-		super(pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit, socketFactory,
-				enableMemoryManagement);
+		this(gateway, customCommands, pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit,
+				socketFactory, javaServer, enableMemoryManagement, readTimeout, null);
+	}
+
+	/**
+	 *
+	 * @param gateway The gateway used to pool Java instances created on the Python side.
+	 * @param customCommands Optional list of custom commands that can be invoked by the Python side.
+	 * @param pythonPort Port the PythonClient should connect to.
+	 * @param pythonAddress Address (IP) the PythonClient should connect to.
+	 * @param minConnectionTime Minimum time to wait before closing unused connections. Not used with PythonClient.
+	 * @param minConnectionTimeUnit Time unit of minConnectionTime
+	 * @param socketFactory SocketFactory used to create a socket.
+	 * @param javaServer The JavaServer used to receive commands from the Python side.
+	 * @param enableMemoryManagement If false, the Java side does not tell the Python side when a Python proxy is
+	 *      			garbage collected.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once connected to the Python side,
+	 *            if the Java side does not receive a response after this time, the connection with the Python
+	 *            program is closed. If readTimeout = 0, a default readTimeout of 1000 is used for operations that
+	 *            must absolutely be non-blocking.
+	 * @param authToken
+	 *            Token for authenticating with the callback server.
+	 */
+	public PythonClient(Gateway gateway, List<Class<? extends Command>> customCommands, int pythonPort,
+			InetAddress pythonAddress, long minConnectionTime, TimeUnit minConnectionTimeUnit,
+			SocketFactory socketFactory, Py4JJavaServer javaServer, boolean enableMemoryManagement, int readTimeout,
+			String authToken) {
+		super(pythonPort, pythonAddress, authToken, minConnectionTime, minConnectionTimeUnit, socketFactory,
+				enableMemoryManagement, readTimeout);
 		this.gateway = gateway;
 		this.javaServer = javaServer;
 		this.customCommands = customCommands;
@@ -183,7 +211,8 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 
 		if (connection == null || connection.getSocket() == null) {
 			Socket socket = startClientSocket();
-			connection = new ClientServerConnection(gateway, socket, customCommands, this, javaServer, readTimeout);
+			connection = new ClientServerConnection(gateway, socket, customCommands, this, javaServer, readTimeout,
+					authToken);
 			connection.setInitiatedFromClient(true);
 			connection.start();
 			setPerThreadConnection(connection);

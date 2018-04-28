@@ -21,12 +21,12 @@ from py4j.java_gateway import (
     CallbackServerParameters, GatewayParameters, CallbackServer,
     GatewayConnectionGuard, DEFAULT_ADDRESS, DEFAULT_PORT,
     DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-    server_connection_stopped)
+    server_connection_stopped, do_client_auth)
 from py4j import protocol as proto
 from py4j.compat import Queue
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
-    get_return_value)
+    get_return_value, escape_new_line)
 
 
 logger = logging.getLogger("py4j.clientserver")
@@ -389,6 +389,18 @@ class ClientServerConnection(object):
             self.stream = self.socket.makefile("rb")
             self.is_connected = True
             self.initiated_from_client = True
+
+            if self.java_parameters.auth_token:
+                cmd = "{0}\n{1}\n".format(
+                    proto.AUTH_COMMAND_NAME,
+                    self.java_parameters.auth_token
+                )
+                answer = self.send_command(cmd)
+                err, _ = proto.is_error(answer)
+                if err:
+                    self.close(reset=True)
+                    raise Py4JNetworkError(
+                        "Failed to authenticate with gateway server.")
         except Exception:
             quiet_close(self.socket)
             quiet_close(self.stream)
@@ -495,9 +507,21 @@ class ClientServerConnection(object):
     def wait_for_commands(self):
         logger.info("Python Server ready to receive messages")
         reset = False
+        authenticated = self.python_parameters.auth_token is None
         try:
             while True:
                 command = smart_decode(self.stream.readline())[:-1]
+                if not authenticated:
+                    try:
+                        do_client_auth(command, self.stream, self.socket,
+                                       self.python_parameters.auth_token)
+                        authenticated = True
+                        continue
+                    except Exception:
+                        traceback.print_exc()
+                        reset = True
+                        raise
+
                 obj_id = smart_decode(self.stream.readline())[:-1]
                 logger.info(
                     "Received command {0} on object id {1}".
@@ -571,11 +595,13 @@ class ClientServer(JavaGateway):
 
     For example, if Python thread 1 calls Java, and Java calls Python, the
     callback (from Java to Python) will be executed in Python thread 1.
+
+    Note about authentication: to enable authentication
     """
 
     def __init__(
             self, java_parameters=None, python_parameters=None,
-            python_server_entry_point=None):
+            python_server_entry_point=None, auth_token=None):
         """
         :param java_parameters: collection of parameters and flags used to
             configure the JavaGateway (Java client)
@@ -585,11 +611,17 @@ class ClientServer(JavaGateway):
 
         :param python_server_entry_point: can be requested by the Java side if
             Java is driving the communication.
+
+        :param auth_token: if provided, an authentication that will be used
+            to authenticate connections between the Java and Python sides.
         """
         if not java_parameters:
             java_parameters = JavaParameters()
         if not python_parameters:
             python_parameters = PythonParameters()
+        auth_token = escape_new_line(auth_token)
+        java_parameters.auth_token = auth_token
+        python_parameters.auth_token = auth_token
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
         super(ClientServer, self).__init__(

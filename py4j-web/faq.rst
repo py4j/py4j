@@ -211,11 +211,8 @@ trust all users having access to the localhost, the security risks are minimal
 because external programs and users do not have access to the localhost by
 default on most systems.
 
-If you use Py4J to make a JVM available over the network, you are responsible
-for ensuring that (1) only trusted sources can communicate with the JVM and
-(2) the privileges of the user running the JVM are properly constrained. This
-is usually achieved with a proper firewall configuration, network
-segmentation, and security policies configured with selinux or apparmor.
+To secure Py4J applications, refer to the :ref:`TLS And Authentication <security>`
+documentation.
 
 I found a bug, how do I report it?
 ----------------------------------
