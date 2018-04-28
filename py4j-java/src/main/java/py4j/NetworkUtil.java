@@ -128,7 +128,13 @@ public class NetworkUtil {
 	}
 
 	/**
-	 * Performs authentication on the reader / writer representing a connection to a server.
+	 * <p>Performs authentication on the reader / writer representing a
+	 * connection to a server.</p>
+	 *
+	 * <p>To be reusable, this function performs the read and write through raw sockets,
+	 * and inspects the output immediately. It is essential that we do not try to evaluate
+	 * the output or we could end up executing a non-authenticated method or raising an
+	 * unexpected exception.</p>
 	 *
 	 * @param reader Reader connected to the remote endpoint.
 	 * @param writer Writer connected to the remote endpoint.

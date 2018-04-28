@@ -589,7 +589,7 @@ def do_client_auth(command, input_stream, sock, auth_token):
 
         client_token = smart_decode(input_stream.readline()[:-1])
         end = smart_decode(input_stream.readline()[:-1])
-        if auth_token == client_token and end == proto.END::
+        if auth_token == client_token and end == proto.END:
             success = proto.OUTPUT_VOID_COMMAND.encode("utf-8")
             sock.sendall(success)
         else:
