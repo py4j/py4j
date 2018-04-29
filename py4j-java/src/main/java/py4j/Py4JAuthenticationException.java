@@ -27,61 +27,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
-package py4j.commands;
+package py4j;
 
-import static py4j.Protocol.AUTH_COMMAND_NAME;
+public class Py4JAuthenticationException extends Py4JException {
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
+	private static final long serialVersionUID = -8121049552991789743L;
 
-import py4j.Protocol;
-import py4j.Py4JAuthenticationException;
-import py4j.Py4JException;
-
-/**
- * The auth command is responsible for checking that the client knows the server's auth
- * secret.
- */
-public class AuthCommand extends AbstractCommand {
-
-	public static final String COMMAND_NAME = AUTH_COMMAND_NAME;
-
-	private final String authToken;
-	private volatile boolean hasAuthenticated;
-
-	public AuthCommand(String authToken) {
-		this.commandName = COMMAND_NAME;
-		this.authToken = authToken;
-		this.hasAuthenticated = false;
+	public Py4JAuthenticationException() {
 	}
 
-	@Override
-	public void execute(String commandName, BufferedReader reader, BufferedWriter writer)
-			throws Py4JException, IOException {
-		// Check the command name since socket handlers will always call this command first when
-		// authentication is enabled, regardless of the command actually sent by the client.
-		if (!COMMAND_NAME.equals(commandName)) {
-			writer.write(Protocol.getOutputErrorCommand());
-			writer.flush();
-			throw new Py4JAuthenticationException(
-					String.format("Expected %s, got %s instead.", COMMAND_NAME, commandName));
-		}
-
-		String clientToken = reader.readLine();
-		if (authToken.equals(clientToken)) {
-			writer.write(Protocol.getOutputVoidCommand());
-			writer.flush();
-			hasAuthenticated = true;
-		} else {
-			writer.write(Protocol.getOutputErrorCommand());
-			writer.flush();
-			throw new Py4JAuthenticationException("Client authentication unsuccessful.");
-		}
+	public Py4JAuthenticationException(String message) {
+		super(message);
 	}
 
-	public boolean isAuthenticated() {
-		return hasAuthenticated;
+	public Py4JAuthenticationException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
+	public Py4JAuthenticationException(Throwable cause) {
+	}
 }

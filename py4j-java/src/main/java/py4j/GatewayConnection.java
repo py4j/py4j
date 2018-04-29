@@ -233,17 +233,9 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 				Command command = commands.get(commandLine);
 				if (command != null) {
 					if (authCommand != null && !authCommand.isAuthenticated()) {
-						try {
-							// TODO AUTH Refactor this part to only call
-							// command.execute
-							authCommand.execute(commandLine, reader, writer);
-						} catch (Py4JException pe) {
-							// TODO AUTH Py4JAuthException?
-							// Caught below...
-							logger.log(Level.INFO, "Authentication error.", pe);
-							reset = true;
-							return;
-						}
+						// TODO AUTH Refactor this part to only call
+						// command.execute
+						authCommand.execute(commandLine, reader, writer);
 					} else {
 						command.execute(commandLine, reader, writer);
 					}
@@ -255,6 +247,11 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		} catch (SocketTimeoutException ste) {
 			logger.log(Level.WARNING, "Timeout occurred while waiting for a command.", ste);
 			error = ste;
+			reset = true;
+		} catch (Py4JAuthenticationException pae) {
+			logger.log(Level.SEVERE, "Authentication error.", pae);
+			// We do not store the error because we do not want to write
+			// a message to the other side.
 			reset = true;
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);

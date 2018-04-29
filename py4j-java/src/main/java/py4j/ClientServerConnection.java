@@ -177,13 +177,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 
 				if (command != null) {
 					if (authCommand != null && !authCommand.isAuthenticated()) {
-						try {
-							authCommand.execute(commandLine, reader, writer);
-						} catch (Py4JException pe) {
-							logger.log(Level.INFO, "Authentication error.", pe);
-							reset = true;
-							return;
-						}
+						authCommand.execute(commandLine, reader, writer);
 					} else {
 						command.execute(commandLine, reader, writer);
 					}
@@ -197,6 +191,11 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 			logger.log(Level.WARNING, "Timeout occurred while waiting for a command.", ste);
 			reset = true;
 			error = ste;
+		} catch (Py4JAuthenticationException pae) {
+			logger.log(Level.SEVERE, "Authentication error.", pae);
+			// We do not store the error because we do not want to
+			// send a message to the other side.
+			reset = true;
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
 			error = e;
