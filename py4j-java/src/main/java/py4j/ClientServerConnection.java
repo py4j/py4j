@@ -281,23 +281,8 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	@Override
 	public void start() throws IOException {
 		if (authToken != null) {
-			// TODO
 			try {
-				String command = Protocol.getAuthCommand(authToken);
-				// XXX Does not work because sendCommand can execute a command
-				// but here we expect to receive immediately the auth response.
-				String returnCommand = sendCommand(command);
-				Object output = Protocol.getReturnValue(returnCommand, null);
-				if (output != null) {
-					// Check that the return value is null/void.
-					throw new Py4JException("Received wrong authentication response: " + output);
-				}
-			} catch (Throwable t) {
-				logger.log(Level.SEVERE, "Could not authenticate the callback connection.");
-				shutdown(true);
-				throw new IOException(t);
-			}
-			try {
+				// TODO should we receive an AuthException instead of an IOException?
 				NetworkUtil.authToServer(reader, writer, authToken);
 			} catch (IOException ioe) {
 				shutdown(true);

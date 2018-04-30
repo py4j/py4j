@@ -60,7 +60,8 @@ class JavaParameters(GatewayParameters):
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
             auto_close=True, auto_convert=False, eager_load=False,
             ssl_context=None, enable_memory_management=True, auto_gc=False,
-            read_timeout=None, daemonize_memory_management=True):
+            read_timeout=None, daemonize_memory_management=True,
+            auth_token=None):
         """
 
         :param address: the address to which the client will request a
@@ -111,10 +112,13 @@ class JavaParameters(GatewayParameters):
             the Python side might not send all garbage collection requests if
             it exits. If False, memory management will block the Python program
             exit until all requests are sent.
+
+        :param auth_token: if provided, an authentication that token clients
+            must provide to the server when connecting.
         """
         super(JavaParameters, self).__init__(
             address, port, auto_field, auto_close, auto_convert, eager_load,
-            ssl_context, enable_memory_management, read_timeout)
+            ssl_context, enable_memory_management, read_timeout, auth_token)
         self.auto_gc = auto_gc
         self.daemonize_memory_management = daemonize_memory_management
 
@@ -129,7 +133,8 @@ class PythonParameters(CallbackServerParameters):
             daemonize=False, daemonize_connections=False, eager_load=True,
             ssl_context=None, auto_gc=False,
             accept_timeout=DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-            read_timeout=None, propagate_java_exceptions=False):
+            read_timeout=None, propagate_java_exceptions=False,
+            auth_token=None):
         """
         :param address: the address to which the client will request a
             connection
@@ -174,11 +179,14 @@ class PythonParameters(CallbackServerParameters):
             other kind of Python exception. Setting this option is useful if
             you need to implement a Java interface where the user of the
             interface has special handling for specific Java exception types.
+
+        :param auth_token: if provided, an authentication token that clients
+            must provide to the server when connecting.
         """
         super(PythonParameters, self).__init__(
             address, port, daemonize, daemonize_connections, eager_load,
             ssl_context, accept_timeout, read_timeout,
-            propagate_java_exceptions)
+            propagate_java_exceptions, auth_token)
         self.auto_gc = auto_gc
 
 
@@ -603,7 +611,7 @@ class ClientServer(JavaGateway):
 
     def __init__(
             self, java_parameters=None, python_parameters=None,
-            python_server_entry_point=None, auth_token=None):
+            python_server_entry_point=None):
         """
         :param java_parameters: collection of parameters and flags used to
             configure the JavaGateway (Java client)
@@ -613,17 +621,11 @@ class ClientServer(JavaGateway):
 
         :param python_server_entry_point: can be requested by the Java side if
             Java is driving the communication.
-
-        :param auth_token: if provided, an authentication that will be used
-            to authenticate connections between the Java and Python sides.
         """
         if not java_parameters:
             java_parameters = JavaParameters()
         if not python_parameters:
             python_parameters = PythonParameters()
-        auth_token = escape_new_line(auth_token)
-        java_parameters.auth_token = auth_token
-        python_parameters.auth_token = auth_token
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
         super(ClientServer, self).__init__(
