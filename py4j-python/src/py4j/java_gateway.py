@@ -394,7 +394,7 @@ def set_field(java_object, field_name, value):
 
     command = proto.FIELD_COMMAND_NAME + proto.FIELD_SET_SUBCOMMAND_NAME +\
         java_object._target_id + "\n" + field_name + "\n" +\
-        command_part + "\n" + proto.END_COMMAND_PART
+        command_part + proto.END_COMMAND_PART
 
     answer = java_object._gateway_client.send_command(command)
     has_error, error_message = get_error_message(answer)
@@ -1625,7 +1625,7 @@ class JVMView(object):
         command = proto.DIR_COMMAND_NAME +\
             proto.DIR_JVMVIEW_SUBCOMMAND_NAME +\
             self._id + "\n" +\
-            get_command_part(self._dir_sequence_and_cache[0]) + "\n" +\
+            get_command_part(self._dir_sequence_and_cache[0]) +\
             proto.END_COMMAND_PART
 
         answer = self._gateway_client.send_command(command)
