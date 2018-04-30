@@ -26,7 +26,7 @@ from py4j import protocol as proto
 from py4j.compat import Queue
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
-    get_return_value, escape_new_line, Py4JAuthenticationError)
+    get_return_value, Py4JAuthenticationError)
 
 
 logger = logging.getLogger("py4j.clientserver")
