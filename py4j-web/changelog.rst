@@ -14,10 +14,11 @@ Py4J 0.10.7
   to rethrow the Java exception on the Java side, making it easy to implement
   Java protocols in Python (e.g., Iterator protocol). Because this could break
   backward compatibily, Java exceptions are only rethrown if
-  propagate_java_exceptions is True in CallbackServerParameters.
+  propagate_java_exceptions is True in CallbackServerParameters. Thanks to
+  @batterseapower for the patch.
 - Both sides: small fixes to the code examples on documentation front page.
 - Both sides: added optional authentication method that requires a token at the
-  start of every connection.
+  start of every connection. Thanks to @vanzin for initial patch and follow up.
 - Python side: support for Python 3.6
 - Python side: removed two spurious line breaks in sub commands.
 - Java side: as part of the addition of the authentication method, made
