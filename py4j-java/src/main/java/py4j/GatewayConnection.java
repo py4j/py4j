@@ -233,15 +233,14 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 				Command command = commands.get(commandLine);
 				if (command != null) {
 					if (authCommand != null && !authCommand.isAuthenticated()) {
-						// TODO AUTH Refactor this part to only call
-						// command.execute
 						authCommand.execute(commandLine, reader, writer);
 					} else {
 						command.execute(commandLine, reader, writer);
 					}
 					executing = false;
 				} else {
-					logger.log(Level.WARNING, "Unknown command " + commandLine);
+					reset = true;
+					throw new Py4JException("Unknown command received: " + commandLine);
 				}
 			} while (commandLine != null && !commandLine.equals("q"));
 		} catch (SocketTimeoutException ste) {

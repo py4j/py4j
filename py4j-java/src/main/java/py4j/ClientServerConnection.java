@@ -183,8 +183,8 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 					}
 					executing = false;
 				} else {
-					logger.log(Level.WARNING, "Unknown command " + commandLine);
-					// TODO SEND BACK AN ERROR?
+					reset = true;
+					throw new Py4JException("Unknown command received: " + commandLine);
 				}
 			} while (commandLine != null && !commandLine.equals("q"));
 		} catch (SocketTimeoutException ste) {

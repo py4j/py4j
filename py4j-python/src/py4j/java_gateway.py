@@ -35,7 +35,8 @@ from py4j.protocol import (
     Py4JAuthenticationError,
     get_command_part, get_return_value,
     register_output_converter, smart_decode, escape_new_line,
-    is_fatal_error, is_error, unescape_new_line)
+    is_fatal_error, is_error, unescape_new_line,
+    get_error_message, compute_exception_message)
 from py4j.signals import Signal
 from py4j.version import __version__
 
@@ -363,10 +364,13 @@ def get_field(java_object, field_name):
         java_object._target_id + "\n" + field_name + "\n" +\
         proto.END_COMMAND_PART
     answer = java_object._gateway_client.send_command(command)
+    has_error, error_message = get_error_message(answer)
 
-    if answer == proto.NO_MEMBER_COMMAND or is_error(answer)[0]:
-        raise Py4JError("no field {0} in object {1}".format(
-            field_name, java_object._target_id))
+    if answer == proto.NO_MEMBER_COMMAND or has_error:
+        message = compute_exception_message(
+            "no field {0} in object {1}".format(
+                field_name, java_object._target_id), error_message)
+        raise Py4JError(message)
     else:
         return get_return_value(
             answer, java_object._gateway_client, java_object._target_id,
@@ -393,9 +397,13 @@ def set_field(java_object, field_name, value):
         command_part + "\n" + proto.END_COMMAND_PART
 
     answer = java_object._gateway_client.send_command(command)
-    if answer == proto.NO_MEMBER_COMMAND or is_error(answer)[0]:
-        raise Py4JError("no field {0} in object {1}".format(
-            field_name, java_object._target_id))
+    has_error, error_message = get_error_message(answer)
+
+    if answer == proto.NO_MEMBER_COMMAND or has_error:
+        message = compute_exception_message(
+            "no field {0} in object {1}".format(
+                field_name, java_object._target_id), error_message)
+        raise Py4JError(message)
     return get_return_value(
         answer, java_object._gateway_client, java_object._target_id,
         field_name)
@@ -588,12 +596,14 @@ def do_client_auth(command, input_stream, sock, auth_token):
                 proto.AUTH_COMMAND_NAME, command))
 
         client_token = smart_decode(input_stream.readline()[:-1])
-        end = smart_decode(input_stream.readline()[:-1])
-        if auth_token == client_token and end == proto.END:
+        # Remove the END marker
+        input_stream.readline()
+        if auth_token == client_token:
             success = proto.OUTPUT_VOID_COMMAND.encode("utf-8")
             sock.sendall(success)
         else:
             error = proto.ERROR_RETURN_MESSAGE.encode("utf-8")
+            # TODO AUTH Send error message with the error?
             sock.sendall(error)
             raise Py4JAuthenticationError("Client authentication failed.")
     except Py4JAuthenticationError:
@@ -1643,7 +1653,10 @@ class JVMView(object):
             return JavaClass(
                 answer[proto.CLASS_FQN_START:], self._gateway_client)
         else:
-            raise Py4JError("{0} does not exist in the JVM".format(name))
+            _, error_message = get_error_message(answer)
+            message = compute_exception_message(
+                "{0} does not exist in the JVM".format(name), error_message)
+            raise Py4JError(message)
 
 
 class GatewayProperty(object):

@@ -342,6 +342,34 @@ def get_return_value(answer, gateway_client, target_id=None, name=None):
             return OUTPUT_CONVERTER[type](answer[2:], gateway_client)
 
 
+def get_error_message(answer, gateway_client=None):
+    """Returns a tuple of:
+
+    1. bool: if the answer is an error
+    2. the error message if any (discards null and references)
+    """
+    is_answer_error = is_error(answer)[0]
+    value = None
+    if is_answer_error:
+        if len(answer) > 1:
+            type = answer[1]
+            if type == STRING_TYPE:
+                value = OUTPUT_CONVERTER[type](answer[2:], gateway_client)
+    return (is_answer_error, value)
+
+
+def compute_exception_message(default_message, extra_message=None):
+    """Returns an error message with an extra error message if provided.
+
+    Otherwise returns the default error message.
+    """
+    message = default_message
+    if extra_message:
+        message = "{0} -- {1}".format(
+            default_message, extra_message)
+    return message
+
+
 def is_error(answer):
     if len(answer) == 0 or answer[0] != SUCCESS:
         return (True, None)
@@ -406,7 +434,7 @@ class Py4JError(Exception):
 class Py4JAuthenticationError(Py4JError):
     """Exception raised when Py4J cannot authenticate a connection."""
     def __init__(self, args=None, cause=None):
-        super(Py4JNetworkError, self).__init__(args)
+        super(Py4JAuthenticationError, self).__init__(args)
         self.cause = cause
 
 

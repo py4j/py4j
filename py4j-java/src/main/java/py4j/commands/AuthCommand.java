@@ -62,7 +62,7 @@ public class AuthCommand extends AbstractCommand {
 		// Check the command name since socket handlers will always call this command first when
 		// authentication is enabled, regardless of the command actually sent by the client.
 		if (!COMMAND_NAME.equals(commandName)) {
-			writer.write(Protocol.getOutputErrorCommand());
+			writer.write(Protocol.getOutputErrorCommand("Authentication error: unexpected command."));
 			writer.flush();
 			throw new Py4JAuthenticationException(
 					String.format("Expected %s, got %s instead.", COMMAND_NAME, commandName));
@@ -74,7 +74,7 @@ public class AuthCommand extends AbstractCommand {
 			writer.flush();
 			hasAuthenticated = true;
 		} else {
-			writer.write(Protocol.getOutputErrorCommand());
+			writer.write(Protocol.getOutputErrorCommand("Authentication error: bad auth token received."));
 			writer.flush();
 			throw new Py4JAuthenticationException("Client authentication unsuccessful.");
 		}
