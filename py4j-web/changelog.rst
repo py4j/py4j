@@ -5,10 +5,10 @@ The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
 
-Py4J 0.10.7 - to be released
-----------------------------
+Py4J 0.10.7
+-----------
 
-- Release date:
+- Release date: April 30th 2018
 - Both sides: Python exception trace is now propagated to the Java side as a
   string. If the Python exception is caused by a Java exception it is possible
   to rethrow the Java exception on the Java side, making it easy to implement
