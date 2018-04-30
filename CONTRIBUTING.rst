@@ -238,7 +238,7 @@ a license to distribute your code without further restrictions.
 
 The copyright statement in the License has been standardized to:
 
-``Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors. All
+``Copyright (c) 2009-2018, Barthelemy Dagenais and individual contributors. All
 rights reserved.```
 
 Individual contributors are identified in the AUTHORS file. If you have
