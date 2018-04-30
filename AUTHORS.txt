@@ -21,6 +21,7 @@ Chetan Narsude <@243826>
 Josh Rosen <rosenville@gmail.com>
 Isaac Sánchez Barrera <isaac@isb1009.es>
 David C. Sterratt <david.c.sterratt@ed.ac.uk>
+Marcelo Vanzin <vanzin@cloudera.com>
 Greg Warner <gdwarner@gmail.com>
 Nick White <n.j.white@gmail.com>
 Shixiong Zhu <@zsxwing>

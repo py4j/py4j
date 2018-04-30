@@ -177,26 +177,25 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 
 				if (command != null) {
 					if (authCommand != null && !authCommand.isAuthenticated()) {
-						try {
-							authCommand.execute(commandLine, reader, writer);
-						} catch (Py4JException pe) {
-							logger.log(Level.INFO, "Authentication error.", pe);
-							reset = true;
-							return;
-						}
+						authCommand.execute(commandLine, reader, writer);
 					} else {
 						command.execute(commandLine, reader, writer);
 					}
 					executing = false;
 				} else {
-					logger.log(Level.WARNING, "Unknown command " + commandLine);
-					// TODO SEND BACK AN ERROR?
+					reset = true;
+					throw new Py4JException("Unknown command received: " + commandLine);
 				}
 			} while (commandLine != null && !commandLine.equals("q"));
 		} catch (SocketTimeoutException ste) {
 			logger.log(Level.WARNING, "Timeout occurred while waiting for a command.", ste);
 			reset = true;
 			error = ste;
+		} catch (Py4JAuthenticationException pae) {
+			logger.log(Level.SEVERE, "Authentication error.", pae);
+			// We do not store the error because we do not want to
+			// send a message to the other side.
+			reset = true;
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
 			error = e;
@@ -283,6 +282,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	public void start() throws IOException {
 		if (authToken != null) {
 			try {
+				// TODO should we receive an AuthException instead of an IOException?
 				NetworkUtil.authToServer(reader, writer, authToken);
 			} catch (IOException ioe) {
 				shutdown(true);

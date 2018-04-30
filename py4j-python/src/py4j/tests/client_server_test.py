@@ -301,7 +301,8 @@ class IntegrationTest(unittest.TestCase):
     def _testJavaClientPythonServer(self, auth_token=None):
         hello_state = HelloState()
         client_server = ClientServer(
-            JavaParameters(), PythonParameters(), hello_state, auth_token)
+            JavaParameters(auth_token=auth_token),
+            PythonParameters(auth_token=auth_token), hello_state)
 
         with clientserver_example_app_process(True, auth_token=auth_token):
             client_server.shutdown(raise_exception=True)

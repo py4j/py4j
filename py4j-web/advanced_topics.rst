@@ -1146,11 +1146,27 @@ The authentication protocol transfers the token over the socket connection,
 so it relies on transport-level encryption for secrecy. This means that for
 proper security, connections should use loopback addresses, or use TLS.
 
+Here is a quick example of how to use an authentication token.
+
+.. code-block:: java
+
+  GatewayServer server = new GatewayServer.GatewayServerBuilder().entryPoint(
+    new ExampleEntryPoint()).authToken("HelloWorld").build();
+  server.start();
+
+
+.. code-block:: python
+
+  from py4j.java_gateway import JavaGateway, GatewayParameters
+  params = GatewayParameters(auth_token="HelloWorld")
+  gateway = JavaGateway(gateway_parameters=params)
+
+
 Boxing
 ------
 
 Boxed Java primitives, such as `java.lang.Integer` are unboxed in the JVM and
-transmitted as primitives, so they will appear as Python `int`s, not
+transmitted as primitives, so they will appear as Python `int` and not
 `JavaObjects`.
 
 

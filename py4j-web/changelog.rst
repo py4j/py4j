@@ -16,7 +16,13 @@ Py4J 0.10.7 - to be released
   backward compatibily, Java exceptions are only rethrown if
   propagate_java_exceptions is True in CallbackServerParameters.
 - Both sides: small fixes to the code examples on documentation front page.
+- Both sides: added optional authentication method that requires a token at the
+  start of every connection.
 - Python side: support for Python 3.6
+- Python side: removed two spurious line breaks in sub commands.
+- Java side: as part of the addition of the authentication method, made
+  protocol stricter: unknown commands now raise an exception and stops a
+  connection.
 - Java side: ClientServer now uses the passed SocketFactory in
   PythonClient instead of always falling back to the default socket factory.
 - Java side: support for Gradle 4.x

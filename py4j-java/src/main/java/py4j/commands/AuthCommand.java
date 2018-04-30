@@ -29,11 +29,14 @@
  *****************************************************************************/
 package py4j.commands;
 
+import static py4j.Protocol.AUTH_COMMAND_NAME;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
 import py4j.Protocol;
+import py4j.Py4JAuthenticationException;
 import py4j.Py4JException;
 
 /**
@@ -42,7 +45,7 @@ import py4j.Py4JException;
  */
 public class AuthCommand extends AbstractCommand {
 
-	public static final String COMMAND_NAME = "A";
+	public static final String COMMAND_NAME = AUTH_COMMAND_NAME;
 
 	private final String authToken;
 	private volatile boolean hasAuthenticated;
@@ -59,9 +62,10 @@ public class AuthCommand extends AbstractCommand {
 		// Check the command name since socket handlers will always call this command first when
 		// authentication is enabled, regardless of the command actually sent by the client.
 		if (!COMMAND_NAME.equals(commandName)) {
-			writer.write(Protocol.getOutputErrorCommand());
+			writer.write(Protocol.getOutputErrorCommand("Authentication error: unexpected command."));
 			writer.flush();
-			throw new Py4JException(String.format("Expected %s, got %s instead.", COMMAND_NAME, commandName));
+			throw new Py4JAuthenticationException(
+					String.format("Expected %s, got %s instead.", COMMAND_NAME, commandName));
 		}
 
 		String clientToken = reader.readLine();
@@ -70,9 +74,9 @@ public class AuthCommand extends AbstractCommand {
 			writer.flush();
 			hasAuthenticated = true;
 		} else {
-			writer.write(Protocol.getOutputErrorCommand());
+			writer.write(Protocol.getOutputErrorCommand("Authentication error: bad auth token received."));
 			writer.flush();
-			throw new Py4JException("Client authentication unsuccessful.");
+			throw new Py4JAuthenticationException("Client authentication unsuccessful.");
 		}
 	}
 

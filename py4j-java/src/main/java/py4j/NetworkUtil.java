@@ -128,7 +128,13 @@ public class NetworkUtil {
 	}
 
 	/**
-	 * Performs authentication on the reader / writer representing a connection to a server.
+	 * <p>Performs authentication on the reader / writer representing a
+	 * connection to a server.</p>
+	 *
+	 * <p>To be reusable, this function performs the read and write through raw sockets,
+	 * and inspects the output immediately. It is essential that we do not try to evaluate
+	 * the output or we could end up executing a non-authenticated method or raising an
+	 * unexpected exception.</p>
 	 *
 	 * @param reader Reader connected to the remote endpoint.
 	 * @param writer Writer connected to the remote endpoint.
@@ -136,14 +142,12 @@ public class NetworkUtil {
 	 * @throws IOException On I/O error, or if authentication fails.
 	 */
 	static void authToServer(BufferedReader reader, BufferedWriter writer, String authToken) throws IOException {
-		writer.write(AuthCommand.COMMAND_NAME);
-		writer.write("\n");
-		writer.write(authToken);
-		writer.write("\n");
+		writer.write(Protocol.getAuthCommand(authToken));
 		writer.flush();
 
-		String reply = reader.readLine();
-		if (reply == null || !reply.equals(Protocol.getOutputVoidCommand().trim())) {
+		String returnCommand = reader.readLine();
+		if (returnCommand == null || !returnCommand.equals(Protocol.getOutputVoidCommand().trim())) {
+			logger.log(Level.SEVERE, "Could not authenticate connection. Received this response: " + returnCommand);
 			throw new IOException("Authentication with callback server unsuccessful.");
 		}
 	}

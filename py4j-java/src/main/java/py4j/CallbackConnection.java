@@ -230,6 +230,7 @@ public class CallbackConnection implements Py4JClientConnection {
 
 		if (authToken != null) {
 			try {
+				// TODO should we receive an AuthException instead of an IOException?
 				NetworkUtil.authToServer(reader, writer, authToken);
 			} catch (IOException ioe) {
 				shutdown(true);

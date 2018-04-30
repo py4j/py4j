@@ -117,6 +117,9 @@ public class Protocol {
 	public final static char FATAL_ERROR = 'z';
 	public final static char SUCCESS = 'y';
 
+	// COMMON COMMAND NAME
+	public final static String AUTH_COMMAND_NAME = "A";
+
 	// SHORTCUT
 	public final static String ERROR_COMMAND = "" + RETURN_MESSAGE + ERROR + END_OUTPUT;
 	public final static String VOID_COMMAND = "" + RETURN_MESSAGE + SUCCESS + VOID + END_OUTPUT;
@@ -363,6 +366,18 @@ public class Protocol {
 
 	public final static String getOutputVoidCommand() {
 		return VOID_COMMAND;
+	}
+
+	public final static String getAuthCommand(String authToken) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(AUTH_COMMAND_NAME);
+		builder.append("\n");
+		builder.append(StringUtil.escape(authToken));
+		builder.append("\n");
+		builder.append(END);
+		builder.append("\n");
+
+		return builder.toString();
 	}
 
 	public static char getPrimitiveType(Object primitiveObject) {

@@ -193,7 +193,7 @@ public class GatewayServerTest {
 		if (authToken == null) {
 			// If no auth token was provided, this code might be able to read a line of output before the
 			// socket is closed by the server; it should be the error message from the auth check.
-			assertEquals(Protocol.getOutputErrorCommand().trim(), reply);
+			assertEquals(Protocol.getOutputErrorCommand("Authentication error: unexpected command.").trim(), reply);
 
 			// Throw an IOException since that's what the test above expects in this case.
 			throw new IOException("Auth unsuccessful.");
