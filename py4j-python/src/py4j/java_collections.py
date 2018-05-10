@@ -98,8 +98,8 @@ class JavaSet(JavaObject, MutableSet):
 
     All operations possible on a Python set are implemented."""
 
-    __EMPTY_SET = "set([])" if sys.version_info[0] < 3 else "set()"
-    __SET_TEMPLATE = "set([{0}])" if sys.version_info[0] < 3 else "{{{0}}}"
+    __EMPTY_SET = "set([])" if sys.version_info.major < 3 else "set()"
+    __SET_TEMPLATE = "set([{0}])" if sys.version_info.major < 3 else "{{{0}}}"
 
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
