@@ -450,7 +450,7 @@ class DeprecatedTest(unittest.TestCase):
         self.gateway = JavaGateway(gateway_client=gateway_client)
 
         i = self.gateway.jvm.System.currentTimeMillis()
-        self.assertTrue(i > 0)
+        self.assertGreater(i, 0)
 
     def tearDown(self):
         safe_shutdown(self)
@@ -866,7 +866,7 @@ class JVMTest(unittest.TestCase):
 
     def testStaticMethods(self):
         System = self.gateway.jvm.java.lang.System
-        self.assertTrue(System.currentTimeMillis() > 0)
+        self.assertGreater(System.currentTimeMillis(), 0)
         self.assertEqual("123", self.gateway.jvm.java.lang.String.valueOf(123))
 
     def testStaticFields(self):
@@ -876,7 +876,7 @@ class JVMTest(unittest.TestCase):
         self.assertFalse(System.out.checkError())
 
     def testDefaultImports(self):
-        self.assertTrue(self.gateway.jvm.System.currentTimeMillis() > 0)
+        self.assertGreater(self.gateway.jvm.System.currentTimeMillis(), 0)
         self.assertEqual("123", self.gateway.jvm.String.valueOf(123))
 
     def testNone(self):
@@ -891,20 +891,20 @@ class JVMTest(unittest.TestCase):
     def testJVMView(self):
         newView = self.gateway.new_jvm_view("myjvm")
         time = newView.System.currentTimeMillis()
-        self.assertTrue(time > 0)
+        self.assertGreater(time, 0)
         time = newView.java.lang.System.currentTimeMillis()
-        self.assertTrue(time > 0)
+        self.assertGreater(time, 0)
 
     def testImport(self):
         newView = self.gateway.new_jvm_view("myjvm")
         java_import(self.gateway.jvm, "java.util.*")
         java_import(self.gateway.jvm, "java.io.File")
-        self.assertTrue(self.gateway.jvm.ArrayList() is not None)
-        self.assertTrue(self.gateway.jvm.File("hello.txt") is not None)
+        self.assertIsNotNone(self.gateway.jvm.ArrayList())
+        self.assertIsNotNone(self.gateway.jvm.File("hello.txt"))
         self.assertRaises(Exception, lambda: newView.File("test.txt"))
 
         java_import(newView, "java.util.HashSet")
-        self.assertTrue(newView.HashSet() is not None)
+        self.assertIsNotNone(newView.HashSet())
 
     def testEnum(self):
         self.assertEqual("FOO", str(self.gateway.jvm.py4j.examples.Enum2.FOO))
@@ -930,19 +930,19 @@ class HelpTest(unittest.TestCase):
     def testHelpObject(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, short_name=True, display=False)
-        self.assertTrue(len(help_page) > 1)
+        self.assertGreater(len(help_page), 1)
 
     def testHelpObjectWithPattern(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(
             ex, pattern="m*", short_name=True, display=False)
-        self.assertTrue(len(help_page) > 1)
+        self.assertGreater(len(help_page), 1)
 
     def testHelpClass(self):
         String = self.gateway.jvm.java.lang.String
         help_page = self.gateway.help(String, short_name=False, display=False)
-        self.assertTrue(len(help_page) > 1)
-        self.assertTrue("String" in help_page)
+        self.assertGreater(len(help_page), 1)
+        self.assertIn("String", help_page)
 
 
 class Runner(Thread):
@@ -1106,7 +1106,7 @@ class GatewayLauncherTest(unittest.TestCase):
         # Make sure the default client can connect to the server.
         klass = self.gateway.jvm.java.lang.String
         help_page = self.gateway.help(klass, short_name=True, display=False)
-        self.assertTrue(len(help_page) > 1)
+        self.assertGreater(len(help_page), 1)
 
         # Replace the client with one that does not authenticate.
         # Make sure it fails.
@@ -1153,7 +1153,7 @@ class IPv6Test(unittest.TestCase):
 
         try:
             timeMillis = gateway.jvm.System.currentTimeMillis()
-            self.assertTrue(timeMillis > 0)
+            self.assertGreater(timeMillis, 0)
 
             operator = WaitOperator(0.1)
             opExample = gateway.jvm.py4j.examples.OperatorExample()
