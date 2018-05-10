@@ -88,9 +88,9 @@ class JavaMap(JavaObject, MutableMapping):
 
     def __repr__(self):
         items = (
-            "{0}: {1}".format(repr(k), repr(v))
+            "{}: {}".format(repr(k), repr(v))
             for k, v in iteritems(self))
-        return "{{{0}}}".format(", ".join(items))
+        return "{{{}}}".format(", ".join(items))
 
 
 class JavaSet(JavaObject, MutableSet):
@@ -99,7 +99,7 @@ class JavaSet(JavaObject, MutableSet):
     All operations possible on a Python set are implemented."""
 
     __EMPTY_SET = "set([])" if sys.version_info.major < 3 else "set()"
-    __SET_TEMPLATE = "set([{0}])" if sys.version_info.major < 3 else "{{{0}}}"
+    __SET_TEMPLATE = "set([{}])" if sys.version_info.major < 3 else "{{{}}}"
 
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
@@ -190,7 +190,7 @@ class JavaArray(JavaObject, Sequence):
         elif isinstance(key, int):
             return self.__compute_item(key)
         else:
-            raise TypeError("array indices must be integers, not {0}".format(
+            raise TypeError("array indices must be integers, not {}".format(
                 key.__class__.__name__))
 
     def __repl_item_from_slice(self, range, iterable):
@@ -220,14 +220,14 @@ class JavaArray(JavaObject, Sequence):
             if lenr != lenv:
                 raise ValueError(
                     "attempt to assign sequence of size "
-                    "{0} to extended slice of size {1}".format(lenv, lenr))
+                    "{} to extended slice of size {}".format(lenv, lenr))
             else:
                 return self.__repl_item_from_slice(self_range, value)
 
         elif isinstance(key, int):
             return self.__set_item(key, value)
         else:
-            raise TypeError("list indices must be integers, not {0}".format(
+            raise TypeError("list indices must be integers, not {}".format(
                 key.__class__.__name__))
 
     def __len__(self):
@@ -334,14 +334,14 @@ class JavaList(JavaObject, MutableSequence):
                 if lenr != lenv:
                     raise ValueError(
                         "attempt to assign sequence of size "
-                        "{0} to extended slice of size {1}".format(lenv, lenr))
+                        "{} to extended slice of size {}".format(lenv, lenr))
                 else:
                     return self.__repl_item_from_slice(self_range, value)
 
         elif isinstance(key, int):
             return self.__set_item(key, value)
         else:
-            raise TypeError("list indices must be integers, not {0}".format(
+            raise TypeError("list indices must be integers, not {}".format(
                 key.__class__.__name__))
 
     def __get_slice(self, indices):
@@ -361,7 +361,7 @@ class JavaList(JavaObject, MutableSequence):
         elif isinstance(key, int):
             return self.__compute_item(key)
         else:
-            raise TypeError("list indices must be integers, not {0}".format(
+            raise TypeError("list indices must be integers, not {}".format(
                 key.__class__.__name__))
 
     def __delitem__(self, key):
@@ -374,7 +374,7 @@ class JavaList(JavaObject, MutableSequence):
         elif isinstance(key, int):
             return self.__del_item(key)
         else:
-            raise TypeError("list indices must be integers, not {0}".format(
+            raise TypeError("list indices must be integers, not {}".format(
                 key.__class__.__name__))
 
     def __contains__(self, item):
@@ -421,7 +421,7 @@ class JavaList(JavaObject, MutableSequence):
             new_key = self.__compute_index(key, True)
             return self.add(new_key, value)
         else:
-            raise TypeError("list indices must be integers, not {0}".format(
+            raise TypeError("list indices must be integers, not {}".format(
                 key.__class__.__name__))
 
     def extend(self, other_list):
@@ -472,7 +472,7 @@ class JavaList(JavaObject, MutableSequence):
 
     def __repr__(self):
         items = (repr(x) for x in self)
-        return "[{0}]".format(", ".join(items))
+        return "[{}]".format(", ".join(items))
 
 
 class SetConverter(object):

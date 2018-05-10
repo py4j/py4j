@@ -207,7 +207,7 @@ class IHelloImpl(object):
         if i is None:
             return "This is Hello!"
         else:
-            return "This is Hello;\n{0}{1}".format(i, s)
+            return "This is Hello;\n{}{}".format(i, s)
 
     class Java:
         implements = ["py4j.examples.IHello"]

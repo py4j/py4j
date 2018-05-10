@@ -153,11 +153,11 @@ def set_default_callback_accept_timeout(accept_timeout):
 def deprecated(name, last_version, use_instead="", level=logging.DEBUG,
                raise_exc=False):
     if not use_instead:
-        msg = "{0} is deprecated and will be removed in version {1}"\
+        msg = "{} is deprecated and will be removed in version {}"\
             .format(name, last_version)
     else:
-        msg = "{0} is deprecated and will be removed in version {1}. "\
-            "Use {2} instead."\
+        msg = "{} is deprecated and will be removed in version {}. "\
+            "Use {} instead."\
             .format(name, last_version, use_instead)
     logger.log(level, msg)
     if raise_exc:
@@ -185,8 +185,8 @@ def find_jar_path():
     """Tries to find the path where the py4j jar is located.
     """
     paths = []
-    jar_file = "py4j{0}.jar".format(__version__)
-    maven_jar_file = "py4j-{0}.jar".format(__version__)
+    jar_file = "py4j{}.jar".format(__version__)
+    maven_jar_file = "py4j-{}.jar".format(__version__)
     paths.append(jar_file)
     # ant
     paths.append(os.path.join(os.path.dirname(
@@ -286,7 +286,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
 
     # Fail if the jar does not exist.
     if not os.path.exists(jarpath):
-        raise Py4JError("Could not find py4j jar at {0}".format(jarpath))
+        raise Py4JError("Could not find py4j jar at {}".format(jarpath))
 
     # Launch the server in a subprocess.
     classpath = os.pathsep.join((jarpath, classpath))
@@ -297,7 +297,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     if enable_auth:
         command.append("--enable-auth")
     command.append(str(port))
-    logger.debug("Launching gateway with command {0}".format(command))
+    logger.debug("Launching gateway with command {}".format(command))
 
     # stderr redirection
     close_stderr = False
@@ -368,7 +368,7 @@ def get_field(java_object, field_name):
 
     if answer == proto.NO_MEMBER_COMMAND or has_error:
         message = compute_exception_message(
-            "no field {0} in object {1}".format(
+            "no field {} in object {}".format(
                 field_name, java_object._target_id), error_message)
         raise Py4JError(message)
     else:
@@ -401,7 +401,7 @@ def set_field(java_object, field_name, value):
 
     if answer == proto.NO_MEMBER_COMMAND or has_error:
         message = compute_exception_message(
-            "no field {0} in object {1}".format(
+            "no field {} in object {}".format(
                 field_name, java_object._target_id), error_message)
         raise Py4JError(message)
     return get_return_value(
@@ -1074,13 +1074,13 @@ class GatewayConnection(object):
             raise
         except Exception as e:
             msg = "An error occurred while trying to connect to the Java "\
-                "server ({0}:{1})".format(self.address, self.port)
+                "server ({}:{})".format(self.address, self.port)
             logger.exception(msg)
             raise Py4JNetworkError(msg, e)
 
     def _authenticate_connection(self):
         if self.gateway_parameters.auth_token:
-            cmd = "{0}\n{1}\n".format(
+            cmd = "{}\n{}\n".format(
                 proto.AUTH_COMMAND_NAME,
                 self.gateway_parameters.auth_token
             )
@@ -1138,7 +1138,7 @@ class GatewayConnection(object):
         :rtype: the `string` answer received from the JVM (The answer follows
          the Py4J protocol).
         """
-        logger.debug("Command to send: {0}".format(command))
+        logger.debug("Command to send: {}".format(command))
         try:
             # Write will only fail if remote is closed for large payloads or
             # if it sent a RST packet (SO_LINGER)
@@ -1150,7 +1150,7 @@ class GatewayConnection(object):
 
         try:
             answer = smart_decode(self.stream.readline()[:-1])
-            logger.debug("Answer received: {0}".format(answer))
+            logger.debug("Answer received: {}".format(answer))
             if answer.startswith(proto.RETURN_MESSAGE):
                 answer = answer[1:]
             # Happens when a the other end is dead. There might be an empty
@@ -1458,7 +1458,7 @@ class JavaClass(object):
                 answer, self._gateway_client, self._fqn, "_java_lang_class")
         else:
             raise Py4JError(
-                "{0} does not exist in the JVM".format(self._fqn))
+                "{} does not exist in the JVM".format(self._fqn))
 
     def __getattr__(self, name):
         if name in ["__str__", "__repr__"]:
@@ -1484,7 +1484,7 @@ class JavaClass(object):
                     answer, self._gateway_client, self._fqn, name)
         else:
             raise Py4JError(
-                "{0}.{1} does not exist in the JVM".format(self._fqn, name))
+                "{}.{} does not exist in the JVM".format(self._fqn, name))
 
     def _get_args(self, args):
         temp_args = []
@@ -1595,7 +1595,7 @@ class JavaPackage(object):
             return JavaClass(
                 answer[proto.CLASS_FQN_START:], self._gateway_client)
         else:
-            raise Py4JError("{0} does not exist in the JVM".format(new_fqn))
+            raise Py4JError("{} does not exist in the JVM".format(new_fqn))
 
 
 class JVMView(object):
@@ -1655,7 +1655,7 @@ class JVMView(object):
         else:
             _, error_message = get_error_message(answer)
             message = compute_exception_message(
-                "{0} does not exist in the JVM".format(name), error_message)
+                "{} does not exist in the JVM".format(name), error_message)
             raise Py4JError(message)
 
 
@@ -2150,7 +2150,7 @@ class CallbackServer(object):
             self._listening_port = info[1]
         except Exception as e:
             msg = "An error occurred while trying to start the callback "\
-                  "server ({0}:{1})".format(self.address, self.port)
+                  "server ({}:{})".format(self.address, self.port)
             logger.exception(msg)
             raise Py4JNetworkError(msg, e)
 
@@ -2188,7 +2188,7 @@ class CallbackServer(object):
             logger.info("Callback Server Starting")
             self.server_socket.listen(5)
             logger.info(
-                "Socket listening on {0}".
+                "Socket listening on {}".
                 format(smart_decode(self.server_socket.getsockname())))
             server_started.send(
                 self, server=self)
@@ -2321,7 +2321,7 @@ class CallbackConnection(Thread):
 
                 obj_id = smart_decode(self.input.readline())[:-1]
                 logger.info(
-                    "Received command {0} on object id {1}".
+                    "Received command {} on object id {}".
                     format(command, obj_id))
                 if obj_id is None or len(obj_id.strip()) == 0:
                     break
@@ -2334,7 +2334,7 @@ class CallbackConnection(Thread):
                     self.socket.sendall(
                         proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                 else:
-                    logger.error("Unknown command {0}".format(command))
+                    logger.error("Unknown command {}".format(command))
                     # We're sending something to prevent blokincg, but at this
                     # point, the protocol is broken.
                     self.socket.sendall(

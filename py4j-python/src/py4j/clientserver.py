@@ -410,7 +410,7 @@ class ClientServerConnection(object):
 
     def _authenticate_connection(self):
         if self.java_parameters.auth_token:
-            cmd = "{0}\n{1}\n".format(
+            cmd = "{}\n{}\n".format(
                 proto.AUTH_COMMAND_NAME,
                 self.java_parameters.auth_token
             )
@@ -456,7 +456,7 @@ class ClientServerConnection(object):
 
     def send_command(self, command):
         # TODO At some point extract common code from wait_for_commands
-        logger.debug("Command to send: {0}".format(command))
+        logger.debug("Command to send: {}".format(command))
         try:
             self.socket.sendall(command.encode("utf-8"))
         except Exception as e:
@@ -467,7 +467,7 @@ class ClientServerConnection(object):
         try:
             while True:
                 answer = smart_decode(self.stream.readline()[:-1])
-                logger.debug("Answer received: {0}".format(answer))
+                logger.debug("Answer received: {}".format(answer))
                 # Happens when a the other end is dead. There might be an empty
                 # answer before the socket raises an error.
                 if answer.strip() == "":
@@ -487,7 +487,7 @@ class ClientServerConnection(object):
                         self.socket.sendall(
                             proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                     else:
-                        logger.error("Unknown command {0}".format(command))
+                        logger.error("Unknown command {}".format(command))
                         # We're sending something to prevent blocking,
                         # but at this point, the protocol is broken.
                         self.socket.sendall(
@@ -531,7 +531,7 @@ class ClientServerConnection(object):
 
                 obj_id = smart_decode(self.stream.readline())[:-1]
                 logger.info(
-                    "Received command {0} on object id {1}".
+                    "Received command {} on object id {}".
                     format(command, obj_id))
                 if obj_id is None or len(obj_id.strip()) == 0:
                     break
@@ -544,7 +544,7 @@ class ClientServerConnection(object):
                     self.socket.sendall(
                         proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                 else:
-                    logger.error("Unknown command {0}".format(command))
+                    logger.error("Unknown command {}".format(command))
                     # We're sending something to prevent blocking, but at this
                     # point, the protocol is broken.
                     self.socket.sendall(

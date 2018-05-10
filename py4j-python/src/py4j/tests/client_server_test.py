@@ -168,7 +168,7 @@ class RetryTest(unittest.TestCase):
                 value = example.sleepFirstTimeOnly(500)
                 self.fail(
                     "Should never retry once the first command went through."
-                    "number of calls made: {0}".format(value))
+                    "number of calls made: {}".format(value))
             except Py4JError:
                 self.assertTrue(True)
             finally:
@@ -243,7 +243,7 @@ class RetryTest(unittest.TestCase):
                 opExample.randomBinaryOperator(operator)
                 self.fail(
                     "Should never retry once the first command went through."
-                    " number of calls made: {0}".format(operator.callCount))
+                    " number of calls made: {}".format(operator.callCount))
             except Py4JError:
                 # XXX This occurs when WaitOperator tries to send a response to
                 # the Java side (this is slightly different then the

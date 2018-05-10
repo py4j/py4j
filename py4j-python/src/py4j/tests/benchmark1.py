@@ -58,7 +58,7 @@ def benchmark(name, func):
     start = time.time()
     func()
     stop = time.time()
-    print("{0} - {1}".format(stop - start, name))
+    print("{} - {}".format(stop - start, name))
     gc.collect()
 
 

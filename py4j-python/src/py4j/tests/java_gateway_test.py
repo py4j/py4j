@@ -1041,8 +1041,8 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.err.println("Test2")
         sleep()
         for i in range(10):
-            self.assertEqual("Test{0}".format(end), qout.get())
-            self.assertEqual("Test2{0}".format(end), qerr.get())
+            self.assertEqual("Test{}".format(end), qout.get())
+            self.assertEqual("Test2{}".format(end), qerr.get())
         self.assertTrue(qout.empty)
         self.assertTrue(qerr.empty)
 
@@ -1057,8 +1057,8 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.err.println("Test2")
         sleep()
         for i in range(10):
-            self.assertEqual("Test{0}".format(end), qout.pop())
-            self.assertEqual("Test2{0}".format(end), qerr.pop())
+            self.assertEqual("Test{}".format(end), qout.pop())
+            self.assertEqual("Test2{}".format(end), qerr.pop())
         self.assertEqual(0, len(qout))
         self.assertEqual(0, len(qerr))
 
@@ -1086,7 +1086,7 @@ class GatewayLauncherTest(unittest.TestCase):
             with open(outpath, "r") as stdout:
                 lines = stdout.readlines()
                 self.assertEqual(10, len(lines))
-                self.assertEqual("Test{0}".format(end), lines[0])
+                self.assertEqual("Test{}".format(end), lines[0])
 
             with open(errpath, "r") as stderr:
                 lines = stderr.readlines()
@@ -1183,7 +1183,7 @@ class RetryTest(unittest.TestCase):
             value = gateway.entry_point.getNewExample().sleepFirstTimeOnly(500)
             self.fail(
                 "Should never retry once the first command went through."
-                "number of calls made: {0}".format(value))
+                "number of calls made: {}".format(value))
         except Py4JError:
             self.assertTrue(True)
         finally:
@@ -1256,7 +1256,7 @@ class RetryTest(unittest.TestCase):
             opExample.randomBinaryOperator(operator)
             self.fail(
                 "Should never retry once the first command went through."
-                " number of calls made: {0}".format(operator.callCount))
+                " number of calls made: {}".format(operator.callCount))
         except Py4JJavaError:
             self.assertTrue(True)
         finally:
