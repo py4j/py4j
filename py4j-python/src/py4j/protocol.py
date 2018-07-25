@@ -324,15 +324,15 @@ def get_return_value(answer, gateway_client, target_id=None, name=None):
             value = OUTPUT_CONVERTER[type](answer[2:], gateway_client)
             if answer[1] == REFERENCE_TYPE:
                 raise Py4JJavaError(
-                    "An error occurred while calling {0}{1}{2}.\n".
+                    "An error occurred while calling {}{}{}.\n".
                     format(target_id, ".", name), value)
             else:
                 raise Py4JError(
-                    "An error occurred while calling {0}{1}{2}. Trace:\n{3}\n".
+                    "An error occurred while calling {}{}{}. Trace:\n{}\n".
                     format(target_id, ".", name, value))
         else:
             raise Py4JError(
-                "An error occurred while calling {0}{1}{2}".
+                "An error occurred while calling {}{}{}".
                 format(target_id, ".", name))
     else:
         type = answer[1]
@@ -365,7 +365,7 @@ def compute_exception_message(default_message, extra_message=None):
     """
     message = default_message
     if extra_message:
-        message = "{0} -- {1}".format(
+        message = "{} -- {}".format(
             default_message, extra_message)
     return message
 
@@ -467,4 +467,4 @@ class Py4JJavaError(Py4JError):
         gateway_client = self.java_exception._gateway_client
         answer = gateway_client.send_command(self.exception_cmd)
         return_value = get_return_value(answer, gateway_client, None, None)
-        return "{0}: {1}".format(self.errmsg, return_value)
+        return "{}: {}".format(self.errmsg, return_value)

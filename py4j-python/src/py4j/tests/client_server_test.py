@@ -168,7 +168,7 @@ class RetryTest(unittest.TestCase):
                 value = example.sleepFirstTimeOnly(500)
                 self.fail(
                     "Should never retry once the first command went through."
-                    "number of calls made: {0}".format(value))
+                    "number of calls made: {}".format(value))
             except Py4JError:
                 self.assertTrue(True)
             finally:
@@ -243,7 +243,7 @@ class RetryTest(unittest.TestCase):
                 opExample.randomBinaryOperator(operator)
                 self.fail(
                     "Should never retry once the first command went through."
-                    " number of calls made: {0}".format(operator.callCount))
+                    " number of calls made: {}".format(operator.callCount))
             except Py4JError:
                 # XXX This occurs when WaitOperator tries to send a response to
                 # the Java side (this is slightly different then the
@@ -317,7 +317,7 @@ class IntegrationTest(unittest.TestCase):
             client_server = ClientServer(
                 JavaParameters(), PythonParameters())
             ms = client_server.jvm.System.currentTimeMillis()
-            self.assertTrue(ms > 0)
+            self.assertGreater(ms, 0)
             client_server.shutdown()
 
     def testErrorInPy4J(self):
@@ -350,7 +350,7 @@ class IntegrationTest(unittest.TestCase):
                 self.assertTrue(is_instance_of(
                     client_server, e.java_exception,
                     'py4j.Py4JException'))
-                self.assertTrue('interesting Python exception' in str(e))
+                self.assertIn('interesting Python exception', str(e))
 
             try:
                 example.callHello(IHelloFailingImpl(
@@ -384,7 +384,7 @@ class IntegrationTest(unittest.TestCase):
                 self.assertTrue(is_instance_of(
                     client_server, e.java_exception,
                     'py4j.Py4JException'))
-                self.assertTrue('My IllegalStateException' in str(e))
+                self.assertIn('My IllegalStateException', str(e))
 
             client_server.shutdown()
 
@@ -466,7 +466,7 @@ class IntegrationTest(unittest.TestCase):
 
             # Leave time for sotimeout
             sleep(3)
-            self.assertTrue(len(client_server.gateway_property.pool) < 2)
+            self.assertLess(len(client_server.gateway_property.pool), 2)
             client_server.shutdown()
 
     def testPythonGC(self):
@@ -504,7 +504,7 @@ class IntegrationTest(unittest.TestCase):
 
             # Number of references when we created a JavaObject should be
             # higher than at the beginning.
-            self.assertTrue(in_middle > before)
+            self.assertGreater(in_middle, before)
             client_server.shutdown()
 
     def testMultiClientServerWithSharedJavaThread(self):

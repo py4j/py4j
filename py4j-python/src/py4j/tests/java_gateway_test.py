@@ -450,7 +450,7 @@ class DeprecatedTest(unittest.TestCase):
         self.gateway = JavaGateway(gateway_client=gateway_client)
 
         i = self.gateway.jvm.System.currentTimeMillis()
-        self.assertTrue(i > 0)
+        self.assertGreater(i, 0)
 
     def tearDown(self):
         safe_shutdown(self)
@@ -693,7 +693,7 @@ class StreamTest(unittest.TestCase):
         with e.getStream.stream() as conn:
             self.assertTrue(isinstance(conn, GatewayConnectionGuard))
             expected =\
-                u"Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
             self.assertEqual(expected, smart_decode(conn.read(len(expected))))
 
     def testBinaryFailure(self):
@@ -866,7 +866,7 @@ class JVMTest(unittest.TestCase):
 
     def testStaticMethods(self):
         System = self.gateway.jvm.java.lang.System
-        self.assertTrue(System.currentTimeMillis() > 0)
+        self.assertGreater(System.currentTimeMillis(), 0)
         self.assertEqual("123", self.gateway.jvm.java.lang.String.valueOf(123))
 
     def testStaticFields(self):
@@ -876,7 +876,7 @@ class JVMTest(unittest.TestCase):
         self.assertFalse(System.out.checkError())
 
     def testDefaultImports(self):
-        self.assertTrue(self.gateway.jvm.System.currentTimeMillis() > 0)
+        self.assertGreater(self.gateway.jvm.System.currentTimeMillis(), 0)
         self.assertEqual("123", self.gateway.jvm.String.valueOf(123))
 
     def testNone(self):
@@ -891,20 +891,20 @@ class JVMTest(unittest.TestCase):
     def testJVMView(self):
         newView = self.gateway.new_jvm_view("myjvm")
         time = newView.System.currentTimeMillis()
-        self.assertTrue(time > 0)
+        self.assertGreater(time, 0)
         time = newView.java.lang.System.currentTimeMillis()
-        self.assertTrue(time > 0)
+        self.assertGreater(time, 0)
 
     def testImport(self):
         newView = self.gateway.new_jvm_view("myjvm")
         java_import(self.gateway.jvm, "java.util.*")
         java_import(self.gateway.jvm, "java.io.File")
-        self.assertTrue(self.gateway.jvm.ArrayList() is not None)
-        self.assertTrue(self.gateway.jvm.File("hello.txt") is not None)
+        self.assertIsNotNone(self.gateway.jvm.ArrayList())
+        self.assertIsNotNone(self.gateway.jvm.File("hello.txt"))
         self.assertRaises(Exception, lambda: newView.File("test.txt"))
 
         java_import(newView, "java.util.HashSet")
-        self.assertTrue(newView.HashSet() is not None)
+        self.assertIsNotNone(newView.HashSet())
 
     def testEnum(self):
         self.assertEqual("FOO", str(self.gateway.jvm.py4j.examples.Enum2.FOO))
@@ -930,19 +930,19 @@ class HelpTest(unittest.TestCase):
     def testHelpObject(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, short_name=True, display=False)
-        self.assertTrue(len(help_page) > 1)
+        self.assertGreater(len(help_page), 1)
 
     def testHelpObjectWithPattern(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(
             ex, pattern="m*", short_name=True, display=False)
-        self.assertTrue(len(help_page) > 1)
+        self.assertGreater(len(help_page), 1)
 
     def testHelpClass(self):
         String = self.gateway.jvm.java.lang.String
         help_page = self.gateway.help(String, short_name=False, display=False)
-        self.assertTrue(len(help_page) > 1)
-        self.assertTrue("String" in help_page)
+        self.assertGreater(len(help_page), 1)
+        self.assertIn("String", help_page)
 
 
 class Runner(Thread):
@@ -1041,8 +1041,8 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.err.println("Test2")
         sleep()
         for i in range(10):
-            self.assertEqual("Test{0}".format(end), qout.get())
-            self.assertEqual("Test2{0}".format(end), qerr.get())
+            self.assertEqual("Test{}".format(end), qout.get())
+            self.assertEqual("Test2{}".format(end), qerr.get())
         self.assertTrue(qout.empty)
         self.assertTrue(qerr.empty)
 
@@ -1057,8 +1057,8 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway.jvm.System.err.println("Test2")
         sleep()
         for i in range(10):
-            self.assertEqual("Test{0}".format(end), qout.pop())
-            self.assertEqual("Test2{0}".format(end), qerr.pop())
+            self.assertEqual("Test{}".format(end), qout.pop())
+            self.assertEqual("Test2{}".format(end), qerr.pop())
         self.assertEqual(0, len(qout))
         self.assertEqual(0, len(qerr))
 
@@ -1086,7 +1086,7 @@ class GatewayLauncherTest(unittest.TestCase):
             with open(outpath, "r") as stdout:
                 lines = stdout.readlines()
                 self.assertEqual(10, len(lines))
-                self.assertEqual("Test{0}".format(end), lines[0])
+                self.assertEqual("Test{}".format(end), lines[0])
 
             with open(errpath, "r") as stderr:
                 lines = stderr.readlines()
@@ -1106,7 +1106,7 @@ class GatewayLauncherTest(unittest.TestCase):
         # Make sure the default client can connect to the server.
         klass = self.gateway.jvm.java.lang.String
         help_page = self.gateway.help(klass, short_name=True, display=False)
-        self.assertTrue(len(help_page) > 1)
+        self.assertGreater(len(help_page), 1)
 
         # Replace the client with one that does not authenticate.
         # Make sure it fails.
@@ -1153,7 +1153,7 @@ class IPv6Test(unittest.TestCase):
 
         try:
             timeMillis = gateway.jvm.System.currentTimeMillis()
-            self.assertTrue(timeMillis > 0)
+            self.assertGreater(timeMillis, 0)
 
             operator = WaitOperator(0.1)
             opExample = gateway.jvm.py4j.examples.OperatorExample()
@@ -1183,7 +1183,7 @@ class RetryTest(unittest.TestCase):
             value = gateway.entry_point.getNewExample().sleepFirstTimeOnly(500)
             self.fail(
                 "Should never retry once the first command went through."
-                "number of calls made: {0}".format(value))
+                "number of calls made: {}".format(value))
         except Py4JError:
             self.assertTrue(True)
         finally:
@@ -1256,7 +1256,7 @@ class RetryTest(unittest.TestCase):
             opExample.randomBinaryOperator(operator)
             self.fail(
                 "Should never retry once the first command went through."
-                " number of calls made: {0}".format(operator.callCount))
+                " number of calls made: {}".format(operator.callCount))
         except Py4JJavaError:
             self.assertTrue(True)
         finally:
