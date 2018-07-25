@@ -693,7 +693,7 @@ class StreamTest(unittest.TestCase):
         with e.getStream.stream() as conn:
             self.assertTrue(isinstance(conn, GatewayConnectionGuard))
             expected =\
-                u"Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
             self.assertEqual(expected, smart_decode(conn.read(len(expected))))
 
     def testBinaryFailure(self):
