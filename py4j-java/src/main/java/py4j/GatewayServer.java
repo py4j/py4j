@@ -98,7 +98,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 
 	public static final int DEFAULT_READ_TIMEOUT = 0;
 
-	public static final String GATEWAY_SERVER_ID = "GATEWAY_SERVER";
+	public static final String GATEWAY_SERVER_ID = Protocol.GATEWAY_SERVER_ID;
 
 	public static final Logger PY4J_LOGGER = Logger.getLogger("py4j");
 

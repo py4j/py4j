@@ -73,7 +73,7 @@ public class PythonProxyHandler implements InvocationHandler {
 	@Override
 	protected void finalize() throws Throwable {
 		try {
-			if (gateway.getCallbackClient().isMemoryManagementEnabled()) {
+			if (gateway.getCallbackClient().isMemoryManagementEnabled() && this.id != Protocol.ENTRY_POINT_OBJECT_ID) {
 				logger.fine("Finalizing python proxy id " + this.id);
 				gateway.getCallbackClient().sendCommand(finalizeCommand, false);
 			}
