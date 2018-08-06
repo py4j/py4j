@@ -68,7 +68,8 @@ public class MemoryCommand extends AbstractCommand {
 		// EoC
 		reader.readLine();
 
-		if (objectId != Protocol.ENTRY_POINT_OBJECT_ID && objectId != Protocol.DEFAULT_JVM_OBJECT_ID && objectId != Protocol.GATEWAY_SERVER_ID) {
+		if (objectId != Protocol.ENTRY_POINT_OBJECT_ID && objectId != Protocol.DEFAULT_JVM_OBJECT_ID
+				&& objectId != Protocol.GATEWAY_SERVER_ID) {
 			gateway.deleteObject(objectId);
 		}
 
