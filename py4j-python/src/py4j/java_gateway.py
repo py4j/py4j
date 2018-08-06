@@ -641,6 +641,23 @@ def _garbage_collect_connection(socket_instance):
         quiet_close(socket_instance)
 
 
+def _garbage_collect_proxy(pool, proxy_id):
+    """Removes a proxy from the pool of python proxies.
+
+    Do not remove special proxies such as the entry point.
+    """
+    success = False
+    if proxy_id != proto.ENTRY_POINT_OBJECT_ID:
+        try:
+            del(pool[proxy_id])
+            success = True
+        except KeyError:
+            logger.warning(
+                "Tried to garbage collect non existing python proxy {0}"
+                .format(proxy_id))
+    return success
+
+
 class OutputConsumer(CompatThread):
     """Thread that consumes output
     """
@@ -2330,7 +2347,7 @@ class CallbackConnection(Thread):
                     self.socket.sendall(return_message.encode("utf-8"))
                 elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                     self.input.readline()
-                    del(self.pool[obj_id])
+                    _garbage_collect_proxy(self.pool, obj_id)
                     self.socket.sendall(
                         proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                 else:

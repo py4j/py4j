@@ -21,7 +21,7 @@ from py4j.java_gateway import (
     CallbackServerParameters, GatewayParameters, CallbackServer,
     GatewayConnectionGuard, DEFAULT_ADDRESS, DEFAULT_PORT,
     DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-    server_connection_stopped, do_client_auth)
+    server_connection_stopped, do_client_auth, _garbage_collect_proxy)
 from py4j import protocol as proto
 from py4j.compat import Queue
 from py4j.protocol import (
@@ -483,7 +483,7 @@ class ClientServerConnection(object):
                         self.socket.sendall(return_message.encode("utf-8"))
                     elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                         self.stream.readline()
-                        del(self.pool[obj_id])
+                        _garbage_collect_proxy(self.pool, obj_id)
                         self.socket.sendall(
                             proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                     else:
@@ -540,7 +540,7 @@ class ClientServerConnection(object):
                     self.socket.sendall(return_message.encode("utf-8"))
                 elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                     self.stream.readline()
-                    del(self.pool[obj_id])
+                    _garbage_collect_proxy(self.pool, obj_id)
                     self.socket.sendall(
                         proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                 else:
