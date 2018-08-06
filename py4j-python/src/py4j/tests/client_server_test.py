@@ -493,7 +493,9 @@ class IntegrationTest(unittest.TestCase):
             # not run yet.
             sleep()
             gc.collect()
-            sleep()
+            # Long sleep to ensure that the finalizer worker received
+            # everything
+            sleep(2)
 
             after = len(
                 client_server.java_gateway_server.getGateway().getBindings())
