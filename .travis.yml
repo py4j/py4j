@@ -33,8 +33,8 @@ cache:
     - $HOME/.pyenv/
 install:
   - eval "$(pyenv init -)"
-  - pyenv install -l
-  - if [ $TEST_SUITE == "java8" ] ; then pyenv install 3.6.3; pyenv global 3.6.3; pip install --user flake8==2.5.0; fi
+  #- pyenv install -l
+  - if [ $TEST_SUITE == "java8" ] ; then pyenv global 3.6.3; pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java7" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   #- if [ $TEST_SUITE == "java6" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   - cd py4j-java
@@ -45,6 +45,7 @@ install:
   - echo $PATH
   - echo $JAVA_HOME
 before_script:
+  # Enable IPv6
   - echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
 script:
   - gradle check
