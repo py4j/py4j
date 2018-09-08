@@ -32,22 +32,19 @@ cache:
     - $HOME/.cache/pip
     - $HOME/.pyenv/
 install:
-  - echo $PATH
   - eval "$(pyenv init -)"
-  - echo $PATH
-  - export PATH="~/.pyenv/shims:$PATH"
-  - echo $PATH
-  - if [ $TEST_SUITE == "java8" ] ; then pyenv install 3.6.6; pyenv global 3.6.6; pip install --user flake8==2.5.0; fi
+  - pyenv install -l
+  - if [ $TEST_SUITE == "java8" ] ; then pyenv install 3.6.5; pyenv global 3.6.5; pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java7" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   #- if [ $TEST_SUITE == "java6" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   - cd py4j-java
   - gradle --version
   - gradle clean
   - pip install --user nose
-  - echo `java -version` && echo `javac -version` && echo `python --version` && echo `python3 --version`
+  - echo `java -version` && echo `javac -version` && echo `python --version`
   - echo $PATH
   - echo $JAVA_HOME
-  - ls ~/.pyenv/shims
+  - ls -la ~
 before_script:
   - echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
 script:
