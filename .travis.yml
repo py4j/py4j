@@ -10,18 +10,18 @@ matrix:
     - name: "JDK 8, Python 3.6"
       jdk: "openjdk8"
       env: TEST_SUITE=java8
-    #- name: "JDK 7, Python 2.7"
-      #jdk: "openjdk7"
-      #env: TEST_SUITE=java7
-    - name: "JDK 6, Python 2.7"
-      jdk: "openjdk6"
-      env: TEST_SUITE=java6
-      before_install:
-        - wget -O ~/gradle.bin.zip 'https://services.gradle.org/distributions/gradle-2.14.1-bin.zip'
-        - unzip ~/gradle.bin.zip -d ~/gradle
-        - ls -l ~/
-        - ls -l ~/gradle/gradle-2.14.1
-        - export PATH="~/gradle/gradle-2.14.1/bin:$PATH"
+    - name: "JDK 7, Python 2.7"
+      jdk: "openjdk7"
+      env: TEST_SUITE=java7
+    #- name: "JDK 6, Python 2.7"
+      #jdk: "openjdk6"
+      #env: TEST_SUITE=java6
+      #before_install:
+        #- wget -O ~/gradle.bin.zip 'https://services.gradle.org/distributions/gradle-2.14.1-bin.zip'
+        #- unzip ~/gradle.bin.zip -d ~/gradle
+        #- ls -l ~/
+        #- ls -l ~/gradle/gradle-2.14.1
+        #- export PATH="~/gradle/gradle-2.14.1/bin:$PATH"
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -32,15 +32,22 @@ cache:
     - $HOME/.cache/pip
     - $HOME/.pyenv/
 install:
+  - echo $PATH
   - eval "$(pyenv init -)"
+  - echo $PATH
+  - export PATH="~/.pyenv/shims:$PATH"
+  - echo $PATH
   - if [ $TEST_SUITE == "java8" ] ; then pyenv install 3.6.6; pyenv global 3.6.6; pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java7" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
-  - if [ $TEST_SUITE == "java6" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
+  #- if [ $TEST_SUITE == "java6" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   - cd py4j-java
   - gradle --version
   - gradle clean
   - pip install --user nose
-  - echo "$PATH" && echo `java -version` && echo `javac -version` && echo `python --version` && echo $JAVA_HOME
+  - echo `java -version` && echo `javac -version` && echo `python --version` && echo `python3 --version`
+  - echo $PATH
+  - echo $JAVA_HOME
+  - ls ~/.pyenv/shims
 before_script:
   - echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
 script:
