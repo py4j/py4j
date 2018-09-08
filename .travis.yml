@@ -12,10 +12,17 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+    - $HOME/.cache/pip
+    - $HOME/.pyenv/
 install:
   - cd py4j-java
   - gradle clean
+  - if [ $TEST_SUITE == "java8" ] ; then pyenv install 3.6.6; pyenv global 3.6.6; pip install --user flake8==2.5.0; fi
+  - if [ $TEST_SUITE == "java7" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
+  - pip install --user nose
 script:
   - gradle check
   - gradle assemble
   - pyenv --version
+  - cd ../py4j-python
+  - if [ $TEST_SUITE == "java8" ] ; then flake8; fi
