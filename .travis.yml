@@ -1,19 +1,27 @@
 language: java
+addons:
+  apt:
+    packages:
+      - openjdk-6-jdk
+env:
+  JDK6_BOOT_CLASSPATH: /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/jsse.jar
 matrix:
   include:
     - name: "JDK 8, Python 3.6"
       jdk: "openjdk8"
       env: TEST_SUITE=java8
-    - name: "JDK 7, Python 2.7"
-      jdk: "openjdk7"
-      env: TEST_SUITE=java7
+    #- name: "JDK 7, Python 2.7"
+      #jdk: "openjdk7"
+      #env: TEST_SUITE=java7
     - name: "JDK 6, Python 2.7"
       jdk: "openjdk6"
       env: TEST_SUITE=java6
-      addons:
-        apt:
-          packages:
-            - openjdk-6-jdk
+      before_install:
+        - wget -O ~/gradle.bin.zip 'https://services.gradle.org/distributions/gradle-2.14.1-bin.zip'
+        - unzip ~/gradle.bin.zip
+        - ls -l ~/
+        - ls -l ~/gradle
+        - export PATH="~/gradle:$PATH"
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -24,12 +32,16 @@ cache:
     - $HOME/.cache/pip
     - $HOME/.pyenv/
 install:
+  - ls -l /usr/lib/jvm/
+  - ls -l /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/
   - cd py4j-java
   - gradle clean
   - if [ $TEST_SUITE == "java8" ] ; then pyenv install 3.6.6; pyenv global 3.6.6; pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java7" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   - if [ $TEST_SUITE == "java6" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   - pip install --user nose
+before_script:
+  - echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
 script:
   - gradle check
   - gradle assemble
