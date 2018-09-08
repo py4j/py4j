@@ -20,8 +20,8 @@ matrix:
         - wget -O ~/gradle.bin.zip 'https://services.gradle.org/distributions/gradle-2.14.1-bin.zip'
         - unzip ~/gradle.bin.zip -d ~/gradle
         - ls -l ~/
-        - ls -l ~/gradle
-        - export PATH="~/gradle/bin:$PATH"
+        - ls -l ~/gradle/gradle-2.14.1
+        - export PATH="~/gradle/gradle-2.14.1/bin:$PATH"
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -32,16 +32,15 @@ cache:
     - $HOME/.cache/pip
     - $HOME/.pyenv/
 install:
-  - ls -l /usr/lib/jvm/
-  - ls -l /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/
-  - cd py4j-java
-  - gradle --version
-  - gradle clean
+  - eval "$(pyenv init -)"
   - if [ $TEST_SUITE == "java8" ] ; then pyenv install 3.6.6; pyenv global 3.6.6; pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java7" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   - if [ $TEST_SUITE == "java6" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
+  - cd py4j-java
+  - gradle --version
+  - gradle clean
   - pip install --user nose
-  - echo `java -version` && echo `javac -version` && echo `python --version` && echo $JAVA_HOME
+  - echo "$PATH" && echo `java -version` && echo `javac -version` && echo `python --version` && echo $JAVA_HOME
 before_script:
   - echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
 script:
