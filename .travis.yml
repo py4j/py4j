@@ -9,7 +9,10 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 install:
+  - ls -l
   - cd py4j-java && gradle clean
 script:
+  - ls -l
   - cd py4j-java && gradle check
   - cd py4j-java && gradle assemble
+  - pyenv --version
