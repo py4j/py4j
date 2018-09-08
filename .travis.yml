@@ -1,6 +1,10 @@
 language: java
-jdk:
-  - openjdk8
+matrix:
+  include:
+    - jdk: "openjdk8"
+      env: TEST_SUITE=java8
+    - jdk: "openjdk7"
+      env: TEST_SUITE=java7
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -9,10 +13,9 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 install:
-  - ls -l
-  - cd py4j-java && gradle clean
+  - cd py4j-java
+  - gradle clean
 script:
-  - ls -l
-  - cd py4j-java && gradle check
-  - cd py4j-java && gradle assemble
+  - gradle check
+  - gradle assemble
   - pyenv --version
