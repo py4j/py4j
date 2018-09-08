@@ -1,10 +1,19 @@
 language: java
 matrix:
   include:
-    - jdk: "openjdk8"
+    - name: "JDK 8, Python 3.6"
+      jdk: "openjdk8"
       env: TEST_SUITE=java8
-    - jdk: "openjdk7"
+    - name: "JDK 7, Python 2.7"
+      jdk: "openjdk7"
       env: TEST_SUITE=java7
+    - name: "JDK 6, Python 2.7"
+      jdk: "openjdk6"
+      env: TEST_SUITE=java6
+      addons:
+        apt:
+          packages:
+            - openjdk-6-jdk
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -19,6 +28,7 @@ install:
   - gradle clean
   - if [ $TEST_SUITE == "java8" ] ; then pyenv install 3.6.6; pyenv global 3.6.6; pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java7" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
+  - if [ $TEST_SUITE == "java6" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   - pip install --user nose
 script:
   - gradle check
@@ -26,3 +36,4 @@ script:
   - pyenv --version
   - cd ../py4j-python
   - if [ $TEST_SUITE == "java8" ] ; then flake8; fi
+  - nosetests -v py4j.tests.java_gateway_test
