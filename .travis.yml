@@ -18,10 +18,10 @@ matrix:
       env: TEST_SUITE=java6
       before_install:
         - wget -O ~/gradle.bin.zip 'https://services.gradle.org/distributions/gradle-2.14.1-bin.zip'
-        - unzip ~/gradle.bin.zip
+        - unzip ~/gradle.bin.zip -d ~/gradle
         - ls -l ~/
         - ls -l ~/gradle
-        - export PATH="~/gradle:$PATH"
+        - export PATH="~/gradle/bin:$PATH"
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -35,17 +35,18 @@ install:
   - ls -l /usr/lib/jvm/
   - ls -l /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/
   - cd py4j-java
+  - gradle --version
   - gradle clean
   - if [ $TEST_SUITE == "java8" ] ; then pyenv install 3.6.6; pyenv global 3.6.6; pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java7" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   - if [ $TEST_SUITE == "java6" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   - pip install --user nose
+  - echo `java -version` && echo `javac -version` && echo `python --version` && echo $JAVA_HOME
 before_script:
   - echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
 script:
   - gradle check
   - gradle assemble
-  - pyenv --version
   - cd ../py4j-python
   - if [ $TEST_SUITE == "java8" ] ; then flake8; fi
-  - nosetests -v py4j.tests.java_gateway_test
+  - nosetests -v
