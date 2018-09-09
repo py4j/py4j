@@ -3,8 +3,7 @@ addons:
   apt:
     packages:
       - openjdk-6-jdk
-env:
-  matrix:
+matrix:
   include:
     - name: "JDK 8, Python 3.6"
       jdk: "openjdk8"
