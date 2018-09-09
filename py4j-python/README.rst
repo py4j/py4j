@@ -30,5 +30,5 @@ documentation fixes. Please visit the `contributing guide
 <https://www.py4j.org/contributing.html>`_ for more
 information.
 
-.. image:: https://circleci.com/gh/bartdag/py4j.svg?style=svg
-    :target: https://circleci.com/gh/bartdag/py4
+.. image:: https://img.shields.io/travis/bartdag/py4j.svg
+    :target: https://travis-ci.org/bartdag/py4j
