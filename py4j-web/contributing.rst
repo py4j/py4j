@@ -36,15 +36,15 @@ make sure that your contribution includes:
 Python Coding Conventions
 -------------------------
 
-We follow pep8 rather stricly:
+We follow pep8 rather strictly:
 
 1. We use spaces instead of tab.
 2. We use four-space indents.
-3. Line length is 80
-4. Code must pass the default flake8 tests (pep8 + pyflakes)
+3. Line length is 80.
+4. Code must pass the default flake8 tests (pep8 + pyflakes).
 
-Code must be compatible with from Python 2.6 to the newest released version of
-Python.
+Code must be compatible with Python 2.7 and from 3.4 to the newest released
+version of Python.
 
 If external libraries must be used, they should be wrapped in a mechanism that
 by default does not require them (e.g., conditional imports, graceful

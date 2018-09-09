@@ -79,12 +79,12 @@ class MapTest(unittest.TestCase):
         dj3["c"] = "z"
 
         self.equal_maps(dj, dp)
-        self.assertTrue(dj == dj)
-        self.assertTrue(dj == dj2)
+        self.assertEqual(dj, dj)
+        self.assertEqual(dj, dj2)
         # Does not always work for some reason...
         # Probably not worth supporting for now...
-        # self.assertTrue(dj < dj3)
-        self.assertTrue(dj != dp)
+        # self.assertLess(dj, dj3)
+        self.assertNotEqual(dj, dp)
 
         dps = {1: 1, 2: 2}
         djs = self.gateway.jvm.java.util.HashMap()

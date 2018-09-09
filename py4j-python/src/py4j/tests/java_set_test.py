@@ -27,7 +27,7 @@ class AutoConvertTest(unittest.TestCase):
         sj = self.gateway.jvm.java.util.HashSet()
         sj.add("b")
         sj.add(1)
-        sp = set([1, "b"])
+        sp = {1, "b"}
         self.assertTrue(sj.equals(sp))
 
 

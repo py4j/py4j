@@ -1083,10 +1083,8 @@ connections to Python. This requires configuring both Java and Python:
 
 **On the Python side**
 
-Use Python's `ssl` module to create an `ssl.SSLContext`. Note that this was
-added in Python 2.7, so if you want to use TLS on 2.6 you should investigate
-the backports on PyPI. For the connection to the JVM you'll need something
-like:
+Use Python's `ssl` module to create an `ssl.SSLContext`.  For the connection to
+the JVM you'll need something like:
 
 .. code-block:: python
 
