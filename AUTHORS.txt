@@ -15,6 +15,7 @@ Nicholas Gates <nickgatzgates@gmail.com>
 Matthew Gerring <matthew.gerring@gmail.com>
 Jonah Graham <jonah@kichwacoders.com>
 Alex Grönholm <alex.gronholm+git@nextday.fi>
+Hugo <hugovk@users.noreply.github.com>
 Chris Kanich <ckanich@uic.edu>
 Scott Lewis <scottslewis@gmail.com>
 Chetan Narsude <@243826>

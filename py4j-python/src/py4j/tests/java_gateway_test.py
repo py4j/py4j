@@ -1042,7 +1042,7 @@ class GatewayLauncherTest(unittest.TestCase):
         sleep()
         for i in range(10):
             self.assertEqual("Test{0}".format(end), qout.get())
-            self.assertEqual("Test2{1}".format(end), qerr.get())
+            self.assertEqual("Test2{0}".format(end), qerr.get())
         self.assertTrue(qout.empty)
         self.assertTrue(qerr.empty)
 
@@ -1058,7 +1058,7 @@ class GatewayLauncherTest(unittest.TestCase):
         sleep()
         for i in range(10):
             self.assertEqual("Test{0}".format(end), qout.pop())
-            self.assertEqual("Test2{1}".format(end), qerr.pop())
+            self.assertEqual("Test2{0}".format(end), qerr.pop())
         self.assertEqual(0, len(qout))
         self.assertEqual(0, len(qerr))
 
