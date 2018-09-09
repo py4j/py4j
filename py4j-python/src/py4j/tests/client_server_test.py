@@ -317,7 +317,7 @@ class IntegrationTest(unittest.TestCase):
             client_server = ClientServer(
                 JavaParameters(), PythonParameters())
             ms = client_server.jvm.System.currentTimeMillis()
-            self.assertTrue(ms > 0)
+            self.assertGreater(ms, 0)
             client_server.shutdown()
 
     def testErrorInPy4J(self):
@@ -350,7 +350,7 @@ class IntegrationTest(unittest.TestCase):
                 self.assertTrue(is_instance_of(
                     client_server, e.java_exception,
                     'py4j.Py4JException'))
-                self.assertTrue('interesting Python exception' in str(e))
+                self.assertIn('interesting Python exception', str(e))
 
             try:
                 example.callHello(IHelloFailingImpl(
@@ -384,7 +384,7 @@ class IntegrationTest(unittest.TestCase):
                 self.assertTrue(is_instance_of(
                     client_server, e.java_exception,
                     'py4j.Py4JException'))
-                self.assertTrue('My IllegalStateException' in str(e))
+                self.assertIn('My IllegalStateException', str(e))
 
             client_server.shutdown()
 
@@ -466,7 +466,7 @@ class IntegrationTest(unittest.TestCase):
 
             # Leave time for sotimeout
             sleep(3)
-            self.assertTrue(len(client_server.gateway_property.pool) < 2)
+            self.assertLess(len(client_server.gateway_property.pool), 2)
             client_server.shutdown()
 
     def testPythonGC(self):
@@ -504,7 +504,7 @@ class IntegrationTest(unittest.TestCase):
 
             # Number of references when we created a JavaObject should be
             # higher than at the beginning.
-            self.assertTrue(in_middle > before)
+            self.assertGreater(in_middle, before)
             client_server.shutdown()
 
     def testMultiClientServerWithSharedJavaThread(self):

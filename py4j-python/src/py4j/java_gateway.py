@@ -27,7 +27,7 @@ from threading import Thread, RLock
 import weakref
 
 from py4j.compat import (
-    range, hasattr2, basestring, CompatThread, Queue, WeakSet)
+    range, hasattr2, basestring, CompatThread, Queue)
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j import protocol as proto
 from py4j.protocol import (
@@ -56,7 +56,7 @@ DEFAULT_PYTHON_PROXY_PORT = 25334
 DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER = "DEFAULT"
 DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT = 5
 PY4J_SKIP_COLLECTIONS = "PY4J_SKIP_COLLECTIONS"
-PY4J_TRUE = set(["yes", "y", "t", "true"])
+PY4J_TRUE = {"yes", "y", "t", "true"}
 
 
 server_connection_stopped = Signal()
@@ -2128,7 +2128,7 @@ class CallbackServer(object):
         self.address = self.callback_server_parameters.address
         self.ssl_context = self.callback_server_parameters.ssl_context
         self.pool = pool
-        self.connections = WeakSet()
+        self.connections = weakref.WeakSet()
         # Lock is used to isolate critical region like connection creation.
         # Some code can produce exceptions when ran in parallel, but
         # They will be caught and dealt with.

@@ -349,7 +349,7 @@ class IntegrationTest(unittest.TestCase):
         example = self.gateway.jvm.py4j.examples.ReturnerExample()
         returner = Returner()
         output = example.computeNull(returner)
-        self.assertEqual(output, None)
+        self.assertIsNone(output)
 
     def testProxy(self):
         sleep()
@@ -369,7 +369,7 @@ class IntegrationTest(unittest.TestCase):
                 ValueError('My interesting Python exception')))
             self.fail()
         except Py4JJavaError as e:
-            self.assertTrue('interesting Python exception' in str(e))
+            self.assertIn('interesting Python exception', str(e))
 
         try:
             example.callHello(IHelloFailingImpl(
@@ -403,7 +403,7 @@ class IntegrationTest(unittest.TestCase):
 
         # Leave time for sotimeout
         sleep(3)
-        self.assertTrue(len(self.gateway.gateway_property.pool) < 2)
+        self.assertLess(len(self.gateway.gateway_property.pool), 2)
 
     def testDoubleCallbackServer(self):
         try:
@@ -421,7 +421,7 @@ class IntegrationTest(unittest.TestCase):
         oe1.randomBinaryOperator(goodAddition)
         # Test constructor
         oe2 = self.gateway.jvm.py4j.examples.OperatorExample(goodAddition)
-        self.assertTrue(oe2 is not None)
+        self.assertIsNotNone(oe2)
 
 
 class NoPropagateTest(unittest.TestCase):
@@ -452,7 +452,7 @@ class NoPropagateTest(unittest.TestCase):
             self.assertTrue(is_instance_of(
                 self.gateway, e.java_exception,
                 'py4j.Py4JException'))
-            self.assertTrue('My IllegalStateException' in str(e))
+            self.assertIn('My IllegalStateException', str(e))
 
 
 class ResetCallbackClientTest(unittest.TestCase):
