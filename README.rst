@@ -30,16 +30,14 @@ documentation fixes. Please visit the `contributing guide
 <https://www.py4j.org/contributing.html>`_ for more
 information.
 
-.. image:: https://img.shields.io/circleci/project/bartdag/py4j.svg
-    :target: https://circleci.com/gh/bartdag/py4j
-
-
-.. image:: https://img.shields.io/pypi/v/py4j.svg
-    :target: https://pypi.python.org/pypi/py4j
-
+.. image:: https://img.shields.io/travis/bartdag/py4j.svg
+    :target: https://travis-ci.org/bartdag/py4j
 
 .. image:: https://img.shields.io/pypi/l/py4j.svg
 
 .. image:: https://img.shields.io/pypi/pyversions/py4j.svg
+
+.. image:: https://img.shields.io/pypi/v/py4j.svg
+    :target: https://pypi.python.org/pypi/py4j
 
 .. image:: https://img.shields.io/maven-central/v/net.sf.py4j/py4j.svg

@@ -4,8 +4,7 @@ addons:
     packages:
       - openjdk-6-jdk
 env:
-  JDK6_BOOT_CLASSPATH: /usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/jsse.jar
-matrix:
+  matrix:
   include:
     - name: "JDK 8, Python 3.6"
       jdk: "openjdk8"
@@ -13,6 +12,9 @@ matrix:
     - name: "JDK 7, Python 2.7"
       jdk: "openjdk7"
       env: TEST_SUITE=java7
+    # Left in case someone wants to try to build with JDK 6, which uses an old
+    # TLS version no longer supported by Maven Central. Maven Central is
+    # required to build and test Py4J (junit).
     #- name: "JDK 6, Python 2.7"
       #jdk: "openjdk6"
       #env: TEST_SUITE=java6
@@ -23,6 +25,7 @@ matrix:
         #- ls -l ~/gradle/gradle-2.14.1
         #- export PATH="~/gradle/gradle-2.14.1/bin:$PATH"
 before_cache:
+  # Recommended by Travis CI doc
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
@@ -30,17 +33,17 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
     - $HOME/.cache/pip
-    - $HOME/.pyenv/
 install:
   - eval "$(pyenv init -)"
-  #- pyenv install -l
   - if [ $TEST_SUITE == "java8" ] ; then pyenv global 3.6.3; pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java7" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
+  # Left in case someone wants to try to build with JDK 6.
   #- if [ $TEST_SUITE == "java6" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
-  - cd py4j-java
-  - gradle --version
-  - gradle clean
   - pip install --user nose
+  - cd py4j-java
+  - gradle clean
+  # Useful in case the build stops working because of version issues.
+  - gradle --version
   - echo `java -version` && echo `javac -version` && echo `python --version`
   - echo $PATH
   - echo $JAVA_HOME
@@ -48,8 +51,12 @@ before_script:
   # Enable IPv6
   - echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
 script:
+  # Our gradle build file will take this env variable and set the bootstrap
+  # class path to JDK 6 because source compatibility is set to 6.
+  - export JDK6_BOOT_CLASSPATH=/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/jsse.jar
   - gradle check
   - gradle assemble
   - cd ../py4j-python
+  # Only run flake8 once to save time.
   - if [ $TEST_SUITE == "java8" ] ; then flake8; fi
   - nosetests -v
