@@ -9,9 +9,11 @@ code calls some Java code, the Java code will be executed in the UI thread.
 
 from __future__ import unicode_literals, absolute_import
 
+from collections import deque
 import logging
 import socket
 from threading import local, Thread
+import time
 import traceback
 import weakref
 
@@ -21,9 +23,8 @@ from py4j.java_gateway import (
     CallbackServerParameters, GatewayParameters, CallbackServer,
     GatewayConnectionGuard, DEFAULT_ADDRESS, DEFAULT_PORT,
     DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-    server_connection_stopped, do_client_auth)
+    server_connection_stopped, do_client_auth, _garbage_collect_proxy)
 from py4j import protocol as proto
-from py4j.compat import Queue
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
     get_return_value, Py4JAuthenticationError)
@@ -34,22 +35,27 @@ logger = logging.getLogger("py4j.clientserver")
 
 SHUTDOWN_FINALIZER_WORKER = "__shutdown__"
 
+DEFAULT_WORKER_SLEEP_TIME = 1
+
 
 class FinalizerWorker(Thread):
 
-    def __init__(self, queue):
-        self.queue = queue
+    def __init__(self, deque):
+        self.deque = deque
         super(FinalizerWorker, self).__init__()
 
     def run(self):
         while(True):
-            task = self.queue.get()
-            if task == SHUTDOWN_FINALIZER_WORKER:
-                break
-            else:
-                (java_client, target_id) = task
-                java_client.garbage_collect_object(
-                    target_id, False)
+            try:
+                task = self.deque.pop()
+                if task == SHUTDOWN_FINALIZER_WORKER:
+                    break
+                else:
+                    (java_client, target_id) = task
+                    java_client.garbage_collect_object(
+                        target_id, False)
+            except IndexError:
+                time.sleep(DEFAULT_WORKER_SLEEP_TIME)
 
 
 class JavaParameters(GatewayParameters):
@@ -199,7 +205,7 @@ class JavaClient(GatewayClient):
 
     def __init__(
             self, java_parameters, python_parameters, gateway_property=None,
-            finalizer_queue=None):
+            finalizer_deque=None):
         """
         :param java_parameters: collection of parameters and flags used to
             configure the JavaGateway (Java client)
@@ -210,7 +216,7 @@ class JavaClient(GatewayClient):
         :param gateway_property: used to keep gateway preferences without a
             cycle with the JavaGateway
 
-        :param finalizer_queue: Queue used to manage garbage collection
+        :param finalizer_deque: deque used to manage garbage collection
             requests.
         """
         super(JavaClient, self).__init__(
@@ -219,16 +225,16 @@ class JavaClient(GatewayClient):
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
         self.thread_connection = local()
-        self.finalizer_queue = finalizer_queue
+        self.finalizer_deque = finalizer_deque
 
     def garbage_collect_object(self, target_id, enqueue=True):
         """Tells the Java side that there is no longer a reference to this
         JavaObject on the Python side. If enqueue is True, sends the request
-        to the FinalizerWorker queue. Otherwise, sends the request to the Java
+        to the FinalizerWorker deque. Otherwise, sends the request to the Java
         side.
         """
         if enqueue:
-            self.finalizer_queue.put((self, target_id))
+            self.finalizer_deque.appendleft((self, target_id))
         else:
             super(JavaClient, self).garbage_collect_object(target_id)
 
@@ -244,7 +250,7 @@ class JavaClient(GatewayClient):
         try:
             super(JavaClient, self).shutdown_gateway()
         finally:
-            self.finalizer_queue.put(SHUTDOWN_FINALIZER_WORKER)
+            self.finalizer_deque.appendleft(SHUTDOWN_FINALIZER_WORKER)
 
     def get_thread_connection(self):
         """Returns the ClientServerConnection associated with this thread. Can
@@ -483,7 +489,7 @@ class ClientServerConnection(object):
                         self.socket.sendall(return_message.encode("utf-8"))
                     elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                         self.stream.readline()
-                        del(self.pool[obj_id])
+                        _garbage_collect_proxy(self.pool, obj_id)
                         self.socket.sendall(
                             proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                     else:
@@ -540,7 +546,7 @@ class ClientServerConnection(object):
                     self.socket.sendall(return_message.encode("utf-8"))
                 elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                     self.stream.readline()
-                    del(self.pool[obj_id])
+                    _garbage_collect_proxy(self.pool, obj_id)
                     self.socket.sendall(
                         proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                 else:
@@ -635,17 +641,17 @@ class ClientServer(JavaGateway):
         )
 
     def _create_finalizer_worker(self):
-        queue = Queue()
-        worker = FinalizerWorker(queue)
+        worker_deque = deque()
+        worker = FinalizerWorker(worker_deque)
         worker.daemon = self.java_parameters.daemonize_memory_management
         worker.start()
-        return queue
+        return worker_deque
 
     def _create_gateway_client(self):
-        queue = self._create_finalizer_worker()
+        worker_deque = self._create_finalizer_worker()
         java_client = JavaClient(
             self.java_parameters, self.python_parameters,
-            finalizer_queue=queue)
+            finalizer_deque=worker_deque)
         return java_client
 
     def _create_callback_server(self, callback_server_parameters):

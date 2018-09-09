@@ -131,6 +131,9 @@ public class Protocol {
 	// DEFAULT JVM VIEW
 	public final static String DEFAULT_JVM_OBJECT_ID = "j";
 
+	// GATEWAY SERVER
+	public final static String GATEWAY_SERVER_ID = "GATEWAY_SERVER";
+
 	// STATIC REFERENCES
 	public final static String STATIC_PREFIX = "z:";
 
