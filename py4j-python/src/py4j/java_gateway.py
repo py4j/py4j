@@ -618,14 +618,18 @@ def do_client_auth(command, input_stream, sock, auth_token):
 
 def _garbage_collect_object(gateway_client, target_id):
     try:
-        ThreadSafeFinalizer.remove_finalizer(
-            smart_decode(gateway_client.address) +
-            smart_decode(gateway_client.port) +
-            target_id)
-        gateway_client.garbage_collect_object(target_id)
+        try:
+            ThreadSafeFinalizer.remove_finalizer(
+                smart_decode(gateway_client.address) +
+                smart_decode(gateway_client.port) +
+                target_id)
+            gateway_client.garbage_collect_object(target_id)
+        except Exception:
+            logger.debug("Exception while garbage collecting an object",
+                        exc_info=True)
     except Exception:
-        logger.debug("Exception while garbage collecting an object",
-                     exc_info=True)
+        # Maybe logger is dead at this point.
+        pass
 
 
 def _garbage_collect_connection(socket_instance):
@@ -636,15 +640,22 @@ def _garbage_collect_connection(socket_instance):
     Otherwise, it is always better (because it is predictable) to explicitly
     close the socket by calling `GatewayConnection.close()`.
     """
-    if socket_instance is not None:
-        quiet_shutdown(socket_instance)
-        quiet_close(socket_instance)
+    try:
+        if socket_instance is not None:
+            quiet_shutdown(socket_instance)
+            quiet_close(socket_instance)
+    except Exception:
+        # Maybe logger used by quiet_* is dead at this point
+        pass
 
 
 def _garbage_collect_proxy(pool, proxy_id):
     """Removes a proxy from the pool of python proxies.
 
     Do not remove special proxies such as the entry point.
+
+    Note: even though this function starts with _garbage_collect,
+    it is not called withing a weakref lambda. This is only a private function.
     """
     success = False
     if proxy_id != proto.ENTRY_POINT_OBJECT_ID:
