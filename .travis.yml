@@ -54,6 +54,8 @@ install:
   - cd py4j-java
   # Useful in case the build stops working because of version issues.
   - python --version
+  - python3 --version
+  - python3.7 --version
   - gradle --version
   - echo `java -version` && echo `javac -version` && echo `python --version`
   - echo $PATH
