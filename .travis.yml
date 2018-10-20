@@ -1,8 +1,4 @@
 language: java
-addons:
-  apt:
-    packages:
-      - openjdk-6-jdk
 matrix:
   include:
     - name: "JDK 8, Python 3.7"
@@ -13,9 +9,17 @@ matrix:
     - name: "JDK 8, Python 3.6"
       jdk: "openjdk8"
       env: TEST_SUITE=java8
+      addons:
+        apt:
+          packages:
+            - openjdk-6-jdk
     - name: "JDK 7, Python 2.7"
       jdk: "openjdk7"
       env: TEST_SUITE=java7
+      addons:
+        apt:
+          packages:
+            - openjdk-6-jdk
     # Left in case someone wants to try to build with JDK 6, which uses an old
     # TLS version no longer supported by Maven Central. Maven Central is
     # required to build and test Py4J (junit).
