@@ -6,6 +6,7 @@ matrix:
       env: TEST_SUITE=java8-3.7
       dist: xenial
       sudo: true
+      group: edge
     - name: "JDK 8, Python 3.6"
       jdk: "openjdk8"
       env: TEST_SUITE=java8
@@ -43,19 +44,19 @@ cache:
     - $HOME/.cache/pip
 install:
   - eval "$(pyenv init -)"
-  - if [ $TEST_SUITE == "java8-3.7" ] ; then jdk_switcher use openjdk8; pip install --user flake8==2.5.0; fi
+  - if [ $TEST_SUITE == "java8-3.7" ] ; then pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java8" ] ; then pyenv global 3.6.3; pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java7" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   # Left in case someone wants to try to build with JDK 6.
   #- if [ $TEST_SUITE == "java6" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   - pip install --user nose
   - cd py4j-java
-  - gradle clean
   # Useful in case the build stops working because of version issues.
   - gradle --version
   - echo `java -version` && echo `javac -version` && echo `python --version`
   - echo $PATH
   - echo $JAVA_HOME
+  - gradle clean
 before_script:
   # Enable IPv6
   - echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
