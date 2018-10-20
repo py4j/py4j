@@ -44,7 +44,7 @@ cache:
     - $HOME/.cache/pip
 install:
   - eval "$(pyenv init -)"
-  - if [ $TEST_SUITE == "java8-3.7" ] ; then sudo add-apt-repository ppa:deadsnakes/ppa -y; sudo apt-get update; sudo apt-get install python3.7 -y; pip install --user flake8==2.5.0; fi
+  - if [ $TEST_SUITE == "java8-3.7" ] ; then sudo add-apt-repository ppa:deadsnakes/ppa -y; sudo apt-get update; sudo apt-get install python3.7 -y; python3.7 -m venv virtualenv; . virtualenv/bin/activate; pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java8" ] ; then pyenv global 3.6.3; pip install --user flake8==2.5.0; fi
   - if [ $TEST_SUITE == "java7" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; fi
   # Left in case someone wants to try to build with JDK 6.
@@ -52,9 +52,6 @@ install:
   - pip install --user nose
   - cd py4j-java
   # Useful in case the build stops working because of version issues.
-  - python --version
-  - pip --version
-  - pip3 --version
   - gradle --version
   - echo `java -version` && echo `javac -version` && echo `python --version`
   - echo $PATH
