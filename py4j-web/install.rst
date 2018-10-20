@@ -11,12 +11,12 @@ with Python 2.7, 3.4, 3.5, and 3.6. You can install Python by going to the
 `official Python download page <http://www.python.org/download/>`_.
 
 
-Installing Java 6+
+Installing Java 7+
 ------------------
 
-You also need to install a Java environment, version 6 (7 and 8 are also
-supported). You can install a Java environment by going to the `official Java
-download page
+You also need to install a Java environment (version 7 or more recent - Java 6
+should work but is no longer included in the test suite).  You can install a
+Java environment by going to the `official Java download page
 <http://www.oracle.com/technetwork/java/javase/downloads/index.html>`_ You will
 need to download the JDK if you plan to use the Java compiler, but you only
 need the JRE if you are using another compiler, such as the one provided by the

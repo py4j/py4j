@@ -29,12 +29,12 @@ Py4J requires:
 
 * A Python interpreter. Py4J has been tested with CPython 2.7,
   CPython 3.4, CPython 3.5, and CPython 3.6.
-* Java 6.0+.
+* Java 7.0+.
 
 Py4J for Eclipse requires:
 
 * Eclipse 3.6+ (Eclipse 3.4 and 3.5 should probably work)
-* Java 6.0+
+* Java 7.0+
 
 If you would like a particular version of Python or Java to be supported, fill
 a `feature request <https://github.com/bartdag/py4j/issues/new>`_.

@@ -5,6 +5,36 @@ The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
 
+Py4J 0.10.8
+-----------
+
+- Release date: October 20th 2018
+- Python side: Py4J now support Python 3.7
+- Python side: The Python ClientServer now uses a mix of deque + sleep instead
+  of a Queue to send garbage collection requests to the Java side. This solved
+  a major deadlock issue that could occur because of a `bug in CPython
+  <https://bugs.python.org/issue14976>`_. This CPython bug has existed for many
+  years and was finally fixed in Python 3.7.
+- Python side: Python Entry Point can no longer be garbage collected. Thanks to
+  `App Orchid <https://www.apporchid.com/>`_ for funding the work through our
+  professional services program.
+- Python side: exceptions should not longer escape garbage collection calls. In
+  the past, Py4J was trying to log exceptions that occurred during garbage
+  collection, but the logger can itself be already garbage collected. If this
+  occurs, the exception will be caught instead of propagating into the user
+  program. Thanks to `Thermo-Calc Software <https://www.thermocalc.com/>`_ for
+  funding the work through our professional services program.
+- Python side: added a note in the docstring that str(py4j_java_error) may
+  fail in Python 2.7 if unicode is returned.
+- Java side: Java 6 is no longer included in the test suite. We will accept
+  patches from anyone wanting to continue supporting Java 6 for the foreseeable
+  future. Java 6 will be officially dropped when Java 8 will become the minimum
+  version required by Py4J (no date yet).
+-
+- `tickets closed for 0.10.8 release
+  <https://github.com/bartdag/py4j/milestone/25?closed=1>`_
+
+
 Py4J 0.10.7
 -----------
 
