@@ -3,7 +3,6 @@ matrix:
   include:
     - name: "JDK 8, Python 3.7"
       jdk: "openjdk8"
-      python: 3.7
       env: TEST_SUITE=java8-3.7
       dist: xenial
       sudo: true
