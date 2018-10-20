@@ -625,8 +625,9 @@ def _garbage_collect_object(gateway_client, target_id):
                 target_id)
             gateway_client.garbage_collect_object(target_id)
         except Exception:
-            logger.debug("Exception while garbage collecting an object",
-                        exc_info=True)
+            logger.debug(
+                "Exception while garbage collecting an object",
+                exc_info=True)
     except Exception:
         # Maybe logger is dead at this point.
         pass
