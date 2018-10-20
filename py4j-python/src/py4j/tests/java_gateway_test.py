@@ -1108,7 +1108,7 @@ class GatewayLauncherTest(unittest.TestCase):
 
             with open(errpath, "r") as stderr:
                 lines = stderr.readlines()
-                if not stderr_is_polluted(lines[0])
+                if not stderr_is_polluted(lines[0]):
                     self.assertEqual(10, len(lines))
                     # XXX Apparently, it's \n by default even on windows...
                     # Go figure
