@@ -3,6 +3,7 @@ matrix:
   include:
     - name: "JDK 8, Python 3.7"
       jdk: "openjdk8"
+      python: "3.7"
       env: TEST_SUITE=java8-3.7
       dist: xenial
       sudo: true
@@ -52,6 +53,7 @@ install:
   - pip install --user nose
   - cd py4j-java
   # Useful in case the build stops working because of version issues.
+  - python --version
   - gradle --version
   - echo `java -version` && echo `javac -version` && echo `python --version`
   - echo $PATH
@@ -63,7 +65,7 @@ before_script:
 script:
   # Our gradle build file will take this env variable and set the bootstrap
   # class path to JDK 6 because source compatibility is set to 6.
-  - export JDK6_BOOT_CLASSPATH=/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/jsse.jar
+  - if [ $TEST_SUITE != "java8-3.7" ] ; then export JDK6_BOOT_CLASSPATH=/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/jsse.jar; fi
   - gradle check
   - gradle assemble
   - cd ../py4j-python
