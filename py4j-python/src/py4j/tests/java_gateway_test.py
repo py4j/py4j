@@ -1042,7 +1042,8 @@ class GatewayLauncherTest(unittest.TestCase):
         sleep()
         for i in range(10):
             self.assertEqual("Test{0}".format(end), qout.get())
-            self.assertEqual("Test2{0}".format(end), qerr.get())
+            # Assert IN because some Java/OS outputs some garbage on stderr.
+            self.assertIn("Test2{0}".format(end), qerr.get())
         self.assertTrue(qout.empty)
         self.assertTrue(qerr.empty)
 
@@ -1058,7 +1059,8 @@ class GatewayLauncherTest(unittest.TestCase):
         sleep()
         for i in range(10):
             self.assertEqual("Test{0}".format(end), qout.pop())
-            self.assertEqual("Test2{0}".format(end), qerr.pop())
+            # Assert IN because some Java/OS outputs some garbage on stderr.
+            self.assertIn("Test2{0}".format(end), qerr.pop())
         self.assertEqual(0, len(qout))
         self.assertEqual(0, len(qerr))
 
@@ -1093,7 +1095,7 @@ class GatewayLauncherTest(unittest.TestCase):
                 self.assertEqual(10, len(lines))
                 # XXX Apparently, it's \n by default even on windows...
                 # Go figure
-                self.assertEqual("Test2\n", lines[0])
+                self.assertIn("Test2\n", lines[0])
         finally:
             os.close(out_handle)
             os.close(err_handle)
