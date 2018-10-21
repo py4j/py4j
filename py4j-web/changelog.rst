@@ -5,6 +5,46 @@ The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
 
+Py4J 0.10.8
+-----------
+
+- Release date: October 21st 2018
+- Python side: Py4J now supports Python 3.7.
+- Python side: Py4J no longer supports Python 2.6. Thanks to @hugovk for the
+  patch.
+- Python side: The Python ClientServer now uses a mix of deque + sleep instead
+  of a Queue to send garbage collection requests to the Java side. This solved
+  a subtle deadlock issue that could occur because of a `bug in CPython
+  <https://bugs.python.org/issue14976>`_. This CPython bug has existed for many
+  years and was finally fixed in Python 3.7. Because Py4J supports Python 2.7+,
+  we had to use an alternative to Queue.
+- Python side: Python Entry Point can no longer be accidentally garbage
+  collected. This matches the behavior of GatewayServer entry point that could
+  never be accidentally garbage collected. Thanks to `App Orchid
+  <https://www.apporchid.com/>`_ for funding the work through our professional
+  services program.
+- Python side: exceptions should no longer escape garbage collection calls. In
+  the past, Py4J was trying to log exceptions that occurred during garbage
+  collection, but the logger can itself be already garbage collected. If this
+  occurs, the exception will be caught instead of being propagated into the
+  user program. Thanks to `Thermo-Calc Software <https://www.thermocalc.com/>`_
+  for funding the work through our professional services program.
+- Python side: added a note in the docstring that str(py4j_java_error) may
+  fail in Python 2.7 if unicode is returned. Thanks to @HyukjinKwon for the
+  patch.
+- Java side: Java 6 is no longer included in the test suite considering the
+  difficulty in managing the dependencies and requirements of the build
+  toolchain (e.g., gradle, TravisCI). We will accept patches from anyone
+  wanting to continue supporting Java 6 for the foreseeable future. Java 6 will
+  be officially dropped along with Java 7 when Java 8 will become the minimum
+  version required by Py4J (no date yet, but please make yourself heard if you
+  require Java 7!).
+- Project: we switched again from CircleCI to TravisCI following the end of
+  life of CircleCI 1.0.
+- `tickets closed for 0.10.8 release
+  <https://github.com/bartdag/py4j/milestone/25?closed=1>`_
+
+
 Py4J 0.10.7
 -----------
 
