@@ -5,8 +5,8 @@ The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
 
-Py4J 0.10.8
------------
+Py4J 0.10.8 and Py4J 0.10.8.1
+-----------------------------
 
 - Release date: October 21st 2018
 - Python side: Py4J now supports Python 3.7.
