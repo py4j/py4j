@@ -10,9 +10,14 @@ Created on Jan 22, 2010
 """
 from __future__ import unicode_literals, absolute_import
 
-from collections import (
-    MutableMapping, Sequence, MutableSequence,
-    MutableSet, Set)
+try:
+    from collections.abc import (
+        MutableMapping, Sequence, MutableSequence,
+        MutableSet, Set)
+except ImportError:
+    from collections import (
+        MutableMapping, Sequence, MutableSequence,
+        MutableSet, Set)
 import sys
 
 from py4j.compat import (
