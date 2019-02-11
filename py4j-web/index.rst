@@ -26,7 +26,7 @@ generated numbers.
   >>> print(number1, number2)
   (2, 7)
   >>> addition_app = gateway.entry_point               # get the AdditionApplication instance
-  >>> value = addition_app.addition(number1, number2)) # call the addition method
+  >>> value = addition_app.addition(number1, number2) # call the addition method
   >>> print(value)
   9
 
