@@ -220,7 +220,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
                    die_on_exit=False, redirect_stdout=None,
                    redirect_stderr=None, daemonize_redirect=True,
                    java_path="java", create_new_process_group=False,
-                   enable_auth=False):
+                   enable_auth=False, cwd=None):
     """Launch a `Gateway` in a new Java process.
 
     The redirect parameters accept file-like objects, Queue, or deque. When
@@ -268,6 +268,8 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         though.
     :param enable_auth: If True, the server will require clients to provide an
         authentication token when connecting.
+    :param cwd: If not None, path that will be used as the current working
+        directory of the Java process.
 
     :rtype: the port number of the `Gateway` server or, when auth enabled,
             a 2-tuple with the port number and the auth token.
@@ -320,7 +322,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         popen_kwargs.update(get_create_new_process_group_kwargs())
 
     proc = Popen(command, stdout=PIPE, stdin=PIPE, stderr=stderr,
-                 **popen_kwargs)
+                 cwd=cwd, **popen_kwargs)
 
     # Determine which port the server started on (needed to support
     # ephemeral ports)
@@ -2055,7 +2057,7 @@ class JavaGateway(object):
             cls, port=0, jarpath="", classpath="", javaopts=[],
             die_on_exit=False, redirect_stdout=None,
             redirect_stderr=None, daemonize_redirect=True, java_path="java",
-            create_new_process_group=False, enable_auth=False):
+            create_new_process_group=False, enable_auth=False, cwd=None):
         """Launch a `Gateway` in a new Java process and create a default
         :class:`JavaGateway <py4j.java_gateway.JavaGateway>` to connect to
         it.
@@ -2101,6 +2103,8 @@ class JavaGateway(object):
             scenarios though.
         :param enable_auth: If True, the server will require clients to provide
             an authentication token when connecting.
+        :param cwd: If not None, path that will be used as the current working
+            directory of the Java process.
 
         :rtype: a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
             connected to the `Gateway` server.
@@ -2110,7 +2114,7 @@ class JavaGateway(object):
             redirect_stdout=redirect_stdout, redirect_stderr=redirect_stderr,
             daemonize_redirect=daemonize_redirect, java_path=java_path,
             create_new_process_group=create_new_process_group,
-            enable_auth=enable_auth)
+            enable_auth=enable_auth, cwd=cwd)
         if enable_auth:
             _port, _auth_token = _ret
         else:

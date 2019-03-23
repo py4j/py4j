@@ -1027,6 +1027,11 @@ class GatewayLauncherTest(unittest.TestCase):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
         self.assertTrue(self.gateway.jvm)
 
+    def testCwd(self):
+        parent_directory = os.path.dirname(os.getcwd())
+        self.gateway = JavaGateway.launch_gateway(cwd=parent_directory)
+        self.assertEqual(parent_directory, self.gateway.jvm.System.getProperty("user.dir"))
+
     def testRedirectToNull(self):
         self.gateway = JavaGateway.launch_gateway()
         for i in range(4097):  # Hangs if not properly redirected
