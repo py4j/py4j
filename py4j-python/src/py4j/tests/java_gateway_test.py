@@ -1030,7 +1030,8 @@ class GatewayLauncherTest(unittest.TestCase):
     def testCwd(self):
         parent_directory = os.path.dirname(os.getcwd())
         self.gateway = JavaGateway.launch_gateway(cwd=parent_directory)
-        self.assertEqual(parent_directory, self.gateway.jvm.System.getProperty("user.dir"))
+        java_cwd = self.gateway.jvm.System.getProperty("user.dir")
+        self.assertEqual(parent_directory, java_cwd)
 
     def testRedirectToNull(self):
         self.gateway = JavaGateway.launch_gateway()
