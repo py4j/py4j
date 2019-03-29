@@ -10,11 +10,16 @@ Created on Jan 22, 2010
 """
 from __future__ import unicode_literals, absolute_import
 
+# As of Python 3.3, the abstract base classes in the collections module have
+# been moved to collections.abc.
+# (see https://docs.python.org/3.3/library/collections.abc.html)
 try:
+    # Python >=3.3
     from collections.abc import (
         MutableMapping, Sequence, MutableSequence,
         MutableSet, Set)
 except ImportError:
+    # Python <=3.2
     from collections import (
         MutableMapping, Sequence, MutableSequence,
         MutableSet, Set)
