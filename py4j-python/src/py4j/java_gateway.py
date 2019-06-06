@@ -220,7 +220,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
                    die_on_exit=False, redirect_stdout=None,
                    redirect_stderr=None, daemonize_redirect=True,
                    java_path="java", create_new_process_group=False,
-                   enable_auth=False, cwd=None):
+                   enable_auth=False, cwd=None, return_proc=False):
     """Launch a `Gateway` in a new Java process.
 
     The redirect parameters accept file-like objects, Queue, or deque. When
@@ -270,6 +270,8 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         authentication token when connecting.
     :param cwd: If not None, path that will be used as the current working
         directory of the Java process.
+    :param return_proc: If True, returns the Popen object returned when the JVM
+        process was created.
 
     :rtype: the port number of the `Gateway` server or, when auth enabled,
             a 2-tuple with the port number and the auth token.
@@ -348,9 +350,17 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         quiet_close(stderr)
 
     if enable_auth:
-        return (_port, _auth_token)
+        output = (_port, _auth_token)
     else:
-        return _port
+        output = _port
+
+    if return_proc:
+        if isinstance(output, tuple):
+            output = output + (proc, )
+        else:
+            output = (_port, proc)
+
+    return output
 
 
 def get_field(java_object, field_name):
@@ -1715,6 +1725,12 @@ class JavaGateway(object):
     * The `jvm` field of `JavaGateway` enables user to access classes, static
       members (fields and methods) and call constructors.
 
+    * The `java_process` field of a `JavaGateway` instance is a
+      subprocess.Popen object for the Java process that the `JavaGateway`
+      is connected to, or None if the `JavaGateway` connected to a preexisting
+      Java process (in which case we cannot directly access that process from
+      Python).
+
     Methods that are not defined by `JavaGateway` are always redirected to
     `entry_point`. For example, ``gateway.doThat()`` is equivalent to
     ``gateway.entry_point.doThat()``. This is a trade-off between convenience
@@ -1726,7 +1742,8 @@ class JavaGateway(object):
             python_proxy_port=DEFAULT_PYTHON_PROXY_PORT,
             start_callback_server=False, auto_convert=False, eager_load=False,
             gateway_parameters=None, callback_server_parameters=None,
-            python_server_entry_point=None):
+            python_server_entry_point=None,
+            java_process=None):
         """
         :param gateway_parameters: An instance of `GatewayParameters` used to
             configure the various options of the gateway.
@@ -1738,6 +1755,9 @@ class JavaGateway(object):
 
         :param python_server_entry_point: can be requested by the Java side if
             Java is driving the communication.
+
+        :param java_process: the subprocess.Popen object for the Java process
+            that the `JavaGateway` shall connect to, if available.
         """
 
         self.gateway_parameters = gateway_parameters
@@ -1791,6 +1811,8 @@ class JavaGateway(object):
             self._eager_load()
         if self.callback_server_parameters.eager_load:
             self.start_callback_server(self.callback_server_parameters)
+
+        self.java_process = java_process
 
     def _create_gateway_client(self):
         gateway_client = GatewayClient(
@@ -2114,14 +2136,15 @@ class JavaGateway(object):
             redirect_stdout=redirect_stdout, redirect_stderr=redirect_stderr,
             daemonize_redirect=daemonize_redirect, java_path=java_path,
             create_new_process_group=create_new_process_group,
-            enable_auth=enable_auth, cwd=cwd)
+            enable_auth=enable_auth, cwd=cwd, return_proc=True)
         if enable_auth:
-            _port, _auth_token = _ret
+            _port, _auth_token, proc = _ret
         else:
-            _port, _auth_token = _ret, None
+            _port, proc, _auth_token = _ret + (None, )
         gateway = JavaGateway(
             gateway_parameters=GatewayParameters(port=_port,
-                                                 auth_token=_auth_token))
+                                                 auth_token=_auth_token),
+            java_process=proc)
         return gateway
 
 
