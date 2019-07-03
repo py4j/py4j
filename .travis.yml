@@ -54,11 +54,11 @@ install:
   #- if [ $TEST_SUITE == "java6" ] ; then pyenv install 2.7.12; pyenv global 2.7.12; pip install --user nose; fi
   - cd py4j-java
   # Useful in case the build stops working because of version issues.
-  - gradle --version
+  - ./gradlew --version
   - echo `java -version` && echo `javac -version` && echo `python --version`
   - echo $PATH
   - echo $JAVA_HOME
-  - gradle clean
+  - ./gradlew clean
 before_script:
   # Enable IPv6
   - echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
@@ -66,8 +66,8 @@ script:
   # Our gradle build file will take this env variable and set the bootstrap
   # class path to JDK 6 because source compatibility is set to 6.
   - if [ $TEST_SUITE != "java8-3.7" ] ; then export JDK6_BOOT_CLASSPATH=/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/jsse.jar; fi
-  - gradle check
-  - gradle assemble
+  - ./gradlew check
+  - ./gradlew assemble
   - cd ../py4j-python
   # Only run flake8 once to save time.
   - if [ $TEST_SUITE == "java8" ] ; then flake8; fi
