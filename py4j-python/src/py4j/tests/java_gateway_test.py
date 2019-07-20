@@ -13,6 +13,7 @@ import gc
 import math
 from multiprocessing import Process
 import os
+import sys
 from socket import AF_INET, SOCK_STREAM, socket
 import subprocess
 import tempfile
@@ -1022,6 +1023,49 @@ class GatewayLauncherTest(unittest.TestCase):
         self.gateway = JavaGateway.launch_gateway(
             create_new_process_group=True)
         self.assertTrue(self.gateway.jvm)
+
+    def testAccessSubprocess(self):
+        self.gateway = JavaGateway.launch_gateway()
+        self.assertTrue(self.gateway.java_process)
+
+    def testShutdownSubprocess(self):
+        self.gateway = JavaGateway.launch_gateway()
+        self.assertTrue(self.gateway.java_process)
+        # Popen.poll() returns None iff the subprocess has not terminated.
+        self.assertTrue(self.gateway.java_process.poll() is None)
+        self.gateway.shutdown()
+        # Unfortunately the Java process has not terminated quite yet.
+        # If we check that poll() is not None, we will often find that poll()
+        # still is None.
+        # One thing that definitely works is to wait one second and assert
+        # the Java process has terminated *then*.
+        # This is not ideal, since it introduces a bit of an extra delay in
+        # what would otherwise be a millisecond test.
+        # Waiting only a fraction of a second (2**-5) seems to be enough.
+        if sys.version_info < (3,):
+            sleep()
+            self.assertFalse(self.gateway.java_process.poll() is None)
+        else:
+            self.gateway.java_process.wait(2**-5)
+        # Popen.wait() will raise a TimeoutExpired exception if the subprocess
+        # has not yet terminated.
+
+    def testShutdownSubprocessThatDiesOnExit(self):
+        self.gateway = JavaGateway.launch_gateway(die_on_exit=True)
+        self.assertTrue(self.gateway.java_process)
+        # Popen.poll() returns None iff the subprocess has not terminated.
+        self.assertTrue(self.gateway.java_process.poll() is None)
+        self.gateway.shutdown()
+        # If we change shutdown() to automatically do the following, then we
+        # should remove the following from this test.
+        self.assertTrue(self.gateway.java_process.poll() is None)
+        self.gateway.java_process.stdin.write("\n".encode("utf-8"))
+        self.gateway.java_process.stdin.flush()
+        if sys.version_info < (3,):
+            sleep()
+            self.assertFalse(self.gateway.java_process.poll() is None)
+        else:
+            self.gateway.java_process.wait(2**-5)
 
     def testJavaopts(self):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
