@@ -5,6 +5,7 @@ people who have submitted patches, reported bugs, and generally made Py4J that
 much better:
 
 Peter Abeles <peter.abeles@gmail.com>
+Patrick Alt <patrick_alt@ultimatesoftware.com>
 Max Bolingbroke <batterseapower@hotmail.com>
 Christophe Buffenoir <kujiu@kujiu.org>
 Jacek Bzdak <jbzdak@gmail.com>
@@ -15,6 +16,7 @@ Nicholas Gates <nickgatzgates@gmail.com>
 Matthew Gerring <matthew.gerring@gmail.com>
 Jonah Graham <jonah@kichwacoders.com>
 Alex Grönholm <alex.gronholm+git@nextday.fi>
+David A. Hannasch <David.A.Hannasch@gmail.com>
 Hugo <hugovk@users.noreply.github.com>
 hyukjinkwon <gurwls223@gmail.com>
 Chris Kanich <ckanich@uic.edu>
@@ -23,7 +25,10 @@ Chetan Narsude <@243826>
 Josh Rosen <rosenville@gmail.com>
 Isaac Sánchez Barrera <isaac@isb1009.es>
 David C. Sterratt <david.c.sterratt@ed.ac.uk>
+tobe <tobeg3oogle@gmail.com>
 Marcelo Vanzin <vanzin@cloudera.com>
 Greg Warner <gdwarner@gmail.com>
+James Westover <westover@uber.com>
 Nick White <n.j.white@gmail.com>
+Stefano Zacchiroli <zack@upsilon.cc>
 Shixiong Zhu <@zsxwing>

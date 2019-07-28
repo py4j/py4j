@@ -5,6 +5,21 @@ The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
 
+Py4J 0.10.9
+-----------
+
+- Release date: to be released
+- Python side: launch_gateway can now optionally returns the Popen process
+  object.
+- Python side: launch_gateway can now set the current working directory.
+- Python side: improved support for Python 3.7 by importing from
+  collections.abc.
+- Java side: set explicit Gradle version and use gradlew to avoid issues with
+  more recent versions of Gradle.
+- Java side: the GatewayServer CLI no longer requires an explit port and can
+  listen to the default port.
+- Java side: array elements can be set to None/null for non-primitive arrays.
+
 Py4J 0.10.8 and Py4J 0.10.8.1
 -----------------------------
 
