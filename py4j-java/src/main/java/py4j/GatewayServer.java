@@ -839,7 +839,6 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 			}
 		}
 
-
 		String authToken = null;
 		if (enableAuth) {
 			SecureRandom rnd = new SecureRandom();
