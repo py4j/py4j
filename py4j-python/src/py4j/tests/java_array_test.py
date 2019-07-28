@@ -9,6 +9,7 @@ import time
 import unittest
 
 from py4j.java_gateway import JavaGateway
+from py4j.protocol import Py4JError
 from py4j.tests.java_gateway_test import (
     start_example_app_process)
 
@@ -69,6 +70,20 @@ class ArrayTest(unittest.TestCase):
         char_array = self.gateway.new_array(char_class, 2)
         char_array[0] = "a"
         self.assertEqual(char_array[0], "a")
+
+    def testSetNoneArray(self):
+        string_class = self.gateway.jvm.java.lang.String
+        string_array = self.gateway.new_array(string_class, 2)
+        string_array[0] = "Hello World"
+        string_array[1] = None
+        self.assertEqual(string_array[0], "Hello World")
+        self.assertIsNone(string_array[1])
+
+    def testSetNonePrimitiveArray(self):
+        int_class = self.gateway.jvm.int
+        int_array = self.gateway.new_array(int_class, 2)
+        with self.assertRaises(Py4JError):
+            int_array[0] = None
 
 
 if __name__ == "__main__":
