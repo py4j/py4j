@@ -138,7 +138,7 @@ public class ReflectionEngine {
 		return memberClass;
 	}
 
-	private Class<?>[] getClassParameters(Object[] parameters) {
+	public Class<?>[] getClassParameters(Object[] parameters) {
 		int size = parameters.length;
 		Class<?>[] classes = new Class<?>[size];
 
