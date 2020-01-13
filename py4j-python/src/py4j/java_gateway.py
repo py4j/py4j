@@ -1351,13 +1351,8 @@ class JavaObject(object):
         return self._gateway_doc
 
     def __getattr__(self, name):
-        if name == "__call__":
-            # Provide an explicit definition for __call__ so that a JavaMember
-            # does not get created for it. This serves two purposes:
-            # 1) IPython (and others?) stop showing incorrect help indicating
-            #    that this is callable
-            # 2) A TypeError(object not callable) is raised if someone does try
-            #    to call here
+        if name.startswith("__") and name.endswith("__"):
+            # don't propagate any magic methods to Java
             raise AttributeError
 
         if name not in self._methods:
@@ -1502,7 +1497,8 @@ class JavaClass(object):
                 "{0} does not exist in the JVM".format(self._fqn))
 
     def __getattr__(self, name):
-        if name in ["__str__", "__repr__"]:
+        if name.startswith("__") and name.endswith("__"):
+            # don't propagate any magic methods to Java
             raise AttributeError
 
         command = proto.REFLECTION_COMMAND_NAME +\
@@ -1618,11 +1614,13 @@ class JavaPackage(object):
         if name == UserHelpAutoCompletion.KEY:
             return UserHelpAutoCompletion
 
-        if name in ["__str__", "__repr__"]:
-            raise AttributeError
-
         if name == "__call__":
             raise Py4JError("Trying to call a package.")
+
+        if name.startswith("__") and name.endswith("__"):
+            # don't propagate any magic methods to Java
+            raise AttributeError
+
         new_fqn = self._fqn + "." + name
         command = proto.REFLECTION_COMMAND_NAME +\
             proto.REFL_GET_UNKNOWN_SUB_COMMAND_NAME +\
