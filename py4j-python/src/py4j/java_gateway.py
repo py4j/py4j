@@ -2059,9 +2059,9 @@ class JavaGateway(object):
             will be generated.
 
         :param pattern: Star-pattern used to filter the members. For example
-            "get\*Foo" may return getMyFoo, getFoo, getFooBar, but not
+            "get\\*Foo" may return getMyFoo, getFoo, getFooBar, but not
             bargetFoo. The pattern is matched against the entire signature.
-            To match only the name of a method, use "methodName(\*".
+            To match only the name of a method, use "methodName(\\*".
 
         :param short_name: If True, only the simple name of the parameter
             types and return types will be displayed. If False, the fully
