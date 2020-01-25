@@ -628,6 +628,12 @@ def do_client_auth(command, input_stream, sock, auth_token):
     return True
 
 
+def is_magic_member(name):
+    """Returns True if the name starts and ends with __
+    """
+    return name.startswith("__") and name.endswith("__")
+
+
 def _garbage_collect_object(gateway_client, target_id):
     try:
         try:
@@ -1351,7 +1357,7 @@ class JavaObject(object):
         return self._gateway_doc
 
     def __getattr__(self, name):
-        if name.startswith("__") and name.endswith("__"):
+        if is_magic_member(name):
             # don't propagate any magic methods to Java
             raise AttributeError
 
@@ -1497,7 +1503,7 @@ class JavaClass(object):
                 "{0} does not exist in the JVM".format(self._fqn))
 
     def __getattr__(self, name):
-        if name.startswith("__") and name.endswith("__"):
+        if is_magic_member(name):
             # don't propagate any magic methods to Java
             raise AttributeError
 
@@ -1617,7 +1623,7 @@ class JavaPackage(object):
         if name == "__call__":
             raise Py4JError("Trying to call a package.")
 
-        if name.startswith("__") and name.endswith("__"):
+        if is_magic_member(name):
             # don't propagate any magic methods to Java
             raise AttributeError
 

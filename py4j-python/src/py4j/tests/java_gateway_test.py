@@ -370,6 +370,10 @@ class MethodTest(unittest.TestCase):
             print_exc()
             self.fail()
 
+    def testMagicMethods(self):
+        ex = self.gateway.getNewExample()
+        self.assertRaises(AttributeError, lambda : ex.__add__("asd"))
+
     def testUnicode(self):
         sb = self.gateway.jvm.java.lang.StringBuffer()
         sb.append("\r\n\tHello\r\n\t")
