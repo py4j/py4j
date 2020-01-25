@@ -9,6 +9,7 @@ class ClassNone(object):
     class Java:
         implements = ["py4j.examples.InterfaceNone"]
 
+
 if __name__ == "__main__":
     gateway = JavaGateway(start_callback_server=True)
     objectNone = ClassNone()

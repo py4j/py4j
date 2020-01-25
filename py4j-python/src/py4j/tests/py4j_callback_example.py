@@ -16,6 +16,7 @@ class Addition(object):
     class Java:
         implements = ["py4j.examples.Operator"]
 
+
 if __name__ == "__main__":
     gateway = JavaGateway(
         callback_server_parameters=CallbackServerParameters())

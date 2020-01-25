@@ -969,11 +969,11 @@ class Runner(Thread):
         ex = self.gateway.getNewExample()
         for i in self.range:
             try:
-                l = ex.getList(i)
-                if len(l) != i:
+                a_list = ex.getList(i)
+                if len(a_list) != i:
                     self.ok = False
                     break
-                self.gateway.detach(l)
+                self.gateway.detach(a_list)
                 # gc.collect()
             except Exception:
                 self.ok = False

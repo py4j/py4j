@@ -56,7 +56,7 @@ class TestJVM4(Thread):
         print(self.System.currentTimeMillis())
         try:
             self.System.loadLibrary("toto")
-        except:
+        except Exception:
             print("Good!")
         print(self.System.currentTimeMillis())
 
