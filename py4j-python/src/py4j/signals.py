@@ -15,6 +15,7 @@ def make_id(func):
         return (id(func.__self__), id(func.__func__))
     return id(func)
 
+
 NONE_ID = make_id(None)
 
 

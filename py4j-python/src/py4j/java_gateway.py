@@ -45,6 +45,7 @@ class NullHandler(logging.Handler):
     def emit(self, record):
         pass
 
+
 null_handler = NullHandler()
 logging.getLogger("py4j").addHandler(null_handler)
 logger = logging.getLogger("py4j.java_gateway")
@@ -2516,6 +2517,7 @@ class PythonProxyPool(object):
     def __len__(self):
         with self.lock:
             return len(self.dict)
+
 
 # Basic registration
 register_output_converter(

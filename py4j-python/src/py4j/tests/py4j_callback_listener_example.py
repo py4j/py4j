@@ -16,6 +16,7 @@ class PythonListener(object):
     class Java:
         implements = ["py4j.examples.ExampleListener"]
 
+
 if __name__ == "__main__":
     gateway = JavaGateway(
         callback_server_parameters=CallbackServerParameters())

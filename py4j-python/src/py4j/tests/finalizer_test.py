@@ -165,5 +165,6 @@ class TestFinalizer(unittest.TestCase):
         del(a1)
         self.assertEqual(1, acc.acc)
 
+
 if __name__ == "__main__":
     unittest.main()

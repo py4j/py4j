@@ -523,6 +523,7 @@ class MapConverter(object):
             java_map[key] = object[key]
         return java_map
 
+
 register_input_converter(SetConverter())
 register_input_converter(MapConverter())
 register_input_converter(ListConverter())

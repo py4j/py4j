@@ -94,5 +94,6 @@ class TestIntegration(unittest.TestCase):
         oe2 = self.gateway.jvm.py4j.examples.OperatorExample(adder)
         self.assertIsNotNone(oe2)
 
+
 if __name__ == "__main__":
     unittest.main()
