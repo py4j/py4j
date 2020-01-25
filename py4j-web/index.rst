@@ -70,6 +70,9 @@ Support & Resources
 News
 ====
 
+* **January 25th 2019** - Py4J 0.10.9 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
 * **October 21st 2018** - Py4J 0.10.8 and 0.10.8.1 has been released. See the
   :doc:`changelog` for more details about the bug fixes and new features.
 

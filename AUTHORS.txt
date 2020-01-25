@@ -20,6 +20,7 @@ David A. Hannasch <David.A.Hannasch@gmail.com>
 Hugo <hugovk@users.noreply.github.com>
 hyukjinkwon <gurwls223@gmail.com>
 Chris Kanich <ckanich@uic.edu>
+Abdeali Kothari <abdealikothari@gmail.com>
 Scott Lewis <scottslewis@gmail.com>
 Chetan Narsude <@243826>
 Josh Rosen <rosenville@gmail.com>
@@ -30,5 +31,6 @@ Marcelo Vanzin <vanzin@cloudera.com>
 Greg Warner <gdwarner@gmail.com>
 James Westover <westover@uber.com>
 Nick White <n.j.white@gmail.com>
+Andrey Yanov <ayanov@deloitte.com>
 Stefano Zacchiroli <zack@upsilon.cc>
 Shixiong Zhu <@zsxwing>
