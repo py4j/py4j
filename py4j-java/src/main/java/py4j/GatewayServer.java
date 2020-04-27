@@ -823,7 +823,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		boolean enableAuth = false;
 		String usage = "usage: [--die-on-broken-pipe] [--enable-auth] [port]";
 
-		for (int i = 0; i < args.length - 1; i++) {
+		for (int i = 0; i < args.length; i++) {
 			String opt = args[i];
 			if (opt.equals("--die-on-broken-pipe")) {
 				dieOnBrokenPipe = true;
