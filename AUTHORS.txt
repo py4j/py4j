@@ -23,6 +23,7 @@ Chris Kanich <ckanich@uic.edu>
 Abdeali Kothari <abdealikothari@gmail.com>
 Scott Lewis <scottslewis@gmail.com>
 Chetan Narsude <@243826>
+Yann Richet <yann.richet@irsn.fr>
 Josh Rosen <rosenville@gmail.com>
 Isaac Sánchez Barrera <isaac@isb1009.es>
 David C. Sterratt <david.c.sterratt@ed.ac.uk>
