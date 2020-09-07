@@ -4,6 +4,14 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.9.1
+-------------
+
+- Release date: September 7th 2020
+- Java side: fixed a regression in GatewayServer that ignored the passed port.
+- `tickets closed for 0.10.9.1 release
+  <https://github.com/bartdag/py4j/milestone/27?closed=1>`_
+
 
 Py4J 0.10.9
 -----------
