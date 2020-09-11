@@ -221,7 +221,8 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
                    die_on_exit=False, redirect_stdout=None,
                    redirect_stderr=None, daemonize_redirect=True,
                    java_path="java", create_new_process_group=False,
-                   enable_auth=False, cwd=None, return_proc=False):
+                   enable_auth=False, cwd=None, return_proc=False,
+                   entry_point_class="py4j.GatewayServer"):
     """Launch a `Gateway` in a new Java process.
 
     The redirect parameters accept file-like objects, Queue, or deque. When
@@ -273,6 +274,9 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         directory of the Java process.
     :param return_proc: If True, returns the Popen object returned when the JVM
         process was created.
+    :param entry_point_class: the application's entry point class to launch. It
+        should accept the options --die-on-broken-pipe and --enable-auth. It
+        should write on stdout the port and optionally the auth token.
 
     :rtype: the port number of the `Gateway` server or, when auth enabled,
             a 2-tuple with the port number and the auth token.
@@ -296,7 +300,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     # Launch the server in a subprocess.
     classpath = os.pathsep.join((jarpath, classpath))
     command = [java_path, "-classpath", classpath] + javaopts + \
-              ["py4j.GatewayServer"]
+              [entry_point_class]
     if die_on_exit:
         command.append("--die-on-broken-pipe")
     if enable_auth:
