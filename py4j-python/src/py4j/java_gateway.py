@@ -221,7 +221,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
                    die_on_exit=False, redirect_stdout=None,
                    redirect_stderr=None, daemonize_redirect=True,
                    java_path="java", create_new_process_group=False,
-                   enable_auth=False, cwd=None, return_proc=False):
+                   enable_auth=False, cwd=None, return_proc=False, use_shell=True):
     """Launch a `Gateway` in a new Java process.
 
     The redirect parameters accept file-like objects, Queue, or deque. When
@@ -273,6 +273,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         directory of the Java process.
     :param return_proc: If True, returns the Popen object returned when the JVM
         process was created.
+    :param use_shell – If true, Popen will be executed with shell=use_shell
 
     :rtype: the port number of the `Gateway` server or, when auth enabled,
             a 2-tuple with the port number and the auth token.
@@ -324,7 +325,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     if create_new_process_group:
         popen_kwargs.update(get_create_new_process_group_kwargs())
 
-    proc = Popen(command, stdout=PIPE, stdin=PIPE, stderr=stderr,
+    proc = Popen(command, shell=use_shell, stdout=PIPE, stdin=PIPE, stderr=stderr,
                  cwd=cwd, **popen_kwargs)
 
     # Determine which port the server started on (needed to support
