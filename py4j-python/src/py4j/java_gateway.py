@@ -2451,6 +2451,12 @@ class CallbackConnection(Thread):
             else:
                 java_exception = traceback.format_exc()
 
+            if not isinstance(return_value, JavaObject) and self.gateway_client.converters:
+                for converter in self.gateway_client.converters:
+                    if converter.can_convert(return_value):
+                        return_value = converter.convert(return_value, self.gateway_client)
+                        break
+
             return proto.RETURN_MESSAGE + proto.ERROR +\
                 get_command_part(java_exception, self.pool)
 
