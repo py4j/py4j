@@ -325,12 +325,8 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     if create_new_process_group:
         popen_kwargs.update(get_create_new_process_group_kwargs())
 
-    if use_shell:
-        proc = Popen(command, shell=True, stdout=PIPE, stdin=PIPE, stderr=stderr,
-                     cwd=cwd, **popen_kwargs)
-    else:
-        # To make sure no side-effects happen, the shell parameter is omitted
-        proc = Popen(command, stdout=PIPE, stdin=PIPE, stderr=stderr,
+    popen_kwargs["shell"] = use_shell
+    proc = Popen(command, stdout=PIPE, stdin=PIPE, stderr=stderr,
                      cwd=cwd, **popen_kwargs)
 
     # Determine which port the server started on (needed to support
@@ -2090,7 +2086,7 @@ class JavaGateway(object):
             cls, port=0, jarpath="", classpath="", javaopts=[],
             die_on_exit=False, redirect_stdout=None,
             redirect_stderr=None, daemonize_redirect=True, java_path="java",
-            create_new_process_group=False, enable_auth=False, cwd=None):
+            create_new_process_group=False, enable_auth=False, cwd=None, use_shell=False):
         """Launch a `Gateway` in a new Java process and create a default
         :class:`JavaGateway <py4j.java_gateway.JavaGateway>` to connect to
         it.
@@ -2138,6 +2134,7 @@ class JavaGateway(object):
             an authentication token when connecting.
         :param cwd: If not None, path that will be used as the current working
             directory of the Java process.
+        :param use_shell – If True, Popen will be start the java process with shell=True
 
         :rtype: a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
             connected to the `Gateway` server.
@@ -2147,7 +2144,7 @@ class JavaGateway(object):
             redirect_stdout=redirect_stdout, redirect_stderr=redirect_stderr,
             daemonize_redirect=daemonize_redirect, java_path=java_path,
             create_new_process_group=create_new_process_group,
-            enable_auth=enable_auth, cwd=cwd, return_proc=True)
+            enable_auth=enable_auth, cwd=cwd, return_proc=True, use_shell=use_shell)
         if enable_auth:
             _port, _auth_token, proc = _ret
         else:
