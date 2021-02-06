@@ -21,6 +21,7 @@ Hugo <hugovk@users.noreply.github.com>
 hyukjinkwon <gurwls223@gmail.com>
 Chris Kanich <ckanich@uic.edu>
 Abdeali Kothari <abdealikothari@gmail.com>
+Henrik Lasu <hlasu@thermocalc.se>
 Scott Lewis <scottslewis@gmail.com>
 Chetan Narsude <@243826>
 Yann Richet <yann.richet@irsn.fr>
