@@ -827,7 +827,7 @@ class CallbackServerParameters(object):
             connection
 
         :param port: the port to which the client will request a connection.
-            Default is 25333.
+            Default is 25334.
 
         :param daemonize: If `True`, will set the daemon property of the server
             thread to True. The callback server will exit automatically if all
