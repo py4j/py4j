@@ -4,6 +4,16 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.9.2
+-------------
+
+- Release date: February 27th 2021
+- Python side: add use_shell parameter in launch_gateway
+- Python side: fixed documentation of CallbackServerParameters &
+  PythonParameters
+- `tickets closed for 0.10.9.2 release
+  <https://github.com/bartdag/py4j/milestone/28?closed=1>`_
+
 Py4J 0.10.9.1
 -------------
 
