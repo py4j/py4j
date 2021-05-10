@@ -580,7 +580,7 @@ class ClientServerConnection(object):
             params = self._get_params(input)
             return_value = getattr(self.pool[obj_id], method)(*params)
             if (not isinstance(return_value, JavaObject)) and (
-                    self.python_server.gateway_client.converters is not None):
+                    not self.python_server.gateway_client.converters is None):
                 for converter in self.python_server.gateway_client.converters:
                     if converter.can_convert(return_value):
                         return_value = converter.convert(return_value, self.python_server.gateway_client)
