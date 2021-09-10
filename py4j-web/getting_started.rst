@@ -68,7 +68,7 @@ network address and port, if the defaults (localhost, 25333) do not work for
 you. The ``GatewayServer`` constructor takes an object (the entry point) as a
 parameter.
 
-Here is an example of an example of an entry point that would allow a Python
+Here is an example of an entry point that would allow a Python
 program to access a pre-configured stack:
 
 .. code-block:: java
