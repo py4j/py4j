@@ -1055,6 +1055,10 @@ class GatewayClient(object):
                 logging.exception(
                     "Exception while sending command.")
                 response = proto.ERROR
+        except KeyboardInterrupt:
+            if connection:
+                connection.close(False)
+            raise
 
         return response
 
