@@ -1,0 +1,62 @@
+name: test
+
+on: [ push ]
+
+jobs:
+  test:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        os: [ ubuntu-18.04 ]
+        java-version: [ 8 ]
+        python-version: [ 2.7, 3.6, 3.7 ]
+    name: Py ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97 # pin@v2.3.5
+
+      - name: Setup Java ${{ matrix.java-version}} JDK
+        uses: actions/setup-java@8db439b6b47e5e12312bf036760bbaa6893481ac #pin@v2.3.1
+        with:
+          java-version: '${{ matrix.java-version }}'
+          distribution: 'adopt'
+          cache: 'gradle'
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@dc73133d4da04e56a135ae2246682783cc7c7cb6 # pin @v2.2.2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+
+      - name: Install dependencies
+        run: |
+          pip install flake8==2.5.0 nose
+          cd py4j-java
+          # Useful in case the build stops working because of version issues.
+          ./gradlew --version
+          echo `java -version` && echo `javac -version` && echo `python --version`
+          echo $PATH
+          echo $JAVA_HOME
+          ./gradlew clean
+
+      - name: Enable IPV6
+        run: |
+          echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
+
+      - name: Run gradle tests
+        run: |
+          cd py4j-java
+          ./gradlew check
+          ./gradlew assemble
+
+      - name: Run flake8
+        run: |
+          cd py4j-python
+          flake8
+
+      - name: Run nosetests
+        run: |
+          cd py4j-python
+          # Java TLS tests are disabled until they can be fixed (refs #441)
+          nosetests -v --exclude='.*java_tls_test.*'
