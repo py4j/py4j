@@ -1059,8 +1059,10 @@ class GatewayClient(object):
             # For KeyboardInterrupt triggered from Python shell, it should
             # clean up the connection so the connection is
             #   - closed and does not leak
-            #   - removed from the thread local when Py4J Single Threading Model is on
-            # See also https://github.com/bartdag/py4j/pull/440 for more details.
+            #   - removed from the thread local when Py4J
+            #     Single Threading Model is on
+            # See also https://github.com/bartdag/py4j/pull/440 for
+            # more details.
             logging.exception("KeyboardInterrupt while sending command.")
             if connection:
                 connection.close(False)
