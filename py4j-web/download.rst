@@ -28,7 +28,7 @@ Requirements
 Py4J requires:
 
 * A Python interpreter. Py4J has been tested with CPython 2.7,
-  CPython 3.4, CPython 3.5, and CPython 3.6.
+  CPython 3.4, CPython 3.5, CPython 3.6, CPython 3.7, and CPython 3.8
 * Java 7.0+.
 
 Py4J for Eclipse requires:
