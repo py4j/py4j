@@ -8,6 +8,7 @@ Peter Abeles <peter.abeles@gmail.com>
 Patrick Alt <patrick_alt@ultimatesoftware.com>
 Max Bolingbroke <batterseapower@hotmail.com>
 Christophe Buffenoir <kujiu@kujiu.org>
+Steven Burns <royalstream@hotmail.com>
 Jacek Bzdak <jbzdak@gmail.com>
 Barthelemy Dagenais <barthelemy@infobart.com>
 Frankie Dintino <fdintino@theatlantic.com>
