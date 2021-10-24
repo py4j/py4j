@@ -47,10 +47,15 @@ public class InstrGatewayTest {
 
 	@Test
 	public void testLifecycle() {
+		try {
+			Thread.currentThread().sleep(2000);
+		} catch (Exception e) {
+
+		}
 		startServer();
 		MetricRegistry.forceFinalization();
 		try {
-			Thread.currentThread().sleep(1000);
+			Thread.currentThread().sleep(2000);
 		} catch (Exception e) {
 
 		}
