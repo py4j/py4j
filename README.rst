@@ -26,7 +26,7 @@ if you have the time and skills
 LICENSE
 =======
 
-Py4J is distributed with the BSD 3-Clause license. See `LICENSE.txt <./LICENSE.txt>`_ for more
+Py4J is distributed with the BSD 3-Clause license. See `LICENSE.txt <LICENSE.txt>`_ for more
 information.
 
 
