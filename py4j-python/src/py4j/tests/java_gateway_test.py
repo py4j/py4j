@@ -1045,12 +1045,12 @@ class GatewayLauncherTest(unittest.TestCase):
         # the Java process has terminated *then*.
         # This is not ideal, since it introduces a bit of an extra delay in
         # what would otherwise be a millisecond test.
-        # Waiting only a fraction of a second (2**-5) seems to be enough.
+        # Waiting only a fraction of a second (2**-2) seems to be enough.
         if sys.version_info < (3,):
             sleep()
             self.assertFalse(self.gateway.java_process.poll() is None)
         else:
-            self.gateway.java_process.wait(2**-5)
+            self.gateway.java_process.wait(2**-2)
         # Popen.wait() will raise a TimeoutExpired exception if the subprocess
         # has not yet terminated.
 
@@ -1069,7 +1069,7 @@ class GatewayLauncherTest(unittest.TestCase):
             sleep()
             self.assertFalse(self.gateway.java_process.poll() is None)
         else:
-            self.gateway.java_process.wait(2**-5)
+            self.gateway.java_process.wait(2**-2)
 
     def testJavaopts(self):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
