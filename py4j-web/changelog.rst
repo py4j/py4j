@@ -4,6 +4,21 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+
+Py4J 0.10.9.3
+-------------
+
+- Release date: November 20th 2021
+- Python side: added Python 3.8 and 3.9 to supported versions.
+- Python side: catch KeyboardInterrupt to prevent connection and memory leaks.
+  Thanks to Hyukjin Kwon for the thorough investigation and fix.
+- Java side: upgrade JUnit version.
+- Switched from Travis CI to Github Actions. Many thanks to Josh Rosen for
+  saving the CI pipeline of Py4J!
+- Removed professional services.
+- `tickets closed for 0.10.9.3 release
+  <https://github.com/bartdag/py4j/milestone/29?closed=1>`_
+
 Py4J 0.10.9.2
 -------------
 

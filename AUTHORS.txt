@@ -19,7 +19,7 @@ Jonah Graham <jonah@kichwacoders.com>
 Alex Grönholm <alex.gronholm+git@nextday.fi>
 David A. Hannasch <David.A.Hannasch@gmail.com>
 Hugo <hugovk@users.noreply.github.com>
-hyukjinkwon <gurwls223@gmail.com>
+Hyukjin Kwon <gurwls223@gmail.com>
 Chris Kanich <ckanich@uic.edu>
 Abdeali Kothari <abdealikothari@gmail.com>
 Henrik Lasu <hlasu@thermocalc.se>
