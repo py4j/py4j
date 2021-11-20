@@ -64,8 +64,6 @@ Support & Resources
 * Ask a question on the `mailing list
   <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_.
 * Look at the `roadmap <https://github.com/bartdag/py4j/milestones>`_.
-* Request :doc:`professional services <professional-services>` for custom
-  features or commercial support.
 
 News
 ====
@@ -115,7 +113,7 @@ News
 * **January 9th 2016** - Py4J 0.9.1 has been released. See the :doc:`changelog`
   for more details about the bug fixes.
 
-* **September 3rd 2015** - :doc:`Professional Services <professional-services>`
+* **September 3rd 2015** - Professional Services
   are now available if you wish to have a feature implemented quickly or get
   commercial support for Py4J.
 
