@@ -237,13 +237,13 @@ public class MethodInvoker {
 			if (method != null) {
 				AccessController.doPrivileged(new PrivilegedAction<Object>() {
 					public Object run() {
-						method.setAccessible(true);
+						method.trySetAccessible();
 						return null;
 					}
 				});
 				returnObject = method.invoke(obj, newArguments);
 			} else if (constructor != null) {
-				constructor.setAccessible(true);
+				constructor.trySetAccessible();
 				returnObject = constructor.newInstance(newArguments);
 			}
 		} catch (InvocationTargetException ie) {
