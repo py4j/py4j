@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -201,7 +202,8 @@ public class ReflectionEngine {
 
 		for (Constructor<?> constructor : clazz.getConstructors()) {
 			if (constructor.getParameterTypes().length == length) {
-				methods.add(constructor);
+				if (constructor.trySetAccessible())
+					methods.add(constructor);
 			}
 		}
 
@@ -340,13 +342,36 @@ public class ReflectionEngine {
 	}
 
 	private List<Method> getMethodsByNameAndLength(Class<?> clazz, String name, int length) {
+		List<Method> methodsToCheck = new ArrayList<Method>();
+
+		while (true) {
+			methodsToCheck.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+			for (Class<?> intf : clazz.getInterfaces()) {
+				methodsToCheck.addAll(Arrays.asList(intf.getDeclaredMethods()));
+			}
+
+			if (clazz == Object.class) {
+				break;
+			}
+
+			clazz = clazz.getSuperclass();
+		}
+
 		List<Method> methods = new ArrayList<Method>();
 
-		for (Method method : clazz.getMethods()) {
+		for (Method method : methodsToCheck) {
 			if (method.getName().equals(name) && method.getParameterTypes().length == length) {
-				methods.add(method);
+				// If it can't be set to accessible, there is
+				// not much we can do, other than look further.
+				if (method.trySetAccessible()) {
+					methods.add(method);
+				}
 			}
 		}
+
+		// So the most generic ones come first, assuming they
+		// are the most accessible, even across modules.
+		Collections.reverse(methods);
 
 		return methods;
 	}
