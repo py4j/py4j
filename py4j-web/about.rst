@@ -6,7 +6,7 @@
 About Py4J
 ==========
 
-Paasdasdy4J is developed by `Barthélémy Dagenais <http://www.infobart.com>`_. The
+Py4J is developed by `Barthélémy Dagenais <http://www.infobart.com>`_. The
 goal is to enable developers to program in Python and benefit from Python
 libraries such as `lxml <http://lxml.de>`_ while being able to
 reuse Java libraries and frameworks such as `Eclipse
