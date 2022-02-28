@@ -274,7 +274,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
         directory of the Java process.
     :param return_proc: If True, returns the Popen object returned when the JVM
         process was created.
-    :param use_shell – If True, Popen will be start the java process with
+    :param use_shell: If True, Popen will be start the java process with
         shell=True
 
     :rtype: the port number of the `Gateway` server or, when auth enabled,
@@ -2150,7 +2150,7 @@ class JavaGateway(object):
             an authentication token when connecting.
         :param cwd: If not None, path that will be used as the current working
             directory of the Java process.
-        :param use_shell – If True, Popen will be start the java process with
+        :param use_shell: If True, Popen will be start the java process with
             shell=True
 
         :rtype: a :class:`JavaGateway <py4j.java_gateway.JavaGateway>`
