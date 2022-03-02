@@ -294,7 +294,7 @@ They are all instances of :class:`Signal <py4j.signals.Signal>`.
 
 .. py:data:: post_server_shutdown
 
-    Signal sent when a Python (Callback) Server is shutted down.
+    Signal sent when a Python (Callback) Server is shut down.
 
     Will supply the ``server`` argument, an instance of CallbackServer
 

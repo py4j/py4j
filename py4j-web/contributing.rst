@@ -113,7 +113,6 @@ suite across the supported python versions.
   ./gradlew assemble
 
   # install test requirements
-  cd py4j-python
   pip install -r requirements.txt
 
   # Run the full test suite
@@ -183,7 +182,7 @@ your commit:
 
         fixes #XYZ -- short description below 72 characters
 
-        Longer description that lists all the changes that occured
+        Longer description that lists all the changes that occurred
         on multiple lines of 79 characters.
 
 
