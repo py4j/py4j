@@ -77,7 +77,8 @@ public class GatewayServerTest {
 	@Test
 	public void testListener() {
 		TestListener listener = new TestListener();
-		GatewayServer server1 = new GatewayServer(null);
+		// Use DEFAULT_PORT + 1 in case the previous test's default ports are still occupied.
+		GatewayServer server1 = new GatewayServer(null, GatewayServer.DEFAULT_PORT + 1);
 		server1.addListener(listener);
 		server1.start();
 		try {
