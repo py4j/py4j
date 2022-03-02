@@ -1,0 +1,374 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>7. Contributing to Py4J &mdash; Py4J</title>
+    <link rel="stylesheet" href="_static/py4jdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.8.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  'true'
+      };
+    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="Py4J" href="index.html" />
+    <link rel="next" title="8. Changelog" href="changelog.html" />
+    <link rel="prev" title="6. Frequently Asked Questions" href="faq.html" />
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-60501623-4', 'auto');
+        ga('send', 'pageview');
+
+    </script> 
+  </head>
+  <body>
+  	<div class="page">
+<div class="banner">Py4J - A Bridge between Python and Java</div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 5px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="changelog.html" title="8. Changelog"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="faq.html" title="6. Frequently Asked Questions"
+             accesskey="P">previous</a> |</li>
+    <li><a href="index.html">Home</a> |</li>
+	<li><a href="download.html">Download</a> |</li>
+	<li><a href="contents.html">Doc</a> |</li>
+	<li><a href="https://blog.py4j.org">Blog</a> |</li>
+	<li><a href="https://github.com/bartdag/py4j">github</a> |</li>
+	<li><a href="about.html">About</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="contents.html">On This Page</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">7. Contributing to Py4J</a><ul>
+<li><a class="reference internal" href="#general-conventions">7.1. General Conventions</a></li>
+<li><a class="reference internal" href="#python-coding-conventions">7.2. Python Coding Conventions</a></li>
+<li><a class="reference internal" href="#java-coding-conventions">7.3. Java Coding Conventions</a></li>
+<li><a class="reference internal" href="#testing-python-code">7.4. Testing Python Code</a></li>
+<li><a class="reference internal" href="#testing-java-code">7.5. Testing Java Code</a></li>
+<li><a class="reference internal" href="#code-coverage">7.6. Code Coverage</a></li>
+<li><a class="reference internal" href="#branch-name-and-commit-message-format">7.7. Branch name and commit message format</a><ul>
+<li><a class="reference internal" href="#squashing-commits-and-git">7.7.1. Squashing commits and git</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#license-and-copyrights">7.8. License and Copyrights</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="faq.html"
+                                  title="previous chapter"><span class="section-number">6. </span>Frequently Asked Questions</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="changelog.html"
+                                  title="next chapter"><span class="section-number">8. </span>Changelog</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/contributing.rst.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <section id="contributing-to-py4j">
+<h1><span class="section-number">7. </span>Contributing to Py4J<a class="headerlink" href="#contributing-to-py4j" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="summary">
+<p class="topic-title">Summary</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#general-conventions" id="id2">General Conventions</a></p></li>
+<li><p><a class="reference internal" href="#python-coding-conventions" id="id3">Python Coding Conventions</a></p></li>
+<li><p><a class="reference internal" href="#java-coding-conventions" id="id4">Java Coding Conventions</a></p></li>
+<li><p><a class="reference internal" href="#testing-python-code" id="id5">Testing Python Code</a></p></li>
+<li><p><a class="reference internal" href="#testing-java-code" id="id6">Testing Java Code</a></p></li>
+<li><p><a class="reference internal" href="#code-coverage" id="id7">Code Coverage</a></p></li>
+<li><p><a class="reference internal" href="#branch-name-and-commit-message-format" id="id8">Branch name and commit message format</a></p>
+<ul>
+<li><p><a class="reference internal" href="#squashing-commits-and-git" id="id9">Squashing commits and git</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#license-and-copyrights" id="id10">License and Copyrights</a></p></li>
+</ul>
+</div>
+<p>Thanks a lot for using Py4J and wanting to contribute! Your help is greatly
+appreciated!</p>
+<p>The following is a set of guidelines for contributing to Py4J. These are just
+guidelines, not rules, use your best judgment and feel free to propose changes
+to this document in a pull request.</p>
+<p>These guidelines have evolved since Py4J started and past commits may not
+always follow them.</p>
+<p>In general, if your contribution does not follow these guidelines, we will
+review your contribution, but expect that we will ask you for some changes and
+refer you to specific parts of this guide!</p>
+<section id="general-conventions">
+<h2><a class="toc-backref" href="#id2"><span class="section-number">7.1. </span>General Conventions</a><a class="headerlink" href="#general-conventions" title="Permalink to this headline">¶</a></h2>
+<p>Contributions to Py4J are always welcome. To accelerate the review process,
+make sure that your contribution includes:</p>
+<ol class="arabic simple">
+<li><p>At least one unit test in Python and/or Java.</p></li>
+<li><p>A docstring or javadoc comment if you create new public classes, methods or
+functions.</p></li>
+<li><p>Some code examples in the py4j-web documentation subproject if you are
+introducing new features.</p></li>
+</ol>
+</section>
+<section id="python-coding-conventions">
+<span id="python-conventions"></span><h2><a class="toc-backref" href="#id3"><span class="section-number">7.2. </span>Python Coding Conventions</a><a class="headerlink" href="#python-coding-conventions" title="Permalink to this headline">¶</a></h2>
+<p>We follow pep8 rather strictly:</p>
+<ol class="arabic simple">
+<li><p>We use spaces instead of tab.</p></li>
+<li><p>We use four-space indents.</p></li>
+<li><p>Line length is 80.</p></li>
+<li><p>Code must pass the default flake8 tests (pep8 + pyflakes).</p></li>
+</ol>
+<p>Code must be compatible with Python 2.7 and from 3.4 to the newest released
+version of Python.</p>
+<p>If external libraries must be used, they should be wrapped in a mechanism that
+by default does not require them (e.g., conditional imports, graceful
+degradation, etc.).</p>
+<p>Libraries used for testing and contributing (flake8, nose, tox, Sphinx) can be
+installed with pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -r requirements.txt
+
+<span class="c1"># Run flake8</span>
+flake8
+</pre></div>
+</div>
+</section>
+<section id="java-coding-conventions">
+<span id="java-conventions"></span><h2><a class="toc-backref" href="#id4"><span class="section-number">7.3. </span>Java Coding Conventions</a><a class="headerlink" href="#java-coding-conventions" title="Permalink to this headline">¶</a></h2>
+<p>We use Eclipse code formatting conventions (see <a class="reference external" href="https://raw.githubusercontent.com/bartdag/py4j/master/py4j-java/py4j.formatter.xml">py4j.formatter.xml</a>
+and <a class="reference external" href="https://raw.githubusercontent.com/bartdag/py4j/master/py4j-java/py4j.importorder">py4j.importorder</a>)
+that can be used in Eclipse and IntelliJ IDEs.</p>
+<p>In summary:</p>
+<ol class="arabic simple">
+<li><p>We use tabs rather than spaces to indent the Java code.</p></li>
+<li><p>Most expressions (conditionals, loops, try/catch) are always wrapped with
+curly brackets.</p></li>
+</ol>
+<p>You can format your code using gradle and Java 8:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># To check Java coding conventions:</span>
+./gradlew spotlessCheck
+
+<span class="c1"># To format your code:</span>
+./gradlew spotlessJavaApply
+</pre></div>
+</div>
+<p>We use <a class="reference external" href="http://findbugs.sourceforge.net/">FindBugs</a> on the main source code
+(not the test source code) and any warnings must be corrected before a pull
+request will be accepted.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># To run findbugs</span>
+./gradlew findbugsMain
+</pre></div>
+</div>
+</section>
+<section id="testing-python-code">
+<h2><a class="toc-backref" href="#id5"><span class="section-number">7.4. </span>Testing Python Code</a><a class="headerlink" href="#testing-python-code" title="Permalink to this headline">¶</a></h2>
+<p>On the Python side, we use nose to run the test suite and tox to run the test
+suite across the supported python versions.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># make sure that the jar file is created</span>
+<span class="nb">cd</span> py4j-java
+./gradlew clean
+./gradlew assemble
+
+<span class="c1"># install test requirements</span>
+<span class="nb">cd</span> py4j-python
+pip install -r requirements.txt
+
+<span class="c1"># Run the full test suite</span>
+nosetests
+
+<span class="c1"># Run only one particular test</span>
+nosetests py4j.tests.java_gateway_test:GatewayLauncherTest.testRedirectToDeque
+
+<span class="c1"># Run all tests on all supported pythons.</span>
+<span class="c1"># Typically only do this if the automated build failed</span>
+<span class="c1"># on one version of python.</span>
+tox
+
+<span class="c1"># Run flake8 checks</span>
+flake8
+</pre></div>
+</div>
+<p>New code or bug fix should ideally be accompanied by a test case.</p>
+<p>Because we start a JVM for most test cases, it may happen that some test fails
+because the process was not ready to receive a request. This is a problem we
+have been working on for some time now and it has been a few months since the
+test suite failed because of synchronization issues. If your tests constantly
+fail, then something is wrong with your test!</p>
+</section>
+<section id="testing-java-code">
+<h2><a class="toc-backref" href="#id6"><span class="section-number">7.5. </span>Testing Java Code</a><a class="headerlink" href="#testing-java-code" title="Permalink to this headline">¶</a></h2>
+<p>We use JUnit to write test cases.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> py4j-java
+./gradlew clean
+./gradlew <span class="nb">test</span>
+</pre></div>
+</div>
+</section>
+<section id="code-coverage">
+<h2><a class="toc-backref" href="#id7"><span class="section-number">7.6. </span>Code Coverage</a><a class="headerlink" href="#code-coverage" title="Permalink to this headline">¶</a></h2>
+<p>We have started to keep track of code coverage on both the Python and Java
+libraries. Unfortunately, most of the Java code is being tested by the Python
+library so the reported code coverage is smaller than the actual coverage.</p>
+<p>When reviewing a contribution, we will always require that both the Java code
+and the Python code are tested, but it does not matter if the Java code is
+tested by the Python code.</p>
+</section>
+<section id="branch-name-and-commit-message-format">
+<h2><a class="toc-backref" href="#id8"><span class="section-number">7.7. </span>Branch name and commit message format</a><a class="headerlink" href="#branch-name-and-commit-message-format" title="Permalink to this headline">¶</a></h2>
+<p>In general, it is best to first open an issue and then, refer to the issue in
+your commit:</p>
+<ol class="arabic">
+<li><p>Your branch should have the format <code class="docutils literal notranslate"><span class="pre">issue-XYZ-branch-name</span></code> where XYZ is
+the issue number and branch-name is a short description.</p></li>
+<li><p>Commits that refer to an issue will have the format <code class="docutils literal notranslate"><span class="pre">refs</span> <span class="pre">#XYZ</span> <span class="pre">--</span> <span class="pre">message</span></code>
+where XYZ is the issue number.</p></li>
+<li><p>Once a pull request is approved, we ask you to rebase your changes against
+the master branch and squash your commits into one
+meaningful commit (see below for tips on how to do this). The format of the
+commit would be:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>fixes #XYZ -- short description below 72 characters
+
+Longer description that lists all the changes that occured
+on multiple lines of 79 characters.
+</pre></div>
+</div>
+</li>
+</ol>
+<section id="squashing-commits-and-git">
+<h3><a class="toc-backref" href="#id9"><span class="section-number">7.7.1. </span>Squashing commits and git</a><a class="headerlink" href="#squashing-commits-and-git" title="Permalink to this headline">¶</a></h3>
+<p>To squash your commits, you can use the git rebase command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Squash the last three commits into 1</span>
+git rebase -i HEAD~3
+<span class="c1"># An editor will open. Change the word &quot;pick&quot; to &quot;squash&quot;</span>
+<span class="c1"># except for the very first commit at the top of the list.</span>
+<span class="c1"># After you save and exit, you will be prompted again to</span>
+<span class="c1"># change the commit message of the squashed commit.</span>
+</pre></div>
+</div>
+<p>The Django contributing guide has a <a class="reference external" href="https://docs.djangoproject.com/en/1.9/internals/contributing/writing-code/working-with-git/">good tutorial on using git to contribute</a>
+and in particular, <a class="reference external" href="https://docs.djangoproject.com/en/1.9/internals/contributing/writing-code/working-with-git/#rebasing-branches">squashing commits</a>.</p>
+</section>
+</section>
+<section id="license-and-copyrights">
+<span id="id1"></span><h2><a class="toc-backref" href="#id10"><span class="section-number">7.8. </span>License and Copyrights</a><a class="headerlink" href="#license-and-copyrights" title="Permalink to this headline">¶</a></h2>
+<p>Py4J does not have an official Contributor License Agreement (CLA), but it is
+assumed that as soon as you make a contribution (patch, code suggestion through
+any medium, pull requests) to Py4J, you accept that your code will be
+redistributed under the current license used by Py4J, i.e., the new BSD
+license. This is an irrevocable right to ensure that developers can use Py4J
+without the fear of seeing parts removed in the future.</p>
+<p>You maintain the full copyrights for your contributions: you are only providing
+a license to distribute your code without further restrictions.</p>
+<p>The copyright statement in the License has been standardized to:</p>
+<p><code class="docutils literal notranslate"><span class="pre">Copyright</span> <span class="pre">(c)</span> <span class="pre">2009-2016,</span> <span class="pre">Barthelemy</span> <span class="pre">Dagenais</span> <span class="pre">and</span> <span class="pre">individual</span> <span class="pre">contributors.</span> <span class="pre">All</span>
+<span class="pre">rights</span> <span class="pre">reserved.`</span></code></p>
+<p>Individual contributors are identified in the AUTHORS file. If you have
+contributed to Py4J and your name is not in AUTHORS, please open a pull
+request!</p>
+<p>If you are working for a company while contributing to Py4J, make sure that the
+code is yours or that your company agrees with this implied CLA.</p>
+<p>This approach is heavily inspired from the <a class="reference external" href="https://www.djangoproject.com/foundation/cla/faq/">Django Contributor License
+Agreement.</a>.</p>
+<p>If you have any question, do not hesitate to contact the founder of the
+project, <a class="reference external" href="mailto:barthelemy&#37;&#52;&#48;infobart&#46;com">Barthelemy</a>.</p>
+</section>
+</section>
+
+
+          </div>
+		  		
+				<div class="helpbar">
+					<h3>Questions/Feedback?</h3>
+					<ul>
+						<li>Try the <a href="faq.html">FAQ</a> -- It answers many questions.</li>
+						<li>Search for information in the <a href="https://groups.google.com/a/py4j.org/forum/#!forum/py4j">archives of the py4j-users mailing list</a>, or <a href="https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join">post a question</a>.</li>
+						<li>If you notice errors with this documentation, <a href="https://github.com/bartdag/py4j/issues">open a ticket</a> and let us know. Please, only open a ticket for feedback or improvements on the docs. To get help, use the links above!</li>
+					</ul>
+				</div>
+				
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 5px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="changelog.html" title="8. Changelog"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="faq.html" title="6. Frequently Asked Questions"
+             >previous</a> |</li>
+    <li><a href="index.html">Home</a> |</li>
+	<li><a href="download.html">Download</a> |</li>
+	<li><a href="contents.html">Doc</a> |</li>
+	<li><a href="https://blog.py4j.org">Blog</a> |</li>
+	<li><a href="https://github.com/bartdag/py4j">github</a> |</li>
+	<li><a href="about.html">About</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009-2015, Barthélémy Dagenais.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.4.0.
+    </div>
+  </div>
+  </body>
+
+
+</html>

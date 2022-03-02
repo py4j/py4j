@@ -1,0 +1,280 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>4.6. py4j.signals — Py4J Signals API &mdash; Py4J</title>
+    <link rel="stylesheet" href="_static/py4jdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.8.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  'true'
+      };
+    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="Py4J" href="index.html" />
+    <link rel="up" title="4. Py4J Python API" href="py4j_python.html" />
+    <link rel="next" title="5. Py4J Java API" href="py4j_java.html" />
+    <link rel="prev" title="4.5. py4j.finalizer — Py4J Finalizer API" href="py4j_finalizer.html" />
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-60501623-4', 'auto');
+        ga('send', 'pageview');
+
+    </script> 
+  </head>
+  <body>
+  	<div class="page">
+<div class="banner">Py4J - A Bridge between Python and Java</div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 5px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="py4j_java.html" title="5. Py4J Java API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="py4j_finalizer.html" title="4.5. py4j.finalizer — Py4J Finalizer API"
+             accesskey="P">previous</a> |</li>
+    <li><a href="index.html">Home</a> |</li>
+	<li><a href="download.html">Download</a> |</li>
+	<li><a href="contents.html">Doc</a> |</li>
+	<li><a href="https://blog.py4j.org">Blog</a> |</li>
+	<li><a href="https://github.com/bartdag/py4j">github</a> |</li>
+	<li><a href="about.html">About</a> &raquo;</li>
+
+          <!-- <li><a href="py4j_python.html" accesskey="U"><span class="section-number">4. </span>Py4J Python API</a> &raquo;</li>--> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="contents.html">On This Page</a></h3>
+            <ul>
+<li><a class="reference internal" href="#">4.6. <code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.signals</span></code> — Py4J Signals API</a><ul>
+<li><a class="reference internal" href="#signal">4.6.1. Signal</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="py4j_finalizer.html"
+                                  title="previous chapter"><span class="section-number">4.5. </span><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.finalizer</span></code> — Py4J Finalizer API</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="py4j_java.html"
+                                  title="next chapter"><span class="section-number">5. </span>Py4J Java API</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/py4j_signals.rst.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <section id="module-py4j.signals">
+<span id="py4j-signals-py4j-signals-api"></span><h1><span class="section-number">4.6. </span><a class="reference internal" href="#module-py4j.signals" title="py4j.signals: Basic signals implementation (listeners/events/observers)."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.signals</span></code></a> — Py4J Signals API<a class="headerlink" href="#module-py4j.signals" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="#module-py4j.signals" title="py4j.signals: Basic signals implementation (listeners/events/observers)."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.signals</span></code></a> module contains classes that enables the creation of
+signals, i.e., events that can be sent to “receivers”. A receiver must connect
+to a signal beforehand and can optionally specify from which sender it should
+receive signals.</p>
+<p>Here is a full usage example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Declare a signal</span>
+<span class="n">server_connection_stopped</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;Signal sent when a Python (Callback) Server connection is stopped.</span>
+
+<span class="sd">Will supply the ``connection`` argument, an instance of CallbackConnection.</span>
+
+<span class="sd">The sender is the CallbackServer instance.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">server</span> <span class="o">=</span> <span class="o">...</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="o">...</span>
+
+<span class="c1"># Create a receiver</span>
+<span class="k">def</span> <span class="nf">on_connection_stopped</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">connection</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;connection&quot;</span><span class="p">]</span>
+    <span class="c1"># ...</span>
+
+<span class="c1"># Connect the receiver to the signal. Only signals sent from</span>
+<span class="c1"># server will be sent to on_connection_stopped.</span>
+<span class="n">server_connection_stopped</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">on_connection_stopped</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">server</span><span class="p">)</span>
+
+<span class="c1"># Send a signal to the receivers. If one receiver raises an error,</span>
+<span class="c1"># the error is propagated back and other receivers won&#39;t receive the</span>
+<span class="c1"># signal.</span>
+<span class="n">server_connection_stopped</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">sender</span><span class="o">=</span><span class="n">server</span><span class="p">,</span> <span class="n">connection</span><span class="o">=</span><span class="n">connection</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="signal">
+<h2><span class="section-number">4.6.1. </span>Signal<a class="headerlink" href="#signal" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="py4j.signals.Signal">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.signals.</span></span><span class="sig-name descname"><span class="pre">Signal</span></span><a class="headerlink" href="#py4j.signals.Signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Basic signal class that can register receivers (listeners) and dispatch
+events to these receivers.</p>
+<p>As opposed to many signals libraries, receivers are not stored as weak
+references, so it is us to the client application to unregister them.</p>
+<p>Greatly inspired from Django Signals:
+<a class="reference external" href="https://github.com/django/django/blob/master/django/dispatch/dispatcher.py">https://github.com/django/django/blob/master/django/dispatch/dispatcher.py</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="py4j.signals.Signal.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sender</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.signals.Signal.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a receiver for this signal.</p>
+<p>The receiver must be a callable (e.g., function or instance method)
+that accepts named arguments (i.e., <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>).</p>
+<p>In case that the connect method might be called multiple time, it is
+best to provide the receiver with a unique id to make sure that the
+receiver is not registered more than once.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>receiver</strong> – The callable that will receive the signal.</p></li>
+<li><p><strong>sender</strong> – The sender to which the receiver will respond to. If
+None, signals from any sender are sent to this receiver</p></li>
+<li><p><strong>unique_id</strong> – The unique id of the callable to make sure it is not
+registered more than once. Optional.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="py4j.signals.Signal.disconnect">
+<span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sender</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.signals.Signal.disconnect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unregisters a receiver for this signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>receiver</strong> – The callable that was registered to receive the
+signal.</p></li>
+<li><p><strong>unique_id</strong> – The unique id of the callable if it was provided.
+Optional.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the receiver was found and disconnected. False
+otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="py4j.signals.Signal.send">
+<span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sender</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.signals.Signal.send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends the signal to all connected receivers.</p>
+<p>If a receiver raises an error, the error is propagated back and
+interrupts the sending processing. It is thus possible that not all
+receivers will receive the signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Param</dt>
+<dd class="field-odd"><p>named parameters to send to the receivers.</p>
+</dd>
+<dt class="field-even">Param</dt>
+<dd class="field-even"><p>the sender of the signal. Optional.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of (receiver, response) from receivers.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+		  		
+				<div class="helpbar">
+					<h3>Questions/Feedback?</h3>
+					<ul>
+						<li>Try the <a href="faq.html">FAQ</a> -- It answers many questions.</li>
+						<li>Search for information in the <a href="https://groups.google.com/a/py4j.org/forum/#!forum/py4j">archives of the py4j-users mailing list</a>, or <a href="https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join">post a question</a>.</li>
+						<li>If you notice errors with this documentation, <a href="https://github.com/bartdag/py4j/issues">open a ticket</a> and let us know. Please, only open a ticket for feedback or improvements on the docs. To get help, use the links above!</li>
+					</ul>
+				</div>
+				
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 5px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="py4j_java.html" title="5. Py4J Java API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="py4j_finalizer.html" title="4.5. py4j.finalizer — Py4J Finalizer API"
+             >previous</a> |</li>
+    <li><a href="index.html">Home</a> |</li>
+	<li><a href="download.html">Download</a> |</li>
+	<li><a href="contents.html">Doc</a> |</li>
+	<li><a href="https://blog.py4j.org">Blog</a> |</li>
+	<li><a href="https://github.com/bartdag/py4j">github</a> |</li>
+	<li><a href="about.html">About</a> &raquo;</li>
+
+          <!-- <li><a href="py4j_python.html" ><span class="section-number">4. </span>Py4J Python API</a> &raquo;</li>--> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009-2015, Barthélémy Dagenais.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.4.0.
+    </div>
+  </div>
+  </body>
+
+
+</html>
