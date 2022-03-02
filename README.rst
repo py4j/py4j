@@ -1,9 +1,6 @@
 Py4J
 ====
 
-.. image:: https://img.shields.io/badge/maintainers-needed-red
-    :target: https://github.com/bartdag/py4j/issues/426
-
 Py4J enables Python programs running in a Python interpreter to dynamically
 access Java objects in a Java Virtual Machine. Methods are called as if the
 Java objects resided in the Python interpreter and Java collections can be
@@ -17,11 +14,6 @@ This is the source repository of Py4J projects. Please visit the `Py4J homepage
 
 For help, register and then post to the Py4J mailing list at
 ``py4j at py4j dot org``
-
-**Py4J is looking for maintainers.**
-`Consider applying <https://github.com/bartdag/py4j/issues/426>`_
-if you have the time and skills
-
 
 LICENSE
 =======
