@@ -1,3 +1,8 @@
+.. Marked as an orphan for Sphinx to suppress warnings. It's linked
+   by the custom theme.
+
+:orphan:
+
 About Py4J
 ==========
 

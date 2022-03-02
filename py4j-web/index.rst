@@ -1,6 +1,11 @@
 .. Py4J documentation master file, created by
    sphinx-quickstart on Thu Dec 10 15:12:43 2009.
 
+.. Marked as an orphan for Sphinx to suppress warnings. It's linked
+   by the custom theme.
+
+:orphan:
+
 Welcome to Py4J
 ===============
 
