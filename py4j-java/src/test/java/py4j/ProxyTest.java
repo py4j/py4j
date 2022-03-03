@@ -48,15 +48,26 @@ public class ProxyTest {
 	public void setup() {
 		// GatewayServer.turnLoggingOn();
 		entry = new InterfaceEntry();
-		gServer = new GatewayServer(entry);
 		pClient = new PythonTestClient();
-		gServer.start();
 		pClient.startProxy();
 		try {
 			Thread.sleep(250);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		gServer = new GatewayServer(entry, 0, pClient.getPort(), GatewayServer.DEFAULT_CONNECT_TIMEOUT,
+				GatewayServer.DEFAULT_READ_TIMEOUT, null);
+		gServer.start();
+		try {
+			Thread.sleep(250);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		int port = gServer.getListeningPort();
+		assert port != -1;
+		pClient.setPythonPort(gServer.getListeningPort());
 	}
 
 	@After
