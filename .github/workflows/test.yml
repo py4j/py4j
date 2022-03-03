@@ -129,6 +129,7 @@ jobs:
 
           rm -fr * # Remove existing site
           touch .nojekyll # See https://github.blog/2009-12-29-bypassing-jekyll-on-github-pages
+          echo "www.py4j.org" > CNAME # Custom domain for GitHub Actions
           cp -r ../html/* . # Move generated site to the current repo.
 
       - name: Push new site
