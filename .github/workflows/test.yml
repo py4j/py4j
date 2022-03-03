@@ -90,7 +90,23 @@ jobs:
           python3 -m pip install -r py4j-web/requirements-doc.txt
           python3 -m pip list
 
-      - name: Test Sphinx build
+      - name: Setup Java 8 JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 8
+          distribution: 'adopt'
+
+      - name: Install Gradle 4.10
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 4.10
+
+      - name: Javadoc build
+        run: |
+          cd py4j-java && gradle javadoc && cd ..
+          mv py4j-java/build/docs/javadoc py4j-web/_static/
+
+      - name: Sphinx build
         run: |
           cd py4j-web && make clean html && cd ..
           mv py4j-web/_build/html ../ # Move out of the current repo for GitHub Pages.
@@ -105,6 +121,12 @@ jobs:
       - name: Copy the generated site
         if: github.event_name != 'pull_request'
         run: |
+          # Include Javadoc if the commit is tagged (for releases only).
+          if [ -z "`git describe --tags --exact-match 2>/dev/null`" ]; then
+            rm -fr ../html/_static/javadoc
+            [ -d _static/javadoc ]  && mv _static/javadoc ../html/_static
+          fi
+
           rm -fr * # Remove existing site
           touch .nojekyll # See https://github.blog/2009-12-29-bypassing-jekyll-on-github-pages
           cp -r ../html/* . # Move generated site to the current repo.
