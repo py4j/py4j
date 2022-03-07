@@ -1069,6 +1069,7 @@ class GatewayLauncherTest(unittest.TestCase):
             sleep()
             self.assertFalse(self.gateway.java_process.poll() is None)
         else:
+            sleep()
             self.gateway.java_process.wait(2**-5)
 
     def testJavaopts(self):
