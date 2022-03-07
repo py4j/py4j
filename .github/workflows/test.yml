@@ -95,15 +95,14 @@ jobs:
         with:
           java-version: 8
           distribution: 'adopt'
+          cache: 'gradle'
 
-      - name: Install Gradle 4.10
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 4.10
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
 
       - name: Javadoc build
         run: |
-          cd py4j-java && gradle javadoc && cd ..
+          cd py4j-java && ./gradlew javadoc && cd ..
           mv py4j-java/build/docs/javadoc py4j-web/_static/
 
       - name: Sphinx build
