@@ -1069,8 +1069,7 @@ class GatewayLauncherTest(unittest.TestCase):
             sleep()
             self.assertFalse(self.gateway.java_process.poll() is None)
         else:
-            sleep()
-            self.gateway.java_process.wait(2**-5)
+            self.gateway.java_process.wait(2**-4)
 
     def testJavaopts(self):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
