@@ -107,13 +107,17 @@ suite across the supported python versions.
 
 .. code-block:: bash
 
-  # make sure that the jar file is created
+  # Make sure that the jar file is created
   cd py4j-java
   ./gradlew clean
   ./gradlew assemble
 
-  # install test requirements
-  pip install -r requirements.txt
+  # Come back to home directory
+  cd ..
+
+  # Install test requirements for Python
+  cd py4j-python
+  pip install -r requirements-test.txt
 
   # Run the full test suite
   nosetests
