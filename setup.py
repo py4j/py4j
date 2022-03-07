@@ -42,6 +42,9 @@ setup(
                      "through standard Python collection methods. Py4J also "
                      "enables Java programs to call back Python objects.",
     url="https://www.py4j.org/",
+    project_urls={
+        "Source": "https://github.com/py4j/py4j",
+    },
     author="Barthelemy Dagenais",
     author_email="barthelemy@infobart.com",
     license="BSD License",
