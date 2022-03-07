@@ -14,6 +14,7 @@ from py4j.protocol import Py4JError, Py4JJavaError, smart_decode
 from py4j.tests.java_callback_test import IHelloImpl, IHelloFailingImpl
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, check_connection, sleep, WaitOperator)
+from py4j.tests.memory_leak_test import python_gc
 from py4j.tests.py4j_callback_recursive_example import (
     PythonPing, HelloState)
 
@@ -146,6 +147,44 @@ class GarbageCollectionTest(unittest.TestCase):
             p.join()
             client_server.shutdown()
             self.assertEquals(1000, hello.calls)
+
+    def testCleanConnections(self):
+        """This test intentionally create multiple connections in multiple
+        threads so each connection is in a thread local of each thread.
+        After that, it verifies that if the connection is cleaned and closed
+        properly without a resource leak.
+        """
+        with clientserver_example_app_process():
+            client_server = ClientServer(
+                JavaParameters(), PythonParameters())
+            connections = client_server._gateway_client.deque
+            conditions = []
+
+            def assert_connection():
+                # Creates a connection.
+                client_server.jvm.System.currentTimeMillis()
+                # Should at least create one connection.
+                conditions.append(0 < len(connections))
+
+            threads = [
+                threading.Thread(target=assert_connection),
+                threading.Thread(target=assert_connection),
+                threading.Thread(target=assert_connection),
+            ]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+
+            # Here we explicitly call garbage collection to clean
+            # `ClientServerConnection`s by
+            # `JavaClient.ThreadLocalConnectionCleaner`
+            python_gc()
+
+            # Should have zero connections left.
+            self.assertEqual(len(client_server._gateway_client.deque), 0)
+            self.assertTrue(all(connections))
+            client_server.shutdown()
 
 
 class RetryTest(unittest.TestCase):
