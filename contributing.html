@@ -213,14 +213,17 @@ request will be accepted.</p>
 <h2><a class="toc-backref" href="#id5"><span class="section-number">7.4. </span>Testing Python Code</a><a class="headerlink" href="#testing-python-code" title="Permalink to this headline">¶</a></h2>
 <p>On the Python side, we use nose to run the test suite and tox to run the test
 suite across the supported python versions.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># make sure that the jar file is created</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make sure that the jar file is created</span>
 <span class="nb">cd</span> py4j-java
 ./gradlew clean
 ./gradlew assemble
 
-<span class="c1"># install test requirements</span>
+<span class="c1"># Come back to home directory</span>
+<span class="nb">cd</span> ..
+
+<span class="c1"># Install test requirements for Python</span>
 <span class="nb">cd</span> py4j-python
-pip install -r requirements.txt
+pip install -r requirements-test.txt
 
 <span class="c1"># Run the full test suite</span>
 nosetests
@@ -277,7 +280,7 @@ meaningful commit (see below for tips on how to do this). The format of the
 commit would be:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>fixes #XYZ -- short description below 72 characters
 
-Longer description that lists all the changes that occured
+Longer description that lists all the changes that occurred
 on multiple lines of 79 characters.
 </pre></div>
 </div>
