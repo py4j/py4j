@@ -107,14 +107,17 @@ suite across the supported python versions.
 
 .. code-block:: bash
 
-  # make sure that the jar file is created
+  # Make sure that the jar file is created
   cd py4j-java
   ./gradlew clean
   ./gradlew assemble
 
-  # install test requirements
+  # Come back to home directory
+  cd ..
+
+  # Install test requirements for Python
   cd py4j-python
-  pip install -r requirements.txt
+  pip install -r requirements-test.txt
 
   # Run the full test suite
   nosetests
@@ -183,7 +186,7 @@ your commit:
 
         fixes #XYZ -- short description below 72 characters
 
-        Longer description that lists all the changes that occured
+        Longer description that lists all the changes that occurred
         on multiple lines of 79 characters.
 
 

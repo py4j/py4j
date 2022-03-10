@@ -105,4 +105,4 @@ Maven install
 2. Go to the py4j-java directory and execute ``mvn install``.
 3. Alternatively, if a test fails (possible because of sockets), execute
    ``mvn -Dmaven.test.skip=true install``
-4. Builded binaries will be in the directory ``target/py4j-0.x.jar``.
+4. Built binaries will be in the directory ``target/py4j-0.x.jar``.
