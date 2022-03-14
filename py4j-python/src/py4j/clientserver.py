@@ -9,7 +9,7 @@ code calls some Java code, the Java code will be executed in the UI thread.
 
 from __future__ import unicode_literals, absolute_import
 
-from collections import deque
+from collections import deque, Callable
 import logging
 import socket
 from threading import local, Thread
@@ -244,7 +244,10 @@ class JavaClient(GatewayClient):
         :param connection: The ClientServerConnection to associate with the
             current thread.
         """
-        self.thread_connection.connection = weakref.ref(connection)
+        conn = weakref.ref(connection)
+        self.thread_connection._cleaner = (
+            ThreadLocalConnectionFinalizer(conn, self.deque))
+        self.thread_connection.connection = conn
 
     def shutdown_gateway(self):
         try:
@@ -298,6 +301,39 @@ class JavaClient(GatewayClient):
 
     def _create_connection_guard(self, connection):
         return ClientServerConnectionGuard(self, connection)
+
+
+class ThreadLocalConnectionFinalizer(object):
+    """Cleans :class:`ClientServerConnection` held by a thread local by
+    closing it properly and removing it from the :class:`JavaClient`
+    deque. Right before the Python thread is terminated, this
+    instance will be garbage-collected, which triggers a call
+    to __del__  that contains the cleanup logic.
+    """
+    def __init__(self, connection, dequeue):
+        assert (
+            isinstance(connection, Callable) and
+            connection() is not None and
+            isinstance(connection(), ClientServerConnection))
+        self.connection = connection
+        self.deque = dequeue
+
+    def __del__(self):
+        """Removes the connection associated with the current thread
+        from the deque.
+
+        Expected to be called when the thread that started the
+        connection is garbage-collected.
+        """
+        conn = self.connection()
+        if conn is not None:
+            try:
+                # This dequeue is thread-safe, and shared across other
+                # threads.
+                self.deque.remove(conn)
+            except ValueError:
+                # Should never reach this point
+                pass
 
 
 class ClientServerConnectionGuard(GatewayConnectionGuard):
@@ -602,6 +638,12 @@ class ClientServerConnection(object):
             params.append(param)
             temp = smart_decode(input.readline())[:-1]
         return params
+
+    def __del__(self):
+        # In case new connection is set via
+        # `JavaClient.set_thread_connection`, this connection will be
+        # garbage-collected with closing the underlying socket properly.
+        self.close()
 
 
 class ClientServer(JavaGateway):
