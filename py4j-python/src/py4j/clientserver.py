@@ -9,7 +9,8 @@ code calls some Java code, the Java code will be executed in the UI thread.
 
 from __future__ import unicode_literals, absolute_import
 
-from collections import deque, Callable
+from collections import deque
+from collections.abc import Callable
 import logging
 import socket
 from threading import local, Thread
