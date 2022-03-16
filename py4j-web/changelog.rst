@@ -4,6 +4,16 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.9.4
+-------------
+
+- Release date: March 16th 2022
+- Python side: clean leaked connections in pinned thread mode when threads are finished.
+- Python side: enforced documentation build have no warnings.
+- Automated documentation build with publising.
+- Fixed all tests that are flaky in GitHub Actions.
+- `tickets closed for 0.10.9.4 release
+  <https://github.com/bartdag/py4j/milestone/30?closed=1>`_
 
 Py4J 0.10.9.3
 -------------

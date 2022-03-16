@@ -23,8 +23,10 @@ Hyukjin Kwon <gurwls223@gmail.com>
 Chris Kanich <ckanich@uic.edu>
 Abdeali Kothari <abdealikothari@gmail.com>
 Henrik Lasu <hlasu@thermocalc.se>
+Haejoon Lee <haejoon309@gmail.com>
 Scott Lewis <scottslewis@gmail.com>
 Chetan Narsude <@243826>
+Andrii Oriekhov <andriyorehov@gmail.com>
 Yann Richet <yann.richet@irsn.fr>
 Josh Rosen <rosenville@gmail.com>
 Isaac Sánchez Barrera <isaac@isb1009.es>
