@@ -1,31 +1,38 @@
 0. Update all versions (version.py, properties, documentation, index.rst).
 1. Write changelog
-2. gradle clean
+2. gradle clean (at py4j/py4j-java)
 
 3. close all bugs on github
 4. tag the release on git
 
-5. gradle buildPython
-6. create signature using gpg (gpg -b --armor)
+5. gradle buildPython  (at py4j/py4j-java)
+6. create signature using gpg (gpg --export --armor YOUR_KEY, also refer to 'Preparing gpg key' in https://spark.apache.org/release-process.html)
 
-7. upload to PyPI using twine
+7. upload to PyPI using twine (at py4j/py4j-python). For example:
 
-8. mvn package javadoc:jar source:jar
-9. create signature for the three jar files and the pom (gpg -b --armor py4j-....jar)
-10. jar -cvf bundle.jar pom.xml ... (all files)
-11. create staging release in central (https://oss.sonatype.org Staging Upload, Upload Bundle)
-12. close release
-13. publish release
+    python setup.py sdist
+    python setup.py bdist_wheel --universal
+    twine upload dist/*
 
-14. gradle updateSite
-15. Extract and modify artifacts.xml and content.xml to change build path to:
+8. make sure you have 'settings.xml' under '~/.m2', see also https://central.sonatype.org/publish/publish-maven/#distribution-management-and-authentication
+9. if you are a new user in Sonatype, you should replace the upload URL in pom.xml (at py4j/py4j-java). For example:
+
+    # In Mac
+    sed -i '' 's/oss.sonatype.org/s01.oss.sonatype.org/g' pom.xml
+    # or in Linux OS
+    sed 's/oss.sonatype.org/s01.oss.sonatype.org/g' pom.xml
+
+10. mvn clean deploy (at py4j/py4j-java)
+
+11. gradle updateSite
+12. Extract and modify artifacts.xml and content.xml to change build path to:
     1. Py4J p2 Repository (repository name in artifacts and content)
     2. version.Py4J (unit name and provides name in content)
-16. jar -cf content.jar content.xml
-17. jar -cf artifacts artifacts.xml
-18. Create a release with bintray
-19. Create a zip file with the version (e.g., 0.10.0.zip)
-20. Upload release
-21. Update symbolic links of eclipse.py4j.org to point to latest release.
+13. jar -cf content.jar content.xml
+14. jar -cf artifacts artifacts.xml
+15. Create a release with bintray
+16. Create a zip file with the version (e.g., 0.10.0.zip)
+17. Upload release
+18. Update symbolic links of eclipse.py4j.org to point to latest release.
 
-22. send an email to the mailing list.
+19. send an email to the mailing list.
