@@ -15,7 +15,7 @@ jobs:
       matrix:
         os: [ ubuntu-18.04 ]
         java-version: [ 8 ]
-        python-version: [ 2.7, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9 ]
+        python-version: [ '2.7', '3.4', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10' ]
     name: Py ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
     steps:
       - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97 # pin@v2.3.5
@@ -37,7 +37,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install nose
+          pip install nose pytest
           cd py4j-java
           # Useful in case the build stops working because of version issues.
           ./gradlew --version
@@ -56,18 +56,17 @@ jobs:
           ./gradlew check
           ./gradlew assemble
 
-      # There is no combination of flake8 and pyflakes versions which
-      # are compatible with the entire range of Python versions tested
-      # in our build matrix. Therefore, only run flake8 on the latest
-      # Python version:
-      - name: Run flake8
-        if: ${{ matrix.python-version == '3.9' }}
+      # Nose is no logner maintained, and does not support Python 3.10.
+      # This is temporary to make sure test coverage - we should migrate to
+      # PyTest soon with fixing documentation.
+      - name: Run PyTest (Python 3.10)
+        if: ${{ matrix.python-version == '3.10' }}
         run: |
-          pip install flake8==4.0.1
           cd py4j-python
-          flake8
+          pytest -k "not java_tls_test."
 
-      - name: Run nosetests
+      - name: Run nosetests (Python 2.7 - 3.9)
+        if: ${{ matrix.python-version != '3.10' }}
         run: |
           cd py4j-python
           # Java TLS tests are disabled until they can be fixed (refs #441)
