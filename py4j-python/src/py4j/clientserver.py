@@ -9,7 +9,7 @@ code calls some Java code, the Java code will be executed in the UI thread.
 
 from __future__ import unicode_literals, absolute_import
 
-from collections import deque, Callable
+from collections import deque
 import logging
 import socket
 from threading import local, Thread
@@ -312,7 +312,7 @@ class ThreadLocalConnectionFinalizer(object):
     """
     def __init__(self, connection, dequeue):
         assert (
-            isinstance(connection, Callable) and
+            isinstance(connection, weakref.ReferenceType) and
             connection() is not None and
             isinstance(connection(), ClientServerConnection))
         self.connection = connection
