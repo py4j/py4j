@@ -18,7 +18,7 @@ For help, register and then post to the Py4J mailing list at
 LICENSE
 =======
 
-Py4J is distributed with the BSD 3-Clause license. See LICENSE.txt for more
+Py4J is distributed with the BSD 3-Clause license. See `LICENSE.txt <LICENSE.txt>`_ for more
 information.
 
 
