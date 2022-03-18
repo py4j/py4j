@@ -4,6 +4,14 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.9.5
+-------------
+
+- Release date: March 18th 2022
+- Python side: added the official support of Python 3.10
+- `tickets closed for 0.10.9.5 release
+  <https://github.com/bartdag/py4j/milestone/31?closed=1>`_
+
 Py4J 0.10.9.4
 -------------
 

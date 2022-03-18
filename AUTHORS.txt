@@ -15,6 +15,7 @@ Frankie Dintino <fdintino@theatlantic.com>
 Matthew Farrellee <matt@redhat.com>
 Nicholas Gates <nickgatzgates@gmail.com>
 Matthew Gerring <matthew.gerring@gmail.com>
+Gabe Goodhart <ghart@us.ibm.com>
 Jonah Graham <jonah@kichwacoders.com>
 Alex Grönholm <alex.gronholm+git@nextday.fi>
 David A. Hannasch <David.A.Hannasch@gmail.com>
@@ -30,6 +31,7 @@ Andrii Oriekhov <andriyorehov@gmail.com>
 Yann Richet <yann.richet@irsn.fr>
 Josh Rosen <rosenville@gmail.com>
 Isaac Sánchez Barrera <isaac@isb1009.es>
+Alexander Shadchin <alexandr.shadchin@gmail.com>
 David C. Sterratt <david.c.sterratt@ed.ac.uk>
 tobe <tobeg3oogle@gmail.com>
 Marcelo Vanzin <vanzin@cloudera.com>
