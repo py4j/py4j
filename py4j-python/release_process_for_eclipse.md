@@ -12,7 +12,7 @@
     jar -xf content.jar
     rm content.jar
     sed -i "s/repository name='file:[^']*'/repository name='Py4J p2 Repository'/g" content.xml
-    sed -i "s/unit id='file:[^']*'/unit='version.Py4J'/g" content.xml
+    sed -i "s/unit id='file:[^']*'/unit id='version.Py4J'/g" content.xml
     sed -i "s/name='file:[^']*'/name='version.Py4J'/g" content.xml 
     jar cf content.jar content.xml
     rm content.xml
