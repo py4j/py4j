@@ -56,7 +56,7 @@ jobs:
           ./gradlew check
           ./gradlew assemble
 
-      - name: Run PyTest (Python 3.10)
+      - name: Run PyTest
         run: |
           cd py4j-python
           # Java TLS tests are disabled until they can be fixed (refs #441)
