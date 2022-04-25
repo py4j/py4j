@@ -50,7 +50,7 @@ If external libraries must be used, they should be wrapped in a mechanism that
 by default does not require them (e.g., conditional imports, graceful
 degradation, etc.).
 
-Libraries used for testing and contributing (flake8, nose, tox, Sphinx) can be
+Libraries used for testing and contributing (flake8, pytest, tox, Sphinx) can be
 installed with pip:
 
 
@@ -102,7 +102,7 @@ request will be accepted.
 Testing Python Code
 -------------------
 
-On the Python side, we use nose to run the test suite and tox to run the test
+On the Python side, we use pytest to run the test suite and tox to run the test
 suite across the supported python versions.
 
 .. code-block:: bash
@@ -120,10 +120,10 @@ suite across the supported python versions.
   pip install -r requirements-test.txt
 
   # Run the full test suite
-  nosetests
+  pytest
 
   # Run only one particular test
-  nosetests py4j.tests.java_gateway_test:GatewayLauncherTest.testRedirectToDeque
+  pytest -k "GatewayLauncherTest and testRedirectToDeque"
 
   # Run all tests on all supported pythons.
   # Typically only do this if the automated build failed

@@ -173,7 +173,7 @@ version of Python.</p>
 <p>If external libraries must be used, they should be wrapped in a mechanism that
 by default does not require them (e.g., conditional imports, graceful
 degradation, etc.).</p>
-<p>Libraries used for testing and contributing (flake8, nose, tox, Sphinx) can be
+<p>Libraries used for testing and contributing (flake8, pytest, tox, Sphinx) can be
 installed with pip:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -r requirements.txt
 
@@ -211,7 +211,7 @@ request will be accepted.</p>
 </section>
 <section id="testing-python-code">
 <h2><a class="toc-backref" href="#id5"><span class="section-number">7.4. </span>Testing Python Code</a><a class="headerlink" href="#testing-python-code" title="Permalink to this headline">¶</a></h2>
-<p>On the Python side, we use nose to run the test suite and tox to run the test
+<p>On the Python side, we use pytest to run the test suite and tox to run the test
 suite across the supported python versions.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make sure that the jar file is created</span>
 <span class="nb">cd</span> py4j-java
@@ -226,10 +226,10 @@ suite across the supported python versions.</p>
 pip install -r requirements-test.txt
 
 <span class="c1"># Run the full test suite</span>
-nosetests
+pytest
 
 <span class="c1"># Run only one particular test</span>
-nosetests py4j.tests.java_gateway_test:GatewayLauncherTest.testRedirectToDeque
+pytest -k <span class="s2">&quot;GatewayLauncherTest and testRedirectToDeque&quot;</span>
 
 <span class="c1"># Run all tests on all supported pythons.</span>
 <span class="c1"># Typically only do this if the automated build failed</span>
@@ -368,7 +368,7 @@ project, <a class="reference external" href="mailto:barthelemy&#37;&#52;&#48;inf
     </div>
     <div class="footer">
       &copy; Copyright 2009-2015, Barthélémy Dagenais.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.4.0.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.5.0.
     </div>
   </div>
   </body>
