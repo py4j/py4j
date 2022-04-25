@@ -37,7 +37,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install nose pytest
+          pip install pytest
           cd py4j-java
           # Useful in case the build stops working because of version issues.
           ./gradlew --version
@@ -56,21 +56,11 @@ jobs:
           ./gradlew check
           ./gradlew assemble
 
-      # Nose is no logner maintained, and does not support Python 3.10.
-      # This is temporary to make sure test coverage - we should migrate to
-      # PyTest soon with fixing documentation.
-      - name: Run PyTest (Python 3.10)
-        if: ${{ matrix.python-version == '3.10' }}
-        run: |
-          cd py4j-python
-          pytest -k "not java_tls_test."
-
-      - name: Run nosetests (Python 2.7 - 3.9)
-        if: ${{ matrix.python-version != '3.10' }}
+      - name: Run PyTest
         run: |
           cd py4j-python
           # Java TLS tests are disabled until they can be fixed (refs #441)
-          nosetests -v --exclude='.*java_tls_test.*'
+          pytest -k "not java_tls_test."
 
   test-doc:
     name: Documentation build

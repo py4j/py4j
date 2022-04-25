@@ -78,7 +78,7 @@ Otherwise, to build the Java and Python libraries, you need:
    ``py4j-java/py4jXYZ.jar`` where XYZ is the current version of Py4J.
 3. `Sphinx <http://sphinx.pocoo.org/>`_ to build the documentation. Just
    execute the command ``make html``  in the py4j-web directory.
-4. Libraries such as `nose <http://pypi.python.org/pypi/nose/>`_ to test the
+4. Libraries such as `pytest <https://pypi.org/project/pytest/>`_ to test the
    Py4J Python library. Just run ``pip install -r requirements.txt`` in
    py4j directory.
 
@@ -95,7 +95,7 @@ Here are a few useful commands to build Py4J:
 4. ``cd py4j-java; ./gradlew check`` - runs Java tests, FindBugs, and Java
    coding conventions checks. (Python checks will be added in the future).
 5. ``cd py4j-python; flake8`` - performs flake8 check on Python source code.
-6. ``cd py4j-python; nosetests`` - runs Python test suite.
+6. ``cd py4j-python; pytest`` - runs Python test suite.
 
 
 Maven install
