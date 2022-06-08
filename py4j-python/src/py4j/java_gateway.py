@@ -339,7 +339,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     # Read the auth token from the server if enabled.
     _auth_token = None
     if enable_auth:
-        _auth_token = proc.stdout.readline()[:-1]
+        _auth_token = proc.stdout.readline()[:-len(os.linesep)]
 
     # Start consumer threads so process does not deadlock/hangs
     OutputConsumer(
