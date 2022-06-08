@@ -4,7 +4,7 @@ Created on Dec 10, 2009
 
 @author: barthelemy
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import unicode_literals, absolute_import, print_function
 
 from collections import deque
 from contextlib import contextmanager
