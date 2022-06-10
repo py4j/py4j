@@ -54,7 +54,7 @@ jobs:
       - name: Enable IPV6
         if: ${{ runner.os != 'Windows' }}
         run: |
-            echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
+          echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
 
       - name: Run gradle tests
         run: |
