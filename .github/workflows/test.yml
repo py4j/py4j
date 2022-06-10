@@ -37,7 +37,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pytest
+          if [ ${{ matrix.python-version }} = '3.4' -a ${{ runner.os }} = 'Windows' ]; then
+              pip install pytest==4.6.11
+          else
+              pip install pytest
+          fi
           cd py4j-java
           # Useful in case the build stops working because of version issues.
           ./gradlew --version
@@ -45,6 +49,7 @@ jobs:
           echo $PATH
           echo $JAVA_HOME
           ./gradlew clean
+        shell: bash
 
       - name: Enable IPV6
         if: ${{ runner.os != 'Windows' }}
