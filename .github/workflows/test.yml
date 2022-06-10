@@ -15,7 +15,7 @@ jobs:
       matrix:
         os: [ ubuntu-18.04, windows-2019 ]
         java-version: [ 8 ]
-        python-version: [ '2.7', '3.4', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10' ]
+        python-version: [ '2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10' ]
     name: Py ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
     steps:
       - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97 # pin@v2.3.5
@@ -37,11 +37,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          if [ ${{ matrix.python-version }} = '3.4' -a ${{ runner.os }} = 'Windows' ]; then
-              pip install pytest==4.6.11
-          else
-              pip install pytest
-          fi
+          pip install pytest
           cd py4j-java
           # Useful in case the build stops working because of version issues.
           ./gradlew --version
