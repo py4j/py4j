@@ -4,7 +4,7 @@ Created on Dec 10, 2009
 
 @author: barthelemy
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import unicode_literals, absolute_import, print_function
 
 from collections import deque
 from contextlib import contextmanager
@@ -1133,7 +1133,6 @@ class GatewayLauncherTest(unittest.TestCase):
         self.assertEqual(0, len(qerr))
 
     def testRedirectToFile(self):
-        end = os.linesep
         (out_handle, outpath) = tempfile.mkstemp(text=True)
         (err_handle, errpath) = tempfile.mkstemp(text=True)
 
@@ -1144,8 +1143,11 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway = JavaGateway.launch_gateway(
                 redirect_stdout=stdout, redirect_stderr=stderr)
             for i in range(10):
-                self.gateway.jvm.System.out.println("Test")
-                self.gateway.jvm.System.err.println("Test2")
+                # In windows, stdout will replace \n to \r\n
+                # System.out.println output \r\n
+                # Use System.out.print to avoid platform differences
+                self.gateway.jvm.System.out.print("Test\n")
+                self.gateway.jvm.System.err.print("Test2\n")
             self.gateway.shutdown()
             sleep()
             # Should not be necessary
@@ -1156,7 +1158,7 @@ class GatewayLauncherTest(unittest.TestCase):
             with open(outpath, "r") as stdout:
                 lines = stdout.readlines()
                 self.assertEqual(10, len(lines))
-                self.assertEqual("Test{0}".format(end), lines[0])
+                self.assertEqual("Test\n", lines[0])
 
             with open(errpath, "r") as stderr:
                 lines = stderr.readlines()

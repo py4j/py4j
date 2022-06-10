@@ -13,9 +13,9 @@ jobs:
     runs-on: '${{ matrix.os }}'
     strategy:
       matrix:
-        os: [ ubuntu-18.04 ]
+        os: [ ubuntu-18.04, windows-2019 ]
         java-version: [ 8 ]
-        python-version: [ '2.7', '3.4', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10' ]
+        python-version: [ '2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10' ]
     name: Py ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
     steps:
       - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97 # pin@v2.3.5
@@ -45,8 +45,10 @@ jobs:
           echo $PATH
           echo $JAVA_HOME
           ./gradlew clean
+        shell: bash
 
       - name: Enable IPV6
+        if: ${{ runner.os != 'Windows' }}
         run: |
           echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
 

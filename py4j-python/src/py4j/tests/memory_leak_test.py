@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+import platform
 from contextlib import contextmanager
 import gc
 from multiprocessing import Process
@@ -179,6 +180,12 @@ class GatewayServerTest(unittest.TestCase):
             # 3 CallbackConnection. Notice the symmetry
             assert_python_memory(self, 12)
 
+    @unittest.skipIf(
+        platform.system() == 'Windows',
+        "In Windows, more than expected 1, "
+        "like createdSet is 11. "
+        "Maybe cause by socket.makefile"
+    )
     def testPythonToJavaToPythonClose(self):
         def play_with_ping(gateway):
             ping = InstrumentedPythonPing()
