@@ -6,7 +6,6 @@ apply plugin: 'maven'
 
 
 // ====== CONFIGURATION ===== //
-//isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
 
 ext {
     // For CI environment. Optional.
@@ -27,8 +26,8 @@ if (JavaVersion.current().isJava8Compatible()) {
     apply plugin: 'org.standardout.bnd-platform'
 }
 
-// FindBugs require JDK >= 1.7
-if (JavaVersion.current().isJava7Compatible()) {
+// FindBugs require JDK >= 1.7, < 9
+if (JavaVersion.current().isJava7Compatible() && !JavaVersion.current().isJava9Compatible()) {
     apply plugin: 'findbugs'
 }
 
@@ -98,7 +97,7 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.13.2'
     // For Java 8 Support
-    if (JavaVersion.current().isJava7Compatible()) {
+    if (JavaVersion.current().isJava7Compatible() && !JavaVersion.current().isJava9Compatible()) {
         findbugs group: 'com.google.code.findbugs', name: 'findbugs', version: '3.0.+'
     }
 }
@@ -134,7 +133,7 @@ tasks.withType(JavaCompile) {
 
 jacoco {
     // For Java 8 Support
-    toolVersion = "0.7.6.201602180812"
+    toolVersion = "0.8.7"
 }
 
 jacocoTestReport {
@@ -404,7 +403,7 @@ task cleanPython(type: Delete) {
 
 // For now, tests are not clean and that's fine because we want to test many
 // unclean scenarios.
-if (JavaVersion.current().isJava7Compatible()) {
+if (JavaVersion.current().isJava7Compatible() && !JavaVersion.current().isJava9Compatible()) {
     findbugsTest.enabled = false
 }
 
