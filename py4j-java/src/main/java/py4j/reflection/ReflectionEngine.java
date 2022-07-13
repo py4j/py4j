@@ -202,8 +202,9 @@ public class ReflectionEngine {
 
 		for (Constructor<?> constructor : clazz.getConstructors()) {
 			if (constructor.getParameterTypes().length == length) {
-				if (constructor.trySetAccessible())
+				if (ReflectionShim.trySetAccessible(constructor)) {
 					methods.add(constructor);
+				}
 			}
 		}
 
@@ -344,16 +345,11 @@ public class ReflectionEngine {
 	private List<Method> getMethodsByNameAndLength(Class<?> clazz, String name, int length) {
 		List<Method> methodsToCheck = new ArrayList<Method>();
 
-		while (true) {
+		while (clazz != null) {
 			methodsToCheck.addAll(Arrays.asList(clazz.getDeclaredMethods()));
 			for (Class<?> intf : clazz.getInterfaces()) {
 				methodsToCheck.addAll(Arrays.asList(intf.getDeclaredMethods()));
 			}
-
-			if (clazz == Object.class) {
-				break;
-			}
-
 			clazz = clazz.getSuperclass();
 		}
 
@@ -363,15 +359,11 @@ public class ReflectionEngine {
 			if (method.getName().equals(name) && method.getParameterTypes().length == length) {
 				// If it can't be set to accessible, there is
 				// not much we can do, other than look further.
-				if (method.trySetAccessible()) {
+				if (ReflectionShim.trySetAccessible(method)) {
 					methods.add(method);
 				}
 			}
 		}
-
-		// So the most generic ones come first, assuming they
-		// are the most accessible, even across modules.
-		Collections.reverse(methods);
 
 		return methods;
 	}
