@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -201,7 +202,9 @@ public class ReflectionEngine {
 
 		for (Constructor<?> constructor : clazz.getConstructors()) {
 			if (constructor.getParameterTypes().length == length) {
-				methods.add(constructor);
+				if (ReflectionShim.trySetAccessible(constructor)) {
+					methods.add(constructor);
+				}
 			}
 		}
 
@@ -340,11 +343,25 @@ public class ReflectionEngine {
 	}
 
 	private List<Method> getMethodsByNameAndLength(Class<?> clazz, String name, int length) {
+		List<Method> methodsToCheck = new ArrayList<Method>();
+
+		while (clazz != null) {
+			methodsToCheck.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+			for (Class<?> intf : clazz.getInterfaces()) {
+				methodsToCheck.addAll(Arrays.asList(intf.getDeclaredMethods()));
+			}
+			clazz = clazz.getSuperclass();
+		}
+
 		List<Method> methods = new ArrayList<Method>();
 
-		for (Method method : clazz.getMethods()) {
+		for (Method method : methodsToCheck) {
 			if (method.getName().equals(name) && method.getParameterTypes().length == length) {
-				methods.add(method);
+				// If it can't be set to accessible, there is
+				// not much we can do, other than look further.
+				if (ReflectionShim.trySetAccessible(method)) {
+					methods.add(method);
+				}
 			}
 		}
 
