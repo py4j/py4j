@@ -13,9 +13,19 @@ jobs:
     runs-on: '${{ matrix.os }}'
     strategy:
       matrix:
-        os: [ ubuntu-18.04, windows-2019 ]
-        java-version: [ 8, 11, 17 ]
+        os: [ ubuntu-18.04 ]
+        java-version: [ 8 ]
         python-version: [ '2.7', '3.5', '3.6', '3.7', '3.8', '3.9', '3.10' ]
+        include:
+          - os: windows-2019
+            java-version: 17
+            python-version: '3.10'
+          - os: ubuntu-18.04
+            java-version: 11
+            python-version: '2.7'
+          - os: ubuntu-18.04
+            java-version: 17
+            python-version: '3.8'
     name: Py ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
     steps:
       - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97 # pin@v2.3.5
