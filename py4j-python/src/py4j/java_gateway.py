@@ -1305,7 +1305,8 @@ class JavaMember(object):
             answer, self.gateway_client, self.target_id, self.name)
 
         for temp_arg in temp_args:
-            temp_arg._detach()
+            if hasattr(temp_arg, "_detach"):
+                temp_arg._detach()
 
         return connection
 
@@ -1322,7 +1323,8 @@ class JavaMember(object):
             answer, self.gateway_client, self.target_id, self.name)
 
         for temp_arg in temp_args:
-            temp_arg._detach()
+            if hasattr(temp_arg, "_detach"):
+                temp_arg._detach()
 
         return return_value
 
@@ -1586,7 +1588,8 @@ class JavaClass(object):
             answer, self._gateway_client, None, self._fqn)
 
         for temp_arg in temp_args:
-            temp_arg._detach()
+            if hasattr(temp_arg, "_detach"):
+                temp_arg._detach()
 
         return return_value
 
