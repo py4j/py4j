@@ -4,6 +4,14 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.9.6
+-------------
+
+- Release date: August 11th 2022
+- Python side: Detach Java objects only when _detach method exists
+- Python side: Migrate nosetest to pytest
+- Java side: Add support for Java 11/17
+
 Py4J 0.10.9.5
 -------------
 

@@ -1,13 +1,13 @@
 # Releasing Py4J on pypi and Sonatype
 
-0. Update all versions (version.py, properties, documentation, index.rst).
-1. Write changelog
-2. gradle clean (at py4j/py4j-java)
+0. Update all versions (version.py, properties: gradle/ant, documentation, index.rst, pom.xml).
+1. Write changelog; add new authors.
+2. ./gradlew clean (at py4j/py4j-java)
 
 3. close all bugs on github
 4. tag the release on git
 
-5. gradle buildPython  (at py4j/py4j-java)
+5. ./gradlew buildPython  (at py4j/py4j-java)
 6. create signature using gpg (gpg --export --armor YOUR_KEY, also refer to
    'Preparing gpg key' in https://spark.apache.org/release-process.html)
 
