@@ -1,7 +1,7 @@
 # Releasing Py4J on pypi and Sonatype
 
 0. Update all versions (version.py, properties: gradle/ant, documentation, index.rst, pom.xml).
-1. Write changelog; add new authors.
+1. Write changelog (with milestone created); add new authors.
 2. ./gradlew clean (at py4j/py4j-java)
 
 3. close all bugs on github
