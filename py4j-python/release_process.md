@@ -3,7 +3,6 @@
 0. Update all versions (version.py, properties: gradle/ant, documentation, index.rst, pom.xml).
 1. Write changelog (with milestone created); add new authors.
 2. ./gradlew clean (at py4j/py4j-java)
-
 3. close all bugs on github
 4. tag the release on git
 5. check out the source code from the tag
@@ -17,18 +16,14 @@
     ```
 10. make sure you have 'settings.xml' under '~/.m2', see also
     https://central.sonatype.org/publish/publish-maven/#distribution-management-and-authentication
-
 11. if you are a new user in Sonatype, you should replace the upload URL in
     pom.xml (at py4j/py4j-java). For example:
-
-     ```
-     # In Mac
-     sed -i '' 's/oss.sonatype.org/s01.oss.sonatype.org/g' pom.xml
-     # or in Linux OS
-     sed 's/oss.sonatype.org/s01.oss.sonatype.org/g' pom.xml
-     ```
-
+    ```
+    # In Mac
+    sed -i '' 's/oss.sonatype.org/s01.oss.sonatype.org/g' pom.xml
+    # or in Linux OS
+    sed 's/oss.sonatype.org/s01.oss.sonatype.org/g' pom.xml
+    ```
 12. mvn clean deploy (at py4j/py4j-java)
-
 13. Deploy the update site by following the steps in
     release_process_for_eclipse.md
