@@ -4,13 +4,20 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.9.7
+-------------
+
+- Release date: August 12th 2022
+- Python side: Detach Java objects only when _detach method exists
+- Java side: Add support for Java 11/17
+- `tickets closed for 0.10.9.7 release
+  <https://github.com/bartdag/py4j/milestone/33?closed=1>`_
+
 Py4J 0.10.9.6
 -------------
 
 - Release date: August 11th 2022
-- Python side: Detach Java objects only when _detach method exists
 - Python side: Migrate nosetest to pytest
-- Java side: Add support for Java 11/17
 - `tickets closed for 0.10.9.6 release
   <https://github.com/bartdag/py4j/milestone/32?closed=1>`_
 
