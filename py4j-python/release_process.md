@@ -8,8 +8,8 @@
 5. check out the source code from the tag
 6. remove py4j/py4j-python/dist/*
 7. ./gradlew buildPython  (at py4j/py4j-java)
-8. create signature using gpg (gpg --export --armor YOUR_KEY, also refer to
-   'Preparing gpg key' in https://spark.apache.org/release-process.html)
+8. create gpg key and send it to key server (refer to 'Preparing gpg key' in
+   https://spark.apache.org/release-process.html)
 9. upload to PyPI using twine (at py4j/py4j-python). For example:
     ```
     twine upload dist/*
