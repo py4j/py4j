@@ -1049,10 +1049,10 @@ class GatewayClient(object):
                     reset = True
                 connection.close(reset)
             if self._should_retry(retry, connection, pne):
-                logging.info("Exception while sending command.", exc_info=True)
+                logger.info("Exception while sending command.", exc_info=True)
                 response = self.send_command(command, binary=binary)
             else:
-                logging.exception(
+                logger.exception(
                     "Exception while sending command.")
                 response = proto.ERROR
         except KeyboardInterrupt:
@@ -1063,7 +1063,7 @@ class GatewayClient(object):
             #     Single Threading Model is on
             # See also https://github.com/bartdag/py4j/pull/440 for
             # more details.
-            logging.exception("KeyboardInterrupt while sending command.")
+            logger.exception("KeyboardInterrupt while sending command.")
             if connection:
                 connection.close(False)
             raise
