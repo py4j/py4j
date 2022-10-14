@@ -22,7 +22,7 @@ from base64 import standard_b64encode, standard_b64decode
 
 from decimal import Decimal
 from enum import Enum
-from typing import NamedTuple
+from collections import namedtuple
 
 from py4j.compat import (
     long, basestring, unicode, bytearray2,
@@ -76,9 +76,7 @@ class JavaType(Enum):
     PRIMITIVE_INT = INTEGER_TYPE
     PRIMITIVE_LONG = LONG_TYPE
 
-class TypeInt(NamedTuple):
-    value: int
-    java_type: JavaType
+TypeInt = namedtuple('TypeInt', ['value', 'java_type'])
 
 # Protocol
 END = "e"
