@@ -30,8 +30,8 @@ documentation fixes. Please visit the `contributing guide
 <https://www.py4j.org/contributing.html>`_ for more
 information.
 
-.. image:: https://img.shields.io/github/workflow/status/bartdag/py4j/test.svg
-    :target: https://github.com/bartdag/py4j/actions/workflows/test.yml
+.. image:: https://img.shields.io/github/actions/workflow/status/py4j/py4j/test.yml.svg
+    :target: https://github.com/py4j/py4j/actions/workflows/test.yml
 
 .. image:: https://img.shields.io/pypi/l/py4j.svg
 
