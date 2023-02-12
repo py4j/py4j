@@ -175,7 +175,7 @@ by default does not require them (e.g., conditional imports, graceful
 degradation, etc.).</p>
 <p>Libraries used for testing and contributing (flake8, pytest, tox, Sphinx) can be
 installed with pip:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install -r requirements.txt
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 
 <span class="c1"># Run flake8</span>
 flake8
@@ -195,17 +195,17 @@ curly brackets.</p></li>
 </ol>
 <p>You can format your code using gradle and Java 8:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># To check Java coding conventions:</span>
-./gradlew spotlessCheck
+./gradlew<span class="w"> </span>spotlessCheck
 
 <span class="c1"># To format your code:</span>
-./gradlew spotlessJavaApply
+./gradlew<span class="w"> </span>spotlessJavaApply
 </pre></div>
 </div>
 <p>We use <a class="reference external" href="http://findbugs.sourceforge.net/">FindBugs</a> on the main source code
 (not the test source code) and any warnings must be corrected before a pull
 request will be accepted.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># To run findbugs</span>
-./gradlew findbugsMain
+./gradlew<span class="w"> </span>findbugsMain
 </pre></div>
 </div>
 </section>
@@ -214,22 +214,22 @@ request will be accepted.</p>
 <p>On the Python side, we use pytest to run the test suite and tox to run the test
 suite across the supported python versions.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make sure that the jar file is created</span>
-<span class="nb">cd</span> py4j-java
-./gradlew clean
-./gradlew assemble
+<span class="nb">cd</span><span class="w"> </span>py4j-java
+./gradlew<span class="w"> </span>clean
+./gradlew<span class="w"> </span>assemble
 
 <span class="c1"># Come back to home directory</span>
-<span class="nb">cd</span> ..
+<span class="nb">cd</span><span class="w"> </span>..
 
 <span class="c1"># Install test requirements for Python</span>
-<span class="nb">cd</span> py4j-python
-pip install -r requirements-test.txt
+<span class="nb">cd</span><span class="w"> </span>py4j-python
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-test.txt
 
 <span class="c1"># Run the full test suite</span>
 pytest
 
 <span class="c1"># Run only one particular test</span>
-pytest -k <span class="s2">&quot;GatewayLauncherTest and testRedirectToDeque&quot;</span>
+pytest<span class="w"> </span>-k<span class="w"> </span><span class="s2">&quot;GatewayLauncherTest and testRedirectToDeque&quot;</span>
 
 <span class="c1"># Run all tests on all supported pythons.</span>
 <span class="c1"># Typically only do this if the automated build failed</span>
@@ -250,9 +250,9 @@ fail, then something is wrong with your test!</p>
 <section id="testing-java-code">
 <h2><a class="toc-backref" href="#id6"><span class="section-number">7.5. </span>Testing Java Code</a><a class="headerlink" href="#testing-java-code" title="Permalink to this headline">¶</a></h2>
 <p>We use JUnit to write test cases.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> py4j-java
-./gradlew clean
-./gradlew <span class="nb">test</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>py4j-java
+./gradlew<span class="w"> </span>clean
+./gradlew<span class="w"> </span><span class="nb">test</span>
 </pre></div>
 </div>
 </section>
@@ -290,7 +290,7 @@ on multiple lines of 79 characters.
 <h3><a class="toc-backref" href="#id9"><span class="section-number">7.7.1. </span>Squashing commits and git</a><a class="headerlink" href="#squashing-commits-and-git" title="Permalink to this headline">¶</a></h3>
 <p>To squash your commits, you can use the git rebase command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Squash the last three commits into 1</span>
-git rebase -i HEAD~3
+git<span class="w"> </span>rebase<span class="w"> </span>-i<span class="w"> </span>HEAD~3
 <span class="c1"># An editor will open. Change the word &quot;pick&quot; to &quot;squash&quot;</span>
 <span class="c1"># except for the very first commit at the top of the list.</span>
 <span class="c1"># After you save and exit, you will be prompted again to</span>

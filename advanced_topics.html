@@ -315,54 +315,54 @@ backed by a byte array.</p></li>
 that the JVM can call back Python objects. In the following example, a Python
 class implements a Java listener interface.</p>
 <p>Here is the code of listener interface:</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// py4j/examples/ExampleListener.java</span><span class="w"></span>
-<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span><span class="w"></span>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// py4j/examples/ExampleListener.java</span>
+<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span>
 
-<span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">ExampleListener</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">ExampleListener</span><span class="w"> </span><span class="p">{</span>
 
-<span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="nf">notify</span><span class="p">(</span><span class="n">Object</span><span class="w"> </span><span class="n">source</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">Object</span><span class="w"> </span><span class="nf">notify</span><span class="p">(</span><span class="n">Object</span><span class="w"> </span><span class="n">source</span><span class="p">);</span>
 
-<span class="p">}</span><span class="w"></span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>Here is the code of the main Java application.  The program has a main method
 starting a <cite>GatewayServer</cite>. The entry point, a <cite>ListenerApplication</cite> instance,
 has two methods, one to register listeners, the other to notify all listeners.
 Start this program before running the Python code below.</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// py4j/examples/ListenerApplication.java</span><span class="w"></span>
-<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span><span class="w"></span>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// py4j/examples/ListenerApplication.java</span>
+<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">py4j.GatewayServer</span><span class="p">;</span><span class="w"></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">py4j.GatewayServer</span><span class="p">;</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">java.util.ArrayList</span><span class="p">;</span><span class="w"></span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">java.util.List</span><span class="p">;</span><span class="w"></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">java.util.ArrayList</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">java.util.List</span><span class="p">;</span>
 
-<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ListenerApplication</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ListenerApplication</span><span class="w"> </span><span class="p">{</span>
 
-<span class="w">    </span><span class="n">List</span><span class="o">&lt;</span><span class="n">ExampleListener</span><span class="o">&gt;</span><span class="w"> </span><span class="n">listeners</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">ExampleListener</span><span class="o">&gt;</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="n">List</span><span class="o">&lt;</span><span class="n">ExampleListener</span><span class="o">&gt;</span><span class="w"> </span><span class="n">listeners</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">ExampleListener</span><span class="o">&gt;</span><span class="p">();</span>
 
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">registerListener</span><span class="p">(</span><span class="n">ExampleListener</span><span class="w"> </span><span class="n">listener</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="n">listeners</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">listener</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">registerListener</span><span class="p">(</span><span class="n">ExampleListener</span><span class="w"> </span><span class="n">listener</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">listeners</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">listener</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
 
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">notifyAllListeners</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">ExampleListener</span><span class="w"> </span><span class="n">listener</span><span class="p">:</span><span class="w"> </span><span class="n">listeners</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="n">Object</span><span class="w"> </span><span class="n">returnValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listener</span><span class="p">.</span><span class="na">notify</span><span class="p">(</span><span class="k">this</span><span class="p">);</span><span class="w"></span>
-<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">returnValue</span><span class="p">);</span><span class="w"></span>
-<span class="w">        </span><span class="p">}</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">notifyAllListeners</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">ExampleListener</span><span class="w"> </span><span class="n">listener</span><span class="p">:</span><span class="w"> </span><span class="n">listeners</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Object</span><span class="w"> </span><span class="n">returnValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">listener</span><span class="p">.</span><span class="na">notify</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">returnValue</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
 
-<span class="w">    </span><span class="nd">@Override</span><span class="w"></span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">toString</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="s">&quot;&lt;ListenerApplication&gt; instance&quot;</span><span class="p">;</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">toString</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="s">&quot;&lt;ListenerApplication&gt; instance&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
 
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="n">ListenerApplication</span><span class="w"> </span><span class="n">application</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ListenerApplication</span><span class="p">();</span><span class="w"></span>
-<span class="w">        </span><span class="n">GatewayServer</span><span class="w"> </span><span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">GatewayServer</span><span class="p">(</span><span class="n">application</span><span class="p">);</span><span class="w"></span>
-<span class="w">        </span><span class="n">server</span><span class="p">.</span><span class="na">start</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ListenerApplication</span><span class="w"> </span><span class="n">application</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ListenerApplication</span><span class="p">();</span>
+<span class="w">        </span><span class="n">GatewayServer</span><span class="w"> </span><span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">GatewayServer</span><span class="p">(</span><span class="n">application</span><span class="p">);</span>
+<span class="w">        </span><span class="n">server</span><span class="p">.</span><span class="na">start</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>Here is the Python program that implements the Java interface and calls the
@@ -462,31 +462,31 @@ recursive calls between Python and Java. For example, let’s consider this code
 <span class="nb">print</span><span class="p">(</span><span class="n">pong_player</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">ping_player</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// PongPlayer.java</span><span class="w"></span>
-<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span><span class="w"></span>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// PongPlayer.java</span>
+<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span>
 
-<span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">PongPlayer</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">PongPlayer</span><span class="w"> </span><span class="p">{</span>
 
-<span class="w">    </span><span class="n">String</span><span class="w"> </span><span class="nf">firstPong</span><span class="p">(</span><span class="n">PingPlayer</span><span class="w"> </span><span class="n">player</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">String</span><span class="w"> </span><span class="nf">firstPong</span><span class="p">(</span><span class="n">PingPlayer</span><span class="w"> </span><span class="n">player</span><span class="p">);</span>
 
-<span class="w">    </span><span class="n">String</span><span class="w"> </span><span class="nf">secondPong</span><span class="p">(</span><span class="n">PingPlayer</span><span class="w"> </span><span class="n">player</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">String</span><span class="w"> </span><span class="nf">secondPong</span><span class="p">(</span><span class="n">PingPlayer</span><span class="w"> </span><span class="n">player</span><span class="p">);</span>
 
-<span class="p">}</span><span class="w"></span>
+<span class="p">}</span>
 
-<span class="c1">// PingPlayer.java</span><span class="w"></span>
-<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span><span class="w"></span>
+<span class="c1">// PingPlayer.java</span>
+<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span>
 
-<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">PingPlayer</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">PingPlayer</span><span class="w"> </span><span class="p">{</span>
 
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">firstPing</span><span class="p">(</span><span class="n">PongPlayer</span><span class="w"> </span><span class="n">player</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="na">firstPong</span><span class="p">(</span><span class="k">this</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">firstPing</span><span class="p">(</span><span class="n">PongPlayer</span><span class="w"> </span><span class="n">player</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="na">firstPong</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
 
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">secondPing</span><span class="p">(</span><span class="n">PongPlayer</span><span class="w"> </span><span class="n">player</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="na">secondPong</span><span class="p">(</span><span class="k">this</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">secondPing</span><span class="p">(</span><span class="n">PongPlayer</span><span class="w"> </span><span class="n">player</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">player</span><span class="p">.</span><span class="na">secondPong</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
 
-<span class="p">}</span><span class="w"></span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>When this code is executed, the Python side creates 2 threads and the
@@ -581,36 +581,36 @@ Python entry point is expected to implement.</p></li>
 </ol>
 <section id="using-the-traditional-javagateway-gatewayserver">
 <h3><span class="section-number">3.5.1. </span>Using the traditional JavaGateway/GatewayServer<a class="headerlink" href="#using-the-traditional-javagateway-gatewayserver" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// IHello.java</span><span class="w"></span>
-<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span><span class="w"></span>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// IHello.java</span>
+<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span>
 
-<span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">IHello</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">sayHello</span><span class="p">();</span><span class="w"></span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">IHello</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">sayHello</span><span class="p">();</span>
 
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">sayHello</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">s</span><span class="p">);</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">sayHello</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="p">}</span>
 
-<span class="c1">// ExampleClientApplication.java</span><span class="w"></span>
-<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span><span class="w"></span>
+<span class="c1">// ExampleClientApplication.java</span>
+<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">py4j.GatewayServer</span><span class="p">;</span><span class="w"></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">py4j.GatewayServer</span><span class="p">;</span>
 
-<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ExampleClientApplication</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ExampleClientApplication</span><span class="w"> </span><span class="p">{</span>
 
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">          </span><span class="n">GatewayServer</span><span class="p">.</span><span class="na">turnLoggingOff</span><span class="p">();</span><span class="w"></span>
-<span class="w">          </span><span class="n">GatewayServer</span><span class="w"> </span><span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">GatewayServer</span><span class="p">();</span><span class="w"></span>
-<span class="w">          </span><span class="n">server</span><span class="p">.</span><span class="na">start</span><span class="p">();</span><span class="w"></span>
-<span class="w">          </span><span class="n">IHello</span><span class="w"> </span><span class="n">hello</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">IHello</span><span class="p">)</span><span class="w"> </span><span class="n">server</span><span class="p">.</span><span class="na">getPythonServerEntryPoint</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">Class</span><span class="o">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">IHello</span><span class="p">.</span><span class="na">class</span><span class="w"> </span><span class="p">});</span><span class="w"></span>
-<span class="w">          </span><span class="k">try</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">              </span><span class="n">hello</span><span class="p">.</span><span class="na">sayHello</span><span class="p">();</span><span class="w"></span>
-<span class="w">              </span><span class="n">hello</span><span class="p">.</span><span class="na">sayHello</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Hello World&quot;</span><span class="p">);</span><span class="w"></span>
-<span class="w">          </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">              </span><span class="n">e</span><span class="p">.</span><span class="na">printStackTrace</span><span class="p">();</span><span class="w"></span>
-<span class="w">          </span><span class="p">}</span><span class="w"></span>
-<span class="w">          </span><span class="n">server</span><span class="p">.</span><span class="na">shutdown</span><span class="p">();</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="n">GatewayServer</span><span class="p">.</span><span class="na">turnLoggingOff</span><span class="p">();</span>
+<span class="w">          </span><span class="n">GatewayServer</span><span class="w"> </span><span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">GatewayServer</span><span class="p">();</span>
+<span class="w">          </span><span class="n">server</span><span class="p">.</span><span class="na">start</span><span class="p">();</span>
+<span class="w">          </span><span class="n">IHello</span><span class="w"> </span><span class="n">hello</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">IHello</span><span class="p">)</span><span class="w"> </span><span class="n">server</span><span class="p">.</span><span class="na">getPythonServerEntryPoint</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">Class</span><span class="o">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">IHello</span><span class="p">.</span><span class="na">class</span><span class="w"> </span><span class="p">});</span>
+<span class="w">          </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="n">hello</span><span class="p">.</span><span class="na">sayHello</span><span class="p">();</span>
+<span class="w">              </span><span class="n">hello</span><span class="p">.</span><span class="na">sayHello</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Hello World&quot;</span><span class="p">);</span>
+<span class="w">          </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">Exception</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="n">e</span><span class="p">.</span><span class="na">printStackTrace</span><span class="p">();</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">          </span><span class="n">server</span><span class="p">.</span><span class="na">shutdown</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleHello</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -638,33 +638,33 @@ Python entry point is expected to implement.</p></li>
 making the first call to the Python side. If the call is initiated from a UI
 thread, then all subsequent call from Python to Java will be executed in the
 Java UI thread.</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// IHello.java</span><span class="w"></span>
-<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span><span class="w"></span>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// IHello.java</span>
+<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span>
 
-<span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">IHello</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">sayHello</span><span class="p">();</span><span class="w"></span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">IHello</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">sayHello</span><span class="p">();</span>
 
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">sayHello</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">s</span><span class="p">);</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">sayHello</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="p">}</span>
 
-<span class="c1">// SingleThreadClientApplication.java</span><span class="w"></span>
-<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span><span class="w"></span>
+<span class="c1">// SingleThreadClientApplication.java</span>
+<span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">py4j.ClientServer</span><span class="p">;</span><span class="w"></span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">py4j.GatewayServer</span><span class="p">;</span><span class="w"></span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">py4j.ClientServer</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">py4j.GatewayServer</span><span class="p">;</span>
 
-<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">SingleThreadClientApplication</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">SingleThreadClientApplication</span><span class="w"> </span><span class="p">{</span>
 
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="n">ClientServer</span><span class="w"> </span><span class="n">clientServer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClientServer</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span><span class="w"></span>
-<span class="w">        </span><span class="c1">// We get an entry point from the Python side</span><span class="w"></span>
-<span class="w">        </span><span class="n">IHello</span><span class="w"> </span><span class="n">hello</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">IHello</span><span class="p">)</span><span class="w"> </span><span class="n">clientServer</span><span class="p">.</span><span class="na">getPythonServerEntryPoint</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">Class</span><span class="o">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">IHello</span><span class="p">.</span><span class="na">class</span><span class="w"> </span><span class="p">});</span><span class="w"></span>
-<span class="w">        </span><span class="c1">// Java calls Python without ever having been called from Python</span><span class="w"></span>
-<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">hello</span><span class="p">.</span><span class="na">sayHello</span><span class="p">());</span><span class="w"></span>
-<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">hello</span><span class="p">.</span><span class="na">sayHello</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Hello World&quot;</span><span class="p">));</span><span class="w"></span>
-<span class="w">        </span><span class="n">clientServer</span><span class="p">.</span><span class="na">shutdown</span><span class="p">();</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ClientServer</span><span class="w"> </span><span class="n">clientServer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ClientServer</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
+<span class="w">        </span><span class="c1">// We get an entry point from the Python side</span>
+<span class="w">        </span><span class="n">IHello</span><span class="w"> </span><span class="n">hello</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">IHello</span><span class="p">)</span><span class="w"> </span><span class="n">clientServer</span><span class="p">.</span><span class="na">getPythonServerEntryPoint</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">Class</span><span class="o">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">IHello</span><span class="p">.</span><span class="na">class</span><span class="w"> </span><span class="p">});</span>
+<span class="w">        </span><span class="c1">// Java calls Python without ever having been called from Python</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">hello</span><span class="p">.</span><span class="na">sayHello</span><span class="p">());</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">hello</span><span class="p">.</span><span class="na">sayHello</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Hello World&quot;</span><span class="p">));</span>
+<span class="w">        </span><span class="n">clientServer</span><span class="p">.</span><span class="na">shutdown</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleHello</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -734,9 +734,9 @@ collection, an error will be thrown:</p>
 <span class="gt">Traceback (most recent call last):</span>
   File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
   File <span class="nb">&quot;py4j/java_gateway.py&quot;</span>, line <span class="m">347</span>, in <span class="n">__call__</span>
-    <span class="n">args_command</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">get_command_part</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">new_args</span><span class="p">])</span>
+<span class="w">    </span><span class="n">args_command</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">get_command_part</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">new_args</span><span class="p">])</span>
   File <span class="nb">&quot;py4j/protocol.py&quot;</span>, line <span class="m">195</span>, in <span class="n">get_command_part</span>
-    <span class="n">command_part</span> <span class="o">=</span> <span class="n">REFERENCE_TYPE</span> <span class="o">+</span> <span class="n">parameter</span><span class="o">.</span><span class="n">_get_object_id</span><span class="p">()</span>
+<span class="w">    </span><span class="n">command_part</span> <span class="o">=</span> <span class="n">REFERENCE_TYPE</span> <span class="o">+</span> <span class="n">parameter</span><span class="o">.</span><span class="n">_get_object_id</span><span class="p">()</span>
 <span class="gr">AttributeError</span>: <span class="n">&#39;list&#39; object has no attribute &#39;_get_object_id&#39;</span>
 </pre></div>
 </div>
@@ -887,11 +887,11 @@ access any class declared in any plug-in loaded with Eclipse.</p>
 and starts it as soon as Eclipse is started (no lazy loading). The ports used
 by the default server can be changed in the Py4J Preferences page. The server
 is also accessible at runtime:</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">net.sf.py4j.defaultserver.DefaultServerActivator</span><span class="p">;</span><span class="w"></span>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">net.sf.py4j.defaultserver.DefaultServerActivator</span><span class="p">;</span>
 
-<span class="p">...</span><span class="w"></span>
+<span class="p">...</span>
 
-<span class="n">GatewayServer</span><span class="w"> </span><span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DefaultServerActivator</span><span class="p">.</span><span class="na">getDefault</span><span class="p">().</span><span class="na">getServer</span><span class="p">();</span><span class="w"></span>
+<span class="n">GatewayServer</span><span class="w"> </span><span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DefaultServerActivator</span><span class="p">.</span><span class="na">getDefault</span><span class="p">().</span><span class="na">getServer</span><span class="p">();</span>
 </pre></div>
 </div>
 <p>Here is a short example of what you could do with Py4J and Eclipse:</p>
@@ -1117,9 +1117,9 @@ tokens to all the needed processes.</p>
 so it relies on transport-level encryption for secrecy. This means that for
 proper security, connections should use loopback addresses, or use TLS.</p>
 <p>Here is a quick example of how to use an authentication token.</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">GatewayServer</span><span class="w"> </span><span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">GatewayServer</span><span class="p">.</span><span class="na">GatewayServerBuilder</span><span class="p">().</span><span class="na">entryPoint</span><span class="p">(</span><span class="w"></span>
-<span class="w">  </span><span class="k">new</span><span class="w"> </span><span class="n">ExampleEntryPoint</span><span class="p">()).</span><span class="na">authToken</span><span class="p">(</span><span class="s">&quot;HelloWorld&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
-<span class="n">server</span><span class="p">.</span><span class="na">start</span><span class="p">();</span><span class="w"></span>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">GatewayServer</span><span class="w"> </span><span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">GatewayServer</span><span class="p">.</span><span class="na">GatewayServerBuilder</span><span class="p">().</span><span class="na">entryPoint</span><span class="p">(</span>
+<span class="w">  </span><span class="k">new</span><span class="w"> </span><span class="n">ExampleEntryPoint</span><span class="p">()).</span><span class="na">authToken</span><span class="p">(</span><span class="s">&quot;HelloWorld&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
+<span class="n">server</span><span class="p">.</span><span class="na">start</span><span class="p">();</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">GatewayParameters</span>

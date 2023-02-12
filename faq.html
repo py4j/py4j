@@ -149,9 +149,9 @@ control over the logging behavior, just obtain a Logger instance by calling
 <code class="docutils literal notranslate"><span class="pre">Logger.getLogger(&quot;py4j&quot;)</span></code>. You can also look at the <a class="reference external" href="http://docs.oracle.com/javase/6/docs/technotes/guides/logging/overview.html">Java Logging Overview</a>
 for more information on this framework.</p>
 <p>For example, in Java, you can do:</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">GatewayServer</span><span class="p">.</span><span class="na">turnLoggingOn</span><span class="p">();</span><span class="w"></span>
-<span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Logger</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="s">&quot;py4j&quot;</span><span class="p">);</span><span class="w"></span>
-<span class="n">logger</span><span class="p">.</span><span class="na">setLevel</span><span class="p">(</span><span class="n">Level</span><span class="p">.</span><span class="na">ALL</span><span class="p">);</span><span class="w"></span>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">GatewayServer</span><span class="p">.</span><span class="na">turnLoggingOn</span><span class="p">();</span>
+<span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Logger</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="s">&quot;py4j&quot;</span><span class="p">);</span>
+<span class="n">logger</span><span class="p">.</span><span class="na">setLevel</span><span class="p">(</span><span class="n">Level</span><span class="p">.</span><span class="na">ALL</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>In Python, logging can be enabled this way:</p>
