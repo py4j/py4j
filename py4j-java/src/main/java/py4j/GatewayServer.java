@@ -785,7 +785,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 			sSocket.setReuseAddress(true);
 			sSocket.bind(new InetSocketAddress(address, port), -1);
 		} catch (IOException e) {
-			throw new Py4JNetworkException(e);
+			throw new Py4JNetworkException("Failed to bind to " + address + ":" + port, e);
 		}
 	}
 
