@@ -72,6 +72,10 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 					throws IOException {
 		super();
 		this.socket = socket;
+
+		// disable Nagle's algorithm on loopback connection to avoid performance issues due to write,write,read situations
+		if (socket.getLocalAddress().isLoopbackAddress()) socket.setTcpNoDelay(true);
+
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
 		this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String, Command>();
