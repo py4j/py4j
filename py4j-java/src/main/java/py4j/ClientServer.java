@@ -56,6 +56,8 @@ public class ClientServer {
 
 	protected final int readTimeout;
 
+	protected final int createSocketTimeout;
+
 	protected final ServerSocketFactory sSocketFactory;
 
 	protected final SocketFactory socketFactory;
@@ -75,18 +77,16 @@ public class ClientServer {
 	protected final Logger logger = Logger.getLogger(ClientServer.class.getName());
 
 	/**
-	 *
 	 * @param entryPoint
 	 */
 	public ClientServer(Object entryPoint) {
 		this(GatewayServer.DEFAULT_PORT, GatewayServer.defaultAddress(), GatewayServer.DEFAULT_PYTHON_PORT,
 				GatewayServer.defaultAddress(), GatewayServer.DEFAULT_CONNECT_TIMEOUT,
-				GatewayServer.DEFAULT_READ_TIMEOUT, ServerSocketFactory.getDefault(), SocketFactory.getDefault(),
-				entryPoint);
+				GatewayServer.DEFAULT_READ_TIMEOUT, GatewayServer.DEFAULT_CREATE_SOCKET_CONNECTION_TIMEOUT,
+				ServerSocketFactory.getDefault(), SocketFactory.getDefault(), entryPoint);
 	}
 
 	/**
-	 *
 	 * @param javaPort
 	 * @param javaAddress
 	 * @param pythonPort
@@ -98,14 +98,13 @@ public class ClientServer {
 	 * @param entryPoint
 	 */
 	public ClientServer(int javaPort, InetAddress javaAddress, int pythonPort, InetAddress pythonAddress,
-			int connectTimeout, int readTimeout, ServerSocketFactory sSocketFactory, SocketFactory socketFactory,
-			Object entryPoint) {
-		this(javaPort, javaAddress, pythonPort, pythonAddress, connectTimeout, readTimeout, sSocketFactory,
-				socketFactory, entryPoint, true, true);
+			int connectTimeout, int readTimeout, int createSocketTimeout, ServerSocketFactory sSocketFactory,
+			SocketFactory socketFactory, Object entryPoint) {
+		this(javaPort, javaAddress, pythonPort, pythonAddress, connectTimeout, readTimeout, createSocketTimeout,
+				sSocketFactory, socketFactory, entryPoint, true, true);
 	}
 
 	/**
-	 *
 	 * @param javaPort
 	 * @param javaAddress
 	 * @param pythonPort
@@ -119,21 +118,24 @@ public class ClientServer {
 	 * @param enableMemoryManagement
 	 */
 	public ClientServer(int javaPort, InetAddress javaAddress, int pythonPort, InetAddress pythonAddress,
-			int connectTimeout, int readTimeout, ServerSocketFactory sSocketFactory, SocketFactory socketFactory,
-			Object entryPoint, boolean autoStartJavaServer, boolean enableMemoryManagement) {
-		this(javaPort, javaAddress, pythonPort, pythonAddress, connectTimeout, readTimeout, sSocketFactory,
-				socketFactory, entryPoint, autoStartJavaServer, enableMemoryManagement, null);
+			int connectTimeout, int readTimeout, int createSocketTimeout, ServerSocketFactory sSocketFactory,
+			SocketFactory socketFactory, Object entryPoint, boolean autoStartJavaServer,
+			boolean enableMemoryManagement) {
+		this(javaPort, javaAddress, pythonPort, pythonAddress, connectTimeout, readTimeout, createSocketTimeout,
+				sSocketFactory, socketFactory, entryPoint, autoStartJavaServer, enableMemoryManagement, null);
 	}
 
 	private ClientServer(int javaPort, InetAddress javaAddress, int pythonPort, InetAddress pythonAddress,
-			int connectTimeout, int readTimeout, ServerSocketFactory sSocketFactory, SocketFactory socketFactory,
-			Object entryPoint, boolean autoStartJavaServer, boolean enableMemoryManagement, String authToken) {
+			int connectTimeout, int readTimeout, int createSocketTimeout, ServerSocketFactory sSocketFactory,
+			SocketFactory socketFactory, Object entryPoint, boolean autoStartJavaServer, boolean enableMemoryManagement,
+			String authToken) {
 		this.javaPort = javaPort;
 		this.javaAddress = javaAddress;
 		this.pythonPort = pythonPort;
 		this.pythonAddress = pythonAddress;
 		this.connectTimeout = connectTimeout;
 		this.readTimeout = readTimeout;
+		this.createSocketTimeout = createSocketTimeout;
 		this.sSocketFactory = sSocketFactory;
 		this.socketFactory = socketFactory;
 		this.enableMemoryManagement = enableMemoryManagement;
@@ -155,7 +157,8 @@ public class ClientServer {
 
 	protected Py4JPythonClientPerThread createPythonClient() {
 		return new PythonClient(null, null, pythonPort, pythonAddress, CallbackClient.DEFAULT_MIN_CONNECTION_TIME,
-				TimeUnit.SECONDS, this.socketFactory, null, enableMemoryManagement, readTimeout, authToken);
+				TimeUnit.SECONDS, this.socketFactory, null, enableMemoryManagement, readTimeout, createSocketTimeout,
+				authToken);
 	}
 
 	protected Py4JJavaServer createJavaServer(Object entryPoint, Py4JPythonClientPerThread pythonClient) {
@@ -193,7 +196,7 @@ public class ClientServer {
 	 * </p>
 	 *
 	 * @param fork If the JavaServer is started in this thread or in its own
-	 *                thread.
+	 *             thread.
 	 */
 	public void startServer(boolean fork) {
 		if (!autoStartJavaServer) {
@@ -234,6 +237,8 @@ public class ClientServer {
 		private InetAddress pythonAddress;
 		private int connectTimeout;
 		private int readTimeout;
+
+		private int createSocketTimeout;
 		private ServerSocketFactory serverSocketFactory;
 		private SocketFactory socketFactory;
 		private Object entryPoint;
@@ -252,6 +257,7 @@ public class ClientServer {
 			pythonAddress = GatewayServer.defaultAddress();
 			connectTimeout = GatewayServer.DEFAULT_CONNECT_TIMEOUT;
 			readTimeout = GatewayServer.DEFAULT_READ_TIMEOUT;
+			createSocketTimeout = GatewayServer.DEFAULT_CREATE_SOCKET_CONNECTION_TIMEOUT;
 			serverSocketFactory = ServerSocketFactory.getDefault();
 			socketFactory = SocketFactory.getDefault();
 			this.entryPoint = entryPoint;
@@ -261,8 +267,8 @@ public class ClientServer {
 
 		public ClientServer build() {
 			return new ClientServer(javaPort, javaAddress, pythonPort, pythonAddress, connectTimeout, readTimeout,
-					serverSocketFactory, socketFactory, entryPoint, autoStartJavaServer, enableMemoryManagement,
-					authToken);
+					createSocketTimeout, serverSocketFactory, socketFactory, entryPoint, autoStartJavaServer,
+					enableMemoryManagement, authToken);
 		}
 
 		public ClientServerBuilder javaPort(int javaPort) {
@@ -292,6 +298,11 @@ public class ClientServer {
 
 		public ClientServerBuilder readTimeout(int readTimeout) {
 			this.readTimeout = readTimeout;
+			return this;
+		}
+
+		public ClientServerBuilder createSocketTimeout(int createSocketTimeout) {
+			this.createSocketTimeout = createSocketTimeout;
 			return this;
 		}
 
