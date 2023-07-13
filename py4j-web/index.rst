@@ -14,7 +14,7 @@ access Java objects in a Java Virtual Machine. Methods are called as if the
 Java objects resided in the Python interpreter and Java collections can be
 accessed through standard Python collection methods. Py4J also enables Java
 programs to call back Python objects. Py4J is distributed under the `BSD
-license <https://github.com/bartdag/py4j/blob/master/LICENSE.txt>`_.
+license <https://github.com/py4j/py4j/blob/master/LICENSE.txt>`_.
 
 Here is a brief example of what you can do with Py4J. The following Python
 program creates a `java.util.Random` instance from a JVM and calls some of its
@@ -68,7 +68,7 @@ Support & Resources
 * Browse the :doc:`contents` or the :doc:`faq`.
 * Ask a question on the `mailing list
   <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_.
-* Look at the `roadmap <https://github.com/bartdag/py4j/milestones>`_.
+* Look at the `roadmap <https://github.com/py4j/py4j/milestones>`_.
 
 News
 ====

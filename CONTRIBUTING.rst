@@ -32,7 +32,7 @@ How can I report a bug?
 -----------------------
 
 You can report an issue on `Github Issue Tracker
-<https://github.com/bartdag/py4j/issues/new>`_. Please, make sure to specify:
+<https://github.com/py4j/py4j/issues/new>`_. Please, make sure to specify:
 
 1. The version of Py4J, Python, and Java you are using (e.g., 0.10.1, 3.5.1, 8)
 2. The OS your are using (Windows 7, OSX Yosemite, Ubuntu 16.04)
@@ -84,9 +84,9 @@ Java Coding Conventions
 -----------------------
 
 We use Eclipse code formatting conventions (see `py4j.formatter.xml
-<https://raw.githubusercontent.com/bartdag/py4j/master/py4j-java/py4j.formatter.xml>`_
+<https://raw.githubusercontent.com/py4j/py4j/master/py4j-java/py4j.formatter.xml>`_
 and `py4j.importorder
-<https://raw.githubusercontent.com/bartdag/py4j/master/py4j-java/py4j.importorder>`_)
+<https://raw.githubusercontent.com/py4j/py4j/master/py4j-java/py4j.importorder>`_)
 that can be used in Eclipse and IntelliJ IDEs.
 
 In summary:
