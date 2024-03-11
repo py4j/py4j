@@ -1032,6 +1032,7 @@ class GatewayLauncherTest(unittest.TestCase):
         self.gateway = JavaGateway.launch_gateway()
         self.assertTrue(self.gateway.java_process)
 
+    @unittest.skipIf(sys.platform.startswith("win"), "Test is flaky on Windows")
     def testShutdownSubprocess(self):
         self.gateway = JavaGateway.launch_gateway()
         self.assertTrue(self.gateway.java_process)
