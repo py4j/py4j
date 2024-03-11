@@ -52,7 +52,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pytest 
+          pip install pytest
           cd py4j-java
           # Useful in case the build stops working because of version issues.
           ./gradlew --version
