@@ -52,7 +52,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pytest
+          pip install pytest 
           cd py4j-java
           # Useful in case the build stops working because of version issues.
           ./gradlew --version
@@ -82,7 +82,7 @@ jobs:
           echo `java -version`
           echo $JAVA_HOME
           # Java TLS tests are disabled until they can be fixed (refs #441)
-          pytest -k "not java_tls_test."
+          pytest -k "not java_tls_test." -vvv
 
   test-doc:
     name: Documentation build
