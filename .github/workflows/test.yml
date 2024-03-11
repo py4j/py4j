@@ -17,14 +17,20 @@ jobs:
       matrix:
         os: [ ubuntu-22.04 ]
         java-version: [ 8 ]
-        python-version: [ '3.9', '3.8' ]
+        python-version: [ '3.8' ]
         include:
+          - os: macos-13
+            java-version: 8
+            python-version: '3.12'
           - os: windows-2019
             java-version: 11
             python-version: '3.10'
           - os: ubuntu-22.04
             java-version: 17
             python-version: '3.11'
+          - os: ubuntu-22.04
+            java-version: 21
+            python-version: '3.9'
     name: Python ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
     steps:
       - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97 # pin@v2.3.5
@@ -56,12 +62,7 @@ jobs:
           ./gradlew clean
         shell: bash
 
-      - name: Enable IPV6
-        if: ${{ runner.os != 'Windows' }}
-        run: |
-          echo 0 | sudo tee /proc/sys/net/ipv6/conf/all/disable_ipv6
-
-      - name: Run gradle tests
+      - name: Run Gradle tests
         run: |
           cd py4j-java
           ./gradlew check
