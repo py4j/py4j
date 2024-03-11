@@ -625,6 +625,7 @@ class IntegrationTest(unittest.TestCase):
             client_server0.shutdown()
             client_server1.shutdown()
 
+    @unittest.skipIf(sys.version_info > (3, 12), "Flaky with Python 3.12+ in GitHub Actions")
     def testMultiClientServer(self):
         with java_multi_client_server_app_process():
             client_server0 = ClientServer(
