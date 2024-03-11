@@ -12,6 +12,7 @@ jobs:
   test:
     runs-on: '${{ matrix.os }}'
     strategy:
+      fail-fast: false
       matrix:
         os: [ ubuntu-18.04 ]
         java-version: [ 8 ]
