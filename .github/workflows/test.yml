@@ -11,20 +11,21 @@ on:
 jobs:
   test:
     runs-on: '${{ matrix.os }}'
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         os: [ ubuntu-22.04 ]
         java-version: [ 8 ]
-        python-version: [ '3.9', '3.11' ]
+        python-version: [ '3.9', '3.8' ]
         include:
           - os: windows-2019
-            java-version: 17
+            java-version: 11
             python-version: '3.10'
           - os: ubuntu-22.04
-            java-version: 11
-            python-version: '3.8'
-    name: Py ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
+            java-version: 17
+            python-version: '3.11'
+    name: Python ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
     steps:
       - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97 # pin@v2.3.5
 
