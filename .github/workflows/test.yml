@@ -19,10 +19,10 @@ jobs:
         python-version: [ '3.9', '3.8' ]
         include:
           - os: windows-2019
-            java-version: 17
+            java-version: 11
             python-version: '3.10'
           - os: ubuntu-22.04
-            java-version: 11
+            java-version: 17
             python-version: '3.11'
     name: Python ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
     steps:
