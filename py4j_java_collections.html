@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>4.4. py4j.java_collections — Py4J Collections API &mdash; Py4J</title>
     <link rel="stylesheet" href="_static/py4jdoc.css" type="text/css" />
@@ -21,7 +21,9 @@
     <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -73,11 +75,46 @@
             <h3><a href="contents.html">On This Page</a></h3>
             <ul>
 <li><a class="reference internal" href="#">4.4. <code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.java_collections</span></code> — Py4J Collections API</a><ul>
-<li><a class="reference internal" href="#javaiterator">4.4.1. JavaIterator</a></li>
-<li><a class="reference internal" href="#javalist">4.4.2. JavaList</a></li>
-<li><a class="reference internal" href="#javamap">4.4.3. JavaMap</a></li>
-<li><a class="reference internal" href="#javaset">4.4.4. JavaSet</a></li>
-<li><a class="reference internal" href="#javaarray">4.4.5. JavaArray</a></li>
+<li><a class="reference internal" href="#javaiterator">4.4.1. JavaIterator</a><ul>
+<li><a class="reference internal" href="#py4j.java_collections.JavaIterator"><code class="docutils literal notranslate"><span class="pre">JavaIterator</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.java_collections.JavaIterator.next"><code class="docutils literal notranslate"><span class="pre">JavaIterator.next()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#javalist">4.4.2. JavaList</a><ul>
+<li><a class="reference internal" href="#py4j.java_collections.JavaList"><code class="docutils literal notranslate"><span class="pre">JavaList</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.java_collections.JavaList.append"><code class="docutils literal notranslate"><span class="pre">JavaList.append()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_collections.JavaList.count"><code class="docutils literal notranslate"><span class="pre">JavaList.count()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_collections.JavaList.extend"><code class="docutils literal notranslate"><span class="pre">JavaList.extend()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_collections.JavaList.index"><code class="docutils literal notranslate"><span class="pre">JavaList.index()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_collections.JavaList.insert"><code class="docutils literal notranslate"><span class="pre">JavaList.insert()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_collections.JavaList.pop"><code class="docutils literal notranslate"><span class="pre">JavaList.pop()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_collections.JavaList.remove"><code class="docutils literal notranslate"><span class="pre">JavaList.remove()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_collections.JavaList.reverse"><code class="docutils literal notranslate"><span class="pre">JavaList.reverse()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_collections.JavaList.sort"><code class="docutils literal notranslate"><span class="pre">JavaList.sort()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#javamap">4.4.3. JavaMap</a><ul>
+<li><a class="reference internal" href="#py4j.java_collections.JavaMap"><code class="docutils literal notranslate"><span class="pre">JavaMap</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#javaset">4.4.4. JavaSet</a><ul>
+<li><a class="reference internal" href="#py4j.java_collections.JavaSet"><code class="docutils literal notranslate"><span class="pre">JavaSet</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.java_collections.JavaSet.add"><code class="docutils literal notranslate"><span class="pre">JavaSet.add()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_collections.JavaSet.clear"><code class="docutils literal notranslate"><span class="pre">JavaSet.clear()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_collections.JavaSet.discard"><code class="docutils literal notranslate"><span class="pre">JavaSet.discard()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_collections.JavaSet.remove"><code class="docutils literal notranslate"><span class="pre">JavaSet.remove()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#javaarray">4.4.5. JavaArray</a><ul>
+<li><a class="reference internal" href="#py4j.java_collections.JavaArray"><code class="docutils literal notranslate"><span class="pre">JavaArray</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -115,13 +152,13 @@
           <div class="body">
             
   <section id="module-py4j.java_collections">
-<span id="py4j-java-collections-py4j-collections-api"></span><h1><span class="section-number">4.4. </span><a class="reference internal" href="#module-py4j.java_collections" title="py4j.java_collections: Converts Java Collection Types to Python Collection Types."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.java_collections</span></code></a> — Py4J Collections API<a class="headerlink" href="#module-py4j.java_collections" title="Permalink to this headline">¶</a></h1>
+<span id="py4j-java-collections-py4j-collections-api"></span><h1><span class="section-number">4.4. </span><a class="reference internal" href="#module-py4j.java_collections" title="py4j.java_collections: Converts Java Collection Types to Python Collection Types."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.java_collections</span></code></a> — Py4J Collections API<a class="headerlink" href="#module-py4j.java_collections" title="Permalink to this heading">¶</a></h1>
 <p>The <a class="reference internal" href="#module-py4j.java_collections" title="py4j.java_collections: Converts Java Collection Types to Python Collection Types."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.java_collections</span></code></a> module maps Python collection classes with Java
 collection classes. These classes should practically never be directly
 instantiated by users: they are automatically used when receiving, for example,
 a Java list.</p>
 <section id="javaiterator">
-<span id="api-javaiterator"></span><h2><span class="section-number">4.4.1. </span>JavaIterator<a class="headerlink" href="#javaiterator" title="Permalink to this headline">¶</a></h2>
+<span id="api-javaiterator"></span><h2><span class="section-number">4.4.1. </span>JavaIterator<a class="headerlink" href="#javaiterator" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_collections.JavaIterator">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.java_collections.</span></span><span class="sig-name descname"><span class="pre">JavaIterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gateway_client</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_collections.JavaIterator" title="Permalink to this definition">¶</a></dt>
@@ -129,7 +166,7 @@ a Java list.</p>
 <p>The <cite>JavaIterator</cite> follows the Python iterator protocol and raises a
 <cite>StopIteration</cite> error when the iterator can no longer iterate.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_id</strong> – the identifier of the object on the JVM side. Given
 by the JVM.</p></li>
@@ -150,7 +187,7 @@ NoSuchElementException), a StopIteration exception is raised.</p>
 
 </section>
 <section id="javalist">
-<span id="api-javalist"></span><h2><span class="section-number">4.4.2. </span>JavaList<a class="headerlink" href="#javalist" title="Permalink to this headline">¶</a></h2>
+<span id="api-javalist"></span><h2><span class="section-number">4.4.2. </span>JavaList<a class="headerlink" href="#javalist" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_collections.JavaList">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.java_collections.</span></span><span class="sig-name descname"><span class="pre">JavaList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gateway_client</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_collections.JavaList" title="Permalink to this definition">¶</a></dt>
@@ -161,7 +198,7 @@ Slicing is thus not equivalent to subList(), because a modification to a
 slice such as the addition of a new element will not affect the original
 list.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_id</strong> – the identifier of the object on the JVM side. Given
 by the JVM.</p></li>
@@ -229,14 +266,14 @@ Raise ValueError if the value is not present.</p>
 
 </section>
 <section id="javamap">
-<span id="api-javamap"></span><h2><span class="section-number">4.4.3. </span>JavaMap<a class="headerlink" href="#javamap" title="Permalink to this headline">¶</a></h2>
+<span id="api-javamap"></span><h2><span class="section-number">4.4.3. </span>JavaMap<a class="headerlink" href="#javamap" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_collections.JavaMap">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.java_collections.</span></span><span class="sig-name descname"><span class="pre">JavaMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gateway_client</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_collections.JavaMap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Maps a Python Dictionary to a Java Map.</p>
 <p>All operations possible on a Python dict are implemented.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_id</strong> – the identifier of the object on the JVM side. Given
 by the JVM.</p></li>
@@ -249,14 +286,14 @@ the JVM.</p></li>
 
 </section>
 <section id="javaset">
-<span id="api-javaset"></span><h2><span class="section-number">4.4.4. </span>JavaSet<a class="headerlink" href="#javaset" title="Permalink to this headline">¶</a></h2>
+<span id="api-javaset"></span><h2><span class="section-number">4.4.4. </span>JavaSet<a class="headerlink" href="#javaset" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_collections.JavaSet">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.java_collections.</span></span><span class="sig-name descname"><span class="pre">JavaSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gateway_client</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_collections.JavaSet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Maps a Python Set to a Java Set.</p>
 <p>All operations possible on a Python set are implemented.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_id</strong> – the identifier of the object on the JVM side. Given
 by the JVM.</p></li>
@@ -293,7 +330,7 @@ the JVM.</p></li>
 
 </section>
 <section id="javaarray">
-<span id="api-javaarray"></span><h2><span class="section-number">4.4.5. </span>JavaArray<a class="headerlink" href="#javaarray" title="Permalink to this headline">¶</a></h2>
+<span id="api-javaarray"></span><h2><span class="section-number">4.4.5. </span>JavaArray<a class="headerlink" href="#javaarray" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_collections.JavaArray">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.java_collections.</span></span><span class="sig-name descname"><span class="pre">JavaArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gateway_client</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_collections.JavaArray" title="Permalink to this definition">¶</a></dt>
@@ -302,7 +339,7 @@ sequence can be modified, but the length of the sequence cannot change.</p>
 <p>The backing collection is a Sequence and not a Python array because
 these arrays only accept primitives whereas Java arrays work for any types.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target_id</strong> – the identifier of the object on the JVM side. Given
 by the JVM.</p></li>
@@ -359,7 +396,7 @@ the JVM.</p></li>
     </div>
     <div class="footer">
       &copy; Copyright 2009-2015, Barthélémy Dagenais.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.5.0.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 5.3.0.
     </div>
   </div>
   </body>

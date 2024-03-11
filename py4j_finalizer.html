@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>4.5. py4j.finalizer — Py4J Finalizer API &mdash; Py4J</title>
     <link rel="stylesheet" href="_static/py4jdoc.css" type="text/css" />
@@ -21,7 +21,9 @@
     <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -73,9 +75,31 @@
             <h3><a href="contents.html">On This Page</a></h3>
             <ul>
 <li><a class="reference internal" href="#">4.5. <code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.finalizer</span></code> — Py4J Finalizer API</a><ul>
-<li><a class="reference internal" href="#threadsafefinalizer">4.5.1. ThreadSafeFinalizer</a></li>
-<li><a class="reference internal" href="#finalizer">4.5.2. Finalizer</a></li>
-<li><a class="reference internal" href="#py4j-finalizer-functions">4.5.3. Py4J Finalizer Functions</a></li>
+<li><a class="reference internal" href="#threadsafefinalizer">4.5.1. ThreadSafeFinalizer</a><ul>
+<li><a class="reference internal" href="#py4j.finalizer.ThreadSafeFinalizer"><code class="docutils literal notranslate"><span class="pre">ThreadSafeFinalizer</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.finalizer.ThreadSafeFinalizer.add_finalizer"><code class="docutils literal notranslate"><span class="pre">ThreadSafeFinalizer.add_finalizer()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.finalizer.ThreadSafeFinalizer.clear_finalizers"><code class="docutils literal notranslate"><span class="pre">ThreadSafeFinalizer.clear_finalizers()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.finalizer.ThreadSafeFinalizer.finalizers"><code class="docutils literal notranslate"><span class="pre">ThreadSafeFinalizer.finalizers</span></code></a></li>
+<li><a class="reference internal" href="#py4j.finalizer.ThreadSafeFinalizer.lock"><code class="docutils literal notranslate"><span class="pre">ThreadSafeFinalizer.lock</span></code></a></li>
+<li><a class="reference internal" href="#py4j.finalizer.ThreadSafeFinalizer.remove_finalizer"><code class="docutils literal notranslate"><span class="pre">ThreadSafeFinalizer.remove_finalizer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#finalizer">4.5.2. Finalizer</a><ul>
+<li><a class="reference internal" href="#py4j.finalizer.Finalizer"><code class="docutils literal notranslate"><span class="pre">Finalizer</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.finalizer.Finalizer.add_finalizer"><code class="docutils literal notranslate"><span class="pre">Finalizer.add_finalizer()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.finalizer.Finalizer.clear_finalizers"><code class="docutils literal notranslate"><span class="pre">Finalizer.clear_finalizers()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.finalizer.Finalizer.finalizers"><code class="docutils literal notranslate"><span class="pre">Finalizer.finalizers</span></code></a></li>
+<li><a class="reference internal" href="#py4j.finalizer.Finalizer.remove_finalizer"><code class="docutils literal notranslate"><span class="pre">Finalizer.remove_finalizer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#py4j-finalizer-functions">4.5.3. Py4J Finalizer Functions</a><ul>
+<li><a class="reference internal" href="#py4j.finalizer.clear_finalizers"><code class="docutils literal notranslate"><span class="pre">clear_finalizers()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -113,7 +137,7 @@
           <div class="body">
             
   <section id="module-py4j.finalizer">
-<span id="py4j-finalizer-py4j-finalizer-api"></span><h1><span class="section-number">4.5. </span><a class="reference internal" href="#module-py4j.finalizer" title="py4j.finalizer: Global classes to register finalizers."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.finalizer</span></code></a> — Py4J Finalizer API<a class="headerlink" href="#module-py4j.finalizer" title="Permalink to this headline">¶</a></h1>
+<span id="py4j-finalizer-py4j-finalizer-api"></span><h1><span class="section-number">4.5. </span><a class="reference internal" href="#module-py4j.finalizer" title="py4j.finalizer: Global classes to register finalizers."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.finalizer</span></code></a> — Py4J Finalizer API<a class="headerlink" href="#module-py4j.finalizer" title="Permalink to this heading">¶</a></h1>
 <p>The <a class="reference internal" href="#module-py4j.finalizer" title="py4j.finalizer: Global classes to register finalizers."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.finalizer</span></code></a> module contains global classes that enables the
 registration of finalizers, i.e., weak reference callbacks. This module is used
 by Py4J to register a finalizer for each JavaObject instance: once there is no
@@ -124,7 +148,7 @@ leak.</p>
 circular references with JavaMethods and hence, they cannot keep their own
 finalizer.</p>
 <section id="threadsafefinalizer">
-<span id="api-tsfinalizer"></span><h2><span class="section-number">4.5.1. </span>ThreadSafeFinalizer<a class="headerlink" href="#threadsafefinalizer" title="Permalink to this headline">¶</a></h2>
+<span id="api-tsfinalizer"></span><h2><span class="section-number">4.5.1. </span>ThreadSafeFinalizer<a class="headerlink" href="#threadsafefinalizer" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.finalizer.ThreadSafeFinalizer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.finalizer.</span></span><span class="sig-name descname"><span class="pre">ThreadSafeFinalizer</span></span><a class="headerlink" href="#py4j.finalizer.ThreadSafeFinalizer" title="Permalink to this definition">¶</a></dt>
@@ -143,7 +167,7 @@ operation.</p>
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_finalizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weak_ref</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.finalizer.ThreadSafeFinalizer.add_finalizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers a finalizer with an id.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>id</strong> – The id of the object referenced by the weak reference.</p></li>
 <li><p><strong>weak_ref</strong> – The weak reference to register.</p></li>
@@ -157,7 +181,7 @@ operation.</p>
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clear_finalizers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clear_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.finalizer.ThreadSafeFinalizer.clear_finalizers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes all registered finalizers.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>clear_all</strong> – If <cite>True</cite>, all finalizers are deleted. Otherwise,
 only the finalizers from an empty weak reference are deleted
 (i.e., weak references pointing to inexistent objects).</p>
@@ -180,7 +204,7 @@ only the finalizers from an empty weak reference are deleted
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">remove_finalizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.finalizer.ThreadSafeFinalizer.remove_finalizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes a finalizer associated with this id.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>id</strong> – The id of the object for which the finalizer will be
 deleted.</p>
 </dd>
@@ -191,7 +215,7 @@ deleted.</p>
 
 </section>
 <section id="finalizer">
-<span id="api-finalizer"></span><h2><span class="section-number">4.5.2. </span>Finalizer<a class="headerlink" href="#finalizer" title="Permalink to this headline">¶</a></h2>
+<span id="api-finalizer"></span><h2><span class="section-number">4.5.2. </span>Finalizer<a class="headerlink" href="#finalizer" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.finalizer.Finalizer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.finalizer.</span></span><span class="sig-name descname"><span class="pre">Finalizer</span></span><a class="headerlink" href="#py4j.finalizer.Finalizer" title="Permalink to this definition">¶</a></dt>
@@ -210,7 +234,7 @@ programs.</p>
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_finalizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weak_ref</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.finalizer.Finalizer.add_finalizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers a finalizer with an id.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>id</strong> – The id of the object referenced by the weak reference.</p></li>
 <li><p><strong>weak_ref</strong> – The weak reference to register.</p></li>
@@ -224,7 +248,7 @@ programs.</p>
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clear_finalizers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clear_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.finalizer.Finalizer.clear_finalizers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes all registered finalizers.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>clear_all</strong> – If <cite>True</cite>, all finalizers are deleted. Otherwise,
 only the finalizers from an empty weak reference are deleted (i.e.,
 weak references pointing to inexistent objects).</p>
@@ -242,7 +266,7 @@ weak references pointing to inexistent objects).</p>
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">remove_finalizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.finalizer.Finalizer.remove_finalizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes a finalizer associated with this id.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>id</strong> – The id of the object for which the finalizer will be
 deleted.</p>
 </dd>
@@ -253,14 +277,14 @@ deleted.</p>
 
 </section>
 <section id="py4j-finalizer-functions">
-<h2><span class="section-number">4.5.3. </span>Py4J Finalizer Functions<a class="headerlink" href="#py4j-finalizer-functions" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.5.3. </span>Py4J Finalizer Functions<a class="headerlink" href="#py4j-finalizer-functions" title="Permalink to this heading">¶</a></h2>
 <span class="target" id="api-functions-clear-finalizers"></span><dl class="py function">
 <dt class="sig sig-object py" id="py4j.finalizer.clear_finalizers">
 <span class="sig-prename descclassname"><span class="pre">py4j.finalizer.</span></span><span class="sig-name descname"><span class="pre">clear_finalizers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clear_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.finalizer.clear_finalizers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes all registered finalizers in <a class="reference internal" href="#py4j.finalizer.ThreadSafeFinalizer" title="py4j.finalizer.ThreadSafeFinalizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThreadSafeFinalizer</span></code></a> and
 <a class="reference internal" href="#py4j.finalizer.Finalizer" title="py4j.finalizer.Finalizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Finalizer</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>clear_all</strong> – If <cite>True</cite>, all finalizers are deleted. Otherwise, only
 the finalizers from an empty weak reference are deleted (i.e., weak
 references pointing to inexistent objects).</p>
@@ -314,7 +338,7 @@ references pointing to inexistent objects).</p>
     </div>
     <div class="footer">
       &copy; Copyright 2009-2015, Barthélémy Dagenais.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.5.0.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 5.3.0.
     </div>
   </div>
   </body>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>2. Getting Started with Py4J &mdash; Py4J</title>
     <link rel="stylesheet" href="_static/py4jdoc.css" type="text/css" />
@@ -21,7 +21,9 @@
     <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -112,13 +114,13 @@
           <div class="body">
             
   <section id="getting-started-with-py4j">
-<h1><span class="section-number">2. </span>Getting Started with Py4J<a class="headerlink" href="#getting-started-with-py4j" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">2. </span>Getting Started with Py4J<a class="headerlink" href="#getting-started-with-py4j" title="Permalink to this heading">¶</a></h1>
 <p>This short tutorial assumes that you have already <a class="reference internal" href="install.html#install-instructions"><span class="std std-ref">installed</span></a> Py4J and that you are using the latest version. In this
 tutorial, you will write a simple Stack class in Java and then, you will write
 a Python program that accesses the stack.</p>
 <p>You will also see how Java lists can be manipulated as Python lists.</p>
 <section id="writing-the-java-program">
-<h2><span class="section-number">2.1. </span>Writing the Java Program<a class="headerlink" href="#writing-the-java-program" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">2.1. </span>Writing the Java Program<a class="headerlink" href="#writing-the-java-program" title="Permalink to this heading">¶</a></h2>
 <p>The first step is to write a short Java program. Here you will create a Stack
 class that offers two basic services and two advanced services:</p>
 <ol class="arabic simple">
@@ -250,7 +252,7 @@ initialize the GatewayServer in another method, you can also call
 <code class="docutils literal notranslate"><span class="pre">gatewayServer.shutdown()</span></code>.</p>
 </section>
 <section id="writing-the-python-program">
-<h2><span class="section-number">2.2. </span>Writing the Python Program<a class="headerlink" href="#writing-the-python-program" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">2.2. </span>Writing the Python Program<a class="headerlink" href="#writing-the-python-program" title="Permalink to this heading">¶</a></h2>
 <p>You will now write the python program that will access your Java program. Start
 a Python interpreter and make sure that Py4J is in your PYTHONPATH.</p>
 <p>The first step is to import the necessary Py4J class:</p>
@@ -296,21 +298,21 @@ it again.</p>
   File <span class="nb">&quot;py4j/java_gateway.py&quot;</span>, line <span class="m">228</span>, in <span class="n">get_return_value</span>
 <span class="w">    </span><span class="k">raise</span> <span class="n">Py4JJavaError</span><span class="p">(</span><span class="s1">&#39;An error occurred while calling </span><span class="si">%s%s%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">target_id</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
 <span class="gr">py4j.java_gateway.Py4JJavaError</span>: <span class="n">An error occurred while calling o0.pop.</span>
-<span class="go">java.lang.IndexOutOfBoundsException: Index: 0, Size: 0</span>
-<span class="go">    at java.util.LinkedList.entry(LinkedList.java:382)</span>
-<span class="go">    at java.util.LinkedList.remove(LinkedList.java:374)</span>
-<span class="go">    at py4j.examples.Stack.pop(Stack.java:42)</span>
-<span class="go">    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span>
-<span class="go">    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)</span>
-<span class="go">    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span>
-<span class="go">    at java.lang.reflect.Method.invoke(Method.java:616)</span>
-<span class="go">    at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:119)</span>
-<span class="go">    at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:392)</span>
-<span class="go">    at py4j.Gateway.invoke(Gateway.java:255)</span>
-<span class="go">    at py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:125)</span>
-<span class="go">    at py4j.commands.CallCommand.execute(CallCommand.java:81)</span>
-<span class="go">    at py4j.GatewayConnection.run(GatewayConnection.java:175)</span>
-<span class="go">    at java.lang.Thread.run(Thread.java:636)</span>
+<span class="x">java.lang.IndexOutOfBoundsException: Index: 0, Size: 0</span>
+<span class="x">    at java.util.LinkedList.entry(LinkedList.java:382)</span>
+<span class="x">    at java.util.LinkedList.remove(LinkedList.java:374)</span>
+<span class="x">    at py4j.examples.Stack.pop(Stack.java:42)</span>
+<span class="x">    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span>
+<span class="x">    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)</span>
+<span class="x">    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span>
+<span class="x">    at java.lang.reflect.Method.invoke(Method.java:616)</span>
+<span class="x">    at py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:119)</span>
+<span class="x">    at py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:392)</span>
+<span class="x">    at py4j.Gateway.invoke(Gateway.java:255)</span>
+<span class="x">    at py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:125)</span>
+<span class="x">    at py4j.commands.CallCommand.execute(CallCommand.java:81)</span>
+<span class="x">    at py4j.GatewayConnection.run(GatewayConnection.java:175)</span>
+<span class="x">    at java.lang.Thread.run(Thread.java:636)</span>
 </pre></div>
 </div>
 <p>You get a <a class="reference internal" href="py4j_java_protocol.html#py4j.protocol.Py4JJavaError" title="py4j.protocol.Py4JJavaError"><code class="xref py py-class docutils literal notranslate"><span class="pre">Py4JJavaError</span></code></a> because there
@@ -320,7 +322,7 @@ exception that was thrown on the Java side and its stack trace. Read the
 raised by Py4J.</p>
 </section>
 <section id="collections-help-and-constructors">
-<h2><span class="section-number">2.3. </span>Collections, Help, and Constructors<a class="headerlink" href="#collections-help-and-constructors" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">2.3. </span>Collections, Help, and Constructors<a class="headerlink" href="#collections-help-and-constructors" title="Permalink to this heading">¶</a></h2>
 <p>Now, you will experiment with lists. Add another element and get the internal
 list of the stack:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="s1">&#39;First item&#39;</span><span class="p">)</span>
@@ -423,7 +425,7 @@ use the <code class="docutils literal notranslate"><span class="pre">jvm</span><
 </div>
 </section>
 <section id="where-to-go-from-here">
-<h2><span class="section-number">2.4. </span>Where to go from here<a class="headerlink" href="#where-to-go-from-here" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">2.4. </span>Where to go from here<a class="headerlink" href="#where-to-go-from-here" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>You can read the <a class="reference internal" href="advanced_topics.html"><span class="doc">Advanced Topics</span></a> to learn more about
 collections, callbacks and the Py4J memory and threading model.</p></li>
@@ -476,7 +478,7 @@ Java API</span></a>.</p></li>
     </div>
     <div class="footer">
       &copy; Copyright 2009-2015, Barthélémy Dagenais.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.5.0.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 5.3.0.
     </div>
   </div>
   </body>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>4.3. py4j.protocol — Py4J Protocol &mdash; Py4J</title>
     <link rel="stylesheet" href="_static/py4jdoc.css" type="text/css" />
@@ -21,7 +21,9 @@
     <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -73,11 +75,31 @@
             <h3><a href="contents.html">On This Page</a></h3>
             <ul>
 <li><a class="reference internal" href="#">4.3. <code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.protocol</span></code> — Py4J Protocol</a><ul>
-<li><a class="reference internal" href="#py4jerror">4.3.1. Py4JError</a></li>
-<li><a class="reference internal" href="#py4jjavaerror">4.3.2. Py4JJavaError</a></li>
-<li><a class="reference internal" href="#py4jnetworkerror">4.3.3. Py4JNetworkError</a></li>
-<li><a class="reference internal" href="#py4jauthenticationerror">4.3.4. Py4JAuthenticationError</a></li>
-<li><a class="reference internal" href="#py4j-protocol-functions">4.3.5. Py4J Protocol Functions</a></li>
+<li><a class="reference internal" href="#py4jerror">4.3.1. Py4JError</a><ul>
+<li><a class="reference internal" href="#py4j.protocol.Py4JError"><code class="docutils literal notranslate"><span class="pre">Py4JError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#py4jjavaerror">4.3.2. Py4JJavaError</a><ul>
+<li><a class="reference internal" href="#py4j.protocol.Py4JJavaError"><code class="docutils literal notranslate"><span class="pre">Py4JJavaError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#py4jnetworkerror">4.3.3. Py4JNetworkError</a><ul>
+<li><a class="reference internal" href="#py4j.protocol.Py4JNetworkError"><code class="docutils literal notranslate"><span class="pre">Py4JNetworkError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#py4jauthenticationerror">4.3.4. Py4JAuthenticationError</a><ul>
+<li><a class="reference internal" href="#py4j.protocol.Py4JAuthenticationError"><code class="docutils literal notranslate"><span class="pre">Py4JAuthenticationError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#py4j-protocol-functions">4.3.5. Py4J Protocol Functions</a><ul>
+<li><a class="reference internal" href="#py4j.protocol.escape_new_line"><code class="docutils literal notranslate"><span class="pre">escape_new_line()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.protocol.unescape_new_line"><code class="docutils literal notranslate"><span class="pre">unescape_new_line()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.protocol.get_command_part"><code class="docutils literal notranslate"><span class="pre">get_command_part()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.protocol.get_return_value"><code class="docutils literal notranslate"><span class="pre">get_return_value()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.protocol.register_output_converter"><code class="docutils literal notranslate"><span class="pre">register_output_converter()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.protocol.register_input_converter"><code class="docutils literal notranslate"><span class="pre">register_input_converter()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -115,12 +137,12 @@
           <div class="body">
             
   <section id="module-py4j.protocol">
-<span id="py4j-protocol-py4j-protocol"></span><h1><span class="section-number">4.3. </span><a class="reference internal" href="#module-py4j.protocol" title="py4j.protocol: Main Py4J Protocol Python module."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.protocol</span></code></a> — Py4J Protocol<a class="headerlink" href="#module-py4j.protocol" title="Permalink to this headline">¶</a></h1>
+<span id="py4j-protocol-py4j-protocol"></span><h1><span class="section-number">4.3. </span><a class="reference internal" href="#module-py4j.protocol" title="py4j.protocol: Main Py4J Protocol Python module."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.protocol</span></code></a> — Py4J Protocol<a class="headerlink" href="#module-py4j.protocol" title="Permalink to this heading">¶</a></h1>
 <p>The <a class="reference internal" href="#module-py4j.protocol" title="py4j.protocol: Main Py4J Protocol Python module."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.protocol</span></code></a> module defines most of the types, functions, and
 characters used in the Py4J protocol. It does not need to be explicitly used by
 clients of Py4J because it is automatically loaded by the <a class="reference internal" href="py4j_java_gateway.html#module-py4j.java_gateway" title="py4j.java_gateway: Main Py4J Python module."><code class="xref py py-mod docutils literal notranslate"><span class="pre">java_gateway</span></code></a> module and the <a class="reference internal" href="py4j_java_collections.html#module-py4j.java_collections" title="py4j.java_collections: Converts Java Collection Types to Python Collection Types."><code class="xref py py-mod docutils literal notranslate"><span class="pre">java_collections</span></code></a> module.</p>
 <section id="py4jerror">
-<span id="api-py4jerror"></span><h2><span class="section-number">4.3.1. </span>Py4JError<a class="headerlink" href="#py4jerror" title="Permalink to this headline">¶</a></h2>
+<span id="api-py4jerror"></span><h2><span class="section-number">4.3.1. </span>Py4JError<a class="headerlink" href="#py4jerror" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.protocol.Py4JError">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.protocol.</span></span><span class="sig-name descname"><span class="pre">Py4JError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cause</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.protocol.Py4JError" title="Permalink to this definition">¶</a></dt>
@@ -129,7 +151,7 @@ clients of Py4J because it is automatically loaded by the <a class="reference in
 
 </section>
 <section id="py4jjavaerror">
-<h2><span class="section-number">4.3.2. </span>Py4JJavaError<a class="headerlink" href="#py4jjavaerror" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.3.2. </span>Py4JJavaError<a class="headerlink" href="#py4jjavaerror" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.protocol.Py4JJavaError">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.protocol.</span></span><span class="sig-name descname"><span class="pre">Py4JJavaError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.protocol.Py4JJavaError" title="Permalink to this definition">¶</a></dt>
@@ -144,7 +166,7 @@ a non-ascii unicode string but throw an error if the exception contains it.</p>
 
 </section>
 <section id="py4jnetworkerror">
-<h2><span class="section-number">4.3.3. </span>Py4JNetworkError<a class="headerlink" href="#py4jnetworkerror" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.3.3. </span>Py4JNetworkError<a class="headerlink" href="#py4jnetworkerror" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.protocol.Py4JNetworkError">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.protocol.</span></span><span class="sig-name descname"><span class="pre">Py4JNetworkError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cause</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">when</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.protocol.Py4JNetworkError" title="Permalink to this definition">¶</a></dt>
@@ -153,7 +175,7 @@ a non-ascii unicode string but throw an error if the exception contains it.</p>
 
 </section>
 <section id="py4jauthenticationerror">
-<h2><span class="section-number">4.3.4. </span>Py4JAuthenticationError<a class="headerlink" href="#py4jauthenticationerror" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.3.4. </span>Py4JAuthenticationError<a class="headerlink" href="#py4jauthenticationerror" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.protocol.Py4JAuthenticationError">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.protocol.</span></span><span class="sig-name descname"><span class="pre">Py4JAuthenticationError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cause</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.protocol.Py4JAuthenticationError" title="Permalink to this definition">¶</a></dt>
@@ -162,7 +184,7 @@ a non-ascii unicode string but throw an error if the exception contains it.</p>
 
 </section>
 <section id="py4j-protocol-functions">
-<h2><span class="section-number">4.3.5. </span>Py4J Protocol Functions<a class="headerlink" href="#py4j-protocol-functions" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.3.5. </span>Py4J Protocol Functions<a class="headerlink" href="#py4j-protocol-functions" title="Permalink to this heading">¶</a></h2>
 <p>The following functions can be used to extend Py4J (e.g., to create new commands):</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="py4j.protocol.escape_new_line">
@@ -170,10 +192,10 @@ a non-ascii unicode string but throw an error if the exception contains it.</p>
 <dd><p>Replaces new line characters by a backslash followed by a n.</p>
 <p>Backslashes are also escaped by another backslash.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>original</strong> – the string to escape</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>an escaped string</p>
 </dd>
 </dl>
@@ -186,10 +208,10 @@ a non-ascii unicode string but throw an error if the exception contains it.</p>
 <p>For example, double backslashes are replaced by a single backslash.</p>
 <p>The behavior for improperly formatted strings is undefined and can change.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>escaped</strong> – the escaped string</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>the original string</p>
 </dd>
 </dl>
@@ -202,10 +224,10 @@ a non-ascii unicode string but throw an error if the exception contains it.</p>
 Py4J protocol.</p>
 <p>For example, the integer <cite>1</cite> is converted to <cite>u”i1”</cite></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>parameter</strong> – the object to convert</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>the string representing the command part</p>
 </dd>
 </dl>
@@ -219,7 +241,7 @@ Py4J protocol.</p>
 integer, string representation of objects are converted to JavaObject
 instances, etc.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>answer</strong> – the string returned by the Java gateway</p></li>
 <li><p><strong>gateway_client</strong> – the gateway client used to communicate with the Java
@@ -242,7 +264,7 @@ list, map)</p></li>
 on the Python side. For example, you could transform a java.util.ArrayList
 to a Python list. See <code class="docutils literal notranslate"><span class="pre">py4j.java_collections</span></code> for examples.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>output_type</strong> – A Py4J type of a return object (e.g., MAP_TYPE,
 BOOLEAN_TYPE).</p></li>
@@ -266,7 +288,7 @@ examples.</p>
 parameter that is not a <code class="xref py py-class docutils literal notranslate"><span class="pre">JavaObject</span></code>
 or <cite>basestring</cite> instance.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>converter</strong> – A converter that declares the methods
 <cite>can_convert(object)</cite> and <cite>convert(object,gateway_client)</cite>.</p></li>
@@ -322,7 +344,7 @@ or <cite>basestring</cite> instance.</p>
     </div>
     <div class="footer">
       &copy; Copyright 2009-2015, Barthélémy Dagenais.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.5.0.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 5.3.0.
     </div>
   </div>
   </body>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>3. Advanced Topics &mdash; Py4J</title>
     <link rel="stylesheet" href="_static/py4jdoc.css" type="text/css" />
@@ -21,7 +21,9 @@
     <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -139,18 +141,13 @@
           <div class="body">
             
   <section id="advanced-topics">
-<h1><span class="section-number">3. </span>Advanced Topics<a class="headerlink" href="#advanced-topics" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">3. </span>Advanced Topics<a class="headerlink" href="#advanced-topics" title="Permalink to this heading">¶</a></h1>
 <section id="accessing-java-collections-and-arrays-from-python">
-<h2><span class="section-number">3.1. </span>Accessing Java collections and arrays from Python<a class="headerlink" href="#accessing-java-collections-and-arrays-from-python" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.1. </span>Accessing Java collections and arrays from Python<a class="headerlink" href="#accessing-java-collections-and-arrays-from-python" title="Permalink to this heading">¶</a></h2>
 <p>Java collections are automatically mapped to Python collections so that
 standard Python operations such as slicing work on Java collections. Here is
 the mapping of the collection:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 19%" />
-<col style="width: 22%" />
-<col style="width: 59%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Java Collection</p></th>
 <th class="head"><p>Python Collection</p></th>
@@ -159,7 +156,7 @@ the mapping of the collection:</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Array</p></td>
-<td><p>Sequence <a class="footnote-reference brackets" href="#arraynote" id="id1">1</a></p></td>
+<td><p>Sequence <a class="footnote-reference brackets" href="#arraynote" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></td>
 <td><p><a class="reference internal" href="py4j_java_collections.html#py4j.java_collections.JavaArray" title="py4j.java_collections.JavaArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">JavaArray</span></code></a></p></td>
 </tr>
 <tr class="row-odd"><td><p>java.util.List</p></td>
@@ -180,19 +177,20 @@ the mapping of the collection:</p>
 </tr>
 </tbody>
 </table>
-<dl class="footnote brackets">
-<dt class="label" id="arraynote"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
-<dd><p>Py4J allows elements to be modified (like a real Java array), which is not the case of true
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="arraynote" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Py4J allows elements to be modified (like a real Java array), which is not the case of true
 immutable sequences like tuples.</p>
-</dd>
-</dl>
+</aside>
+</aside>
 <p>Java methods are still accessible when using the Python version of a Java
 collection. Here are some usage examples for each collection class. These
 examples do not cover the entire API.</p>
 <p>It is possible to change this default mapping by registering an output
 converter with <a class="reference internal" href="py4j_java_protocol.html#py4j.protocol.register_output_converter" title="py4j.protocol.register_output_converter"><code class="xref py py-func docutils literal notranslate"><span class="pre">register_output_converter</span></code></a></p>
 <section id="array">
-<h3><span class="section-number">3.1.1. </span>Array<a class="headerlink" href="#array" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.1.1. </span>Array<a class="headerlink" href="#array" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gateway</span> <span class="o">=</span> <span class="n">JavaGateway</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">int_class</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">int</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">int_array</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">new_array</span><span class="p">(</span><span class="n">int_class</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
@@ -223,7 +221,7 @@ converter with <a class="reference internal" href="py4j_java_protocol.html#py4j.
 </div>
 </section>
 <section id="list">
-<h3><span class="section-number">3.1.2. </span>List<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.1.2. </span>List<a class="headerlink" href="#list" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">l</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">java</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">ArrayList</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># calling Python interface</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">l</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span> <span class="c1"># calling Java interface</span>
@@ -249,7 +247,7 @@ converter with <a class="reference internal" href="py4j_java_protocol.html#py4j.
 </div>
 </section>
 <section id="set">
-<h3><span class="section-number">3.1.3. </span>Set<a class="headerlink" href="#set" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.1.3. </span>Set<a class="headerlink" href="#set" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">java</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">HashSet</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span>
@@ -264,7 +262,7 @@ converter with <a class="reference internal" href="py4j_java_protocol.html#py4j.
 </div>
 </section>
 <section id="map">
-<h3><span class="section-number">3.1.4. </span>Map<a class="headerlink" href="#map" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.1.4. </span>Map<a class="headerlink" href="#map" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">java</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">HashMap</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
@@ -286,7 +284,7 @@ converter with <a class="reference internal" href="py4j_java_protocol.html#py4j.
 </section>
 </section>
 <section id="byte-array-byte">
-<h2><span class="section-number">3.2. </span>Byte array (byte[])<a class="headerlink" href="#byte-array-byte" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.2. </span>Byte array (byte[])<a class="headerlink" href="#byte-array-byte" title="Permalink to this heading">¶</a></h2>
 <p>Since version 0.7, Py4J automatically passes Java byte array (i.e., <cite>byte[]</cite>)
 by value and convert them to Python bytearray (2.x) or bytes (3.x) and vice
 versa. The rationale is that byte array are often used for binary processing
@@ -310,7 +308,7 @@ backed by a byte array.</p></li>
 </ul>
 </section>
 <section id="implementing-java-interfaces-from-python-callback">
-<h2><span class="section-number">3.3. </span>Implementing Java interfaces from Python (callback)<a class="headerlink" href="#implementing-java-interfaces-from-python-callback" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.3. </span>Implementing Java interfaces from Python (callback)<a class="headerlink" href="#implementing-java-interfaces-from-python-callback" title="Permalink to this heading">¶</a></h2>
 <p>Since version 0.3, Py4J allows Python classes to implement Java interfaces so
 that the JVM can call back Python objects. In the following example, a Python
 class implements a Java listener interface.</p>
@@ -432,9 +430,9 @@ in the class <cite>package1.MyClass</cite>, you will have to write:</p>
 </div>
 </section>
 <section id="using-single-threading-model-pinned-thread">
-<span id="clientserver"></span><h2><span class="section-number">3.4. </span>Using Single Threading Model (pinned thread)<a class="headerlink" href="#using-single-threading-model-pinned-thread" title="Permalink to this headline">¶</a></h2>
+<span id="clientserver"></span><h2><span class="section-number">3.4. </span>Using Single Threading Model (pinned thread)<a class="headerlink" href="#using-single-threading-model-pinned-thread" title="Permalink to this heading">¶</a></h2>
 <section id="the-multi-threading-model">
-<h3><span class="section-number">3.4.1. </span>The multi threading model<a class="headerlink" href="#the-multi-threading-model" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.4.1. </span>The multi threading model<a class="headerlink" href="#the-multi-threading-model" title="Permalink to this heading">¶</a></h3>
 <p>When you use a <cite>JavaGateway</cite> and a <cite>CallbackServer</cite>, Py4J will create a new
 thread every time a command <strong>is received</strong> and <strong>there is no thread
 available</strong>.  This can lead to the creation of many threads if there are
@@ -516,7 +514,7 @@ the Python side. Java Thread 1 can now be used to execute other calls.</p></li>
 </ol>
 </section>
 <section id="the-single-threading-model">
-<h3><span class="section-number">3.4.2. </span>The single threading model<a class="headerlink" href="#the-single-threading-model" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.4.2. </span>The single threading model<a class="headerlink" href="#the-single-threading-model" title="Permalink to this heading">¶</a></h3>
 <p>Although the multi threading model is sound and has been used by many
 distributed systems (e.g., Java RMI), it has two main issues: (1) it creates a
 lot of threads when the Java and Python sides exchange many calls such as when
@@ -566,7 +564,7 @@ be created.</p>
 </section>
 </section>
 <section id="initiating-the-communication-from-the-java-side">
-<span id="python-entry-point"></span><h2><span class="section-number">3.5. </span>Initiating the communication from the Java side<a class="headerlink" href="#initiating-the-communication-from-the-java-side" title="Permalink to this headline">¶</a></h2>
+<span id="python-entry-point"></span><h2><span class="section-number">3.5. </span>Initiating the communication from the Java side<a class="headerlink" href="#initiating-the-communication-from-the-java-side" title="Permalink to this heading">¶</a></h2>
 <p>All the previous examples assume that you want to initiate the communication
 between Python and Java from the Python side. What if you want to start calling
 Python from the Java side?</p>
@@ -580,7 +578,7 @@ Python from the Java side?</p>
 Python entry point is expected to implement.</p></li>
 </ol>
 <section id="using-the-traditional-javagateway-gatewayserver">
-<h3><span class="section-number">3.5.1. </span>Using the traditional JavaGateway/GatewayServer<a class="headerlink" href="#using-the-traditional-javagateway-gatewayserver" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.5.1. </span>Using the traditional JavaGateway/GatewayServer<a class="headerlink" href="#using-the-traditional-javagateway-gatewayserver" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// IHello.java</span>
 <span class="kn">package</span><span class="w"> </span><span class="nn">py4j.examples</span><span class="p">;</span>
 
@@ -633,7 +631,7 @@ Python entry point is expected to implement.</p></li>
 </div>
 </section>
 <section id="using-clientserver">
-<h3><span class="section-number">3.5.2. </span>Using ClientServer<a class="headerlink" href="#using-clientserver" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">3.5.2. </span>Using ClientServer<a class="headerlink" href="#using-clientserver" title="Permalink to this heading">¶</a></h3>
 <p>In the following example, the Java side is initiating the conversation by
 making the first call to the Python side. If the call is initiated from a UI
 thread, then all subsequent call from Python to Java will be executed in the
@@ -689,7 +687,7 @@ Java UI thread.</p>
 </section>
 </section>
 <section id="using-py4j-without-pre-determined-ports-dynamic-port-number">
-<span id="dynamic-ports"></span><h2><span class="section-number">3.6. </span>Using Py4J without pre-determined ports (dynamic port number)<a class="headerlink" href="#using-py4j-without-pre-determined-ports-dynamic-port-number" title="Permalink to this headline">¶</a></h2>
+<span id="dynamic-ports"></span><h2><span class="section-number">3.6. </span>Using Py4J without pre-determined ports (dynamic port number)<a class="headerlink" href="#using-py4j-without-pre-determined-ports-dynamic-port-number" title="Permalink to this heading">¶</a></h2>
 <p>If you do not want to use Py4J’s default port (25333 on the Java side and 25334
 on the Python side to receive callback), you can use the port 0 and Py4J will
 use the next available port. Once a port is assigned, the other side needs to
@@ -726,7 +724,7 @@ be aware of this port. Here is one way to do it:</p>
 </div>
 </section>
 <section id="converting-python-collections-to-java-collections">
-<span id="collections-conversion"></span><h2><span class="section-number">3.7. </span>Converting Python collections to Java Collections<a class="headerlink" href="#converting-python-collections-to-java-collections" title="Permalink to this headline">¶</a></h2>
+<span id="collections-conversion"></span><h2><span class="section-number">3.7. </span>Converting Python collections to Java Collections<a class="headerlink" href="#converting-python-collections-to-java-collections" title="Permalink to this heading">¶</a></h2>
 <p>If you try to pass a Python collection to a method that expects a Java
 collection, an error will be thrown:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
@@ -790,7 +788,7 @@ go through all registered converters for all parameters. This is why automatic
 conversion is disabled by default.</p>
 </section>
 <section id="py4j-exceptions">
-<span id="id2"></span><h2><span class="section-number">3.8. </span>Py4J Exceptions<a class="headerlink" href="#py4j-exceptions" title="Permalink to this headline">¶</a></h2>
+<span id="id2"></span><h2><span class="section-number">3.8. </span>Py4J Exceptions<a class="headerlink" href="#py4j-exceptions" title="Permalink to this heading">¶</a></h2>
 <p>Py4J can raise three exceptions on the Python side:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="py4j_java_protocol.html#py4j.protocol.Py4JJavaError" title="py4j.protocol.Py4JJavaError"><code class="xref py py-class docutils literal notranslate"><span class="pre">Py4JJavaError</span></code></a>. This exception is
@@ -822,7 +820,7 @@ available in the <code class="docutils literal notranslate"><span class="pre">cl
 </div>
 </section>
 <section id="importing-packages-with-jvm-views">
-<span id="jvm-views"></span><h2><span class="section-number">3.9. </span>Importing packages with JVM Views<a class="headerlink" href="#importing-packages-with-jvm-views" title="Permalink to this headline">¶</a></h2>
+<span id="jvm-views"></span><h2><span class="section-number">3.9. </span>Importing packages with JVM Views<a class="headerlink" href="#importing-packages-with-jvm-views" title="Permalink to this heading">¶</a></h2>
 <p>Py4J allows you to import packages so that you don’t have to type the fully
 qualified name of the classes you want to instantiate. The <cite>java.lang</cite> package
 is always automatically imported.</p>
@@ -847,12 +845,12 @@ how to create and use a <cite>JVMView</cite>:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">module2_view</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">new_jvm_view</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">jList2</span> <span class="o">=</span> <span class="n">module1_view</span><span class="o">.</span><span class="n">ArrayList</span><span class="p">()</span>
 <span class="go">Py4JError: Trying to call a package.</span>
-<span class="gp">...</span>
+<span class="go">...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">java_import</span><span class="p">(</span><span class="n">module1_view</span><span class="p">,</span><span class="s1">&#39;java.util.ArrayList&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">jList2</span> <span class="o">=</span> <span class="n">module1_view</span><span class="o">.</span><span class="n">ArrayList</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">jList3</span> <span class="o">=</span> <span class="n">module2_view</span><span class="o">.</span><span class="n">ArrayList</span><span class="p">()</span>
 <span class="go">Py4JError: Trying to call a package.</span>
-<span class="gp">...</span>
+<span class="go">...</span>
 </pre></div>
 </div>
 <p>As you can see from the previous example, the import of <cite>java.util.ArrayList</cite>
@@ -864,7 +862,7 @@ initialized.</p>
 </div>
 </section>
 <section id="using-py4j-with-eclipse">
-<span id="eclipse-features"></span><h2><span class="section-number">3.10. </span>Using Py4J with Eclipse<a class="headerlink" href="#using-py4j-with-eclipse" title="Permalink to this headline">¶</a></h2>
+<span id="eclipse-features"></span><h2><span class="section-number">3.10. </span>Using Py4J with Eclipse<a class="headerlink" href="#using-py4j-with-eclipse" title="Permalink to this heading">¶</a></h2>
 <p>Py4J can be used with Eclipse like any normal Java program. A plug-in needs to
 instantiate and start a GatewayServer. By default, the GatewayServer will only
 be able to access the classes declared in the plug-in or one of its
@@ -927,7 +925,7 @@ is also accessible at runtime:</p>
 in the future.</p>
 </section>
 <section id="listening-to-server-events">
-<h2><span class="section-number">3.11. </span>Listening to server events<a class="headerlink" href="#listening-to-server-events" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.11. </span>Listening to server events<a class="headerlink" href="#listening-to-server-events" title="Permalink to this heading">¶</a></h2>
 <p>On the Java side, it is possible to listen to GatewayServer events by
 registering an instance of <code class="docutils literal notranslate"><span class="pre">py4j.GatewayServerListener</span></code> with
 <code class="docutils literal notranslate"><span class="pre">GatewayServer.addListener</span></code>.</p>
@@ -988,7 +986,7 @@ here is a full example:</p>
 the <a class="reference internal" href="py4j_java_gateway.html#api-signals"><span class="std std-ref">Py4J signals</span></a>.</p>
 </section>
 <section id="py4j-memory-model">
-<span id="adv-memory"></span><h2><span class="section-number">3.12. </span>Py4J Memory model<a class="headerlink" href="#py4j-memory-model" title="Permalink to this headline">¶</a></h2>
+<span id="adv-memory"></span><h2><span class="section-number">3.12. </span>Py4J Memory model<a class="headerlink" href="#py4j-memory-model" title="Permalink to this heading">¶</a></h2>
 <p><strong>Java objects sent to the Python side</strong></p>
 <p>Every time a Java object is sent to the Python side, a reference to the object
 is kept on the Java side (in the Gateway class). Once the object is garbage
@@ -1018,7 +1016,7 @@ garbage collection will be guarenteed because of the specifications of Java
 finalizers (which are surprisingly worse than Python finalizer strategies).</p>
 </section>
 <section id="py4j-threading-and-connection-model">
-<span id="adv-threading"></span><h2><span class="section-number">3.13. </span>Py4J Threading and connection model<a class="headerlink" href="#py4j-threading-and-connection-model" title="Permalink to this headline">¶</a></h2>
+<span id="adv-threading"></span><h2><span class="section-number">3.13. </span>Py4J Threading and connection model<a class="headerlink" href="#py4j-threading-and-connection-model" title="Permalink to this heading">¶</a></h2>
 <p>In its default mode, Py4J allocates one thread per connection. The design of
 Py4j is symmetrical on the Python and Java sides. A Python GatewayClient
 communicates with the Java GatewayServer and is then associated with a
@@ -1065,7 +1063,7 @@ should use the <a class="reference internal" href="#clientserver"><span class="s
 more efficient threading model.</p>
 </section>
 <section id="tls">
-<span id="security"></span><h2><span class="section-number">3.14. </span>TLS<a class="headerlink" href="#tls" title="Permalink to this headline">¶</a></h2>
+<span id="security"></span><h2><span class="section-number">3.14. </span>TLS<a class="headerlink" href="#tls" title="Permalink to this heading">¶</a></h2>
 <p>Py4J supports TLS for both connections from Python to the JVM and the callback
 connections to Python. This requires configuring both Java and Python:</p>
 <p><strong>On the Python side</strong></p>
@@ -1104,7 +1102,7 @@ or a <cite>SSLContext</cite> instance similarly.</p>
 <p>A runnable example is in <cite>py4j.examples.ExampleSSLApplication</cite>.</p>
 </section>
 <section id="authentication">
-<h2><span class="section-number">3.15. </span>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.15. </span>Authentication<a class="headerlink" href="#authentication" title="Permalink to this heading">¶</a></h2>
 <p>By default, Py4J does not authenticate client connections. This allows any
 user who can open a connection to the Py4J daemons to potentially execute
 code as the user running those daemons.</p>
@@ -1129,13 +1127,13 @@ proper security, connections should use loopback addresses, or use TLS.</p>
 </div>
 </section>
 <section id="boxing">
-<h2><span class="section-number">3.16. </span>Boxing<a class="headerlink" href="#boxing" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.16. </span>Boxing<a class="headerlink" href="#boxing" title="Permalink to this heading">¶</a></h2>
 <p>Boxed Java primitives, such as <cite>java.lang.Integer</cite> are unboxed in the JVM and
 transmitted as primitives, so they will appear as Python <cite>int</cite> and not
 <cite>JavaObjects</cite>.</p>
 </section>
 <section id="performance">
-<h2><span class="section-number">3.17. </span>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">3.17. </span>Performance<a class="headerlink" href="#performance" title="Permalink to this heading">¶</a></h2>
 <p>We track performance with each new release by running a <a class="reference external" href="https://github.com/bartdag/py4j-benchmark">benchmark suite</a> that tests various features of
 Py4J.</p>
 <p>The benchmark data and performance evolution charts are made <a class="reference external" href="https://docs.google.com/spreadsheets/d/14ljMYIESFbOBFe4o_Fy6WirI2P5iCQuTP9fA1BuLMAI/edit?usp=sharing">available as google charts</a>.</p>
@@ -1187,7 +1185,7 @@ src="https://docs.google.com/spreadsheets/d/14ljMYIESFbOBFe4o_Fy6WirI2P5iCQuTP9f
     </div>
     <div class="footer">
       &copy; Copyright 2009-2015, Barthélémy Dagenais.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.5.0.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 5.3.0.
     </div>
   </div>
   </body>

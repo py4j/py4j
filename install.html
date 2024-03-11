@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>1. Installing Py4J &mdash; Py4J</title>
     <link rel="stylesheet" href="_static/py4jdoc.css" type="text/css" />
@@ -21,7 +21,9 @@
     <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -117,15 +119,15 @@
           <div class="body">
             
   <section id="installing-py4j">
-<span id="install-instructions"></span><h1><span class="section-number">1. </span>Installing Py4J<a class="headerlink" href="#installing-py4j" title="Permalink to this headline">¶</a></h1>
+<span id="install-instructions"></span><h1><span class="section-number">1. </span>Installing Py4J<a class="headerlink" href="#installing-py4j" title="Permalink to this heading">¶</a></h1>
 <section id="installing-python-2-7-or-3-4-3-10">
-<h2><span class="section-number">1.1. </span>Installing Python 2.7 or 3.4-3.10<a class="headerlink" href="#installing-python-2-7-or-3-4-3-10" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.1. </span>Installing Python 2.7 or 3.4-3.10<a class="headerlink" href="#installing-python-2-7-or-3-4-3-10" title="Permalink to this heading">¶</a></h2>
 <p>Py4J is a library written in Python and Java. Currently, Py4J has been tested
 with Python 2.7, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9 and 3.10. You can install Python by going to the
 <a class="reference external" href="http://www.python.org/download/">official Python download page</a>.</p>
 </section>
 <section id="installing-java-7">
-<h2><span class="section-number">1.2. </span>Installing Java 7+<a class="headerlink" href="#installing-java-7" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.2. </span>Installing Java 7+<a class="headerlink" href="#installing-java-7" title="Permalink to this heading">¶</a></h2>
 <p>You also need to install a Java environment (version 7 or more recent - Java 6
 should work but is no longer included in the test suite).  You can install a
 Java environment by going to the <a class="reference external" href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">official Java download page</a> You will
@@ -134,10 +136,10 @@ need the JRE if you are using another compiler, such as the one provided by the
 <a class="reference external" href="http://www.eclipse.org">Eclipse Development Environment</a>.</p>
 </section>
 <section id="id1">
-<h2><span class="section-number">1.3. </span>Installing Py4J<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">1.3. </span>Installing Py4J<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
 <p>There are three ways to install Py4J:</p>
 <section id="using-easy-install-or-pip">
-<h3><span class="section-number">1.3.1. </span>Using easy_install or pip<a class="headerlink" href="#using-easy-install-or-pip" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.3.1. </span>Using easy_install or pip<a class="headerlink" href="#using-easy-install-or-pip" title="Permalink to this heading">¶</a></h3>
 <ol class="arabic simple">
 <li><p>Run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">py4j</span></code> or <code class="docutils literal notranslate"><span class="pre">easy_install</span> <span class="pre">py4j</span></code> (don’t forget
 to prefix with sudo if you install Py4J system-wide on a
@@ -157,7 +159,7 @@ Windows.</p></li>
 </ol>
 </section>
 <section id="using-an-official-release">
-<h3><span class="section-number">1.3.2. </span>Using an official release<a class="headerlink" href="#using-an-official-release" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.3.2. </span>Using an official release<a class="headerlink" href="#using-an-official-release" title="Permalink to this heading">¶</a></h3>
 <ol class="arabic simple">
 <li><p>Download the latest official release from from <a class="reference external" href="http://pypi.python.org/pypi/py4j">PyPI</a>. If you are using a *NIX OS, download
 the tar.gz file. If you are using Windows, download the zip file.</p></li>
@@ -171,7 +173,7 @@ library to your classpath when using Py4J in a Java program.</p></li>
 </ol>
 </section>
 <section id="using-the-latest-development-source-code">
-<span id="build-instructions"></span><h3><span class="section-number">1.3.3. </span>Using the latest development source code<a class="headerlink" href="#using-the-latest-development-source-code" title="Permalink to this headline">¶</a></h3>
+<span id="build-instructions"></span><h3><span class="section-number">1.3.3. </span>Using the latest development source code<a class="headerlink" href="#using-the-latest-development-source-code" title="Permalink to this heading">¶</a></h3>
 <p>You can install the latest version with pip and git:
 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">git+https://github.com/bartdag/py4j.git</span></code></p>
 <p>Otherwise, to build the Java and Python libraries, you need:</p>
@@ -206,7 +208,7 @@ coding conventions checks. (Python checks will be added in the future).</p></li>
 </ol>
 </section>
 <section id="maven-install">
-<h3><span class="section-number">1.3.4. </span>Maven install<a class="headerlink" href="#maven-install" title="Permalink to this headline">¶</a></h3>
+<h3><span class="section-number">1.3.4. </span>Maven install<a class="headerlink" href="#maven-install" title="Permalink to this heading">¶</a></h3>
 <ol class="arabic simple">
 <li><p>Download the source code as explained above.</p></li>
 <li><p>Go to the py4j-java directory and execute <code class="docutils literal notranslate"><span class="pre">mvn</span> <span class="pre">install</span></code>.</p></li>
@@ -260,7 +262,7 @@ coding conventions checks. (Python checks will be added in the future).</p></li>
     </div>
     <div class="footer">
       &copy; Copyright 2009-2015, Barthélémy Dagenais.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.5.0.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 5.3.0.
     </div>
   </div>
   </body>

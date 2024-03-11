@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>6. Frequently Asked Questions &mdash; Py4J</title>
     <link rel="stylesheet" href="_static/py4jdoc.css" type="text/css" />
@@ -21,7 +21,9 @@
     <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -121,8 +123,8 @@
           <div class="body">
             
   <section id="frequently-asked-questions">
-<h1><span class="section-number">6. </span>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
-<div class="contents local topic" id="summary">
+<h1><span class="section-number">6. </span>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this heading">¶</a></h1>
+<nav class="contents local" id="summary">
 <p class="topic-title">Summary</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#how-to-turn-logging-on-off" id="id3">How to turn logging on/off?</a></p></li>
@@ -139,9 +141,9 @@
 <li><p><a class="reference internal" href="#i-found-a-bug-how-do-i-report-it" id="id14">I found a bug, how do I report it?</a></p></li>
 <li><p><a class="reference internal" href="#how-can-i-contribute" id="id15">How can I contribute?</a></p></li>
 </ul>
-</div>
+</nav>
 <section id="how-to-turn-logging-on-off">
-<h2><a class="toc-backref" href="#id3"><span class="section-number">6.1. </span>How to turn logging on/off?</a><a class="headerlink" href="#how-to-turn-logging-on-off" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink"><span class="section-number">6.1. </span>How to turn logging on/off?</a><a class="headerlink" href="#how-to-turn-logging-on-off" title="Permalink to this heading">¶</a></h2>
 <p>Logging is turned off by default. In Java, simply call
 <code class="docutils literal notranslate"><span class="pre">GatewayServer.turnLoggingOn()</span></code> or <code class="docutils literal notranslate"><span class="pre">GatewayServer.turnLoggingOff()</span></code>.
 Py4J-java uses the <code class="docutils literal notranslate"><span class="pre">java.util.logging</span></code> framework. To get fined-grained
@@ -166,7 +168,7 @@ for more information on this framework.</p>
 </div>
 </section>
 <section id="how-to-call-a-constructor">
-<h2><a class="toc-backref" href="#id4"><span class="section-number">6.2. </span>How to call a constructor?</a><a class="headerlink" href="#how-to-call-a-constructor" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink"><span class="section-number">6.2. </span>How to call a constructor?</a><a class="headerlink" href="#how-to-call-a-constructor" title="Permalink to this heading">¶</a></h2>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">jvm</span></code> member of a gateway followed by the class’s fully qualified
 name. See <a class="reference internal" href="advanced_topics.html#jvm-views"><span class="std std-ref">JVM Views</span></a> to learn how to import packages and
 avoid typing the fully qualified name of classes:</p>
@@ -176,7 +178,7 @@ avoid typing the fully qualified name of classes:</p>
 </div>
 </section>
 <section id="how-to-call-a-static-method">
-<h2><a class="toc-backref" href="#id5"><span class="section-number">6.3. </span>How to call a static method?</a><a class="headerlink" href="#how-to-call-a-static-method" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink"><span class="section-number">6.3. </span>How to call a static method?</a><a class="headerlink" href="#how-to-call-a-static-method" title="Permalink to this heading">¶</a></h2>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">jvm</span></code> member of a gateway followed by the fully qualified name of the
 method’s class. Do the same for static fields.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gateway</span> <span class="o">=</span> <span class="n">JavaGateway</span><span class="p">()</span>
@@ -185,7 +187,7 @@ method’s class. Do the same for static fields.</p>
 </div>
 </section>
 <section id="how-to-access-a-field">
-<h2><a class="toc-backref" href="#id6"><span class="section-number">6.4. </span>How to access a field?</a><a class="headerlink" href="#how-to-access-a-field" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink"><span class="section-number">6.4. </span>How to access a field?</a><a class="headerlink" href="#how-to-access-a-field" title="Permalink to this heading">¶</a></h2>
 <p>Use the <a class="reference internal" href="py4j_java_gateway.html#py4j.java_gateway.get_field" title="py4j.java_gateway.get_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_field</span></code></a> function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">field_value</span> <span class="o">=</span> <span class="n">py4j</span><span class="o">.</span><span class="n">java_gateway</span><span class="o">.</span><span class="n">get_field</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span><span class="s1">&#39;public_field&#39;</span><span class="p">)</span>
 </pre></div>
@@ -199,7 +201,7 @@ method’s class. Do the same for static fields.</p>
 </div>
 </section>
 <section id="how-to-import-a-class">
-<h2><a class="toc-backref" href="#id7"><span class="section-number">6.5. </span>How to import a class?</a><a class="headerlink" href="#how-to-import-a-class" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink"><span class="section-number">6.5. </span>How to import a class?</a><a class="headerlink" href="#how-to-import-a-class" title="Permalink to this heading">¶</a></h2>
 <p>As in Java, you can always access any class using its fully qualified name, but
 you can also import the fully qualified name to only refer to the simple name
 later on:</p>
@@ -220,7 +222,7 @@ later on:</p>
 statement only affects the current Python module.</p>
 </section>
 <section id="how-to-create-an-array">
-<h2><a class="toc-backref" href="#id8"><span class="section-number">6.6. </span>How to create an array?</a><a class="headerlink" href="#how-to-create-an-array" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id8" role="doc-backlink"><span class="section-number">6.6. </span>How to create an array?</a><a class="headerlink" href="#how-to-create-an-array" title="Permalink to this heading">¶</a></h2>
 <p>Use the <a class="reference internal" href="py4j_java_gateway.html#py4j.java_gateway.JavaGateway.new_array" title="py4j.java_gateway.JavaGateway.new_array"><code class="xref py py-func docutils literal notranslate"><span class="pre">new_array</span></code></a> function:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gateway</span> <span class="o">=</span> <span class="n">JavaGateway</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">string_class</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">String</span>
@@ -238,7 +240,7 @@ statement only affects the current Python module.</p>
 </div>
 </section>
 <section id="what-ports-are-used-by-py4j">
-<h2><a class="toc-backref" href="#id9"><span class="section-number">6.7. </span>What ports are used by Py4J?</a><a class="headerlink" href="#what-ports-are-used-by-py4j" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id9" role="doc-backlink"><span class="section-number">6.7. </span>What ports are used by Py4J?</a><a class="headerlink" href="#what-ports-are-used-by-py4j" title="Permalink to this heading">¶</a></h2>
 <p>Py4J by default uses the TCP port 25333 to communicate from Python to Java and
 TCP port 25334 to communicate from Java to Python. It also uses TCP port 25332
 for a test echo server (only used by unit tests).</p>
@@ -246,7 +248,7 @@ for a test echo server (only used by unit tests).</p>
 Java side.</p>
 </section>
 <section id="is-py4j-thread-safe">
-<h2><a class="toc-backref" href="#id10"><span class="section-number">6.8. </span>Is Py4J thread-safe?</a><a class="headerlink" href="#is-py4j-thread-safe" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id10" role="doc-backlink"><span class="section-number">6.8. </span>Is Py4J thread-safe?</a><a class="headerlink" href="#is-py4j-thread-safe" title="Permalink to this heading">¶</a></h2>
 <p>The Java component of Py4J is thread-safe, but multiple threads could access
 the same entry point. Each gateway connection is executed in is own thread
 (e.g., each time a Python thread calls a Java method) so if multiple Python
@@ -274,7 +276,7 @@ methods on the Python side.</p>
 <p>See <a class="reference internal" href="advanced_topics.html#adv-threading"><span class="std std-ref">Py4J Threading Model</span></a> for more details.</p>
 </section>
 <section id="how-can-i-use-py4j-with-eclipse">
-<h2><a class="toc-backref" href="#id11"><span class="section-number">6.9. </span>How can I use Py4J with Eclipse?</a><a class="headerlink" href="#how-can-i-use-py4j-with-eclipse" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id11" role="doc-backlink"><span class="section-number">6.9. </span>How can I use Py4J with Eclipse?</a><a class="headerlink" href="#how-can-i-use-py4j-with-eclipse" title="Permalink to this heading">¶</a></h2>
 <p>Because each Eclipse plug-in has its own class loader, a <cite>GatewayServer</cite>
 instance started in one plug-in won’t have access to the other plug-ins <strong>by
 default</strong>. You can work around this limitation by adding this line to the
@@ -286,12 +288,12 @@ in any plug-in.</p>
 <p>See <a class="reference internal" href="advanced_topics.html#eclipse-features"><span class="std std-ref">Py4J and Eclipse</span></a> for more details.</p>
 </section>
 <section id="can-i-use-py4j-with-python-3">
-<h2><a class="toc-backref" href="#id12"><span class="section-number">6.10. </span>Can I use Py4J with Python 3?</a><a class="headerlink" href="#can-i-use-py4j-with-python-3" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id12" role="doc-backlink"><span class="section-number">6.10. </span>Can I use Py4J with Python 3?</a><a class="headerlink" href="#can-i-use-py4j-with-python-3" title="Permalink to this heading">¶</a></h2>
 <p>Yes, thanks to a <a class="reference external" href="https://github.com/bartdag/py4j/commit/36a145671501ed47bc4002af7cab49b490eb6e0b">generous contributor</a>,
 Py4J now works with Python 3.</p>
 </section>
 <section id="are-there-any-security-concerns-with-py4j">
-<h2><a class="toc-backref" href="#id13"><span class="section-number">6.11. </span>Are there any security concerns with Py4J?</a><a class="headerlink" href="#are-there-any-security-concerns-with-py4j" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id13" role="doc-backlink"><span class="section-number">6.11. </span>Are there any security concerns with Py4J?</a><a class="headerlink" href="#are-there-any-security-concerns-with-py4j" title="Permalink to this heading">¶</a></h2>
 <p>Running a Py4J gateway on a JVM exposes the JVM over the network, which is a
 major security concern because a client can use the JVM to run any code (access
 files, delete files, write programs and execute them, communicate over the
@@ -304,11 +306,11 @@ default on most systems.</p>
 documentation.</p>
 </section>
 <section id="i-found-a-bug-how-do-i-report-it">
-<h2><a class="toc-backref" href="#id14"><span class="section-number">6.12. </span>I found a bug, how do I report it?</a><a class="headerlink" href="#i-found-a-bug-how-do-i-report-it" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id14" role="doc-backlink"><span class="section-number">6.12. </span>I found a bug, how do I report it?</a><a class="headerlink" href="#i-found-a-bug-how-do-i-report-it" title="Permalink to this heading">¶</a></h2>
 <p>Please report bugs on our <a class="reference external" href="https://github.com/bartdag/py4j/issues">issue tracker</a>.</p>
 </section>
 <section id="how-can-i-contribute">
-<h2><a class="toc-backref" href="#id15"><span class="section-number">6.13. </span>How can I contribute?</a><a class="headerlink" href="#how-can-i-contribute" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id15" role="doc-backlink"><span class="section-number">6.13. </span>How can I contribute?</a><a class="headerlink" href="#how-can-i-contribute" title="Permalink to this heading">¶</a></h2>
 <p>There are many ways to contribute to Py4J:</p>
 <ul class="simple">
 <li><p><strong>Found a bug or have a feature request?</strong> Fill a detailed <a class="reference external" href="https://github.com/bartdag/py4j/issues">issue report</a>.</p></li>
@@ -372,7 +374,7 @@ Do not forget to read our <a class="reference internal" href="contributing.html"
     </div>
     <div class="footer">
       &copy; Copyright 2009-2015, Barthélémy Dagenais.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.5.0.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 5.3.0.
     </div>
   </div>
   </body>

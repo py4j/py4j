@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>4.1. py4j.java_gateway — Py4J Main API &mdash; Py4J</title>
     <link rel="stylesheet" href="_static/py4jdoc.css" type="text/css" />
@@ -21,7 +21,9 @@
     <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -74,23 +76,118 @@
             <ul>
 <li><a class="reference internal" href="#">4.1. <code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.java_gateway</span></code> — Py4J Main API</a><ul>
 <li><a class="reference internal" href="#javagateway">4.1.1. JavaGateway</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway"><code class="docutils literal notranslate"><span class="pre">JavaGateway</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.close"><code class="docutils literal notranslate"><span class="pre">JavaGateway.close()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.close_callback_server"><code class="docutils literal notranslate"><span class="pre">JavaGateway.close_callback_server()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.detach"><code class="docutils literal notranslate"><span class="pre">JavaGateway.detach()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.get_callback_server"><code class="docutils literal notranslate"><span class="pre">JavaGateway.get_callback_server()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.help"><code class="docutils literal notranslate"><span class="pre">JavaGateway.help()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.launch_gateway"><code class="docutils literal notranslate"><span class="pre">JavaGateway.launch_gateway()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.new_array"><code class="docutils literal notranslate"><span class="pre">JavaGateway.new_array()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.new_jvm_view"><code class="docutils literal notranslate"><span class="pre">JavaGateway.new_jvm_view()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.restart_callback_server"><code class="docutils literal notranslate"><span class="pre">JavaGateway.restart_callback_server()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.set_gateway_client"><code class="docutils literal notranslate"><span class="pre">JavaGateway.set_gateway_client()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.shutdown"><code class="docutils literal notranslate"><span class="pre">JavaGateway.shutdown()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.shutdown_callback_server"><code class="docutils literal notranslate"><span class="pre">JavaGateway.shutdown_callback_server()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaGateway.start_callback_server"><code class="docutils literal notranslate"><span class="pre">JavaGateway.start_callback_server()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#examples">4.1.1.1. Examples</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#gatewayparameters">4.1.2. GatewayParameters</a></li>
-<li><a class="reference internal" href="#callbackserverparameters">4.1.3. CallbackServerParameters</a></li>
-<li><a class="reference internal" href="#gatewayclient">4.1.4. GatewayClient</a></li>
-<li><a class="reference internal" href="#gatewayconnection">4.1.5. GatewayConnection</a></li>
-<li><a class="reference internal" href="#jvmview">4.1.6. JVMView</a></li>
+<li><a class="reference internal" href="#gatewayparameters">4.1.2. GatewayParameters</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.GatewayParameters"><code class="docutils literal notranslate"><span class="pre">GatewayParameters</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#callbackserverparameters">4.1.3. CallbackServerParameters</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.CallbackServerParameters"><code class="docutils literal notranslate"><span class="pre">CallbackServerParameters</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gatewayclient">4.1.4. GatewayClient</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.GatewayClient"><code class="docutils literal notranslate"><span class="pre">GatewayClient</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.GatewayClient.close"><code class="docutils literal notranslate"><span class="pre">GatewayClient.close()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.GatewayClient.garbage_collect_object"><code class="docutils literal notranslate"><span class="pre">GatewayClient.garbage_collect_object()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.GatewayClient.send_command"><code class="docutils literal notranslate"><span class="pre">GatewayClient.send_command()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.GatewayClient.shutdown_gateway"><code class="docutils literal notranslate"><span class="pre">GatewayClient.shutdown_gateway()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gatewayconnection">4.1.5. GatewayConnection</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.GatewayConnection"><code class="docutils literal notranslate"><span class="pre">GatewayConnection</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.GatewayConnection.close"><code class="docutils literal notranslate"><span class="pre">GatewayConnection.close()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.GatewayConnection.send_command"><code class="docutils literal notranslate"><span class="pre">GatewayConnection.send_command()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.GatewayConnection.shutdown_gateway"><code class="docutils literal notranslate"><span class="pre">GatewayConnection.shutdown_gateway()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.GatewayConnection.start"><code class="docutils literal notranslate"><span class="pre">GatewayConnection.start()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#jvmview">4.1.6. JVMView</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.JVMView"><code class="docutils literal notranslate"><span class="pre">JVMView</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#javaobject">4.1.7. JavaObject</a></li>
 <li><a class="reference internal" href="#javamember">4.1.8. JavaMember</a></li>
-<li><a class="reference internal" href="#javaclass">4.1.9. JavaClass</a></li>
-<li><a class="reference internal" href="#javapackage">4.1.10. JavaPackage</a></li>
-<li><a class="reference internal" href="#pythonproxypool">4.1.11. PythonProxyPool</a></li>
-<li><a class="reference internal" href="#callbackserver">4.1.12. CallbackServer</a></li>
-<li><a class="reference internal" href="#callbackconnection">4.1.13. CallbackConnection</a></li>
-<li><a class="reference internal" href="#py4j-core-signals">4.1.14. Py4J Core Signals</a></li>
-<li><a class="reference internal" href="#py4j-functions">4.1.15. Py4J Functions</a></li>
+<li><a class="reference internal" href="#javaclass">4.1.9. JavaClass</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaClass"><code class="docutils literal notranslate"><span class="pre">JavaClass</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaClass._java_lang_class"><code class="docutils literal notranslate"><span class="pre">JavaClass._java_lang_class</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#javapackage">4.1.10. JavaPackage</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.JavaPackage"><code class="docutils literal notranslate"><span class="pre">JavaPackage</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pythonproxypool">4.1.11. PythonProxyPool</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.PythonProxyPool"><code class="docutils literal notranslate"><span class="pre">PythonProxyPool</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.PythonProxyPool.clear"><code class="docutils literal notranslate"><span class="pre">PythonProxyPool.clear()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.PythonProxyPool.put"><code class="docutils literal notranslate"><span class="pre">PythonProxyPool.put()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#callbackserver">4.1.12. CallbackServer</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.CallbackServer"><code class="docutils literal notranslate"><span class="pre">CallbackServer</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.CallbackServer.close"><code class="docutils literal notranslate"><span class="pre">CallbackServer.close()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.CallbackServer.get_listening_address"><code class="docutils literal notranslate"><span class="pre">CallbackServer.get_listening_address()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.CallbackServer.get_listening_port"><code class="docutils literal notranslate"><span class="pre">CallbackServer.get_listening_port()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.CallbackServer.run"><code class="docutils literal notranslate"><span class="pre">CallbackServer.run()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.CallbackServer.shutdown"><code class="docutils literal notranslate"><span class="pre">CallbackServer.shutdown()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.CallbackServer.start"><code class="docutils literal notranslate"><span class="pre">CallbackServer.start()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#callbackconnection">4.1.13. CallbackConnection</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.CallbackConnection"><code class="docutils literal notranslate"><span class="pre">CallbackConnection</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.CallbackConnection.close"><code class="docutils literal notranslate"><span class="pre">CallbackConnection.close()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.CallbackConnection.run"><code class="docutils literal notranslate"><span class="pre">CallbackConnection.run()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#py4j-core-signals">4.1.14. Py4J Core Signals</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.server_connection_stopped"><code class="docutils literal notranslate"><span class="pre">server_connection_stopped</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.server_connection_started"><code class="docutils literal notranslate"><span class="pre">server_connection_started</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.server_connection_error"><code class="docutils literal notranslate"><span class="pre">server_connection_error</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.server_started"><code class="docutils literal notranslate"><span class="pre">server_started</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.server_stopped"><code class="docutils literal notranslate"><span class="pre">server_stopped</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.pre_server_shutdown"><code class="docutils literal notranslate"><span class="pre">pre_server_shutdown</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.post_server_shutdown"><code class="docutils literal notranslate"><span class="pre">post_server_shutdown</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#py4j-functions">4.1.15. Py4J Functions</a><ul>
+<li><a class="reference internal" href="#py4j.java_gateway.java_import"><code class="docutils literal notranslate"><span class="pre">java_import()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.launch_gateway"><code class="docutils literal notranslate"><span class="pre">launch_gateway()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.get_field"><code class="docutils literal notranslate"><span class="pre">get_field()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.set_field"><code class="docutils literal notranslate"><span class="pre">set_field()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.get_method"><code class="docutils literal notranslate"><span class="pre">get_method()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.is_instance_of"><code class="docutils literal notranslate"><span class="pre">is_instance_of()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.java_gateway.get_java_class"><code class="docutils literal notranslate"><span class="pre">get_java_class()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -128,12 +225,12 @@
           <div class="body">
             
   <section id="module-py4j.java_gateway">
-<span id="py4j-java-gateway-py4j-main-api"></span><h1><span class="section-number">4.1. </span><a class="reference internal" href="#module-py4j.java_gateway" title="py4j.java_gateway: Main Py4J Python module."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.java_gateway</span></code></a> — Py4J Main API<a class="headerlink" href="#module-py4j.java_gateway" title="Permalink to this headline">¶</a></h1>
+<span id="py4j-java-gateway-py4j-main-api"></span><h1><span class="section-number">4.1. </span><a class="reference internal" href="#module-py4j.java_gateway" title="py4j.java_gateway: Main Py4J Python module."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.java_gateway</span></code></a> — Py4J Main API<a class="headerlink" href="#module-py4j.java_gateway" title="Permalink to this heading">¶</a></h1>
 <p>The <a class="reference internal" href="#module-py4j.java_gateway" title="py4j.java_gateway: Main Py4J Python module."><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.java_gateway</span></code></a> module defines most of the classes that are needed
 to use Py4J. Py4J users are expected to only use explicitly <a class="reference internal" href="#py4j.java_gateway.JavaGateway" title="py4j.java_gateway.JavaGateway"><code class="xref py py-class docutils literal notranslate"><span class="pre">JavaGateway</span></code></a> and optionally, <a class="reference internal" href="#py4j.java_gateway.GatewayParameters" title="py4j.java_gateway.GatewayParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">GatewayParameters</span></code></a>, <a class="reference internal" href="#py4j.java_gateway.CallbackServerParameters" title="py4j.java_gateway.CallbackServerParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">CallbackServerParameters</span></code></a>, <a class="reference internal" href="#py4j.java_gateway.java_import" title="py4j.java_gateway.java_import"><code class="xref py py-func docutils literal notranslate"><span class="pre">java_import</span></code></a>, <a class="reference internal" href="#py4j.java_gateway.get_field" title="py4j.java_gateway.get_field"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_field</span></code></a>, <a class="reference internal" href="#py4j.java_gateway.get_method" title="py4j.java_gateway.get_method"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_method</span></code></a>, <a class="reference internal" href="#py4j.java_gateway.launch_gateway" title="py4j.java_gateway.launch_gateway"><code class="xref py py-func docutils literal notranslate"><span class="pre">launch_gateway</span></code></a>, and <a class="reference internal" href="#py4j.java_gateway.is_instance_of" title="py4j.java_gateway.is_instance_of"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_instance_of</span></code></a>. The other module members are documented to
 support the extension of Py4J.</p>
 <section id="javagateway">
-<span id="api-javagateway"></span><h2><span class="section-number">4.1.1. </span>JavaGateway<a class="headerlink" href="#javagateway" title="Permalink to this headline">¶</a></h2>
+<span id="api-javagateway"></span><h2><span class="section-number">4.1.1. </span>JavaGateway<a class="headerlink" href="#javagateway" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_gateway.JavaGateway">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.java_gateway.</span></span><span class="sig-name descname"><span class="pre">JavaGateway</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gateway_client</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_proxy_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25334</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_callback_server</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_convert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eager_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gateway_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_server_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_server_entry_point</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_process</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_gateway.JavaGateway" title="Permalink to this definition">¶</a></dt>
@@ -161,7 +258,7 @@ Python).</p></li>
 <code class="docutils literal notranslate"><span class="pre">gateway.entry_point.doThat()</span></code>. This is a trade-off between convenience
 and potential confusion.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gateway_parameters</strong> – An instance of <cite>GatewayParameters</cite> used to
 configure the various options of the gateway.</p></li>
@@ -184,7 +281,7 @@ that the <cite>JavaGateway</cite> shall connect to, if available.</p></li>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>keep_callback_server</strong> – if <cite>True</cite>, the callback server is not
 shut down. Mutually exclusive with
@@ -205,7 +302,7 @@ connections.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>raise_exception</strong> – If <cite>True</cite>, raise an exception if an error
 occurs while closing the callback server connections
 (very likely with sockets).</p>
@@ -222,7 +319,7 @@ is garbage collected on the Python side. This method, or gc.collect()
 should still be invoked when memory is limited or when too many objects
 are created on the Java side.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>java_object</strong> – The JavaObject instance to dereference (free) on
 the Java side.</p>
 </dd>
@@ -239,7 +336,7 @@ the Java side.</p>
 <span class="sig-name descname"><span class="pre">help</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">short_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_gateway.JavaGateway.help" title="Permalink to this definition">¶</a></dt>
 <dd><p>Displays a help page about a class or an object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>var</strong> – JavaObject, JavaClass or JavaMember for which a help page
 will be generated.</p></li>
@@ -267,7 +364,7 @@ it.</p>
 <p>See <a class="reference internal" href="#py4j.java_gateway.launch_gateway" title="py4j.java_gateway.launch_gateway"><code class="xref py py-func docutils literal notranslate"><span class="pre">launch_gateway</span></code></a> for more
 information about this function.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>port</strong> – the port to launch the Java Gateway on.  If no port is
 specified then an ephemeral port is used.</p></li>
@@ -313,7 +410,7 @@ directory of the Java process.</p></li>
 shell=True</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>a <a class="reference internal" href="#py4j.java_gateway.JavaGateway" title="py4j.java_gateway.JavaGateway"><code class="xref py py-class docutils literal notranslate"><span class="pre">JavaGateway</span></code></a>
 connected to the <cite>Gateway</cite> server.</p>
 </dd>
@@ -325,7 +422,7 @@ connected to the <cite>Gateway</cite> server.</p>
 <span class="sig-name descname"><span class="pre">new_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">java_class</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">dimensions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_gateway.JavaGateway.new_array" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a Java array of type <cite>java_class</cite> of <cite>dimensions</cite></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>java_class</strong> – The <a class="reference internal" href="#py4j.java_gateway.JavaClass" title="py4j.java_gateway.JavaClass"><code class="xref py py-class docutils literal notranslate"><span class="pre">JavaClass</span></code></a> instance representing the
 type of the array.</p></li>
@@ -333,7 +430,7 @@ type of the array.</p></li>
 <cite>[1,2]</cite> would produce an <cite>array[1][2]</cite>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>A <a class="reference internal" href="py4j_java_collections.html#py4j.java_collections.JavaArray" title="py4j.java_collections.JavaArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">JavaArray</span></code></a>
 instance.</p>
 </dd>
@@ -349,12 +446,12 @@ of another view.</p>
 <p>Generally, each Python module should have its own view (to replicate
 Java behavior).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>name</strong> – Optional name of the jvm view. Does not need to be
 unique, i.e., two distinct views can have the same name
 (internally, they will have a distinct id).</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>A JVMView instance (same class as the gateway.jvm instance).</p>
 </dd>
 </dl>
@@ -383,7 +480,7 @@ gateway is loaded.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>raise_exception</strong> – If <cite>True</cite>, raise an exception if an error
 occurs while shutting down (very likely with sockets).</p>
 </dd>
@@ -398,7 +495,7 @@ occurs while shutting down (very likely with sockets).</p>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>raise_exception</strong> – If <cite>True</cite>, raise an exception if an error
 occurs while shutting down (very likely with sockets).</p>
 </dd>
@@ -410,12 +507,12 @@ occurs while shutting down (very likely with sockets).</p>
 <span class="sig-name descname"><span class="pre">start_callback_server</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback_server_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_gateway.JavaGateway.start_callback_server" title="Permalink to this definition">¶</a></dt>
 <dd><p>Starts the callback server.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>callback_server_parameters</strong> – parameters to use to start the
 server. If not provided, it will use the gateway callback server
 parameters.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Returns True if the server was started by this call or False if
 it was already started (you cannot have more than one started
 callback server).</p>
@@ -426,7 +523,7 @@ callback server).</p>
 </dd></dl>
 
 <section id="examples">
-<span id="api-java-gateway-examples"></span><h3><span class="section-number">4.1.1.1. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<span id="api-java-gateway-examples"></span><h3><span class="section-number">4.1.1.1. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h3>
 <p>Using the <code class="docutils literal notranslate"><span class="pre">jvm</span></code> property:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gateway</span> <span class="o">=</span> <span class="n">JavaGateway</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">jvm</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span>
@@ -471,14 +568,14 @@ callback server).</p>
 </section>
 </section>
 <section id="gatewayparameters">
-<span id="api-gatewayparameters"></span><h2><span class="section-number">4.1.2. </span>GatewayParameters<a class="headerlink" href="#gatewayparameters" title="Permalink to this headline">¶</a></h2>
+<span id="api-gatewayparameters"></span><h2><span class="section-number">4.1.2. </span>GatewayParameters<a class="headerlink" href="#gatewayparameters" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_gateway.GatewayParameters">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.java_gateway.</span></span><span class="sig-name descname"><span class="pre">GatewayParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25333</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_close</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_convert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eager_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_memory_management</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auth_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_gateway.GatewayParameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper class that contains all parameters that can be passed to
 configure a <cite>JavaGateway</cite></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>address</strong> – the address to which the client will request a
 connection. If you’re assing a <cite>SSLContext</cite> with
@@ -517,14 +614,14 @@ must provide to the server when connecting.</p></li>
 
 </section>
 <section id="callbackserverparameters">
-<span id="api-callbackserverparameters"></span><h2><span class="section-number">4.1.3. </span>CallbackServerParameters<a class="headerlink" href="#callbackserverparameters" title="Permalink to this headline">¶</a></h2>
+<span id="api-callbackserverparameters"></span><h2><span class="section-number">4.1.3. </span>CallbackServerParameters<a class="headerlink" href="#callbackserverparameters" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_gateway.CallbackServerParameters">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.java_gateway.</span></span><span class="sig-name descname"><span class="pre">CallbackServerParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25334</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daemonize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daemonize_connections</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eager_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accept_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DEFAULT'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">propagate_java_exceptions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auth_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_gateway.CallbackServerParameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper class that contains all parameters that can be passed to
 configure a <cite>CallbackServer</cite></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>address</strong> – the address to which the client will request a
 connection</p></li>
@@ -564,7 +661,7 @@ must provide to the server when connecting.</p></li>
 
 </section>
 <section id="gatewayclient">
-<span id="api-gatewayclient"></span><h2><span class="section-number">4.1.4. </span>GatewayClient<a class="headerlink" href="#gatewayclient" title="Permalink to this headline">¶</a></h2>
+<span id="api-gatewayclient"></span><h2><span class="section-number">4.1.4. </span>GatewayClient<a class="headerlink" href="#gatewayclient" title="Permalink to this heading">¶</a></h2>
 <p><strong>This is an internal class. Do not use it directly.</strong></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_gateway.GatewayClient">
@@ -578,7 +675,7 @@ instance of <a class="reference internal" href="#py4j.java_gateway.GatewayClient
 both have the same interface, but the client supports multiple threads and
 connections, which is essential when using callbacks.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gateway_parameters</strong> – the set of parameters used to configure the
 GatewayClient.</p></li>
@@ -613,7 +710,7 @@ JavaObject on the Python side.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>command</strong> – the <cite>string</cite> command to send to the JVM. The command
 must follow the Py4J protocol.</p></li>
@@ -626,7 +723,7 @@ responsible for closing the connection (or returning it this
 <cite>GatewayClient</cite> pool using <cite>_give_back_connection</cite>).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>the <cite>string</cite> answer received from the JVM (The answer follows
 the Py4J protocol). The guarded <cite>GatewayConnection</cite> is also returned
 if <cite>binary</cite> is <cite>True</cite>.</p>
@@ -647,7 +744,7 @@ the Python program.</p>
 
 </section>
 <section id="gatewayconnection">
-<span id="api-gatewayconnection"></span><h2><span class="section-number">4.1.5. </span>GatewayConnection<a class="headerlink" href="#gatewayconnection" title="Permalink to this headline">¶</a></h2>
+<span id="api-gatewayconnection"></span><h2><span class="section-number">4.1.5. </span>GatewayConnection<a class="headerlink" href="#gatewayconnection" title="Permalink to this heading">¶</a></h2>
 <p><strong>This is an internal class. Do not use it directly.</strong></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_gateway.GatewayConnection">
@@ -655,7 +752,7 @@ the Python program.</p>
 <dd><p>Default gateway connection (socket based) responsible for communicating
 with the Java Virtual Machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gateway_parameters</strong> – the set of parameters used to configure the
 GatewayClient.</p></li>
@@ -680,11 +777,11 @@ instances.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>command</strong> – the <cite>string</cite> command to send to the JVM. The command
 must follow the Py4J protocol.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>the <cite>string</cite> answer received from the JVM (The answer follows
 the Py4J protocol).</p>
 </dd>
@@ -710,7 +807,7 @@ program.</p>
 
 </section>
 <section id="jvmview">
-<span id="api-jvm"></span><h2><span class="section-number">4.1.6. </span>JVMView<a class="headerlink" href="#jvmview" title="Permalink to this headline">¶</a></h2>
+<span id="api-jvm"></span><h2><span class="section-number">4.1.6. </span>JVMView<a class="headerlink" href="#jvmview" title="Permalink to this heading">¶</a></h2>
 <p><strong>This is an internal class. Do not use it directly.</strong></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_gateway.JVMView">
@@ -723,19 +820,19 @@ to call constructors.</p>
 
 </section>
 <section id="javaobject">
-<span id="api-javaobject"></span><h2><span class="section-number">4.1.7. </span>JavaObject<a class="headerlink" href="#javaobject" title="Permalink to this headline">¶</a></h2>
+<span id="api-javaobject"></span><h2><span class="section-number">4.1.7. </span>JavaObject<a class="headerlink" href="#javaobject" title="Permalink to this heading">¶</a></h2>
 <p><strong>This is an internal class. Do not use it directly.</strong></p>
 <p>Represents a Java object from which you can call methods or access fields.</p>
 </section>
 <section id="javamember">
-<span id="api-javamember"></span><h2><span class="section-number">4.1.8. </span>JavaMember<a class="headerlink" href="#javamember" title="Permalink to this headline">¶</a></h2>
+<span id="api-javamember"></span><h2><span class="section-number">4.1.8. </span>JavaMember<a class="headerlink" href="#javamember" title="Permalink to this heading">¶</a></h2>
 <p><strong>This is an internal class. Do not use it directly.</strong></p>
 <p>Represents a member (i.e., method) of a <code class="xref py py-class docutils literal notranslate"><span class="pre">JavaObject</span></code>. For now, only
 methods are supported. Fields are retrieved directly and are not contained in a
 JavaMember.</p>
 </section>
 <section id="javaclass">
-<span id="api-javaclass"></span><h2><span class="section-number">4.1.9. </span>JavaClass<a class="headerlink" href="#javaclass" title="Permalink to this headline">¶</a></h2>
+<span id="api-javaclass"></span><h2><span class="section-number">4.1.9. </span>JavaClass<a class="headerlink" href="#javaclass" title="Permalink to this heading">¶</a></h2>
 <p><strong>This is an internal class. Do not use it directly.</strong></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_gateway.JavaClass">
@@ -756,7 +853,7 @@ JavaClass. Equivalent to calling .class in Java.</p>
 
 </section>
 <section id="javapackage">
-<span id="api-javapackage"></span><h2><span class="section-number">4.1.10. </span>JavaPackage<a class="headerlink" href="#javapackage" title="Permalink to this headline">¶</a></h2>
+<span id="api-javapackage"></span><h2><span class="section-number">4.1.10. </span>JavaPackage<a class="headerlink" href="#javapackage" title="Permalink to this heading">¶</a></h2>
 <p><strong>This is an internal class. Do not use it directly.</strong></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_gateway.JavaPackage">
@@ -770,7 +867,7 @@ they are created while accessing the <cite>jvm</cite> property of a gateway, e.g
 
 </section>
 <section id="pythonproxypool">
-<span id="api-pythonproxypool"></span><h2><span class="section-number">4.1.11. </span>PythonProxyPool<a class="headerlink" href="#pythonproxypool" title="Permalink to this headline">¶</a></h2>
+<span id="api-pythonproxypool"></span><h2><span class="section-number">4.1.11. </span>PythonProxyPool<a class="headerlink" href="#pythonproxypool" title="Permalink to this heading">¶</a></h2>
 <p><strong>This is an internal class. Do not use it directly.</strong></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_gateway.PythonProxyPool">
@@ -794,10 +891,10 @@ implemented interfaces.</p>
 <span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_gateway.PythonProxyPool.put" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds a proxy to the pool.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>object</strong> – The proxy to add to the pool.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>A unique identifier associated with the object.</p>
 </dd>
 </dl>
@@ -807,7 +904,7 @@ implemented interfaces.</p>
 
 </section>
 <section id="callbackserver">
-<span id="api-callbackserver"></span><h2><span class="section-number">4.1.12. </span>CallbackServer<a class="headerlink" href="#callbackserver" title="Permalink to this headline">¶</a></h2>
+<span id="api-callbackserver"></span><h2><span class="section-number">4.1.12. </span>CallbackServer<a class="headerlink" href="#callbackserver" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_gateway.CallbackServer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.java_gateway.</span></span><span class="sig-name descname"><span class="pre">CallbackServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gateway_client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25334</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_server_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.java_gateway.CallbackServer" title="Permalink to this definition">¶</a></dt>
@@ -815,7 +912,7 @@ implemented interfaces.</p>
 requests from the JVM. Usually connections are reused on the Java side,
 but there is at least one connection per concurrent thread.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pool</strong> – the pool responsible of tracking Python objects passed to
 the Java side.</p></li>
@@ -876,7 +973,7 @@ client instead of run().</p>
 
 </section>
 <section id="callbackconnection">
-<span id="api-callbackconnection"></span><h2><span class="section-number">4.1.13. </span>CallbackConnection<a class="headerlink" href="#callbackconnection" title="Permalink to this headline">¶</a></h2>
+<span id="api-callbackconnection"></span><h2><span class="section-number">4.1.13. </span>CallbackConnection<a class="headerlink" href="#callbackconnection" title="Permalink to this heading">¶</a></h2>
 <p><strong>This is an internal class. Do not use it directly.</strong></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.java_gateway.CallbackConnection">
@@ -915,7 +1012,7 @@ from the args and kwargs arguments, respectively.</p>
 
 </section>
 <section id="py4j-core-signals">
-<span id="api-signals"></span><h2><span class="section-number">4.1.14. </span>Py4J Core Signals<a class="headerlink" href="#py4j-core-signals" title="Permalink to this headline">¶</a></h2>
+<span id="api-signals"></span><h2><span class="section-number">4.1.14. </span>Py4J Core Signals<a class="headerlink" href="#py4j-core-signals" title="Permalink to this heading">¶</a></h2>
 <p>This is a list of signals that Py4J can send during various lifecycle events.
 They are all instances of <a class="reference internal" href="py4j_signals.html#py4j.signals.Signal" title="py4j.signals.Signal"><code class="xref py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a>.</p>
 <dl class="py data">
@@ -979,7 +1076,7 @@ the current JavaGateway and ClientServer API).</p>
 
 </section>
 <section id="py4j-functions">
-<span id="api-functions"></span><h2><span class="section-number">4.1.15. </span>Py4J Functions<a class="headerlink" href="#py4j-functions" title="Permalink to this headline">¶</a></h2>
+<span id="api-functions"></span><h2><span class="section-number">4.1.15. </span>Py4J Functions<a class="headerlink" href="#py4j-functions" title="Permalink to this heading">¶</a></h2>
 <p>The following functions get be used to import packages or to get a particular field or method when fields and methods in a Java class have the same name:</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="py4j.java_gateway.java_import">
@@ -987,10 +1084,10 @@ the current JavaGateway and ClientServer API).</p>
 <dd><p>Imports the package or class specified by <cite>import_str</cite> in the
 jvm view namespace.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>jvm_view</strong> – The jvm_view in which to import a class/package.</p>
 </dd>
-<dt class="field-even">Import_str</dt>
+<dt class="field-even">Import_str<span class="colon">:</span></dt>
 <dd class="field-even"><p>The class (e.g., java.util.List) or the package
 (e.g., java.io.*) to import</p>
 </dd>
@@ -1010,7 +1107,7 @@ are redirected to the file-like object (<code class="docutils literal notranslat
 communicate with the child JVM through bytes, you need to create your own
 helper function.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>port</strong> – the port to launch the Java Gateway on.  If no port is
 specified then an ephemeral port is used.</p></li>
@@ -1054,7 +1151,7 @@ process was created.</p></li>
 shell=True</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>the port number of the <cite>Gateway</cite> server or, when auth enabled,
 a 2-tuple with the port number and the auth token.</p>
 </dd>
@@ -1068,7 +1165,7 @@ a 2-tuple with the port number and the auth token.</p>
 <p>This function is useful when <cite>auto_field=false</cite> in a gateway or
 Java object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>java_object</strong> – the instance containing the field</p></li>
 <li><p><strong>field_name</strong> – the name of the field to retrieve</p></li>
@@ -1084,7 +1181,7 @@ Java object.</p>
 <p>This function is the only way to set a field because the assignment
 operator in Python cannot be overloaded.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>java_object</strong> – the instance containing the field</p></li>
 <li><p><strong>field_name</strong> – the name of the field to set</p></li>
@@ -1102,7 +1199,7 @@ operator in Python cannot be overloaded.</p>
 the same name as a method. The full signature of the method is not
 required: it is determined when the method is called.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>java_object</strong> – the instance containing the method</p></li>
 <li><p><strong>method_name</strong> – the name of the method to retrieve</p></li>
@@ -1117,7 +1214,7 @@ required: it is determined when the method is called.</p>
 <dd><p>Indicates whether a java object is an instance of the provided
 java_class.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>gateway</strong> – the JavaGateway instance</p></li>
 <li><p><strong>java_object</strong> – the JavaObject instance</p></li>
@@ -1134,10 +1231,10 @@ instance, or a JavaObject instance)</p></li>
 <dd><p>Returns the java.lang.Class of a JavaClass. This is equivalent to
 calling .class in Java.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>java_class</strong> – An instance of JavaClass</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>An instance of JavaObject that corresponds to a java.lang.Class</p>
 </dd>
 </dl>
@@ -1189,7 +1286,7 @@ calling .class in Java.</p>
     </div>
     <div class="footer">
       &copy; Copyright 2009-2015, Barthélémy Dagenais.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.5.0.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 5.3.0.
     </div>
   </div>
   </body>

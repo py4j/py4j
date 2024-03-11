@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>4.2. py4j.clientserver — Py4J Single Threading Model Implementation &mdash; Py4J</title>
     <link rel="stylesheet" href="_static/py4jdoc.css" type="text/css" />
@@ -21,7 +21,9 @@
     <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sphinx_highlight.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -74,14 +76,46 @@
             <ul>
 <li><a class="reference internal" href="#">4.2. <code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.clientserver</span></code> — Py4J Single Threading Model Implementation</a><ul>
 <li><a class="reference internal" href="#clientserver">4.2.1. ClientServer</a><ul>
+<li><a class="reference internal" href="#py4j.clientserver.ClientServer"><code class="docutils literal notranslate"><span class="pre">ClientServer</span></code></a></li>
 <li><a class="reference internal" href="#examples">4.2.1.1. Examples</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#javaparameters">4.2.2. JavaParameters</a></li>
-<li><a class="reference internal" href="#pythonparameters">4.2.3. PythonParameters</a></li>
-<li><a class="reference internal" href="#javaclient">4.2.4. JavaClient</a></li>
-<li><a class="reference internal" href="#pythonserver">4.2.5. PythonServer</a></li>
-<li><a class="reference internal" href="#clientserverconnection">4.2.6. ClientServerConnection</a></li>
+<li><a class="reference internal" href="#javaparameters">4.2.2. JavaParameters</a><ul>
+<li><a class="reference internal" href="#py4j.clientserver.JavaParameters"><code class="docutils literal notranslate"><span class="pre">JavaParameters</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pythonparameters">4.2.3. PythonParameters</a><ul>
+<li><a class="reference internal" href="#py4j.clientserver.PythonParameters"><code class="docutils literal notranslate"><span class="pre">PythonParameters</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#javaclient">4.2.4. JavaClient</a><ul>
+<li><a class="reference internal" href="#py4j.clientserver.JavaClient"><code class="docutils literal notranslate"><span class="pre">JavaClient</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.clientserver.JavaClient.garbage_collect_object"><code class="docutils literal notranslate"><span class="pre">JavaClient.garbage_collect_object()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.clientserver.JavaClient.get_thread_connection"><code class="docutils literal notranslate"><span class="pre">JavaClient.get_thread_connection()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.clientserver.JavaClient.set_thread_connection"><code class="docutils literal notranslate"><span class="pre">JavaClient.set_thread_connection()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.clientserver.JavaClient.shutdown_gateway"><code class="docutils literal notranslate"><span class="pre">JavaClient.shutdown_gateway()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pythonserver">4.2.5. PythonServer</a><ul>
+<li><a class="reference internal" href="#py4j.clientserver.PythonServer"><code class="docutils literal notranslate"><span class="pre">PythonServer</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#clientserverconnection">4.2.6. ClientServerConnection</a><ul>
+<li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection</span></code></a><ul>
+<li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.close"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.close()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.connect_to_java_server"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.connect_to_java_server()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.init_socket_from_python_server"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.init_socket_from_python_server()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.run"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.run()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.send_command"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.send_command()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.shutdown_gateway"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.shutdown_gateway()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.start"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.start()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.wait_for_commands"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.wait_for_commands()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -119,7 +153,7 @@
           <div class="body">
             
   <section id="module-py4j.clientserver">
-<span id="py4j-clientserver-py4j-single-threading-model-implementation"></span><h1><span class="section-number">4.2. </span><a class="reference internal" href="#module-py4j.clientserver" title="py4j.clientserver: Py4J single threading model implementation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.clientserver</span></code></a> — Py4J Single Threading Model Implementation<a class="headerlink" href="#module-py4j.clientserver" title="Permalink to this headline">¶</a></h1>
+<span id="py4j-clientserver-py4j-single-threading-model-implementation"></span><h1><span class="section-number">4.2. </span><a class="reference internal" href="#module-py4j.clientserver" title="py4j.clientserver: Py4J single threading model implementation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.clientserver</span></code></a> — Py4J Single Threading Model Implementation<a class="headerlink" href="#module-py4j.clientserver" title="Permalink to this heading">¶</a></h1>
 <p>The <a class="reference internal" href="#module-py4j.clientserver" title="py4j.clientserver: Py4J single threading model implementation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">py4j.clientserver</span></code></a> module defines an implementation of Python Server
 and Java client that ensures that commands started from a Python or Java thread
 are always executed on the same Java or Python thread.</p>
@@ -128,7 +162,7 @@ code calls some Java code, the Java code will be executed in the UI thread.</p>
 <p>Py4J users are expected to only use explicitly <a class="reference internal" href="#py4j.clientserver.ClientServer" title="py4j.clientserver.ClientServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClientServer</span></code></a> and optionally, <a class="reference internal" href="#py4j.clientserver.JavaParameters" title="py4j.clientserver.JavaParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">JavaParameters</span></code></a> and <a class="reference internal" href="#py4j.clientserver.PythonParameters" title="py4j.clientserver.PythonParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">PythonParameters</span></code></a>.  The other module members are documented
 to support the extension of Py4J.</p>
 <section id="clientserver">
-<span id="api-clientserver"></span><h2><span class="section-number">4.2.1. </span>ClientServer<a class="headerlink" href="#clientserver" title="Permalink to this headline">¶</a></h2>
+<span id="api-clientserver"></span><h2><span class="section-number">4.2.1. </span>ClientServer<a class="headerlink" href="#clientserver" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.clientserver.ClientServer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.clientserver.</span></span><span class="sig-name descname"><span class="pre">ClientServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">java_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_server_entry_point</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.clientserver.ClientServer" title="Permalink to this definition">¶</a></dt>
@@ -139,7 +173,7 @@ executed in the calling thread.</p>
 callback (from Java to Python) will be executed in Python thread 1.</p>
 <p>Note about authentication: to enable authentication</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>java_parameters</strong> – collection of parameters and flags used to
 configure the JavaGateway (Java client)</p></li>
@@ -153,7 +187,7 @@ Java is driving the communication.</p></li>
 </dd></dl>
 
 <section id="examples">
-<span id="api-clientserver-examples"></span><h3><span class="section-number">4.2.1.1. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<span id="api-clientserver-examples"></span><h3><span class="section-number">4.2.1.1. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h3>
 <p>Using the <code class="docutils literal notranslate"><span class="pre">jvm</span></code> property:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">clientserver</span> <span class="o">=</span> <span class="n">ClientServer</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">l</span> <span class="o">=</span> <span class="n">clientserver</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">java</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">ArrayList</span><span class="p">()</span>
@@ -170,14 +204,14 @@ with all examples and code written for a <cite>JavaGateway</cite>.`</p>
 </section>
 </section>
 <section id="javaparameters">
-<span id="api-javaparameters"></span><h2><span class="section-number">4.2.2. </span>JavaParameters<a class="headerlink" href="#javaparameters" title="Permalink to this headline">¶</a></h2>
+<span id="api-javaparameters"></span><h2><span class="section-number">4.2.2. </span>JavaParameters<a class="headerlink" href="#javaparameters" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.clientserver.JavaParameters">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.clientserver.</span></span><span class="sig-name descname"><span class="pre">JavaParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25333</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_close</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_convert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eager_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_memory_management</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_gc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daemonize_memory_management</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auth_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.clientserver.JavaParameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper class that contains all parameters that can be passed to
 configure a <cite>ClientServer</cite>.`</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>address</strong> – the address to which the client will request a
 connection. If you’re assing a <cite>SSLContext</cite> with
@@ -226,14 +260,14 @@ must provide to the server when connecting.</p></li>
 
 </section>
 <section id="pythonparameters">
-<span id="api-pythonparameters"></span><h2><span class="section-number">4.2.3. </span>PythonParameters<a class="headerlink" href="#pythonparameters" title="Permalink to this headline">¶</a></h2>
+<span id="api-pythonparameters"></span><h2><span class="section-number">4.2.3. </span>PythonParameters<a class="headerlink" href="#pythonparameters" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.clientserver.PythonParameters">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.clientserver.</span></span><span class="sig-name descname"><span class="pre">PythonParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25334</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daemonize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daemonize_connections</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eager_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_gc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accept_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DEFAULT'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">propagate_java_exceptions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auth_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.clientserver.PythonParameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper class that contains all parameters that can be passed to
 configure a <cite>ClientServer</cite></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>address</strong> – the address to which the client will request a
 connection</p></li>
@@ -278,7 +312,7 @@ must provide to the server when connecting.</p></li>
 
 </section>
 <section id="javaclient">
-<span id="api-javaclient"></span><h2><span class="section-number">4.2.4. </span>JavaClient<a class="headerlink" href="#javaclient" title="Permalink to this headline">¶</a></h2>
+<span id="api-javaclient"></span><h2><span class="section-number">4.2.4. </span>JavaClient<a class="headerlink" href="#javaclient" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.clientserver.JavaClient">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.clientserver.</span></span><span class="sig-name descname"><span class="pre">JavaClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">java_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gateway_property</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">finalizer_deque</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.clientserver.JavaClient" title="Permalink to this definition">¶</a></dt>
@@ -286,7 +320,7 @@ must provide to the server when connecting.</p></li>
 <p>This implementation is thread-safe because it always use only one
 ClientServerConnection per thread.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>java_parameters</strong> – collection of parameters and flags used to
 configure the JavaGateway (Java client)</p></li>
@@ -320,7 +354,7 @@ be None.</p>
 <span class="sig-name descname"><span class="pre">set_thread_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.clientserver.JavaClient.set_thread_connection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Associates a ClientServerConnection with the current thread.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>connection</strong> – The ClientServerConnection to associate with the
 current thread.</p>
 </dd>
@@ -340,13 +374,13 @@ the Python program.</p>
 
 </section>
 <section id="pythonserver">
-<span id="api-pythonserver"></span><h2><span class="section-number">4.2.5. </span>PythonServer<a class="headerlink" href="#pythonserver" title="Permalink to this headline">¶</a></h2>
+<span id="api-pythonserver"></span><h2><span class="section-number">4.2.5. </span>PythonServer<a class="headerlink" href="#pythonserver" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.clientserver.PythonServer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.clientserver.</span></span><span class="sig-name descname"><span class="pre">PythonServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">java_client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gateway_property</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.clientserver.PythonServer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Responsible for managing requests from Java to Python.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>java_client</strong> – the gateway client used to call Java objects.</p></li>
 <li><p><strong>java_parameters</strong> – collection of parameters and flags used to
@@ -361,7 +395,7 @@ configure the CallbackServer (Python server)</p></li>
 
 </section>
 <section id="clientserverconnection">
-<span id="api-clientserverconnection"></span><h2><span class="section-number">4.2.6. </span>ClientServerConnection<a class="headerlink" href="#clientserverconnection" title="Permalink to this headline">¶</a></h2>
+<span id="api-clientserverconnection"></span><h2><span class="section-number">4.2.6. </span>ClientServerConnection<a class="headerlink" href="#clientserverconnection" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="py4j.clientserver.ClientServerConnection">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">py4j.clientserver.</span></span><span class="sig-name descname"><span class="pre">ClientServerConnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">java_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gateway_property</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_server</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.clientserver.ClientServerConnection" title="Permalink to this definition">¶</a></dt>
@@ -369,7 +403,7 @@ configure the CallbackServer (Python server)</p></li>
 (socket-based, one per thread) responsible for communicating
 with the Java Virtual Machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>java_parameters</strong> – collection of parameters and flags used to
 configure the JavaGateway (Java client)</p></li>
@@ -474,7 +508,7 @@ of the Java program must be tied to the Python program.</p>
     </div>
     <div class="footer">
       &copy; Copyright 2009-2015, Barthélémy Dagenais.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.5.0.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 5.3.0.
     </div>
   </div>
   </body>
