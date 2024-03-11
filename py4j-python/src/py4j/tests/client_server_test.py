@@ -133,7 +133,6 @@ class HelloObjects(object):
 
 class GarbageCollectionTest(unittest.TestCase):
 
-    @unittest.skipIf(sys.version_info > (3, 12), "Flaky with Python 3.12+ in GitHub Actions")
     def testSendObjects(self):
         """This test receives 1000 calls creating object cycles.
         Typically, the garbage collector will starts in the middle of
@@ -148,7 +147,7 @@ class GarbageCollectionTest(unittest.TestCase):
                 start_gc_test=True, join=False) as p:
             p.join()
             client_server.shutdown()
-            self.assertEquals(1000, hello.calls)
+            self.assertEqual(1000, hello.calls)
 
     def testCleanConnections(self):
         """This test intentionally create multiple connections in multiple
@@ -510,7 +509,6 @@ class IntegrationTest(unittest.TestCase):
             self.assertLess(len(client_server.gateway_property.pool), 2)
             client_server.shutdown()
 
-    @unittest.skipIf(sys.version_info > (3, 12), "Flaky with Python 3.12+ in GitHub Actions")
     def testPythonGC(self):
         def internal_function(client_server):
             example = client_server.entry_point.getNewExample()
@@ -551,7 +549,6 @@ class IntegrationTest(unittest.TestCase):
             self.assertGreater(in_middle, before)
             client_server.shutdown()
 
-    @unittest.skipIf(sys.version_info > (3, 12), "Flaky with Python 3.12+ in GitHub Actions")
     def testMultiClientServerWithSharedJavaThread(self):
         with java_multi_client_server_app_process():
             client_server0 = ClientServer(
@@ -609,9 +606,9 @@ class IntegrationTest(unittest.TestCase):
             self.assertNotEqual(sharedPythonThreadId0, sharedPythonThreadId1)
             # Check that the Python thread id does not change between
             # invocations
-            self.assertEquals(sharedPythonThreadId0,
+            self.assertEqual(sharedPythonThreadId0,
                               entry0.getSharedPythonThreadId())
-            self.assertEquals(sharedPythonThreadId1,
+            self.assertEqual(sharedPythonThreadId1,
                               entry1.getSharedPythonThreadId())
 
             # ## 3 Hops to Shared Java Thread
@@ -626,7 +623,6 @@ class IntegrationTest(unittest.TestCase):
             client_server0.shutdown()
             client_server1.shutdown()
 
-    @unittest.skipIf(sys.version_info > (3, 12), "Flaky with Python 3.12+ in GitHub Actions")
     def testMultiClientServer(self):
         with java_multi_client_server_app_process():
             client_server0 = ClientServer(
@@ -653,9 +649,9 @@ class IntegrationTest(unittest.TestCase):
             # ## 0 Hops to Thread ID
 
             # Check that the two thread getters get the same thread
-            self.assertEquals(thisThreadId,
+            self.assertEqual(thisThreadId,
                               int(threadIdGetter0.getThreadId()))
-            self.assertEquals(thisThreadId,
+            self.assertEqual(thisThreadId,
                               int(threadIdGetter1.getThreadId()))
 
             # ## 1 Hop to Thread ID
