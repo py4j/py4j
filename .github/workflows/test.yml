@@ -21,7 +21,7 @@ jobs:
           - os: windows-2019
             java-version: 17
             python-version: '3.10'
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             java-version: 11
             python-version: '3.8'
     name: Py ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
