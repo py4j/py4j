@@ -146,7 +146,7 @@ class GarbageCollectionTest(unittest.TestCase):
                 start_gc_test=True, join=False) as p:
             p.join()
             client_server.shutdown()
-            self.assertEquals(1000, hello.calls)
+            self.assertEqual(1000, hello.calls)
 
     def testCleanConnections(self):
         """This test intentionally create multiple connections in multiple
@@ -605,9 +605,9 @@ class IntegrationTest(unittest.TestCase):
             self.assertNotEqual(sharedPythonThreadId0, sharedPythonThreadId1)
             # Check that the Python thread id does not change between
             # invocations
-            self.assertEquals(sharedPythonThreadId0,
+            self.assertEqual(sharedPythonThreadId0,
                               entry0.getSharedPythonThreadId())
-            self.assertEquals(sharedPythonThreadId1,
+            self.assertEqual(sharedPythonThreadId1,
                               entry1.getSharedPythonThreadId())
 
             # ## 3 Hops to Shared Java Thread
@@ -648,9 +648,9 @@ class IntegrationTest(unittest.TestCase):
             # ## 0 Hops to Thread ID
 
             # Check that the two thread getters get the same thread
-            self.assertEquals(thisThreadId,
+            self.assertEqual(thisThreadId,
                               int(threadIdGetter0.getThreadId()))
-            self.assertEquals(thisThreadId,
+            self.assertEqual(thisThreadId,
                               int(threadIdGetter1.getThreadId()))
 
             # ## 1 Hop to Thread ID
