@@ -582,6 +582,7 @@ class MemoryManagementTest(unittest.TestCase):
                 enable_memory_management=False))
         gc.collect()
         # Should have nothing in the finalizers
+        print(ThreadSafeFinalizer.finalizers)
         self.assertEqual(len(ThreadSafeFinalizer.finalizers), 0)
 
         def internal():
