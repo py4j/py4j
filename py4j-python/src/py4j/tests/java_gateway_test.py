@@ -33,8 +33,8 @@ from py4j.java_gateway import (
     set_default_callback_accept_timeout, GatewayConnectionGuard,
     get_java_class)
 from py4j.protocol import (
-    Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
-    encode_bytearray, escape_new_line, unescape_new_line, smart_decode)
+    Py4JError, Py4JJavaError, Py4JNetworkError, TypeHint, LONG_TYPE,
+    decode_bytearray, encode_bytearray, escape_new_line, unescape_new_line, smart_decode)
 
 
 SERVER_PORT = 25333
@@ -607,7 +607,7 @@ class MemoryManagementTest(unittest.TestCase):
 class TypeConversionTest(unittest.TestCase):
     def setUp(self):
         self.p = start_example_app_process()
-        self.gateway = JavaGateway()
+        self.gateway = JavaGateway(auto_convert=True)
 
     def tearDown(self):
         safe_shutdown(self)
@@ -619,6 +619,8 @@ class TypeConversionTest(unittest.TestCase):
         self.assertEqual(4, ex.method7(2147483648))
         self.assertEqual(4, ex.method7(-2147483649))
         self.assertEqual(4, ex.method7(long(2147483648)))
+        self.assertEqual(4, ex.method7(TypeHint(1, LONG_TYPE)))
+        self.assertEqual(4, ex.method12({TypeHint(1, LONG_TYPE)}))
         self.assertEqual(long(4), ex.method8(3))
         self.assertEqual(4, ex.method8(3))
         self.assertEqual(long(4), ex.method8(long(3)))
