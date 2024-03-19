@@ -29,12 +29,15 @@
  *****************************************************************************/
 package py4j.commands;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,12 +47,6 @@ import py4j.Gateway;
 import py4j.GatewayServer;
 import py4j.Py4JJavaServer;
 
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
 public class CancelCommandTest {
 	private Gateway gateway;
 	private BufferedWriter writer;
@@ -57,7 +54,7 @@ public class CancelCommandTest {
 
 	@Before
 	public void setUp() {
-		gateway = spy(new Gateway(null));
+		gateway = new Gateway(null);
 		gateway.startup();
 		sWriter = new StringWriter();
 		writer = new BufferedWriter(sWriter);
@@ -71,12 +68,12 @@ public class CancelCommandTest {
 	@Test
 	public void testCancelCommandGatewayServerIsNull() {
 		try {
-			doReturn(null).when(gateway).getObject(GatewayServer.GATEWAY_SERVER_ID);
+			gateway.deleteObject(GatewayServer.GATEWAY_SERVER_ID);
 			CancelCommand command = new CancelCommand();
 			command.init(gateway, null);
 			// Should not fail with NullPointerException.
 			command.execute("z", new BufferedReader(new StringReader("address\n1000\n2000")), writer);
-			verify(gateway, times(1)).getObject(GatewayServer.GATEWAY_SERVER_ID);
+			assertNull(gateway.getObject(GatewayServer.GATEWAY_SERVER_ID));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();
@@ -86,13 +83,21 @@ public class CancelCommandTest {
 	@Test
 	public void testCancelCommand() {
 		try {
-			Py4JJavaServer server = mock(Py4JJavaServer.class);
-			doReturn(server).when(gateway).getObject(GatewayServer.GATEWAY_SERVER_ID);
+			final CountDownLatch latch = new CountDownLatch(1);
+			Py4JJavaServer server = new GatewayServer() {
+				@Override
+				public void shutdownSocket(String address, int remotePort, int localPort) {
+					assertEquals(address, "address");
+					assertEquals(remotePort, 1000);
+					assertEquals(localPort, 2000);
+					latch.countDown();
+				}
+			};
+			gateway.getBindings().put(GatewayServer.GATEWAY_SERVER_ID, server);
 			CancelCommand command = new CancelCommand();
 			command.init(gateway, null);
 			command.execute("z", new BufferedReader(new StringReader("address\n1000\n2000")), writer);
-			verify(gateway, times(1)).getObject(GatewayServer.GATEWAY_SERVER_ID);
-			verify(server, times(1)).shutdownSocket("address", 1000, 2000);
+			latch.await();
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

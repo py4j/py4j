@@ -707,8 +707,8 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 			lock.lock();
 			ArrayList<Py4JServerConnection> tempConnections = new ArrayList<Py4JServerConnection>(connections);
 			for (Py4JServerConnection connection : tempConnections) {
-				if (connection.getSocket() != null &&
-						(connection.getSocket().getPort() == remotePort || connection.getSocket().getLocalPort() == localPort)) {
+				if (connection.getSocket() != null && (connection.getSocket().getPort() == remotePort
+						|| connection.getSocket().getLocalPort() == localPort)) {
 					connection.shutdown();
 					connections.remove(connection);
 				}
