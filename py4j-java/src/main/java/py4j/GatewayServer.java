@@ -763,7 +763,7 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		startSocket();
 
 		if (fork) {
-			Thread t = new Thread(this);
+			Thread t = ThreadUtil.createThread(this);
 			t.start();
 		} else {
 			run();

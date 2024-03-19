@@ -97,7 +97,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	}
 
 	public void startServerConnection() throws IOException {
-		Thread t = new Thread(this);
+		Thread t = ThreadUtil.createThread(this);
 		t.start();
 	}
 
