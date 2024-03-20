@@ -702,6 +702,22 @@ public class GatewayServer extends DefaultGatewayServerListener implements Py4JJ
 		this.shutdown(true);
 	}
 
+	public void shutdownSocket(String address, int remotePort, int localPort) {
+		try {
+			lock.lock();
+			ArrayList<Py4JServerConnection> tempConnections = new ArrayList<Py4JServerConnection>(connections);
+			for (Py4JServerConnection connection : tempConnections) {
+				if (connection.getSocket() != null && (connection.getSocket().getPort() == remotePort
+						|| connection.getSocket().getLocalPort() == localPort)) {
+					connection.shutdown();
+					connections.remove(connection);
+				}
+			}
+		} finally {
+			lock.unlock();
+		}
+	}
+
 	/**
 	 * <p>
 	 * Stops accepting connections, closes all current connections, and calls

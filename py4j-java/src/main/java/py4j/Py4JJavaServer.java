@@ -79,6 +79,11 @@ public interface Py4JJavaServer {
 	 */
 	void shutdown(boolean shutdownCallbackClient);
 
+	/**
+	 * Shuts down the socket that matches address, remote port, and local port.
+	 */
+	void shutdownSocket(String address, int remotePort, int localPort);
+
 	void addListener(GatewayServerListener listener);
 
 	/**
