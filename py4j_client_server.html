@@ -110,6 +110,7 @@
 <li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.run"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.run()</span></code></a></li>
 <li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.send_command"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.send_command()</span></code></a></li>
 <li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.shutdown_gateway"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.shutdown_gateway()</span></code></a></li>
+<li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.shutdown_socket"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.shutdown_socket()</span></code></a></li>
 <li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.start"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.start()</span></code></a></li>
 <li><a class="reference internal" href="#py4j.clientserver.ClientServerConnection.wait_for_commands"><code class="docutils literal notranslate"><span class="pre">ClientServerConnection.wait_for_commands()</span></code></a></li>
 </ul>
@@ -449,6 +450,11 @@ Java. Only provided if created from Python server.</p></li>
 connections will be closed. This may be useful if the lifecycle
 of the Java program must be tied to the Python program.</p>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="py4j.clientserver.ClientServerConnection.shutdown_socket">
+<span class="sig-name descname"><span class="pre">shutdown_socket</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remote_port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_port</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.clientserver.ClientServerConnection.shutdown_socket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="py4j.clientserver.ClientServerConnection.start">
