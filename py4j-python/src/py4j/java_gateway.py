@@ -334,7 +334,13 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
 
     # Determine which port the server started on (needed to support
     # ephemeral ports)
-    _port = int(proc.stdout.readline())
+    _port = None
+    while _port is None:
+        try:
+            _port = int(proc.stdout.readline())
+        except ValueError:
+            # If a JVM debug port is exposed, its details will be printed first
+            pass
 
     # Read the auth token from the server if enabled.
     _auth_token = None
