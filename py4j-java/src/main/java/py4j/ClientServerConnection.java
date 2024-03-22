@@ -61,6 +61,8 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	protected final int nonBlockingReadTimeout;
 	protected final String authToken;
 	protected final AuthCommand authCommand;
+	// Used to terminate the JVM process on command cancellation.
+	protected Thread jvmThread;
 
 	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
 			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer, int readTimeout) throws IOException {
@@ -101,8 +103,8 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	}
 
 	public void startServerConnection() throws IOException {
-		Thread t = new Thread(this);
-		t.start();
+		jvmThread = new Thread(this);
+		jvmThread.start();
 	}
 
 	public void run() {
@@ -279,6 +281,9 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		if (!initiatedFromClient) {
 			// Only fires this event when the connection is created by the JavaServer to respect the protocol.
 			fireConnectionStopped();
+		}
+		if (jvmThread != null && jvmThread.isAlive()) {
+			jvmThread.interrupt();
 		}
 	}
 
