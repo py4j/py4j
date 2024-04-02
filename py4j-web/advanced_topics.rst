@@ -757,7 +757,7 @@ possible to catch all related Py4J errors with one except clause:
     traceback.print_exc()
 
 If a Py4J Exception wraps another exception, the original exception will be
-available in the ``clause`` field.
+available in the :attr:`cause <py4j.protocol.Py4JError.cause>` field.
 
 
 .. code-block:: python
@@ -1185,5 +1185,3 @@ The following chart illustrates the progress Py4J made so far for transferring
 
     <iframe width="600" height="371" seamless frameborder="0" scrolling="no"
     src="https://docs.google.com/spreadsheets/d/14ljMYIESFbOBFe4o_Fy6WirI2P5iCQuTP9fA1BuLMAI/pubchart?oid=935988429&amp;format=interactive"></iframe>
-
-
