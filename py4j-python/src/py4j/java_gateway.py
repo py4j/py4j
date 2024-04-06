@@ -2147,7 +2147,6 @@ class JavaGateway(object):
             command_to_exit_jvm = proto.CALL_COMMAND_NAME +\
                 sys_exit_jvm.command_header + sys_exit_jvm_args +\
                 proto.END_COMMAND_PART
-            self._gateway_client.send_terminate_command()
             gateway_connection = self._gateway_client._get_connection()
             gateway_socket = gateway_connection.socket
             gateway_socket.sendall(command_to_exit_jvm.encode("utf-8"))
