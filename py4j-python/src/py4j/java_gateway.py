@@ -2150,7 +2150,7 @@ class JavaGateway(object):
             self._gateway_client.send_terminate_command()
             gateway_connection = self._gateway_client._get_connection()
             gateway_socket = gateway_connection.socket
-            gateway_socket.sendall(command_to_exit_jvm)
+            gateway_socket.sendall(command_to_exit_jvm.encode("utf-8"))
         except Exception:
             if raise_exception:
                 raise
