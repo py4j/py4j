@@ -1063,7 +1063,6 @@ class GatewayClient(object):
             #     Single Threading Model is on
             # See also https://github.com/bartdag/py4j/pull/440 for
             # more details.
-
             logger.exception("KeyboardInterrupt while sending command.")
 
             if connection and connection.socket:
