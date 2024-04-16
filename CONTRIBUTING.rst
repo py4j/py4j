@@ -61,7 +61,7 @@ We follow pep8 rather stricly:
 3. Line length is 80
 4. Code must pass the default flake8 (version 2.5) tests (pep8 + pyflakes)
 
-Code must be compatible with Python 2.7 and from 3.4 to the newest released
+Code must be compatible with Python 3.8 to the newest released
 version of Python.
 
 If external libraries must be used, they should be wrapped in a mechanism that

@@ -487,6 +487,30 @@ class ClientServerConnection(object):
             logger.debug("Exception occurred while shutting down gateway",
                          exc_info=True)
 
+    # Shuts down the connection and the corresponding Java socket.
+    # remote_port is the remote port of the Java socket (local port for Py4j).
+    # local_port is the local port of the Java socket (remote port for Py4j).
+    def shutdown_socket(self, remote_port, local_port):
+        if not self.is_connected:
+            raise Py4JError("Gateway must be connected to send cancel cmd.")
+        try:
+            logger.info("Close connection stream")
+            quiet_close(self.stream)
+            address = "127.0.0.1"
+            logger.info(
+                "Send shutdown request for the Java socket {0}, remote port {1}, local port {2}".
+                format(address, remote_port, local_port))
+            self.socket.sendall("z\n".encode("utf-8"))
+            self.socket.sendall(("%s\n" % address).encode("utf-8"))
+            self.socket.sendall(("%s\n" % remote_port).encode("utf-8"))
+            self.socket.sendall(("%s\n" % local_port).encode("utf-8"))
+            logger.info("Close connection")
+            self.close()
+            self.is_connected = False
+            logger.info("Connection is closed")
+        except Exception:
+            logger.exception("Exception occurred while shutting down connection", exc_info=True)
+
     def start(self):
         t = Thread(target=self.run)
         t.daemon = self.python_parameters.daemonize_connections

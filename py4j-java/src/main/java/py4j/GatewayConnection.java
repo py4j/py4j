@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import py4j.commands.ArrayCommand;
 import py4j.commands.AuthCommand;
 import py4j.commands.CallCommand;
+import py4j.commands.CancelCommand;
 import py4j.commands.Command;
 import py4j.commands.ConstructorCommand;
 import py4j.commands.DirCommand;
@@ -103,6 +104,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		baseCommands.add(MemoryCommand.class);
 		baseCommands.add(ReflectionCommand.class);
 		baseCommands.add(ShutdownGatewayServerCommand.class);
+		baseCommands.add(CancelCommand.class);
 		baseCommands.add(JVMViewCommand.class);
 		baseCommands.add(ExceptionCommand.class);
 		baseCommands.add(DirCommand.class);

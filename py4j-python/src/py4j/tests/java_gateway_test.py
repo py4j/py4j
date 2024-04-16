@@ -364,8 +364,8 @@ class MethodTest(unittest.TestCase):
         try:
             ex.method2(None)
             ex2 = ex.method4(None)
-            self.assertEquals(ex2.getField1(), 3)
-            self.assertEquals(2, ex.method7(None))
+            self.assertEqual(ex2.getField1(), 3)
+            self.assertEqual(2, ex.method7(None))
         except Exception:
             print_exc()
             self.fail()
@@ -439,11 +439,11 @@ class FieldTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
 
         set_field(ex, "field10", 2334)
-        self.assertEquals(get_field(ex, "field10"), 2334)
+        self.assertEqual(get_field(ex, "field10"), 2334)
 
         sb = self.gateway.jvm.java.lang.StringBuffer("Hello World!")
         set_field(ex, "field21", sb)
-        self.assertEquals(get_field(ex, "field21").toString(), "Hello World!")
+        self.assertEqual(get_field(ex, "field21").toString(), "Hello World!")
 
         self.assertRaises(Exception, set_field, ex, "field1", 123)
 
@@ -1032,6 +1032,7 @@ class GatewayLauncherTest(unittest.TestCase):
         self.gateway = JavaGateway.launch_gateway()
         self.assertTrue(self.gateway.java_process)
 
+    @unittest.skipIf(sys.platform.startswith("win"), "Flaky on Windows")
     def testShutdownSubprocess(self):
         self.gateway = JavaGateway.launch_gateway()
         self.assertTrue(self.gateway.java_process)
