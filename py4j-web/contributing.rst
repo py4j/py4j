@@ -68,9 +68,9 @@ Java Coding Conventions
 -----------------------
 
 We use Eclipse code formatting conventions (see `py4j.formatter.xml
-<https://raw.githubusercontent.com/bartdag/py4j/master/py4j-java/py4j.formatter.xml>`_
+<https://raw.githubusercontent.com/py4j/py4j/master/py4j-java/py4j.formatter.xml>`_
 and `py4j.importorder
-<https://raw.githubusercontent.com/bartdag/py4j/master/py4j-java/py4j.importorder>`_)
+<https://raw.githubusercontent.com/py4j/py4j/master/py4j-java/py4j.importorder>`_)
 that can be used in Eclipse and IntelliJ IDEs.
 
 In summary:

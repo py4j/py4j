@@ -195,7 +195,7 @@ Can I use Py4J with Python 3?
 -----------------------------
 
 Yes, thanks to a `generous contributor
-<https://github.com/bartdag/py4j/commit/36a145671501ed47bc4002af7cab49b490eb6e0b>`_,
+<https://github.com/py4j/py4j/commit/36a145671501ed47bc4002af7cab49b490eb6e0b>`_,
 Py4J now works with Python 3.
 
 Are there any security concerns with Py4J?
@@ -218,7 +218,7 @@ I found a bug, how do I report it?
 ----------------------------------
 
 Please report bugs on our `issue tracker
-<https://github.com/bartdag/py4j/issues>`_.
+<https://github.com/py4j/py4j/issues>`_.
 
 How can I contribute?
 ---------------------
@@ -226,19 +226,19 @@ How can I contribute?
 There are many ways to contribute to Py4J:
 
 * **Found a bug or have a feature request?** Fill a detailed `issue report
-  <https://github.com/bartdag/py4j/issues>`_.
+  <https://github.com/py4j/py4j/issues>`_.
 
 * **Found a typo or have a better way to clarify the documentation?** Write a
   comment at the bottom of documentation the page, send a patch on the `mailing
   list <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_,
-  fill a `bug report <https://github.com/bartdag/py4j/issues>`_ or open a pull
+  fill a `bug report <https://github.com/py4j/py4j/issues>`_ or open a pull
   request. The source of each documentation page is accessible in the sidebar.
   We use `ReStructuredText
   <http://docutils.sourceforge.net/docs/user/rst/quickstart.html>`_
 
 * **Good at writing Python or Java?** Good news, we could use some help. You
   can open a pull request that adds a new feature or that address an `open
-  issue <https://github.com/bartdag/py4j/issues>`_. For new features, it is
+  issue <https://github.com/py4j/py4j/issues>`_. For new features, it is
   always best to discuss it on the `mailing list
   <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_ first.
   Do not forget to read our :doc:`contribution guidelines </contributing>`.
