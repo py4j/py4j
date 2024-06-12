@@ -164,7 +164,8 @@ public class MultiClientServer {
 		ClientServer clientServer1 = new ClientServer(GatewayServer.DEFAULT_PORT + 2, GatewayServer.defaultAddress(),
 				GatewayServer.DEFAULT_PYTHON_PORT + 2, GatewayServer.defaultAddress(),
 				GatewayServer.DEFAULT_CONNECT_TIMEOUT, GatewayServer.DEFAULT_READ_TIMEOUT,
-				ServerSocketFactory.getDefault(), SocketFactory.getDefault(), entryPoint1);
+				GatewayServer.DEFAULT_CREATE_SOCKET_CONNECTION_TIMEOUT, ServerSocketFactory.getDefault(),
+				SocketFactory.getDefault(), entryPoint1);
 		// Wait for Python side to shut down Java side
 		clientServer1.startServer(true);
 
