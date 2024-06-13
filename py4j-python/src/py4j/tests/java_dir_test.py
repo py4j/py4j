@@ -30,6 +30,7 @@ ExampleClassMethods = sorted([
     # overloaded
     "method10",
     "method11",
+    "method12",
     "getList",
     "getField1",
     "setField1",
