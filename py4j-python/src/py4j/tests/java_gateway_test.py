@@ -9,10 +9,12 @@ from __future__ import unicode_literals, absolute_import, print_function
 from collections import deque
 from contextlib import contextmanager
 from decimal import Decimal
+import errno
 import gc
 import math
 from multiprocessing import Process
 import os
+import signal
 import sys
 from socket import AF_INET, SOCK_STREAM, socket
 import subprocess
@@ -31,7 +33,7 @@ from py4j.java_gateway import (
     GatewayClient, set_field, java_import, JavaObject, is_instance_of,
     GatewayParameters, CallbackServerParameters, quiet_close, DEFAULT_PORT,
     set_default_callback_accept_timeout, GatewayConnectionGuard,
-    get_java_class)
+    get_java_class, jvm_shutdown)
 from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
     encode_bytearray, escape_new_line, unescape_new_line, smart_decode)
@@ -1200,6 +1202,23 @@ class GatewayLauncherTest(unittest.TestCase):
                 gateway_parameters=self.gateway.gateway_parameters)
             self.gateway.set_gateway_client(good_client)
 
+
+class JVMShutdownTest(unittest.TestCase):
+    def tearDown(self):
+        safe_shutdown(self)
+
+    def testJvmShudown(self):
+        self.gateway = JavaGateway.launch_gateway()
+        jvm_shutdown(self.gateway)
+        self.assertIsNotNone(self.gateway.java_process.returncode)
+
+        try:
+            os.kill(self.gateway.java_process.pid, signal.SIGKILL)
+        except OSError as err:
+            # no such process
+            self.assertEqual(err.errno, errno.ESRCH)
+        else:
+            self.fail("Expected OSError to be raised.")
 
 class WaitOperator(object):
 
