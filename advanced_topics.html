@@ -810,7 +810,7 @@ possible to catch all related Py4J errors with one except clause:</p>
 </pre></div>
 </div>
 <p>If a Py4J Exception wraps another exception, the original exception will be
-available in the <code class="docutils literal notranslate"><span class="pre">clause</span></code> field.</p>
+available in the <code class="xref py py-attr docutils literal notranslate"><span class="pre">cause</span></code> field.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
   <span class="n">java_object</span><span class="o">.</span><span class="n">doSomething</span><span class="p">()</span>
 <span class="k">except</span> <span class="n">Py4JError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
