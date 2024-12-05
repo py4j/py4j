@@ -199,8 +199,9 @@ public class GatewayServerTest {
 			// Throw an IOException since that's what the test above expects in this case.
 			throw new IOException("Auth unsuccessful.");
 		} else {
-			assertTrue(Protocol.isReturnMessage(reply));
-			if (Protocol.isError(reply.substring(1))) {
+			assertTrue("Expected return message or null, got: " + reply,
+					reply == null || Protocol.isReturnMessage(reply));
+			if (reply == null || Protocol.isError(reply.substring(1))) {
 				throw new IOException("Error from server.");
 			}
 		}
