@@ -90,6 +90,7 @@ public class CallbackClient implements Py4JPythonClient {
 	protected final boolean enableMemoryManagement;
 
 	protected final int readTimeout;
+	protected final int createSocketTimeout;
 
 	protected final String authToken;
 
@@ -104,7 +105,8 @@ public class CallbackClient implements Py4JPythonClient {
 
 	public CallbackClient(int port, InetAddress address, String authToken) {
 		this(port, address, authToken, DEFAULT_MIN_CONNECTION_TIME, DEFAULT_MIN_CONNECTION_TIME_UNIT,
-				SocketFactory.getDefault(), true, GatewayServer.DEFAULT_READ_TIMEOUT);
+				SocketFactory.getDefault(), true, GatewayServer.DEFAULT_READ_TIMEOUT,
+				GatewayServer.DEFAULT_CONNECT_TIMEOUT);
 	}
 
 	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit) {
@@ -150,7 +152,7 @@ public class CallbackClient implements Py4JPythonClient {
 	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory, boolean enableMemoryManagement) {
 		this(port, address, minConnectionTime, minConnectionTimeUnit, socketFactory, enableMemoryManagement,
-				GatewayServer.DEFAULT_READ_TIMEOUT);
+				GatewayServer.DEFAULT_READ_TIMEOUT, GatewayServer.DEFAULT_CREATE_SOCKET_CONNECTION_TIMEOUT);
 	}
 
 	/**
@@ -176,9 +178,9 @@ public class CallbackClient implements Py4JPythonClient {
 	 *            Python program is closed.
 	 */
 	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit,
-			SocketFactory socketFactory, boolean enableMemoryManagement, int readTimeout) {
+			SocketFactory socketFactory, boolean enableMemoryManagement, int readTimeout, int createSocketTimeout) {
 		this(port, address, null, minConnectionTime, minConnectionTimeUnit, socketFactory, enableMemoryManagement,
-				readTimeout);
+				readTimeout, createSocketTimeout);
 	}
 
 	/**
@@ -207,7 +209,7 @@ public class CallbackClient implements Py4JPythonClient {
 	 */
 	public CallbackClient(int port, InetAddress address, String authToken, long minConnectionTime,
 			TimeUnit minConnectionTimeUnit, SocketFactory socketFactory, boolean enableMemoryManagement,
-			int readTimeout) {
+			int readTimeout, int createSocketTimeout) {
 		super();
 		this.port = port;
 		this.address = address;
@@ -216,6 +218,7 @@ public class CallbackClient implements Py4JPythonClient {
 		this.socketFactory = socketFactory;
 		this.enableMemoryManagement = enableMemoryManagement;
 		this.readTimeout = readTimeout;
+		this.createSocketTimeout = createSocketTimeout;
 		this.authToken = StringUtil.escape(authToken);
 		setupCleaner();
 	}
@@ -234,7 +237,8 @@ public class CallbackClient implements Py4JPythonClient {
 
 		connection = connections.pollLast();
 		if (connection == null) {
-			connection = new CallbackConnection(port, address, socketFactory, readTimeout, authToken);
+			connection = new CallbackConnection(port, address, socketFactory, readTimeout, createSocketTimeout,
+					authToken);
 			connection.start();
 		}
 
@@ -270,6 +274,11 @@ public class CallbackClient implements Py4JPythonClient {
 		return readTimeout;
 	}
 
+	@Override
+	public int getCreateSocketConnectionTimeout() {
+		return createSocketTimeout;
+	}
+
 	/**
 	 * <p>
 	 * Creates a callback client which connects to the given address and port,
@@ -289,7 +298,7 @@ public class CallbackClient implements Py4JPythonClient {
 	@Override
 	public Py4JPythonClient copyWith(InetAddress pythonAddress, int pythonPort) {
 		return new CallbackClient(pythonPort, pythonAddress, authToken, minConnectionTime, minConnectionTimeUnit,
-				socketFactory, enableMemoryManagement, readTimeout);
+				socketFactory, enableMemoryManagement, readTimeout, createSocketTimeout);
 	}
 
 	protected void giveBackConnection(Py4JClientConnection cc) {
