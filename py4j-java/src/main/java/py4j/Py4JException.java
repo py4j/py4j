@@ -56,4 +56,7 @@ public class Py4JException extends RuntimeException {
 		super(arg0);
 	}
 
+	public Py4JException(PythonThrowable exception) {
+		super(exception);
+	}
 }
