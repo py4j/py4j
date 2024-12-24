@@ -1049,8 +1049,12 @@ class GatewayClient(object):
                     reset = True
                 connection.close(reset)
             if self._should_retry(retry, connection, pne):
+                if pne.when == proto.ERROR_ON_SEND or pne.when == proto.EMPTY_RESPONSE:
+                    # For empty response, just try once more because now we reset
+                    # the connection, and should work if the other end is alive.
+                    retry = False
                 logging.info("Exception while sending command.", exc_info=True)
-                response = self.send_command(command, binary=binary)
+                response = self.send_command(command, retry, binary=binary)
             else:
                 logging.exception(
                     "Exception while sending command.")
@@ -1107,7 +1111,8 @@ class GatewayClient(object):
         return GatewayConnectionGuard(self, connection)
 
     def _should_retry(self, retry, connection, pne=None):
-        return pne and (pne.when == proto.ERROR_ON_SEND or pne.when == proto.EMPTY_RESPONSE)
+        return retry and pne and (
+            pne.when == proto.ERROR_ON_SEND or pne.when == proto.EMPTY_RESPONSE)
 
     def close(self):
         """Closes all currently opened connections.
