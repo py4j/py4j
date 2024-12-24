@@ -1107,7 +1107,7 @@ class GatewayClient(object):
         return GatewayConnectionGuard(self, connection)
 
     def _should_retry(self, retry, connection, pne=None):
-        return pne and pne.when == proto.ERROR_ON_SEND or pne.when == proto.EMPTY_RESPONSE
+        return pne and (pne.when == proto.ERROR_ON_SEND or pne.when == proto.EMPTY_RESPONSE)
 
     def close(self):
         """Closes all currently opened connections.
