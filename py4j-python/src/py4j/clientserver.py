@@ -537,7 +537,8 @@ class ClientServerConnection(object):
                 # Happens when a the other end is dead. There might be an empty
                 # answer before the socket raises an error.
                 if answer.strip() == "":
-                    raise Py4JNetworkError("Answer from Java side is empty")
+                    raise Py4JNetworkError(
+                        "Answer from Java side is empty", when=proto.EMPTY_RESPONSE)
                 if answer.startswith(proto.RETURN_MESSAGE):
                     return answer[1:]
                 else:
@@ -560,6 +561,8 @@ class ClientServerConnection(object):
                             proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
         except Exception as e:
             logger.info("Error while receiving.", exc_info=True)
+            if isinstance(e, Py4JNetworkError) and e.when == proto.EMPTY_RESPONSE:
+                raise
             raise Py4JNetworkError(
                 "Error while sending or receiving", e, proto.ERROR_ON_RECEIVE)
 

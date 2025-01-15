@@ -172,6 +172,7 @@ INPUT_CONVERTER = []
 # ERRORS
 ERROR_ON_SEND = "on_send"
 ERROR_ON_RECEIVE = "on_receive"
+EMPTY_RESPONSE = "empty_response"
 
 
 def escape_new_line(original):
