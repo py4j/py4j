@@ -4,6 +4,12 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.9.9
+-------------
+
+- Release date: January 15th 2025
+- Python side: Retry Py4J on empty response
+
 Py4J 0.10.9.8
 -------------
 
