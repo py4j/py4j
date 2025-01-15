@@ -205,8 +205,8 @@ method’s class. Do the same for static fields.</p>
 <p>As in Java, you can always access any class using its fully qualified name, but
 you can also import the fully qualified name to only refer to the simple name
 later on:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">JavaGateway</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">java_import</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="n">JavaGateway</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="n">java_import</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gateway</span> <span class="o">=</span> <span class="n">JavaGateway</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">jList1</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">java</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">ArrayList</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">java_import</span><span class="p">(</span><span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="p">,</span><span class="s1">&#39;java.util.*&#39;</span><span class="p">)</span>

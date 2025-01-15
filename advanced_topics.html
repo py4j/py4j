@@ -367,22 +367,22 @@ Start this program before running the Python code below.</p>
 ListenerApplication to notify all listeners. Then multiple exchanges between
 Java and Python occurs (e.g., Python calls System.out.println on the Java
 side).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">CallbackServerParameters</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">CallbackServerParameters</span>
 
 
-<span class="k">class</span> <span class="nc">PythonListener</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PythonListener</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gateway</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gateway</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gateway</span> <span class="o">=</span> <span class="n">gateway</span>
 
-    <span class="k">def</span> <span class="nf">notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Notified by Java&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
         <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">System</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">println</span><span class="p">(</span><span class="s2">&quot;Hello from python!&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="s2">&quot;A Return Value&quot;</span>
 
-    <span class="k">class</span> <span class="nc">Java</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Java</span><span class="p">:</span>
         <span class="n">implements</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;py4j.examples.ExampleListener&quot;</span><span class="p">]</span>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
@@ -437,22 +437,22 @@ in the class <cite>package1.MyClass</cite>, you will have to write:</p>
 thread every time a command <strong>is received</strong> and <strong>there is no thread
 available</strong>.  This can lead to the creation of many threads if there are
 recursive calls between Python and Java. For example, let’s consider this code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PythonPlayer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">PythonPlayer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">player</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">player</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">player</span><span class="o">.</span><span class="n">firstPing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">firstPong</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">player</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">firstPong</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">player</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">player</span><span class="o">.</span><span class="n">secondPing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">secondPong</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">player</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">secondPong</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">player</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;Success&quot;</span>
 
-    <span class="k">class</span> <span class="nc">Java</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Java</span><span class="p">:</span>
         <span class="n">implements</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;py4j.examples.PongPlayer&quot;</span><span class="p">]</span>
 
 <span class="c1"># Start the JVM with &quot;java -cp py4j.jar py4j.examples.ExampleApplication&quot;</span>
-<span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">CallbackServerParameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">CallbackServerParameters</span>
 <span class="n">gateway</span> <span class="o">=</span> <span class="n">JavaGateway</span><span class="p">(</span>
     <span class="n">callback_server_parameters</span><span class="o">=</span><span class="n">CallbackServerParameters</span><span class="p">())</span>
 <span class="n">ping_player</span> <span class="o">=</span> <span class="n">java_gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">py4j</span><span class="o">.</span><span class="n">examples</span><span class="o">.</span><span class="n">PingPlayer</span><span class="p">()</span>
@@ -527,7 +527,7 @@ implements a single threading model also called <em>pinned thread model</em> tha
 ensures that callbacks received from the other side will be executed in the
 initiating thread. For example, if we modify the previous code with this one:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start the JVM with &quot;java -cp py4j.jar py4j.examples.SingleThreadApplication&quot;</span>
-<span class="kn">from</span> <span class="nn">py4j.clientserver</span> <span class="kn">import</span> <span class="n">ClientServer</span><span class="p">,</span> <span class="n">JavaParameters</span><span class="p">,</span> <span class="n">PythonParameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">py4j.clientserver</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientServer</span><span class="p">,</span> <span class="n">JavaParameters</span><span class="p">,</span> <span class="n">PythonParameters</span>
 <span class="n">gateway</span> <span class="o">=</span> <span class="n">ClientServer</span><span class="p">(</span>
     <span class="n">java_parameters</span><span class="o">=</span><span class="n">JavaParameters</span><span class="p">(),</span>
     <span class="n">python_parameters</span><span class="o">=</span><span class="n">PythonParameters</span><span class="p">())</span>
@@ -611,18 +611,18 @@ Python entry point is expected to implement.</p></li>
 <span class="p">}</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleHello</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">SimpleHello</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="nf">sayHello</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">int_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string_value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sayHello</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">int_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string_value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">int_value</span><span class="p">,</span> <span class="n">string_value</span><span class="p">)</span>
         <span class="k">return</span> <span class="s2">&quot;Said hello to </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">string_value</span><span class="p">)</span>
 
-    <span class="k">class</span> <span class="nc">Java</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Java</span><span class="p">:</span>
         <span class="n">implements</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;py4j.examples.IHello&quot;</span><span class="p">]</span>
 
 <span class="c1"># Make sure that the python code is started first.</span>
 <span class="c1"># Then execute: java -cp py4j.jar py4j.examples.SingleThreadClientApplication</span>
-<span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">CallbackServerParameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">CallbackServerParameters</span>
 <span class="n">simple_hello</span> <span class="o">=</span> <span class="n">SimpleHello</span><span class="p">()</span>
 <span class="n">gateway</span> <span class="o">=</span> <span class="n">JavaGateway</span><span class="p">(</span>
     <span class="n">callback_server_parameters</span><span class="o">=</span><span class="n">CallbackServerParameters</span><span class="p">(),</span>
@@ -665,18 +665,18 @@ Java UI thread.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleHello</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">SimpleHello</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="nf">sayHello</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">int_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string_value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sayHello</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">int_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string_value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">int_value</span><span class="p">,</span> <span class="n">string_value</span><span class="p">)</span>
         <span class="k">return</span> <span class="s2">&quot;Said hello to </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">string_value</span><span class="p">)</span>
 
-    <span class="k">class</span> <span class="nc">Java</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Java</span><span class="p">:</span>
         <span class="n">implements</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;py4j.examples.IHello&quot;</span><span class="p">]</span>
 
 <span class="c1"># Make sure that the python code is started first.</span>
 <span class="c1"># Then execute: java -cp py4j.jar py4j.examples.SingleThreadClientApplication</span>
-<span class="kn">from</span> <span class="nn">py4j.clientserver</span> <span class="kn">import</span> <span class="n">ClientServer</span><span class="p">,</span> <span class="n">JavaParameters</span><span class="p">,</span> <span class="n">PythonParameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">py4j.clientserver</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientServer</span><span class="p">,</span> <span class="n">JavaParameters</span><span class="p">,</span> <span class="n">PythonParameters</span>
 <span class="n">simple_hello</span> <span class="o">=</span> <span class="n">SimpleHello</span><span class="p">()</span>
 <span class="n">gateway</span> <span class="o">=</span> <span class="n">ClientServer</span><span class="p">(</span>
     <span class="n">java_parameters</span><span class="o">=</span><span class="n">JavaParameters</span><span class="p">(),</span>
@@ -692,7 +692,7 @@ Java UI thread.</p>
 on the Python side to receive callback), you can use the port 0 and Py4J will
 use the next available port. Once a port is assigned, the other side needs to
 be aware of this port. Here is one way to do it:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">CallbackServerParameters</span><span class="p">,</span> <span class="n">GatewayParameters</span><span class="p">,</span>
     <span class="n">launch_gateway</span><span class="p">)</span>
 <span class="c1"># launch Java side with dynamic port and get back the port on which the</span>
@@ -716,7 +716,7 @@ be aware of this port. Here is one way to do it:</p>
     <span class="n">python_port</span><span class="p">)</span>
 
 <span class="c1"># Test that callbacks work</span>
-<span class="kn">from</span> <span class="nn">py4j.tests.java_callback_test</span> <span class="kn">import</span> <span class="n">IHelloImpl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">py4j.tests.java_callback_test</span><span class="w"> </span><span class="kn">import</span> <span class="n">IHelloImpl</span>
 <span class="n">hello</span> <span class="o">=</span> <span class="n">IHelloImpl</span><span class="p">()</span>
 <span class="n">example</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">py4j</span><span class="o">.</span><span class="n">examples</span><span class="o">.</span><span class="n">ExampleClass</span><span class="p">()</span>
 <span class="n">example</span><span class="o">.</span><span class="n">callHello</span><span class="p">(</span><span class="n">hello</span><span class="p">)</span>
@@ -741,7 +741,7 @@ collection, an error will be thrown:</p>
 <p>You can explicitly convert Python collections using one of the following
 converter located in the <cite>py4j.java_collections</cite> module: <cite>SetConverter</cite>,
 <cite>MapConverter</cite>, <cite>ListConverter</cite>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">py4j.java_collections</span> <span class="kn">import</span> <span class="n">SetConverter</span><span class="p">,</span> <span class="n">MapConverter</span><span class="p">,</span> <span class="n">ListConverter</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">SetConverter</span><span class="p">,</span> <span class="n">MapConverter</span><span class="p">,</span> <span class="n">ListConverter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">java_list</span> <span class="o">=</span> <span class="n">ListConverter</span><span class="p">()</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">my_list</span><span class="p">,</span> <span class="n">gateway</span><span class="o">.</span><span class="n">_gateway_client</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">java</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">Collections</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">java_list</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">java_list</span>
@@ -824,9 +824,9 @@ available in the <code class="xref py py-attr docutils literal notranslate"><spa
 <p>Py4J allows you to import packages so that you don’t have to type the fully
 qualified name of the classes you want to instantiate. The <cite>java.lang</cite> package
 is always automatically imported.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">JavaGateway</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="n">JavaGateway</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gateway</span> <span class="o">=</span> <span class="n">JavaGateway</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">java_import</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="n">java_import</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">java_import</span><span class="p">(</span><span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="p">,</span><span class="s1">&#39;java.util.*&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">jList</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">ArrayList</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">jMap</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span><span class="o">.</span><span class="n">HashMap</span><span class="p">()</span>
@@ -893,7 +893,7 @@ is also accessible at runtime:</p>
 </pre></div>
 </div>
 <p>Here is a short example of what you could do with Py4J and Eclipse:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">java_import</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">java_import</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gateway</span> <span class="o">=</span> <span class="n">JavaGateway</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">jvm</span> <span class="o">=</span> <span class="n">gateway</span><span class="o">.</span><span class="n">jvm</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">java_import</span><span class="p">(</span><span class="n">jvm</span><span class="p">,</span> <span class="s1">&#39;org.eclipse.core.resources.*&#39;</span><span class="p">)</span>
@@ -932,32 +932,32 @@ registering an instance of <code class="docutils literal notranslate"><span clas
 <p>On the Python side, it is possible to listen to CallbackServer events using
 signals. Recognizing that signals may be a foreign concept to Java developers,
 here is a full example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">server_connection_started</span><span class="p">,</span> <span class="n">server_connection_stopped</span><span class="p">,</span>
     <span class="n">server_started</span><span class="p">,</span> <span class="n">server_stopped</span><span class="p">,</span> <span class="n">pre_server_shutdown</span><span class="p">,</span> <span class="n">post_server_shutdown</span><span class="p">,</span>
     <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">GatewayParameters</span><span class="p">,</span> <span class="n">CallbackServerParameters</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">started</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">started</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;server&quot;</span><span class="p">]</span>
     <span class="c1"># do something</span>
 
-<span class="k">def</span> <span class="nf">connection_started</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">connection_started</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="n">connection</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;connection&quot;</span><span class="p">]</span>
     <span class="c1"># do something</span>
 
-<span class="k">def</span> <span class="nf">connection_stopped</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">connection_stopped</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="n">connection</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;connection&quot;</span><span class="p">]</span>
     <span class="c1"># do something</span>
 
-<span class="k">def</span> <span class="nf">stopped</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">stopped</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;server&quot;</span><span class="p">]</span>
     <span class="c1"># do something</span>
 
-<span class="k">def</span> <span class="nf">pre_shutdown</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pre_shutdown</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;server&quot;</span><span class="p">]</span>
     <span class="c1"># do something</span>
 
-<span class="k">def</span> <span class="nf">post_shutdown</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">post_shutdown</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;server&quot;</span><span class="p">]</span>
     <span class="c1"># do something</span>
 
@@ -1120,7 +1120,7 @@ proper security, connections should use loopback addresses, or use TLS.</p>
 <span class="n">server</span><span class="p">.</span><span class="na">start</span><span class="p">();</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">GatewayParameters</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">GatewayParameters</span>
 <span class="n">params</span> <span class="o">=</span> <span class="n">GatewayParameters</span><span class="p">(</span><span class="n">auth_token</span><span class="o">=</span><span class="s2">&quot;HelloWorld&quot;</span><span class="p">)</span>
 <span class="n">gateway</span> <span class="o">=</span> <span class="n">JavaGateway</span><span class="p">(</span><span class="n">gateway_parameters</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 </pre></div>

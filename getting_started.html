@@ -240,7 +240,7 @@ this line:</p>
 </pre></div>
 </div>
 <p>Do not forget to also change the Python code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">GatewayParameters</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="n">JavaGateway</span><span class="p">,</span> <span class="n">GatewayParameters</span>
 
 <span class="n">gateway</span> <span class="o">=</span> <span class="n">JavaGateway</span><span class="p">(</span><span class="n">gateway_parameters</span><span class="o">=</span><span class="n">GatewayParameters</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="mi">25335</span><span class="p">))</span>
 </pre></div>
@@ -256,7 +256,7 @@ initialize the GatewayServer in another method, you can also call
 <p>You will now write the python program that will access your Java program. Start
 a Python interpreter and make sure that Py4J is in your PYTHONPATH.</p>
 <p>The first step is to import the necessary Py4J class:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">py4j.java_gateway</span> <span class="kn">import</span> <span class="n">JavaGateway</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">py4j.java_gateway</span><span class="w"> </span><span class="kn">import</span> <span class="n">JavaGateway</span>
 </pre></div>
 </div>
 <p>Next, initialize a <a class="reference internal" href="py4j_java_gateway.html#api-javagateway"><span class="std std-ref">JavaGateway</span></a>. The default parameters
