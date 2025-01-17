@@ -2138,7 +2138,34 @@ class JavaGateway(object):
         """
         return gateway_help(
             self._gateway_client, var, pattern, short_name, display)
+    
+    def terminate_jvm(self, exit_code=0, raise_exception=False):
+        """ Terminating the Java process and breaking the connection with it
 
+        :param exit_code: Java process exit code
+
+        :param raise_exception: If `True`, raise an exception if an error
+            occurs while terminating Java process (very likely with sockets).
+        """
+
+        try:
+            sys_exit_jvm = self.jvm.System.exit
+            sys_exit_jvm_args = sys_exit_jvm._build_args(exit_code)[0]
+            command_to_exit_jvm = proto.CALL_COMMAND_NAME +\
+                sys_exit_jvm.command_header + sys_exit_jvm_args +\
+                proto.END_COMMAND_PART
+            gateway_connection = self._gateway_client._get_connection()
+            gateway_socket = gateway_connection.socket
+            gateway_socket.sendall(command_to_exit_jvm.encode("utf-8"))
+        except Exception:
+            if raise_exception:
+                raise
+            else:
+                logger.info(
+                    "Exception while terminating Java process",
+                    exc_info=True)
+        self.shutdown()
+            
     @classmethod
     def launch_gateway(
             cls, port=0, jarpath="", classpath="", javaopts=[],
