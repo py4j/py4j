@@ -210,7 +210,10 @@ def find_jar_path():
     #   the jar file is here: virtualenvpath/share/py4j/py4j.jar
     paths.append(os.path.join(os.path.dirname(
             os.path.realpath(__file__)), "../../../../share/py4j/" + jar_file))
-
+    
+    paths.append(os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), "../../../share/py4j/" + jar_file))
+    
     for path in paths:
         if os.path.exists(path):
             return path
