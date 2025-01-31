@@ -105,6 +105,8 @@ public interface Py4JPythonClient {
 
 	int getReadTimeout();
 
+	int getCreateSocketConnectionTimeout();
+
 	InetAddress getAddress();
 
 	/**
