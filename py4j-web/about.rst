@@ -19,7 +19,7 @@ License
 =======
 
 Py4J is distributed under the `BSD license
-<https://github.com/bartdag/py4j/blob/master/LICENSE.txt>`_.
+<https://github.com/py4j/py4j/blob/master/LICENSE.txt>`_.
 
 
 Alternatives to Py4J

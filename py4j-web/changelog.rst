@@ -26,7 +26,7 @@ Py4J 0.10.9.7
 - Python side: Detach Java objects only when _detach method exists
 - Java side: Add support for Java 11/17
 - `tickets closed for 0.10.9.7 release
-  <https://github.com/bartdag/py4j/milestone/33?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/33?closed=1>`_
 
 Py4J 0.10.9.6
 -------------
@@ -34,7 +34,7 @@ Py4J 0.10.9.6
 - Release date: August 11th 2022
 - Python side: Migrate nosetest to pytest
 - `tickets closed for 0.10.9.6 release
-  <https://github.com/bartdag/py4j/milestone/32?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/32?closed=1>`_
 
 Py4J 0.10.9.5
 -------------
@@ -42,7 +42,7 @@ Py4J 0.10.9.5
 - Release date: March 18th 2022
 - Python side: added the official support of Python 3.10
 - `tickets closed for 0.10.9.5 release
-  <https://github.com/bartdag/py4j/milestone/31?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/31?closed=1>`_
 
 Py4J 0.10.9.4
 -------------
@@ -53,7 +53,7 @@ Py4J 0.10.9.4
 - Automated documentation build with publising.
 - Fixed all tests that are flaky in GitHub Actions.
 - `tickets closed for 0.10.9.4 release
-  <https://github.com/bartdag/py4j/milestone/30?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/30?closed=1>`_
 
 Py4J 0.10.9.3
 -------------
@@ -67,7 +67,7 @@ Py4J 0.10.9.3
   saving the CI pipeline of Py4J!
 - Removed professional services.
 - `tickets closed for 0.10.9.3 release
-  <https://github.com/bartdag/py4j/milestone/29?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/29?closed=1>`_
 
 Py4J 0.10.9.2
 -------------
@@ -77,7 +77,7 @@ Py4J 0.10.9.2
 - Python side: fixed documentation of CallbackServerParameters &
   PythonParameters
 - `tickets closed for 0.10.9.2 release
-  <https://github.com/bartdag/py4j/milestone/28?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/28?closed=1>`_
 
 Py4J 0.10.9.1
 -------------
@@ -85,7 +85,7 @@ Py4J 0.10.9.1
 - Release date: September 7th 2020
 - Java side: fixed a regression in GatewayServer that ignored the passed port.
 - `tickets closed for 0.10.9.1 release
-  <https://github.com/bartdag/py4j/milestone/27?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/27?closed=1>`_
 
 
 Py4J 0.10.9
@@ -109,7 +109,7 @@ Py4J 0.10.9
   versions are no longer available in default images.
 - Java side: array elements can be set to None/null for non-primitive arrays.
 - `tickets closed for 0.10.9 release
-  <https://github.com/bartdag/py4j/issues?q=is%3Aissue+milestone%3A0.10.9+is%3Aclosed>`_
+  <https://github.com/py4j/py4j/issues?q=is%3Aissue+milestone%3A0.10.9+is%3Aclosed>`_
 
 Py4J 0.10.8 and Py4J 0.10.8.1
 -----------------------------
@@ -148,7 +148,7 @@ Py4J 0.10.8 and Py4J 0.10.8.1
 - Project: we switched again from CircleCI to TravisCI following the end of
   life of CircleCI 1.0.
 - `tickets closed for 0.10.8 release
-  <https://github.com/bartdag/py4j/milestone/25?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/25?closed=1>`_
 
 
 Py4J 0.10.7
@@ -174,7 +174,7 @@ Py4J 0.10.7
   PythonClient instead of always falling back to the default socket factory.
 - Java side: support for Gradle 4.x
 - `tickets closed for 0.10.7 release
-  <https://github.com/bartdag/py4j/milestone/24?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/24?closed=1>`_
 
 
 Py4J 0.10.6
@@ -192,7 +192,7 @@ Py4J 0.10.6
 - Java side: fixed regression where Python proxy tried to convert null values.
 - Java side: added a GatewayServer constructor that accepts a Gateway instance.
 - `tickets closed for 0.10.6 release
-  <https://github.com/bartdag/py4j/milestone/23?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/23?closed=1>`_
 
 
 Py4J 0.10.5
@@ -209,7 +209,7 @@ Py4J 0.10.5
 - Java side: return types of Python proxies are correctly converted to the
   expected type (e.g., a double can be converted to a float)
 - `tickets closed for 0.10.5 release
-  <https://github.com/bartdag/py4j/milestone/22?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/22?closed=1>`_
 
 
 Py4J 0.10.4
@@ -225,7 +225,7 @@ Py4J 0.10.4
   when the GatewayServer is shutting down. The server_connection_error signal
   on the Python side was already ignoring that spurious error.
 - `tickets closed for 0.10.4 release
-  <https://github.com/bartdag/py4j/milestone/21?closed=1>`_
+  <https://github.com/py4j/py4j/milestone/21?closed=1>`_
 
 
 Py4J 0.10.3
@@ -266,7 +266,7 @@ Py4J 0.10.3
 - Eclipse: Replaced ``Eclipse-BuddyPolicy: global`` by ``DynamicImport-Package:
   *`` for greater compatibility with other OSGi frameworks.
 - `tickets closed for 0.10.3 release
-  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.3+is%3Aclosed>`_
+  <https://github.com/py4j/py4j/issues?q=milestone%3A0.10.3+is%3Aclosed>`_
 
 Py4J 0.10.2.1
 -------------
@@ -274,7 +274,7 @@ Py4J 0.10.2.1
 - Release date: June 20th 2016
 - Python side: re-added missing parameter in GatewayClient constructor.
 - `tickets closed for 0.10.2.1 release
-  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.2.1+is%3Aclosed>`_
+  <https://github.com/py4j/py4j/issues?q=milestone%3A0.10.2.1+is%3Aclosed>`_
 
 
 Py4J 0.10.2
@@ -301,7 +301,7 @@ Py4J 0.10.2
 - A link to the contributing guide now appears when opening pull requests or
   issues.
 - `tickets closed for 0.10.2 release
-  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.2+is%3Aclosed>`_
+  <https://github.com/py4j/py4j/issues?q=milestone%3A0.10.2+is%3Aclosed>`_
 
 Py4J 0.10.1
 -----------
@@ -321,7 +321,7 @@ Py4J 0.10.1
 - Added the __version__ attribute in the py4j package to conform to PEP396.
   Thanks to @lessthanoptimal for reporting this bug.
 - `tickets closed for 0.10.1 release
-  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10.1+is%3Aclosed>`_
+  <https://github.com/py4j/py4j/issues?q=milestone%3A0.10.1+is%3Aclosed>`_
 
 Py4J 0.10.0
 -----------
@@ -336,9 +336,9 @@ Py4J 0.10.0
 - Added initial byte stream support so Python can consume Java byte streams
   more efficiently. Support is still preliminary and subject to change in the
   future, but it provides a good base to build on. See these `Python unit test
-  <https://github.com/bartdag/py4j/blob/9d3a520d9a31ea39534d2d290eaa7da5dc683ed5/py4j-python/src/py4j/tests/java_gateway_test.py#L547>`_
+  <https://github.com/py4j/py4j/blob/9d3a520d9a31ea39534d2d290eaa7da5dc683ed5/py4j-python/src/py4j/tests/java_gateway_test.py#L547>`_
   and `Java example class
-  <https://github.com/bartdag/py4j/blob/9d3a520d9a31ea39534d2d290eaa7da5dc683ed5/py4j-java/src/test/java/py4j/examples/ExampleClass.java#L192>`_
+  <https://github.com/py4j/py4j/blob/9d3a520d9a31ea39534d2d290eaa7da5dc683ed5/py4j-java/src/test/java/py4j/examples/ExampleClass.java#L192>`_
   for a small example. Thanks to @njwhite.
 - Java side: converted build script from ant to gradle. Introduced Java coding
   conventions and static code analysis. See :ref:`Java Coding Conventions
@@ -346,7 +346,7 @@ Py4J 0.10.0
 - Java side: it is now possible to build a osgi bundle and an Eclipse update
   site from Py4J source. See :ref:`using Py4J with Eclipse <eclipse_features>`
 - `tickets closed for 0.10.0 release
-  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.10+is%3Aclosed>`_
+  <https://github.com/py4j/py4j/issues?q=milestone%3A0.10+is%3Aclosed>`_
 
 Py4J 0.9.2
 ----------
@@ -361,7 +361,7 @@ Py4J 0.9.2
 - Documentation: made a simpler and easier to understand example of callback
   (Java calling Python)
 - `tickets closed for 0.9.2 release
-  <https://github.com/bartdag/py4j/issues?q=milestone%3A0.9.2>`_
+  <https://github.com/py4j/py4j/issues?q=milestone%3A0.9.2>`_
 
 Py4J 0.9.1
 ----------
@@ -386,7 +386,7 @@ Py4J 0.9.1
 - We moved from Travis CI to Circle CI and the automated tests now reliably
   pass.
 - `tickets closed for 0.9.1 release
-  <https://github.com/bartdag/py4j/issues?q=is%3Aissue+milestone%3A0.9.1+is%3Aclosed>`_
+  <https://github.com/py4j/py4j/issues?q=is%3Aissue+milestone%3A0.9.1+is%3Aclosed>`_
 
 
 Py4J 0.9
@@ -410,7 +410,7 @@ Py4J 0.9
   deques, or queues. Thanks to @davidcsterratt for finding the root cause and
   work on the fix.
 - It is now possible to install Py4J from git with pip: pip install
-  git+https://github.com/bartdag/py4j.git
+  git+https://github.com/py4j/py4j.git
 - The Eclipse components of Py4J have been moved to another repository. Existing
   forks and pull requests can still use the @before-eclipse-split branch until
   Py4J reaches 1.0. Fixes won't be backported to this branch, but pull requests
@@ -442,7 +442,7 @@ Py4J 0.9
 - We have a `new mailing list
   <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_.
 - `github 0.9 milestone
-  <https://github.com/bartdag/py4j/issues?q=is%3Aissue+milestone%3A0.9+is%3Aclosed>`_
+  <https://github.com/py4j/py4j/issues?q=is%3Aissue+milestone%3A0.9+is%3Aclosed>`_
 
 Py4J 0.8.2.1
 ------------
@@ -460,7 +460,7 @@ Py4J 0.8.2
 - Fixed unit tests for JDK 8
 - Added a few extra paths to find_jar_path
 - `github 0.8.2 milestone
-  <https://github.com/bartdag/py4j/issues?milestone=11&state=closed>`_
+  <https://github.com/py4j/py4j/issues?milestone=11&state=closed>`_
 
 
 Py4J 0.8.1
@@ -473,7 +473,7 @@ Py4J 0.8.1
   if a JavaObject is an instance of a class.
 - Released Py4J in central Maven repository.
 - `github 0.8.1 milestone
-  <https://github.com/bartdag/py4j/issues?milestone=8&page=1&state=closed>`_
+  <https://github.com/py4j/py4j/issues?milestone=8&page=1&state=closed>`_
 
 
 Py4J 0.8
@@ -493,7 +493,7 @@ Py4J 0.8
 - Added support of `Travis-CI <https://travis-ci.org/bartdag/py4j>`_ and
   cleaned up the test suite to remove hardcoded paths.
 - `github 0.8 milestone
-  <https://github.com/bartdag/py4j/issues?milestone=7&page=1&state=closed>`_
+  <https://github.com/py4j/py4j/issues?milestone=7&page=1&state=closed>`_
 
 Py4J 0.7
 --------
@@ -509,7 +509,7 @@ Py4J 0.7
 - Py4J package name changed from Py4J to py4j.
 - Bug fixes in the Python callback server and unicode support.
 - `github 0.7 milestone
-  <https://github.com/bartdag/py4j/issues/labels/v0.7>`_
+  <https://github.com/py4j/py4j/issues/labels/v0.7>`_
 
 Py4J 0.6
 --------
@@ -520,7 +520,7 @@ Py4J 0.6
 - Improved Py4J setup: no more warnings displayed when installing Py4J.
 - Bug fixes and API additions.
 - `github 0.6 milestone
-  <https://github.com/bartdag/py4j/issues/labels/v0.6>`_
+  <https://github.com/py4j/py4j/issues/labels/v0.6>`_
 
 Py4J 0.5
 --------
@@ -538,7 +538,7 @@ Py4J 0.5
   ``http://www.py4j.org/py4j_eclipse``
 - Redesigned the module decomposition of Py4J: there are no more mandatory circular dependencies among modules.
 - `github 0.5 milestone
-  <https://github.com/bartdag/py4j/issues/labels/v0.5>`_
+  <https://github.com/py4j/py4j/issues/labels/v0.5>`_
 
 Py4J 0.4
 --------
@@ -549,7 +549,7 @@ Py4J 0.4
 - Changed **interfaces** member in Callback classes to **implements**.
 - Internal refactoring to adopt clearer terminology and make Py4J protocol extensible.
 - Many bug fixes: most are related to the callback feature.
-- `github 0.4 milestone <https://github.com/bartdag/py4j/issues/labels/v0.4>`_
+- `github 0.4 milestone <https://github.com/py4j/py4j/issues/labels/v0.4>`_
 
 Py4J 0.3
 --------
@@ -559,7 +559,7 @@ Py4J 0.3
 - Added support for callbacks: Java objects can now call back Python objects.
 - Completely redesigned threading and connection model of Py4J to allow multiple threads and callbacks on both side.
 - Refactored the memory management to ensure best effort garbage collection.
-- `github 0.3 milestone <https://github.com/bartdag/py4j/issues/labels/v0.3>`_
+- `github 0.3 milestone <https://github.com/py4j/py4j/issues/labels/v0.3>`_
 
 Py4J 0.2
 --------
@@ -574,7 +574,7 @@ Py4J 0.2
 - Complete rewrite of the reflection engine on the Java side for more flexibility.
 - Improved memory model: no more memory leak caused by Py4J.
 - New concurrency model: Py4J is now thread-safe.
-- `github 0.2 milestone <https://github.com/bartdag/py4j/issues/labels/v0.2>`_
+- `github 0.2 milestone <https://github.com/py4j/py4j/issues/labels/v0.2>`_
 
 Py4J 0.1
 --------
@@ -586,4 +586,4 @@ Py4J 0.1
 - Field access, constructors, and static classes are **NOT** accessible yet.
 - Dictionary and Set are only accessible through the Java Map and Set interface for now.
 - Arrays can be referenced, but individual items cannot be accessed yet.
-- `github 0.1 milestone <https://github.com/bartdag/py4j/issues/labels/v0.1>`_
+- `github 0.1 milestone <https://github.com/py4j/py4j/issues/labels/v0.1>`_
