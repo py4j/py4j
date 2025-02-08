@@ -726,6 +726,27 @@ Java methods slightly less efficient because in the worst case, Py4J needs to
 go through all registered converters for all parameters. This is why automatic
 conversion is disabled by default.
 
+.. _explicit_conversion:
+
+Explicit converting Python objects to Java primitives
+-----------------------------------------------------
+
+Sometimes, especially when ``auto_convert=True`` it is difficult to enforce correct type 
+passed from Python to Java. Then, ``TypeHint`` from ``py4j.protocol`` may be used. 
+``java_type`` argument of constructor should be one of Java types defined in ``py4j.protocol``.
+
+So if you have method in Java like:
+
+.. code-block:: java
+
+  void method(HashSet<Long> longs) {}
+
+Then you can pass arguments with correct type to this method with ``TypeHint``
+
+::
+
+  >>> set_with_longs = { TypeHint(1, LONG_TYPE), TypeHint(2, LONG_TYPE) }
+  >>> gateway.jvm.my.Class().method(set_with_longs)
 
 .. _py4j_exceptions:
 

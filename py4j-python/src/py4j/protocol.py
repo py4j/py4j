@@ -70,6 +70,13 @@ VOID_TYPE = "v"
 ITERATOR_TYPE = "g"
 PYTHON_PROXY_TYPE = "f"
 
+class TypeHint:
+    """Enables users to provide a hint to the Python to Java converter specifying the accurate data type for a given value.
+    Essential to enforce i.e. correct number type, like Long."""
+    def __init__(self, value, java_type):
+        self.value = value
+        self.java_type = java_type
+
 # Protocol
 END = "e"
 ERROR = "x"
@@ -274,6 +281,8 @@ def get_command_part(parameter, python_proxy_pool=None):
 
     if parameter is None:
         command_part = NULL_TYPE
+    elif isinstance(parameter, TypeHint):
+        command_part = parameter.java_type + smart_decode(parameter.value)
     elif isinstance(parameter, bool):
         command_part = BOOLEAN_TYPE + smart_decode(parameter)
     elif isinstance(parameter, Decimal):
