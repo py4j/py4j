@@ -32,7 +32,7 @@ from py4j.java_gateway import JavaObject, JavaMember, get_method, JavaClass
 from py4j import protocol as proto
 from py4j.protocol import (
     Py4JError, get_command_part, get_return_value, register_input_converter,
-    register_output_converter)
+    register_output_converter, Py4JJavaError)
 
 
 class JavaIterator(JavaObject):
@@ -43,6 +43,8 @@ class JavaIterator(JavaObject):
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
         self._next_name = "next"
+        self._is_instance_of = JavaClass(
+            "py4j.reflection.TypeUtil", gateway_client).isInstanceOf
         # To bind lifecycle of this iterator to the java iterator. To prevent
         # gc of the iterator.
 
@@ -60,6 +62,10 @@ class JavaIterator(JavaObject):
                 self._target_id, self._gateway_client)
         try:
             return self._methods[self._next_name]()
+        except Py4JJavaError as e:
+            if not self._is_instance_of("java.util.NoSuchElementException", e.java_exception):
+                raise e
+            raise StopIteration()
         except Py4JError:
             raise StopIteration()
 
