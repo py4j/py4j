@@ -505,6 +505,54 @@ def quiet_shutdown(socket_instance):
         logger.debug("Exception while shutting down a socket", exc_info=True)
 
 
+def jvm_shutdown(gateway, timeout=1):
+    """Quietly shuts down JVM and closes gateway.
+
+    :param gateway: Gateway.
+    """
+
+    # soft shutdown - call System.exit(0)
+    try:
+        sys_exit = gateway.jvm.System.exit
+        args = sys_exit._build_args(0)[0]
+        command = proto.CALL_COMMAND_NAME +\
+            sys_exit.command_header +\
+            args +\
+            proto.END_COMMAND_PART
+
+        # avoid calling directly sys_exit(0) or
+        # sys_exit.gateway_client.send_command(command), because this leads to
+        # an exception in another thread
+        gateway_connection = sys_exit.gateway_client._get_connection()
+        gateway_socket = gateway_connection.socket
+        gateway_socket.sendall(command.encode("utf-8"))
+    except Exception:
+        pass
+
+    # if not successful (e.g. Java server is dead) - terminate process
+    if gateway.proc:
+        try:
+            # let JVM close everything
+            gateway.proc.terminate()
+            gateway.proc.wait(timeout)
+        except Exception:
+            pass
+
+        try:
+            # but if process is still alive - kill it
+            gateway.proc.kill()
+            # fetch process status to avoid zombie process
+            gateway.proc.poll()
+        except Exception:
+            pass
+
+    # close everything on Python side
+    try:
+        gateway.shutdown()
+    except Exception:
+        pass
+
+
 def set_linger(a_socket):
     """Sets SO_LINGER to true, 0 to send a RST packet. This forcibly closes the
     connection and the remote socket should fail on write and should not need
