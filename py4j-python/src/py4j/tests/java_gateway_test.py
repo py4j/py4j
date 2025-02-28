@@ -1076,6 +1076,14 @@ class GatewayLauncherTest(unittest.TestCase):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
         self.assertTrue(self.gateway.jvm)
 
+    def testJvmDebugPort(self):
+        from random import randint
+        dport = randint(5000, 5999)
+        self.gateway = JavaGateway.launch_gateway(javaopts=[
+            "-agentlib:jdwp=transport=dt_socket,"
+            f"server=y,suspend=n,address=*:{dport}"])
+        self.assertTrue(self.gateway.jvm)
+
     def testCwd(self):
         parent_directory = os.path.dirname(os.getcwd())
         self.gateway = JavaGateway.launch_gateway(cwd=parent_directory)
