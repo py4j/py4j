@@ -37,6 +37,7 @@ import java.math.BigInteger;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class ExampleClass {
@@ -172,6 +173,20 @@ public class ExampleClass {
 
 	public BigInteger method11(BigInteger bi) {
 		return bi.add(new BigInteger("1"));
+	}
+
+	public int method12(HashSet<Object> set) {
+		Object element = set.stream().findAny().get();
+		if (element instanceof Long) {
+			return 4;
+		}
+		if (element instanceof Integer) {
+			return 1;
+		}
+		if (element instanceof String) {
+			return 2;
+		}
+		return 3;
 	}
 
 	@SuppressWarnings("unused")

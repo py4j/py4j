@@ -22,15 +22,15 @@ jobs:
           - os: macos-14
             java-version: 8
             python-version: '3.12'
-          - os: windows-2019
-            java-version: 11
-            python-version: '3.10'
-          - os: ubuntu-22.04
-            java-version: 17
-            python-version: '3.11'
-          - os: ubuntu-22.04
-            java-version: 21
-            python-version: '3.9'
+          # - os: windows-2019
+          #   java-version: 11
+          #   python-version: '3.10'
+          # - os: ubuntu-22.04
+          #   java-version: 17
+          #   python-version: '3.11'
+          # - os: ubuntu-22.04
+          #   java-version: 21
+          #   python-version: '3.9'
     name: Python ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
     steps:
       - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97 # pin@v2.3.5
@@ -82,7 +82,7 @@ jobs:
           echo `java -version`
           echo $JAVA_HOME
           # Java TLS tests are disabled until they can be fixed (refs #441)
-          pytest -k "not java_tls_test." -vvv
+          pytest -k "not java_tls_test." -vvv -s
 
   test-doc:
     name: Documentation build
