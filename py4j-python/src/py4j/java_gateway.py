@@ -1065,7 +1065,7 @@ class GatewayClient(object):
             #   - closed and does not leak
             #   - removed from the thread local when Py4J
             #     Single Threading Model is on
-            # See also https://github.com/bartdag/py4j/pull/440 for
+            # See also https://github.com/py4j/py4j/pull/440 for
             # more details.
             logging.exception("KeyboardInterrupt while sending command.")
 
