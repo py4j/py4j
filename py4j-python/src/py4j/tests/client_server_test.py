@@ -14,59 +14,69 @@ from py4j.protocol import Py4JError, Py4JJavaError, smart_decode
 from py4j.tests.java_callback_test import IHelloImpl, IHelloFailingImpl
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, check_connection, sleep, WaitOperator)
+from py4j.tests.memory_leak_test import python_gc
 from py4j.tests.py4j_callback_recursive_example import (
     PythonPing, HelloState)
 
 
-def start_clientserver_example_server():
+def start_clientserver_example_server(*args):
     subprocess.call([
         "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
-        "py4j.examples.SingleThreadApplication"])
+        "py4j.examples.SingleThreadApplication"] + list(args))
 
 
-def start_short_timeout_clientserver_example_server():
+def start_short_timeout_clientserver_example_server(*args):
     subprocess.call([
         "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
         "py4j.examples.SingleThreadApplication$"
-        "SingleThreadShortTimeoutApplication"])
+        "SingleThreadShortTimeoutApplication"] + list(args))
 
 
-def start_java_clientserver_example_server():
+def start_java_clientserver_example_server(*args):
     subprocess.call([
         "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
-        "py4j.examples.SingleThreadClientApplication"])
+        "py4j.examples.SingleThreadClientApplication"] + list(args))
 
 
-def start_java_clientserver_gc_example_server():
+def start_java_clientserver_gc_example_server(*args):
     subprocess.call([
         "java", "-Xmx512m", "-cp", PY4J_JAVA_PATH,
-        "py4j.examples.SingleThreadClientGCApplication"])
+        "py4j.examples.SingleThreadClientGCApplication"] + list(args))
 
 
 def start_clientserver_example_app_process(
         start_java_client=False, start_short_timeout=False,
-        start_gc_test=False):
+        start_gc_test=False, auth_token=None):
+    args = ()
+    gw_params = GatewayParameters()
+    if auth_token:
+        args = ("--auth-token", auth_token)
+        gw_params = GatewayParameters(auth_token=auth_token)
+
     # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     if start_short_timeout:
-        p = Process(target=start_short_timeout_clientserver_example_server)
+        p = Process(target=start_short_timeout_clientserver_example_server,
+                    args=args)
     elif start_java_client:
-        p = Process(target=start_java_clientserver_example_server)
+        p = Process(target=start_java_clientserver_example_server, args=args)
     elif start_gc_test:
-        p = Process(target=start_java_clientserver_gc_example_server)
+        p = Process(target=start_java_clientserver_gc_example_server,
+                    args=args)
     else:
-        p = Process(target=start_clientserver_example_server)
+        p = Process(target=start_clientserver_example_server, args=args)
     p.start()
     sleep()
-    check_connection()
+
+    check_connection(gateway_parameters=gw_params)
     return p
 
 
 @contextmanager
 def clientserver_example_app_process(
         start_java_client=False, start_short_timeout=False,
-        start_gc_test=False, join=True):
+        start_gc_test=False, join=True, auth_token=None):
     p = start_clientserver_example_app_process(
-        start_java_client, start_short_timeout, start_gc_test)
+        start_java_client, start_short_timeout, start_gc_test, auth_token)
     try:
         yield p
     finally:
@@ -136,7 +146,45 @@ class GarbageCollectionTest(unittest.TestCase):
                 start_gc_test=True, join=False) as p:
             p.join()
             client_server.shutdown()
-            self.assertEquals(1000, hello.calls)
+            self.assertEqual(1000, hello.calls)
+
+    def testCleanConnections(self):
+        """This test intentionally create multiple connections in multiple
+        threads so each connection is in a thread local of each thread.
+        After that, it verifies that if the connection is cleaned and closed
+        properly without a resource leak.
+        """
+        with clientserver_example_app_process():
+            client_server = ClientServer(
+                JavaParameters(), PythonParameters())
+            connections = client_server._gateway_client.deque
+            conditions = []
+
+            def assert_connection():
+                # Creates a connection.
+                client_server.jvm.System.currentTimeMillis()
+                # Should at least create one connection.
+                conditions.append(0 < len(connections))
+
+            threads = [
+                threading.Thread(target=assert_connection),
+                threading.Thread(target=assert_connection),
+                threading.Thread(target=assert_connection),
+            ]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+
+            # Here we explicitly call garbage collection to clean
+            # `ClientServerConnection`s by
+            # `JavaClient.ThreadLocalConnectionCleaner`
+            python_gc()
+
+            # Should have zero connections left.
+            self.assertEqual(len(client_server._gateway_client.deque), 0)
+            self.assertTrue(all(connections))
+            client_server.shutdown()
 
 
 class RetryTest(unittest.TestCase):
@@ -284,12 +332,19 @@ class RetryTest(unittest.TestCase):
 class IntegrationTest(unittest.TestCase):
 
     def testJavaClientPythonServer(self):
+        self._testJavaClientPythonServer()
+
+    def testJavaClientPythonServerWithAuth(self):
+        self._testJavaClientPythonServer(auth_token="secret")
+
+    def _testJavaClientPythonServer(self, auth_token=None):
         hello_state = HelloState()
         client_server = ClientServer(
-            JavaParameters(), PythonParameters(), hello_state)
+            JavaParameters(auth_token=auth_token),
+            PythonParameters(auth_token=auth_token), hello_state)
 
-        with clientserver_example_app_process(True):
-            client_server.shutdown()
+        with clientserver_example_app_process(True, auth_token=auth_token):
+            client_server.shutdown(raise_exception=True)
 
         # Check that Java correctly called Python
         self.assertEqual(2, len(hello_state.calls))
@@ -301,7 +356,7 @@ class IntegrationTest(unittest.TestCase):
             client_server = ClientServer(
                 JavaParameters(), PythonParameters())
             ms = client_server.jvm.System.currentTimeMillis()
-            self.assertTrue(ms > 0)
+            self.assertGreater(ms, 0)
             client_server.shutdown()
 
     def testErrorInPy4J(self):
@@ -334,7 +389,7 @@ class IntegrationTest(unittest.TestCase):
                 self.assertTrue(is_instance_of(
                     client_server, e.java_exception,
                     'py4j.Py4JException'))
-                self.assertTrue('interesting Python exception' in str(e))
+                self.assertIn('interesting Python exception', str(e))
 
             try:
                 example.callHello(IHelloFailingImpl(
@@ -368,7 +423,7 @@ class IntegrationTest(unittest.TestCase):
                 self.assertTrue(is_instance_of(
                     client_server, e.java_exception,
                     'py4j.Py4JException'))
-                self.assertTrue('My IllegalStateException' in str(e))
+                self.assertIn('My IllegalStateException', str(e))
 
             client_server.shutdown()
 
@@ -450,7 +505,7 @@ class IntegrationTest(unittest.TestCase):
 
             # Leave time for sotimeout
             sleep(3)
-            self.assertTrue(len(client_server.gateway_property.pool) < 2)
+            self.assertLess(len(client_server.gateway_property.pool), 2)
             client_server.shutdown()
 
     def testPythonGC(self):
@@ -477,7 +532,9 @@ class IntegrationTest(unittest.TestCase):
             # not run yet.
             sleep()
             gc.collect()
-            sleep()
+            # Long sleep to ensure that the finalizer worker received
+            # everything
+            sleep(2)
 
             after = len(
                 client_server.java_gateway_server.getGateway().getBindings())
@@ -488,7 +545,7 @@ class IntegrationTest(unittest.TestCase):
 
             # Number of references when we created a JavaObject should be
             # higher than at the beginning.
-            self.assertTrue(in_middle > before)
+            self.assertGreater(in_middle, before)
             client_server.shutdown()
 
     def testMultiClientServerWithSharedJavaThread(self):
@@ -548,9 +605,9 @@ class IntegrationTest(unittest.TestCase):
             self.assertNotEqual(sharedPythonThreadId0, sharedPythonThreadId1)
             # Check that the Python thread id does not change between
             # invocations
-            self.assertEquals(sharedPythonThreadId0,
+            self.assertEqual(sharedPythonThreadId0,
                               entry0.getSharedPythonThreadId())
-            self.assertEquals(sharedPythonThreadId1,
+            self.assertEqual(sharedPythonThreadId1,
                               entry1.getSharedPythonThreadId())
 
             # ## 3 Hops to Shared Java Thread
@@ -591,9 +648,9 @@ class IntegrationTest(unittest.TestCase):
             # ## 0 Hops to Thread ID
 
             # Check that the two thread getters get the same thread
-            self.assertEquals(thisThreadId,
+            self.assertEqual(thisThreadId,
                               int(threadIdGetter0.getThreadId()))
-            self.assertEquals(thisThreadId,
+            self.assertEqual(thisThreadId,
                               int(threadIdGetter1.getThreadId()))
 
             # ## 1 Hop to Thread ID

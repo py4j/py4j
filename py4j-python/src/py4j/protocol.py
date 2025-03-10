@@ -144,7 +144,9 @@ REMOVE_IMPORT_SUB_COMMAND_NAME = "r\n"
 PYTHON_PROXY_PREFIX = "p"
 ERROR_RETURN_MESSAGE = RETURN_MESSAGE + ERROR + NULL_TYPE + "\n"
 SUCCESS_RETURN_MESSAGE = RETURN_MESSAGE + SUCCESS + "\n"
+OUTPUT_VOID_COMMAND = RETURN_MESSAGE + SUCCESS + VOID_TYPE + "\n"
 
+AUTH_COMMAND_NAME = "A"
 CALL_PROXY_COMMAND_NAME = "c"
 GARBAGE_COLLECT_PROXY_COMMAND_NAME = "g"
 
@@ -170,6 +172,7 @@ INPUT_CONVERTER = []
 # ERRORS
 ERROR_ON_SEND = "on_send"
 ERROR_ON_RECEIVE = "on_receive"
+EMPTY_RESPONSE = "empty_response"
 
 
 def escape_new_line(original):
@@ -181,8 +184,11 @@ def escape_new_line(original):
 
     :rtype: an escaped string
     """
-    return smart_decode(original).replace("\\", "\\\\").replace("\r", "\\r").\
-        replace("\n", "\\n")
+    if original:
+        return smart_decode(original).replace("\\", "\\\\").\
+            replace("\r", "\\r").replace("\n", "\\n")
+    else:
+        return original
 
 
 def unescape_new_line(escaped):
@@ -196,11 +202,14 @@ def unescape_new_line(escaped):
 
     :rtype: the original string
     """
-    return ESCAPE_CHAR.join(
-        "\n".join(
-            ("\r".join(p.split(ESCAPE_CHAR + "r")))
-            .split(ESCAPE_CHAR + "n"))
-        for p in escaped.split(ESCAPE_CHAR + ESCAPE_CHAR))
+    if escaped:
+        return ESCAPE_CHAR.join(
+            "\n".join(
+                ("\r".join(p.split(ESCAPE_CHAR + "r")))
+                .split(ESCAPE_CHAR + "n"))
+            for p in escaped.split(ESCAPE_CHAR + ESCAPE_CHAR))
+    else:
+        return escaped
 
 
 def smart_decode(s):
@@ -334,6 +343,34 @@ def get_return_value(answer, gateway_client, target_id=None, name=None):
             return OUTPUT_CONVERTER[type](answer[2:], gateway_client)
 
 
+def get_error_message(answer, gateway_client=None):
+    """Returns a tuple of:
+
+    1. bool: if the answer is an error
+    2. the error message if any (discards null and references)
+    """
+    is_answer_error = is_error(answer)[0]
+    value = None
+    if is_answer_error:
+        if len(answer) > 1:
+            type = answer[1]
+            if type == STRING_TYPE:
+                value = OUTPUT_CONVERTER[type](answer[2:], gateway_client)
+    return (is_answer_error, value)
+
+
+def compute_exception_message(default_message, extra_message=None):
+    """Returns an error message with an extra error message if provided.
+
+    Otherwise returns the default error message.
+    """
+    message = default_message
+    if extra_message:
+        message = "{0} -- {1}".format(
+            default_message, extra_message)
+    return message
+
+
 def is_error(answer):
     if len(answer) == 0 or answer[0] != SUCCESS:
         return (True, None)
@@ -395,6 +432,13 @@ class Py4JError(Exception):
         self.cause = cause
 
 
+class Py4JAuthenticationError(Py4JError):
+    """Exception raised when Py4J cannot authenticate a connection."""
+    def __init__(self, args=None, cause=None):
+        super(Py4JAuthenticationError, self).__init__(args)
+        self.cause = cause
+
+
 class Py4JNetworkError(Py4JError):
     """Exception raised when a network error occurs with Py4J."""
     def __init__(self, args=None, cause=None, when=None):
@@ -411,6 +455,9 @@ class Py4JJavaError(Py4JError):
 
     `str(py4j_java_error)` returns the error message and the stack trace
     available on the Java side (similar to printStackTrace()).
+
+    Note that `str(py4j_java_error)` in Python 2 might not automatically handle
+    a non-ascii unicode string but throw an error if the exception contains it.
     """
 
     def __init__(self, msg, java_exception):
@@ -424,4 +471,7 @@ class Py4JJavaError(Py4JError):
         gateway_client = self.java_exception._gateway_client
         answer = gateway_client.send_command(self.exception_cmd)
         return_value = get_return_value(answer, gateway_client, None, None)
+        # Note: technically this should return a bytestring 'str' rather than
+        # unicodes in Python 2; however, it can return unicodes for now.
+        # See https://github.com/bartdag/py4j/issues/306 for more details.
         return "{0}: {1}".format(self.errmsg, return_value)

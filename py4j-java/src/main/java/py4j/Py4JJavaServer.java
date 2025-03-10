@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -78,6 +78,11 @@ public interface Py4JJavaServer {
 	 *                                  instance.
 	 */
 	void shutdown(boolean shutdownCallbackClient);
+
+	/**
+	 * Shuts down the socket that matches address, remote port, and local port.
+	 */
+	void shutdownSocket(String address, int remotePort, int localPort);
 
 	void addListener(GatewayServerListener listener);
 

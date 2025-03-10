@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -73,7 +73,7 @@ public class PythonProxyHandler implements InvocationHandler {
 	@Override
 	protected void finalize() throws Throwable {
 		try {
-			if (gateway.getCallbackClient().isMemoryManagementEnabled()) {
+			if (gateway.getCallbackClient().isMemoryManagementEnabled() && this.id != Protocol.ENTRY_POINT_OBJECT_ID) {
 				logger.fine("Finalizing python proxy id " + this.id);
 				gateway.getCallbackClient().sendCommand(finalizeCommand, false);
 			}

@@ -14,7 +14,7 @@ clients of Py4J because it is automatically loaded by the :mod:`java_gateway
 .. _api_py4jerror:
 
 Py4JError
------------
+---------
 
 .. autoclass:: py4j.protocol.Py4JError
    :members:
@@ -27,10 +27,18 @@ Py4JJavaError
    :members:
    :undoc-members:
 
-Py4JJavaError
--------------
+Py4JNetworkError
+----------------
 
 .. autoclass:: py4j.protocol.Py4JNetworkError
+   :members:
+   :undoc-members:
+
+
+Py4JAuthenticationError
+-----------------------
+
+.. autoclass:: py4j.protocol.Py4JAuthenticationError
    :members:
    :undoc-members:
 

@@ -18,7 +18,7 @@ For help, register and then post to the Py4J mailing list at
 LICENSE
 =======
 
-Py4J is distributed with the BSD 3-Clause license. See LICENSE.txt for more
+Py4J is distributed with the BSD 3-Clause license. See `LICENSE.txt <LICENSE.txt>`_ for more
 information.
 
 
@@ -30,16 +30,14 @@ documentation fixes. Please visit the `contributing guide
 <https://www.py4j.org/contributing.html>`_ for more
 information.
 
-.. image:: https://img.shields.io/circleci/project/bartdag/py4j.svg
-    :target: https://circleci.com/gh/bartdag/py4j
-
-
-.. image:: https://img.shields.io/pypi/v/py4j.svg
-    :target: https://pypi.python.org/pypi/py4j
-
+.. image:: https://img.shields.io/github/actions/workflow/status/py4j/py4j/test.yml.svg
+    :target: https://github.com/py4j/py4j/actions/workflows/test.yml
 
 .. image:: https://img.shields.io/pypi/l/py4j.svg
 
 .. image:: https://img.shields.io/pypi/pyversions/py4j.svg
+
+.. image:: https://img.shields.io/pypi/v/py4j.svg
+    :target: https://pypi.python.org/pypi/py4j
 
 .. image:: https://img.shields.io/maven-central/v/net.sf.py4j/py4j.svg

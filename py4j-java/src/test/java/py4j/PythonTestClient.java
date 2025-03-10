@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,8 @@ public class PythonTestClient implements Runnable {
 	public volatile String nextProxyReturnMessage;
 
 	private ServerSocket sSocket;
+	private volatile int port = 0;
+	private volatile int pythonPort = 0;
 
 	public void startProxy() {
 		new Thread(this).start();
@@ -51,7 +53,8 @@ public class PythonTestClient implements Runnable {
 
 	public void run() {
 		try {
-			sSocket = new ServerSocket(25334);
+			sSocket = new ServerSocket(0);
+			port = sSocket.getLocalPort();
 			Socket socket = sSocket.accept();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -72,13 +75,22 @@ public class PythonTestClient implements Runnable {
 		}
 	}
 
+	public int getPort() {
+		assert port != 0;
+		return port;
+	}
+
+	public void setPythonPort(int port) {
+		pythonPort = port;
+	}
+
 	public void stopProxy() {
 		NetworkUtil.quietlyClose(sSocket);
 	}
 
 	public void sendMesage(String message) {
 		try {
-			Socket socket = new Socket(InetAddress.getByName(GatewayServer.DEFAULT_ADDRESS), 25333);
+			Socket socket = new Socket(InetAddress.getByName(GatewayServer.DEFAULT_ADDRESS), pythonPort);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 			writer.write(message);

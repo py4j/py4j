@@ -96,7 +96,7 @@ repositories {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'junit', name: 'junit', version: '4.13.2'
     // For Java 8 Support
     if (JavaVersion.current().isJava7Compatible()) {
         findbugs group: 'com.google.code.findbugs', name: 'findbugs', version: '3.0.+'
@@ -161,13 +161,13 @@ task createPom {
                 packaging 'jar'
                 groupId 'net.sf.py4j'
                 artifactId 'py4j'
-                version '0.10.6'
+                version '0.10.9.9'
                 name 'Py4J'
                 description 'Py4J enables Python programs running in a Python interpreter to dynamically access Java objects in a Java Virtual Machine. Methods are called as if the Java objects resided in the Python interpreter and Java collections can be accessed through standard Python collection methods. Py4J also enables Java programs to call back Python objects.'
                 scm {
-                    connection 'scm:git:git@github.com:bartdag/py4j.git'
-                    developerConnection 'scm:git:git@github.com:bartdag/py4j.git'
-                    url 'git@github.com:bartdag/py4j.git'
+                    connection 'scm:git:git@github.com:py4j/py4j.git'
+                    developerConnection 'scm:git:git@github.com:py4j/py4j.git'
+                    url 'git@github.com:py4j/py4j.git'
                 }
                 developers {
                     developer {
@@ -188,13 +188,71 @@ task createPom {
                 }
             }
         }.withXml {
-            asNode().appendNode('build').appendNode('plugins').appendNode('plugin').with {
-                appendNode('groupId', 'org.apache.maven.plugins')
-                appendNode('artifactId', 'maven-compiler-plugin')
-                appendNode('version', '3.3')
-                appendNode('configuration').with {
-                    appendNode('source', '1.6')
-                    appendNode('target', '1.6')
+            asNode().appendNode('distributionManagement').appendNode('snapshotRepository').with {
+                appendNode('id', 'ossrh')
+                appendNode('url', 'https://oss.sonatype.org/content/repositories/snapshots')
+            }
+        }.withXml {
+            asNode().appendNode('build').appendNode('plugins').with {
+                appendNode('plugin').with {
+                    appendNode('groupId', 'org.apache.maven.plugins')
+                    appendNode('artifactId', 'maven-compiler-plugin')
+                    appendNode('version', '3.3')
+                    appendNode('configuration').with {
+                        appendNode('source', '1.6')
+                        appendNode('target', '1.6')
+                    }
+                }
+                appendNode('plugin').with {
+                    appendNode('groupId', 'org.sonatype.plugins')
+                    appendNode('artifactId', 'nexus-staging-maven-plugin')
+                    appendNode('version', '1.6.7')
+                    appendNode('extensions', 'true')
+                    appendNode('configuration').with {
+                        appendNode('serverId', 'ossrh')
+                        appendNode('nexusUrl', 'https://oss.sonatype.org')
+                        appendNode('autoReleaseAfterClose', 'true')
+                    }
+                }
+                appendNode('plugin').with {
+                    appendNode('groupId', 'org.apache.maven.plugins')
+                    appendNode('artifactId', 'maven-gpg-plugin')
+                    appendNode('version', '1.5')
+                    appendNode('executions').with {
+                        appendNode('execution').with {
+                            appendNode('id', 'sign-artifacts')
+                            appendNode('phase', 'verify')
+                            appendNode('goals').with {
+                                appendNode('goal', 'sign')
+                            }
+                        }
+                    }
+                }
+                appendNode('plugin').with {
+                    appendNode('groupId', 'org.apache.maven.plugins')
+                    appendNode('artifactId', 'maven-source-plugin')
+                    appendNode('version', '2.2.1')
+                    appendNode('executions').with {
+                        appendNode('execution').with {
+                            appendNode('id', 'attach-sources')
+                            appendNode('goals').with {
+                                appendNode('goal', 'jar-no-fork')
+                            }
+                        }
+                    }
+                }
+                appendNode('plugin').with {
+                    appendNode('groupId', 'org.apache.maven.plugins')
+                    appendNode('artifactId', 'maven-javadoc-plugin')
+                    appendNode('version', '2.9.1')
+                    appendNode('executions').with {
+                        appendNode('execution').with {
+                            appendNode('id', 'attach-javadocs')
+                            appendNode('goals').with {
+                                appendNode('goal', 'jar')
+                            }
+                        }
+                    }
                 }
             }
         }.writeTo("pom.xml")

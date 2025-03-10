@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -151,13 +151,19 @@ public class ArrayCommand extends AbstractCommand {
 		Object newObject = null;
 		List<TypeConverter> converters = new ArrayList<TypeConverter>();
 		Class<?>[] parameterClasses = { arrayClass };
-		Class<?>[] argumentClasses = { objectToSet.getClass() };
+		Class<?>[] argumentClasses = gateway.getReflectionEngine().getClassParameters(new Object[] { objectToSet });
 		int cost = MethodInvoker.buildConverters(converters, parameterClasses, argumentClasses);
 
 		if (cost >= 0) {
 			newObject = converters.get(0).convert(objectToSet);
 		} else {
-			throw new Py4JException("Cannot convert " + argumentClasses[0].getName() + " to " + arrayClass.getName());
+			String errorMessage;
+			if (argumentClasses[0] != null) {
+				errorMessage = "Cannot convert " + argumentClasses[0].getName() + " to " + arrayClass.getName();
+			} else {
+				errorMessage = "Cannot convert null to " + arrayClass.getName();
+			}
+			throw new Py4JException(errorMessage);
 		}
 
 		return newObject;

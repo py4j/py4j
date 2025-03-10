@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,7 @@
  *****************************************************************************/
 package py4j.commands;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -44,6 +43,7 @@ import org.junit.Test;
 
 import py4j.Gateway;
 import py4j.Protocol;
+import py4j.Py4JException;
 import py4j.ReturnObject;
 import py4j.examples.ExampleEntryPoint;
 
@@ -95,6 +95,35 @@ public class ArrayCommandTest {
 			command.execute("a", new BufferedReader(new StringReader(inputCommand)), writer);
 			assertEquals("!yv\n", sWriter.toString());
 			assertEquals(Array.getInt(array2, 1), 555);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
+	public void testSetNoneInPrimitiveArray() {
+		String inputCommand = ArrayCommand.ARRAY_SET_SUB_COMMAND_NAME + "\n" + target2 + "\ni1\nn\ne\n";
+		try {
+			command.execute("a", new BufferedReader(new StringReader(inputCommand)), writer);
+			assertEquals("!yv\n", sWriter.toString());
+			assertNull(Array.get(array2, 1));
+			fail();
+		} catch (Py4JException pe) {
+			assertTrue(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
+	public void testSetNoneInArray() {
+		String inputCommand = ArrayCommand.ARRAY_SET_SUB_COMMAND_NAME + "\n" + target + "\ni1\nn\ne\n";
+		try {
+			command.execute("a", new BufferedReader(new StringReader(inputCommand)), writer);
+			assertEquals("!yv\n", sWriter.toString());
+			assertNull(Array.get(array1, 1));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail();

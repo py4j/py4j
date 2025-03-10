@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,10 +47,15 @@ public class InstrGatewayTest {
 
 	@Test
 	public void testLifecycle() {
+		try {
+			Thread.currentThread().sleep(2000);
+		} catch (Exception e) {
+
+		}
 		startServer();
 		MetricRegistry.forceFinalization();
 		try {
-			Thread.currentThread().sleep(1000);
+			Thread.currentThread().sleep(2000);
 		} catch (Exception e) {
 
 		}

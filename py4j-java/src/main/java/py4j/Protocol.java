@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -117,6 +117,9 @@ public class Protocol {
 	public final static char FATAL_ERROR = 'z';
 	public final static char SUCCESS = 'y';
 
+	// COMMON COMMAND NAME
+	public final static String AUTH_COMMAND_NAME = "A";
+
 	// SHORTCUT
 	public final static String ERROR_COMMAND = "" + RETURN_MESSAGE + ERROR + END_OUTPUT;
 	public final static String VOID_COMMAND = "" + RETURN_MESSAGE + SUCCESS + VOID + END_OUTPUT;
@@ -127,6 +130,9 @@ public class Protocol {
 
 	// DEFAULT JVM VIEW
 	public final static String DEFAULT_JVM_OBJECT_ID = "j";
+
+	// GATEWAY SERVER
+	public final static String GATEWAY_SERVER_ID = "GATEWAY_SERVER";
 
 	// STATIC REFERENCES
 	public final static String STATIC_PREFIX = "z:";
@@ -363,6 +369,18 @@ public class Protocol {
 
 	public final static String getOutputVoidCommand() {
 		return VOID_COMMAND;
+	}
+
+	public final static String getAuthCommand(String authToken) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(AUTH_COMMAND_NAME);
+		builder.append("\n");
+		builder.append(StringUtil.escape(authToken));
+		builder.append("\n");
+		builder.append(END);
+		builder.append("\n");
+
+		return builder.toString();
 	}
 
 	public static char getPrimitiveType(Object primitiveObject) {

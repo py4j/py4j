@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -91,6 +91,8 @@ public class CallbackClient implements Py4JPythonClient {
 
 	protected final int readTimeout;
 
+	protected final String authToken;
+
 	public CallbackClient(int port) {
 		this(port, GatewayServer.defaultAddress(), DEFAULT_MIN_CONNECTION_TIME, DEFAULT_MIN_CONNECTION_TIME_UNIT,
 				SocketFactory.getDefault(), true);
@@ -98,6 +100,11 @@ public class CallbackClient implements Py4JPythonClient {
 
 	public CallbackClient(int port, InetAddress address) {
 		this(port, address, DEFAULT_MIN_CONNECTION_TIME, DEFAULT_MIN_CONNECTION_TIME_UNIT);
+	}
+
+	public CallbackClient(int port, InetAddress address, String authToken) {
+		this(port, address, authToken, DEFAULT_MIN_CONNECTION_TIME, DEFAULT_MIN_CONNECTION_TIME_UNIT,
+				SocketFactory.getDefault(), true, GatewayServer.DEFAULT_READ_TIMEOUT);
 	}
 
 	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit) {
@@ -170,6 +177,37 @@ public class CallbackClient implements Py4JPythonClient {
 	 */
 	public CallbackClient(int port, InetAddress address, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory, boolean enableMemoryManagement, int readTimeout) {
+		this(port, address, null, minConnectionTime, minConnectionTimeUnit, socketFactory, enableMemoryManagement,
+				readTimeout);
+	}
+
+	/**
+	 *
+	 * @param port
+	 *            The port used by channels to connect to the Python side.
+	 * @param address
+	 *            The addressed used by channels to connect to the Python side.
+	 * @param authToken
+	 *            Token for authenticating with the callback server.
+	 * @param minConnectionTime
+	 *            The minimum connection time: channels are guaranteed to stay
+	 *            connected for this time after sending a command.
+	 * @param minConnectionTimeUnit
+	 *            The minimum coonnection time unit.
+	 * @param socketFactory
+	 *            The non-{@code null} factory to make {@link Socket}s.
+	 * @param enableMemoryManagement
+	 *            If False, we do not send tell the Python side when a PythonProxy
+	 *            is no longer used by the Java side.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once a Python program is
+	 *            connected, if a GatewayServer does not receive a request
+	 *            (e.g., a method call) after this time, the connection with the
+	 *            Python program is closed.
+	 */
+	public CallbackClient(int port, InetAddress address, String authToken, long minConnectionTime,
+			TimeUnit minConnectionTimeUnit, SocketFactory socketFactory, boolean enableMemoryManagement,
+			int readTimeout) {
 		super();
 		this.port = port;
 		this.address = address;
@@ -178,6 +216,7 @@ public class CallbackClient implements Py4JPythonClient {
 		this.socketFactory = socketFactory;
 		this.enableMemoryManagement = enableMemoryManagement;
 		this.readTimeout = readTimeout;
+		this.authToken = StringUtil.escape(authToken);
 		setupCleaner();
 	}
 
@@ -195,7 +234,7 @@ public class CallbackClient implements Py4JPythonClient {
 
 		connection = connections.pollLast();
 		if (connection == null) {
-			connection = new CallbackConnection(port, address, socketFactory, readTimeout);
+			connection = new CallbackConnection(port, address, socketFactory, readTimeout, authToken);
 			connection.start();
 		}
 
@@ -249,7 +288,8 @@ public class CallbackClient implements Py4JPythonClient {
 	 */
 	@Override
 	public Py4JPythonClient copyWith(InetAddress pythonAddress, int pythonPort) {
-		return new CallbackClient(pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit, socketFactory);
+		return new CallbackClient(pythonPort, pythonAddress, authToken, minConnectionTime, minConnectionTimeUnit,
+				socketFactory, enableMemoryManagement, readTimeout);
 	}
 
 	protected void giveBackConnection(Py4JClientConnection cc) {

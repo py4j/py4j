@@ -9,9 +9,11 @@ code calls some Java code, the Java code will be executed in the UI thread.
 
 from __future__ import unicode_literals, absolute_import
 
+from collections import deque
 import logging
 import socket
 from threading import local, Thread
+import time
 import traceback
 import weakref
 
@@ -21,12 +23,11 @@ from py4j.java_gateway import (
     CallbackServerParameters, GatewayParameters, CallbackServer,
     GatewayConnectionGuard, DEFAULT_ADDRESS, DEFAULT_PORT,
     DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-    server_connection_stopped)
+    server_connection_stopped, do_client_auth, _garbage_collect_proxy)
 from py4j import protocol as proto
-from py4j.compat import Queue
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
-    get_return_value)
+    get_return_value, Py4JAuthenticationError)
 
 
 logger = logging.getLogger("py4j.clientserver")
@@ -34,22 +35,27 @@ logger = logging.getLogger("py4j.clientserver")
 
 SHUTDOWN_FINALIZER_WORKER = "__shutdown__"
 
+DEFAULT_WORKER_SLEEP_TIME = 1
+
 
 class FinalizerWorker(Thread):
 
-    def __init__(self, queue):
-        self.queue = queue
+    def __init__(self, deque):
+        self.deque = deque
         super(FinalizerWorker, self).__init__()
 
     def run(self):
         while(True):
-            task = self.queue.get()
-            if task == SHUTDOWN_FINALIZER_WORKER:
-                break
-            else:
-                (java_client, target_id) = task
-                java_client.garbage_collect_object(
-                    target_id, False)
+            try:
+                task = self.deque.pop()
+                if task == SHUTDOWN_FINALIZER_WORKER:
+                    break
+                else:
+                    (java_client, target_id) = task
+                    java_client.garbage_collect_object(
+                        target_id, False)
+            except IndexError:
+                time.sleep(DEFAULT_WORKER_SLEEP_TIME)
 
 
 class JavaParameters(GatewayParameters):
@@ -60,7 +66,8 @@ class JavaParameters(GatewayParameters):
             self, address=DEFAULT_ADDRESS, port=DEFAULT_PORT, auto_field=False,
             auto_close=True, auto_convert=False, eager_load=False,
             ssl_context=None, enable_memory_management=True, auto_gc=False,
-            read_timeout=None, daemonize_memory_management=True):
+            read_timeout=None, daemonize_memory_management=True,
+            auth_token=None):
         """
 
         :param address: the address to which the client will request a
@@ -111,10 +118,13 @@ class JavaParameters(GatewayParameters):
             the Python side might not send all garbage collection requests if
             it exits. If False, memory management will block the Python program
             exit until all requests are sent.
+
+        :param auth_token: if provided, an authentication that token clients
+            must provide to the server when connecting.
         """
         super(JavaParameters, self).__init__(
             address, port, auto_field, auto_close, auto_convert, eager_load,
-            ssl_context, enable_memory_management, read_timeout)
+            ssl_context, enable_memory_management, read_timeout, auth_token)
         self.auto_gc = auto_gc
         self.daemonize_memory_management = daemonize_memory_management
 
@@ -129,13 +139,14 @@ class PythonParameters(CallbackServerParameters):
             daemonize=False, daemonize_connections=False, eager_load=True,
             ssl_context=None, auto_gc=False,
             accept_timeout=DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-            read_timeout=None, propagate_java_exceptions=False):
+            read_timeout=None, propagate_java_exceptions=False,
+            auth_token=None):
         """
         :param address: the address to which the client will request a
             connection
 
         :param port: the port to which the client will request a connection.
-            Default is 25333.
+            Default is 25334.
 
         :param daemonize: If `True`, will set the daemon property of the server
             thread to True. The callback server will exit automatically if all
@@ -174,11 +185,14 @@ class PythonParameters(CallbackServerParameters):
             other kind of Python exception. Setting this option is useful if
             you need to implement a Java interface where the user of the
             interface has special handling for specific Java exception types.
+
+        :param auth_token: if provided, an authentication token that clients
+            must provide to the server when connecting.
         """
         super(PythonParameters, self).__init__(
             address, port, daemonize, daemonize_connections, eager_load,
             ssl_context, accept_timeout, read_timeout,
-            propagate_java_exceptions)
+            propagate_java_exceptions, auth_token)
         self.auto_gc = auto_gc
 
 
@@ -191,7 +205,7 @@ class JavaClient(GatewayClient):
 
     def __init__(
             self, java_parameters, python_parameters, gateway_property=None,
-            finalizer_queue=None):
+            finalizer_deque=None):
         """
         :param java_parameters: collection of parameters and flags used to
             configure the JavaGateway (Java client)
@@ -202,7 +216,7 @@ class JavaClient(GatewayClient):
         :param gateway_property: used to keep gateway preferences without a
             cycle with the JavaGateway
 
-        :param finalizer_queue: Queue used to manage garbage collection
+        :param finalizer_deque: deque used to manage garbage collection
             requests.
         """
         super(JavaClient, self).__init__(
@@ -211,16 +225,16 @@ class JavaClient(GatewayClient):
         self.java_parameters = java_parameters
         self.python_parameters = python_parameters
         self.thread_connection = local()
-        self.finalizer_queue = finalizer_queue
+        self.finalizer_deque = finalizer_deque
 
     def garbage_collect_object(self, target_id, enqueue=True):
         """Tells the Java side that there is no longer a reference to this
         JavaObject on the Python side. If enqueue is True, sends the request
-        to the FinalizerWorker queue. Otherwise, sends the request to the Java
+        to the FinalizerWorker deque. Otherwise, sends the request to the Java
         side.
         """
         if enqueue:
-            self.finalizer_queue.put((self, target_id))
+            self.finalizer_deque.appendleft((self, target_id))
         else:
             super(JavaClient, self).garbage_collect_object(target_id)
 
@@ -230,13 +244,16 @@ class JavaClient(GatewayClient):
         :param connection: The ClientServerConnection to associate with the
             current thread.
         """
-        self.thread_connection.connection = weakref.ref(connection)
+        conn = weakref.ref(connection)
+        self.thread_connection._cleaner = (
+            ThreadLocalConnectionFinalizer(conn, self.deque))
+        self.thread_connection.connection = conn
 
     def shutdown_gateway(self):
         try:
             super(JavaClient, self).shutdown_gateway()
         finally:
-            self.finalizer_queue.put(SHUTDOWN_FINALIZER_WORKER)
+            self.finalizer_deque.appendleft(SHUTDOWN_FINALIZER_WORKER)
 
     def get_thread_connection(self):
         """Returns the ClientServerConnection associated with this thread. Can
@@ -284,6 +301,39 @@ class JavaClient(GatewayClient):
 
     def _create_connection_guard(self, connection):
         return ClientServerConnectionGuard(self, connection)
+
+
+class ThreadLocalConnectionFinalizer(object):
+    """Cleans :class:`ClientServerConnection` held by a thread local by
+    closing it properly and removing it from the :class:`JavaClient`
+    deque. Right before the Python thread is terminated, this
+    instance will be garbage-collected, which triggers a call
+    to __del__  that contains the cleanup logic.
+    """
+    def __init__(self, connection, dequeue):
+        assert (
+            isinstance(connection, weakref.ReferenceType) and
+            connection() is not None and
+            isinstance(connection(), ClientServerConnection))
+        self.connection = connection
+        self.deque = dequeue
+
+    def __del__(self):
+        """Removes the connection associated with the current thread
+        from the deque.
+
+        Expected to be called when the thread that started the
+        connection is garbage-collected.
+        """
+        conn = self.connection()
+        if conn is not None:
+            try:
+                # This dequeue is thread-safe, and shared across other
+                # threads.
+                self.deque.remove(conn)
+            except ValueError:
+                # Should never reach this point
+                pass
 
 
 class ClientServerConnectionGuard(GatewayConnectionGuard):
@@ -389,13 +439,28 @@ class ClientServerConnection(object):
             self.stream = self.socket.makefile("rb")
             self.is_connected = True
             self.initiated_from_client = True
-        except Exception:
-            quiet_close(self.socket)
-            quiet_close(self.stream)
-            self.socket = None
-            self.stream = None
+
+            self._authenticate_connection()
+        except Py4JAuthenticationError:
+            self.close(reset=True)
             self.is_connected = False
             raise
+        except Exception:
+            self.close()
+            self.is_connected = False
+            raise
+
+    def _authenticate_connection(self):
+        if self.java_parameters.auth_token:
+            cmd = "{0}\n{1}\n".format(
+                proto.AUTH_COMMAND_NAME,
+                self.java_parameters.auth_token
+            )
+            answer = self.send_command(cmd)
+            error, _ = proto.is_error(answer)
+            if error:
+                raise Py4JAuthenticationError(
+                    "Failed to authenticate with gateway server.")
 
     def init_socket_from_python_server(self, socket, stream):
         self.socket = socket
@@ -421,6 +486,30 @@ class ClientServerConnection(object):
             # Do nothing! Exceptions might occur anyway.
             logger.debug("Exception occurred while shutting down gateway",
                          exc_info=True)
+
+    # Shuts down the connection and the corresponding Java socket.
+    # remote_port is the remote port of the Java socket (local port for Py4j).
+    # local_port is the local port of the Java socket (remote port for Py4j).
+    def shutdown_socket(self, remote_port, local_port):
+        if not self.is_connected:
+            raise Py4JError("Gateway must be connected to send cancel cmd.")
+        try:
+            logger.info("Close connection stream")
+            quiet_close(self.stream)
+            address = "127.0.0.1"
+            logger.info(
+                "Send shutdown request for the Java socket {0}, remote port {1}, local port {2}".
+                format(address, remote_port, local_port))
+            self.socket.sendall("z\n".encode("utf-8"))
+            self.socket.sendall(("%s\n" % address).encode("utf-8"))
+            self.socket.sendall(("%s\n" % remote_port).encode("utf-8"))
+            self.socket.sendall(("%s\n" % local_port).encode("utf-8"))
+            logger.info("Close connection")
+            self.close()
+            self.is_connected = False
+            logger.info("Connection is closed")
+        except Exception:
+            logger.exception("Exception occurred while shutting down connection", exc_info=True)
 
     def start(self):
         t = Thread(target=self.run)
@@ -448,7 +537,8 @@ class ClientServerConnection(object):
                 # Happens when a the other end is dead. There might be an empty
                 # answer before the socket raises an error.
                 if answer.strip() == "":
-                    raise Py4JNetworkError("Answer from Java side is empty")
+                    raise Py4JNetworkError(
+                        "Answer from Java side is empty", when=proto.EMPTY_RESPONSE)
                 if answer.startswith(proto.RETURN_MESSAGE):
                     return answer[1:]
                 else:
@@ -460,7 +550,7 @@ class ClientServerConnection(object):
                         self.socket.sendall(return_message.encode("utf-8"))
                     elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                         self.stream.readline()
-                        del(self.pool[obj_id])
+                        _garbage_collect_proxy(self.pool, obj_id)
                         self.socket.sendall(
                             proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                     else:
@@ -471,6 +561,8 @@ class ClientServerConnection(object):
                             proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
         except Exception as e:
             logger.info("Error while receiving.", exc_info=True)
+            if isinstance(e, Py4JNetworkError) and e.when == proto.EMPTY_RESPONSE:
+                raise
             raise Py4JNetworkError(
                 "Error while sending or receiving", e, proto.ERROR_ON_RECEIVE)
 
@@ -495,9 +587,17 @@ class ClientServerConnection(object):
     def wait_for_commands(self):
         logger.info("Python Server ready to receive messages")
         reset = False
+        authenticated = self.python_parameters.auth_token is None
         try:
             while True:
                 command = smart_decode(self.stream.readline())[:-1]
+                if not authenticated:
+                    # Will raise an exception if auth fails in any way.
+                    authenticated = do_client_auth(
+                        command, self.stream, self.socket,
+                        self.python_parameters.auth_token)
+                    continue
+
                 obj_id = smart_decode(self.stream.readline())[:-1]
                 logger.info(
                     "Received command {0} on object id {1}".
@@ -509,7 +609,7 @@ class ClientServerConnection(object):
                     self.socket.sendall(return_message.encode("utf-8"))
                 elif command == proto.GARBAGE_COLLECT_PROXY_COMMAND_NAME:
                     self.stream.readline()
-                    del(self.pool[obj_id])
+                    _garbage_collect_proxy(self.pool, obj_id)
                     self.socket.sendall(
                         proto.SUCCESS_RETURN_MESSAGE.encode("utf-8"))
                 else:
@@ -518,6 +618,9 @@ class ClientServerConnection(object):
                     # point, the protocol is broken.
                     self.socket.sendall(
                         proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
+        except Py4JAuthenticationError:
+            reset = True
+            logger.exception("Could not authenticate connection.")
         except socket.timeout:
             reset = True
             logger.info(
@@ -563,6 +666,12 @@ class ClientServerConnection(object):
             temp = smart_decode(input.readline())[:-1]
         return params
 
+    def __del__(self):
+        # In case new connection is set via
+        # `JavaClient.set_thread_connection`, this connection will be
+        # garbage-collected with closing the underlying socket properly.
+        self.close()
+
 
 class ClientServer(JavaGateway):
     """Subclass of JavaGateway that implements a different threading model: a
@@ -571,6 +680,8 @@ class ClientServer(JavaGateway):
 
     For example, if Python thread 1 calls Java, and Java calls Python, the
     callback (from Java to Python) will be executed in Python thread 1.
+
+    Note about authentication: to enable authentication
     """
 
     def __init__(
@@ -599,17 +710,17 @@ class ClientServer(JavaGateway):
         )
 
     def _create_finalizer_worker(self):
-        queue = Queue()
-        worker = FinalizerWorker(queue)
+        worker_deque = deque()
+        worker = FinalizerWorker(worker_deque)
         worker.daemon = self.java_parameters.daemonize_memory_management
         worker.start()
-        return queue
+        return worker_deque
 
     def _create_gateway_client(self):
-        queue = self._create_finalizer_worker()
+        worker_deque = self._create_finalizer_worker()
         java_client = JavaClient(
             self.java_parameters, self.python_parameters,
-            finalizer_queue=queue)
+            finalizer_deque=worker_deque)
         return java_client
 
     def _create_callback_server(self, callback_server_parameters):

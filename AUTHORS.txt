@@ -5,22 +5,42 @@ people who have submitted patches, reported bugs, and generally made Py4J that
 much better:
 
 Peter Abeles <peter.abeles@gmail.com>
+Patrick Alt <patrick_alt@ultimatesoftware.com>
 Max Bolingbroke <batterseapower@hotmail.com>
 Christophe Buffenoir <kujiu@kujiu.org>
+Steven Burns <royalstream@hotmail.com>
 Jacek Bzdak <jbzdak@gmail.com>
 Barthelemy Dagenais <barthelemy@infobart.com>
 Frankie Dintino <fdintino@theatlantic.com>
 Matthew Farrellee <matt@redhat.com>
 Nicholas Gates <nickgatzgates@gmail.com>
 Matthew Gerring <matthew.gerring@gmail.com>
+Gabe Goodhart <ghart@us.ibm.com>
 Jonah Graham <jonah@kichwacoders.com>
 Alex Grönholm <alex.gronholm+git@nextday.fi>
+David A. Hannasch <David.A.Hannasch@gmail.com>
+Hugo <hugovk@users.noreply.github.com>
+Hyukjin Kwon <gurwls223@gmail.com>
 Chris Kanich <ckanich@uic.edu>
+Abdeali Kothari <abdealikothari@gmail.com>
+Henrik Lasu <hlasu@thermocalc.se>
+Haejoon Lee <haejoon309@gmail.com>
 Scott Lewis <scottslewis@gmail.com>
 Chetan Narsude <@243826>
+Andrii Oriekhov <andriyorehov@gmail.com>
+Yann Richet <yann.richet@irsn.fr>
 Josh Rosen <rosenville@gmail.com>
 Isaac Sánchez Barrera <isaac@isb1009.es>
+Alexander Shadchin <alexandr.shadchin@gmail.com>
 David C. Sterratt <david.c.sterratt@ed.ac.uk>
+tobe <tobeg3oogle@gmail.com>
+Marcelo Vanzin <vanzin@cloudera.com>
 Greg Warner <gdwarner@gmail.com>
+James Westover <westover@uber.com>
 Nick White <n.j.white@gmail.com>
+Andrey Yanov <ayanov@deloitte.com>
+Stefano Zacchiroli <zack@upsilon.cc>
+Jiajie Zhong <zhongjiajie955@hotmail.com>
 Shixiong Zhu <@zsxwing>
+Kun <@kun1996>
+Takuya Ueshin <@ueshin>

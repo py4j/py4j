@@ -10,7 +10,6 @@ import subprocess
 import unittest
 import ssl
 import os
-import sys
 
 from py4j.java_gateway import (
     JavaGateway, CallbackServerParameters,
@@ -41,60 +40,60 @@ class Adder(object):
     class Java:
         implements = ["py4j.examples.Operator"]
 
-if sys.version_info >= (2, 7):
-    # ssl.SSLContext introduced in Python 2.7
-    class TestIntegration(unittest.TestCase):
-        """Tests cases borrowed from other files, but executed over a
-        TLS connection.
-        """
-        def setUp(self):
-            key_file = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                "selfsigned.pem")
 
-            client_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
-            client_ssl_context.verify_mode = ssl.CERT_REQUIRED
-            client_ssl_context.check_hostname = True
-            client_ssl_context.load_verify_locations(cafile=key_file)
+class TestIntegration(unittest.TestCase):
+    """Tests cases borrowed from other files, but executed over a
+    TLS connection.
+    """
+    def setUp(self):
+        key_file = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "selfsigned.pem")
 
-            server_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
-            server_ssl_context.load_cert_chain(key_file, password='password')
+        client_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+        client_ssl_context.verify_mode = ssl.CERT_REQUIRED
+        client_ssl_context.check_hostname = True
+        client_ssl_context.load_verify_locations(cafile=key_file)
 
-            callback_server_parameters = CallbackServerParameters(
-                ssl_context=server_ssl_context)
-            # address must match cert, because we're checking hostnames
-            gateway_parameters = GatewayParameters(
-                address='localhost',
-                ssl_context=client_ssl_context)
+        server_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+        server_ssl_context.load_cert_chain(key_file, password='password')
 
-            self.p = start_example_tls_process()
-            self.gateway = JavaGateway(
-                gateway_parameters=gateway_parameters,
-                callback_server_parameters=callback_server_parameters)
-            # It seems SecureServerSocket may need a little more time to
-            # initialize on some platforms/slow machines.
-            sleep(0.500)
+        callback_server_parameters = CallbackServerParameters(
+            ssl_context=server_ssl_context)
+        # address must match cert, because we're checking hostnames
+        gateway_parameters = GatewayParameters(
+            address='localhost',
+            ssl_context=client_ssl_context)
 
-        def tearDown(self):
-            safe_shutdown(self)
-            self.p.join()
-            sleep()
+        self.p = start_example_tls_process()
+        self.gateway = JavaGateway(
+            gateway_parameters=gateway_parameters,
+            callback_server_parameters=callback_server_parameters)
+        # It seems SecureServerSocket may need a little more time to
+        # initialize on some platforms/slow machines.
+        sleep(0.500)
 
-        def testUnicode(self):
-            sleep()
-            sb = self.gateway.jvm.java.lang.StringBuffer()
-            sb.append("\r\n\tHello\r\n\t")
-            self.assertEqual("\r\n\tHello\r\n\t", sb.toString())
+    def tearDown(self):
+        safe_shutdown(self)
+        self.p.join()
+        sleep()
 
-        def testMethodConstructor(self):
-            sleep()
-            adder = Adder()
-            oe1 = self.gateway.jvm.py4j.examples.OperatorExample()
-            # Test method
-            oe1.randomBinaryOperator(adder)
-            # Test constructor
-            oe2 = self.gateway.jvm.py4j.examples.OperatorExample(adder)
-            self.assertTrue(oe2 is not None)
+    def testUnicode(self):
+        sleep()
+        sb = self.gateway.jvm.java.lang.StringBuffer()
+        sb.append("\r\n\tHello\r\n\t")
+        self.assertEqual("\r\n\tHello\r\n\t", sb.toString())
+
+    def testMethodConstructor(self):
+        sleep()
+        adder = Adder()
+        oe1 = self.gateway.jvm.py4j.examples.OperatorExample()
+        # Test method
+        oe1.randomBinaryOperator(adder)
+        # Test constructor
+        oe2 = self.gateway.jvm.py4j.examples.OperatorExample(adder)
+        self.assertIsNotNone(oe2)
+
 
 if __name__ == "__main__":
     unittest.main()

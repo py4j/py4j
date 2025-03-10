@@ -36,21 +36,21 @@ make sure that your contribution includes:
 Python Coding Conventions
 -------------------------
 
-We follow pep8 rather stricly:
+We follow pep8 rather strictly:
 
 1. We use spaces instead of tab.
 2. We use four-space indents.
-3. Line length is 80
-4. Code must pass the default flake8 tests (pep8 + pyflakes)
+3. Line length is 80.
+4. Code must pass the default flake8 tests (pep8 + pyflakes).
 
-Code must be compatible with from Python 2.6 to the newest released version of
-Python.
+Code must be compatible with Python 3.8 to the newest released
+version of Python.
 
 If external libraries must be used, they should be wrapped in a mechanism that
 by default does not require them (e.g., conditional imports, graceful
 degradation, etc.).
 
-Libraries used for testing and contributing (flake8, nose, tox, Sphinx) can be
+Libraries used for testing and contributing (flake8, pytest, tox, Sphinx) can be
 installed with pip:
 
 
@@ -102,25 +102,28 @@ request will be accepted.
 Testing Python Code
 -------------------
 
-On the Python side, we use nose to run the test suite and tox to run the test
+On the Python side, we use pytest to run the test suite and tox to run the test
 suite across the supported python versions.
 
 .. code-block:: bash
 
-  # make sure that the jar file is created
+  # Make sure that the jar file is created
   cd py4j-java
   ./gradlew clean
   ./gradlew assemble
 
-  # install test requirements
+  # Come back to home directory
+  cd ..
+
+  # Install test requirements for Python
   cd py4j-python
-  pip install -r requirements.txt
+  pip install -r requirements-test.txt
 
   # Run the full test suite
-  nosetests
+  pytest
 
   # Run only one particular test
-  nosetests py4j.tests.java_gateway_test:GatewayLauncherTest.testRedirectToDeque
+  pytest -k "GatewayLauncherTest and testRedirectToDeque"
 
   # Run all tests on all supported pythons.
   # Typically only do this if the automated build failed
@@ -183,7 +186,7 @@ your commit:
 
         fixes #XYZ -- short description below 72 characters
 
-        Longer description that lists all the changes that occured
+        Longer description that lists all the changes that occurred
         on multiple lines of 79 characters.
 
 

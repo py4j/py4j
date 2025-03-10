@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -237,13 +237,13 @@ public class MethodInvoker {
 			if (method != null) {
 				AccessController.doPrivileged(new PrivilegedAction<Object>() {
 					public Object run() {
-						method.setAccessible(true);
+						ReflectionShim.trySetAccessible(method);
 						return null;
 					}
 				});
 				returnObject = method.invoke(obj, newArguments);
 			} else if (constructor != null) {
-				constructor.setAccessible(true);
+				ReflectionShim.trySetAccessible(constructor);
 				returnObject = constructor.newInstance(newArguments);
 			}
 		} catch (InvocationTargetException ie) {

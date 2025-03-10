@@ -33,5 +33,6 @@ class ByteStringTest(unittest.TestCase):
         self.assertEqual(ord(s1[0]), array1[0])
         self.assertEqual(ord(s2[4]), array2[4])
 
+
 if __name__ == "__main__":
     unittest.main()

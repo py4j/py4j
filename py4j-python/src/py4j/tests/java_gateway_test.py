@@ -4,7 +4,7 @@ Created on Dec 10, 2009
 
 @author: barthelemy
 """
-from __future__ import unicode_literals, absolute_import
+from __future__ import unicode_literals, absolute_import, print_function
 
 from collections import deque
 from contextlib import contextmanager
@@ -13,6 +13,7 @@ import gc
 import math
 from multiprocessing import Process
 import os
+import sys
 from socket import AF_INET, SOCK_STREAM, socket
 import subprocess
 import tempfile
@@ -63,6 +64,14 @@ PY4J_JAVA_PATH = os.pathsep.join(PY4J_JAVA_PATHS)
 
 
 set_default_callback_accept_timeout(0.125)
+
+
+def stderr_is_polluted(line):
+    """May occur depending on the environment in which py4j is executed.
+
+    The stderr ccanot be relied on when it occurs.
+    """
+    return "Picked up _JAVA_OPTIONS" in line
 
 
 def sleep(sleep_time=0.250):
@@ -355,11 +364,15 @@ class MethodTest(unittest.TestCase):
         try:
             ex.method2(None)
             ex2 = ex.method4(None)
-            self.assertEquals(ex2.getField1(), 3)
-            self.assertEquals(2, ex.method7(None))
+            self.assertEqual(ex2.getField1(), 3)
+            self.assertEqual(2, ex.method7(None))
         except Exception:
             print_exc()
             self.fail()
+
+    def testMagicMethods(self):
+        ex = self.gateway.getNewExample()
+        self.assertRaises(AttributeError, lambda: ex.__add__("asd"))
 
     def testUnicode(self):
         sb = self.gateway.jvm.java.lang.StringBuffer()
@@ -426,11 +439,11 @@ class FieldTest(unittest.TestCase):
         ex = self.gateway.getNewExample()
 
         set_field(ex, "field10", 2334)
-        self.assertEquals(get_field(ex, "field10"), 2334)
+        self.assertEqual(get_field(ex, "field10"), 2334)
 
         sb = self.gateway.jvm.java.lang.StringBuffer("Hello World!")
         set_field(ex, "field21", sb)
-        self.assertEquals(get_field(ex, "field21").toString(), "Hello World!")
+        self.assertEqual(get_field(ex, "field21").toString(), "Hello World!")
 
         self.assertRaises(Exception, set_field, ex, "field1", 123)
 
@@ -450,7 +463,7 @@ class DeprecatedTest(unittest.TestCase):
         self.gateway = JavaGateway(gateway_client=gateway_client)
 
         i = self.gateway.jvm.System.currentTimeMillis()
-        self.assertTrue(i > 0)
+        self.assertGreater(i, 0)
 
     def tearDown(self):
         safe_shutdown(self)
@@ -693,7 +706,7 @@ class StreamTest(unittest.TestCase):
         with e.getStream.stream() as conn:
             self.assertTrue(isinstance(conn, GatewayConnectionGuard))
             expected =\
-                u"Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
             self.assertEqual(expected, smart_decode(conn.read(len(expected))))
 
     def testBinaryFailure(self):
@@ -866,7 +879,7 @@ class JVMTest(unittest.TestCase):
 
     def testStaticMethods(self):
         System = self.gateway.jvm.java.lang.System
-        self.assertTrue(System.currentTimeMillis() > 0)
+        self.assertGreater(System.currentTimeMillis(), 0)
         self.assertEqual("123", self.gateway.jvm.java.lang.String.valueOf(123))
 
     def testStaticFields(self):
@@ -876,7 +889,7 @@ class JVMTest(unittest.TestCase):
         self.assertFalse(System.out.checkError())
 
     def testDefaultImports(self):
-        self.assertTrue(self.gateway.jvm.System.currentTimeMillis() > 0)
+        self.assertGreater(self.gateway.jvm.System.currentTimeMillis(), 0)
         self.assertEqual("123", self.gateway.jvm.String.valueOf(123))
 
     def testNone(self):
@@ -891,20 +904,20 @@ class JVMTest(unittest.TestCase):
     def testJVMView(self):
         newView = self.gateway.new_jvm_view("myjvm")
         time = newView.System.currentTimeMillis()
-        self.assertTrue(time > 0)
+        self.assertGreater(time, 0)
         time = newView.java.lang.System.currentTimeMillis()
-        self.assertTrue(time > 0)
+        self.assertGreater(time, 0)
 
     def testImport(self):
         newView = self.gateway.new_jvm_view("myjvm")
         java_import(self.gateway.jvm, "java.util.*")
         java_import(self.gateway.jvm, "java.io.File")
-        self.assertTrue(self.gateway.jvm.ArrayList() is not None)
-        self.assertTrue(self.gateway.jvm.File("hello.txt") is not None)
+        self.assertIsNotNone(self.gateway.jvm.ArrayList())
+        self.assertIsNotNone(self.gateway.jvm.File("hello.txt"))
         self.assertRaises(Exception, lambda: newView.File("test.txt"))
 
         java_import(newView, "java.util.HashSet")
-        self.assertTrue(newView.HashSet() is not None)
+        self.assertIsNotNone(newView.HashSet())
 
     def testEnum(self):
         self.assertEqual("FOO", str(self.gateway.jvm.py4j.examples.Enum2.FOO))
@@ -930,19 +943,19 @@ class HelpTest(unittest.TestCase):
     def testHelpObject(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(ex, short_name=True, display=False)
-        self.assertTrue(len(help_page) > 1)
+        self.assertGreater(len(help_page), 1)
 
     def testHelpObjectWithPattern(self):
         ex = self.gateway.getNewExample()
         help_page = self.gateway.help(
             ex, pattern="m*", short_name=True, display=False)
-        self.assertTrue(len(help_page) > 1)
+        self.assertGreater(len(help_page), 1)
 
     def testHelpClass(self):
         String = self.gateway.jvm.java.lang.String
         help_page = self.gateway.help(String, short_name=False, display=False)
-        self.assertTrue(len(help_page) > 1)
-        self.assertTrue("String" in help_page)
+        self.assertGreater(len(help_page), 1)
+        self.assertIn("String", help_page)
 
 
 class Runner(Thread):
@@ -956,11 +969,11 @@ class Runner(Thread):
         ex = self.gateway.getNewExample()
         for i in self.range:
             try:
-                l = ex.getList(i)
-                if len(l) != i:
+                a_list = ex.getList(i)
+                if len(a_list) != i:
                     self.ok = False
                     break
-                self.gateway.detach(l)
+                self.gateway.detach(a_list)
                 # gc.collect()
             except Exception:
                 self.ok = False
@@ -1015,9 +1028,59 @@ class GatewayLauncherTest(unittest.TestCase):
             create_new_process_group=True)
         self.assertTrue(self.gateway.jvm)
 
+    def testAccessSubprocess(self):
+        self.gateway = JavaGateway.launch_gateway()
+        self.assertTrue(self.gateway.java_process)
+
+    @unittest.skipIf(sys.platform.startswith("win"), "Flaky on Windows")
+    def testShutdownSubprocess(self):
+        self.gateway = JavaGateway.launch_gateway()
+        self.assertTrue(self.gateway.java_process)
+        # Popen.poll() returns None iff the subprocess has not terminated.
+        self.assertTrue(self.gateway.java_process.poll() is None)
+        self.gateway.shutdown()
+        # Unfortunately the Java process has not terminated quite yet.
+        # If we check that poll() is not None, we will often find that poll()
+        # still is None.
+        # One thing that definitely works is to wait one second and assert
+        # the Java process has terminated *then*.
+        # This is not ideal, since it introduces a bit of an extra delay in
+        # what would otherwise be a millisecond test.
+        # Waiting only a fraction of a second (2**-5) seems to be enough.
+        if sys.version_info < (3,):
+            sleep()
+            self.assertFalse(self.gateway.java_process.poll() is None)
+        else:
+            self.gateway.java_process.wait(2**-5)
+        # Popen.wait() will raise a TimeoutExpired exception if the subprocess
+        # has not yet terminated.
+
+    def testShutdownSubprocessThatDiesOnExit(self):
+        self.gateway = JavaGateway.launch_gateway(die_on_exit=True)
+        self.assertTrue(self.gateway.java_process)
+        # Popen.poll() returns None iff the subprocess has not terminated.
+        self.assertTrue(self.gateway.java_process.poll() is None)
+        self.gateway.shutdown()
+        # If we change shutdown() to automatically do the following, then we
+        # should remove the following from this test.
+        self.assertTrue(self.gateway.java_process.poll() is None)
+        self.gateway.java_process.stdin.write("\n".encode("utf-8"))
+        self.gateway.java_process.stdin.flush()
+        if sys.version_info < (3,):
+            sleep()
+            self.assertFalse(self.gateway.java_process.poll() is None)
+        else:
+            self.gateway.java_process.wait(1)
+
     def testJavaopts(self):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])
         self.assertTrue(self.gateway.jvm)
+
+    def testCwd(self):
+        parent_directory = os.path.dirname(os.getcwd())
+        self.gateway = JavaGateway.launch_gateway(cwd=parent_directory)
+        java_cwd = self.gateway.jvm.System.getProperty("user.dir")
+        self.assertEqual(parent_directory, java_cwd)
 
     def testRedirectToNull(self):
         self.gateway = JavaGateway.launch_gateway()
@@ -1042,7 +1105,11 @@ class GatewayLauncherTest(unittest.TestCase):
         sleep()
         for i in range(10):
             self.assertEqual("Test{0}".format(end), qout.get())
-            self.assertEqual("Test2{0}".format(end), qerr.get())
+            # Assert IN because some Java/OS outputs some garbage on stderr.
+            line = qerr.get()
+            if stderr_is_polluted(line):
+                line = qerr.get()
+            self.assertIn("Test2{0}".format(end), line)
         self.assertTrue(qout.empty)
         self.assertTrue(qerr.empty)
 
@@ -1058,12 +1125,15 @@ class GatewayLauncherTest(unittest.TestCase):
         sleep()
         for i in range(10):
             self.assertEqual("Test{0}".format(end), qout.pop())
-            self.assertEqual("Test2{0}".format(end), qerr.pop())
+            # Assert IN because some Java/OS outputs some garbage on stderr.
+            line = qerr.pop()
+            if stderr_is_polluted(line):
+                line = qerr.pop()
+            self.assertEqual("Test2{0}".format(end), line)
         self.assertEqual(0, len(qout))
         self.assertEqual(0, len(qerr))
 
     def testRedirectToFile(self):
-        end = os.linesep
         (out_handle, outpath) = tempfile.mkstemp(text=True)
         (err_handle, errpath) = tempfile.mkstemp(text=True)
 
@@ -1074,8 +1144,11 @@ class GatewayLauncherTest(unittest.TestCase):
             self.gateway = JavaGateway.launch_gateway(
                 redirect_stdout=stdout, redirect_stderr=stderr)
             for i in range(10):
-                self.gateway.jvm.System.out.println("Test")
-                self.gateway.jvm.System.err.println("Test2")
+                # In windows, stdout will replace \n to \r\n
+                # System.out.println output \r\n
+                # Use System.out.print to avoid platform differences
+                self.gateway.jvm.System.out.print("Test\n")
+                self.gateway.jvm.System.err.print("Test2\n")
             self.gateway.shutdown()
             sleep()
             # Should not be necessary
@@ -1086,19 +1159,46 @@ class GatewayLauncherTest(unittest.TestCase):
             with open(outpath, "r") as stdout:
                 lines = stdout.readlines()
                 self.assertEqual(10, len(lines))
-                self.assertEqual("Test{0}".format(end), lines[0])
+                self.assertEqual("Test\n", lines[0])
 
             with open(errpath, "r") as stderr:
                 lines = stderr.readlines()
-                self.assertEqual(10, len(lines))
-                # XXX Apparently, it's \n by default even on windows...
-                # Go figure
-                self.assertEqual("Test2\n", lines[0])
+                if not stderr_is_polluted(lines[0]):
+                    self.assertEqual(10, len(lines))
+                    # XXX Apparently, it's \n by default even on windows...
+                    # Go figure
+                    self.assertEqual("Test2\n", lines[0])
         finally:
             os.close(out_handle)
             os.close(err_handle)
             os.unlink(outpath)
             os.unlink(errpath)
+
+    def testGatewayAuth(self):
+        self.gateway = JavaGateway.launch_gateway(enable_auth=True)
+
+        # Make sure the default client can connect to the server.
+        klass = self.gateway.jvm.java.lang.String
+        help_page = self.gateway.help(klass, short_name=True, display=False)
+        self.assertGreater(len(help_page), 1)
+
+        # Replace the client with one that does not authenticate.
+        # Make sure it fails.
+        bad_client = GatewayClient(gateway_parameters=GatewayParameters(
+            address=self.gateway.gateway_parameters.address,
+            port=self.gateway.gateway_parameters.port))
+        self.gateway.set_gateway_client(bad_client)
+        try:
+            self.gateway.help(klass, short_name=True, display=False)
+            self.fail("Expected failure to communicate with gateway server.")
+        except Exception:
+            # Expected
+            pass
+        finally:
+            # Restore a good client. This allows the gateway to be shut down.
+            good_client = GatewayClient(
+                gateway_parameters=self.gateway.gateway_parameters)
+            self.gateway.set_gateway_client(good_client)
 
 
 class WaitOperator(object):
@@ -1127,7 +1227,7 @@ class IPv6Test(unittest.TestCase):
 
         try:
             timeMillis = gateway.jvm.System.currentTimeMillis()
-            self.assertTrue(timeMillis > 0)
+            self.assertGreater(timeMillis, 0)
 
             operator = WaitOperator(0.1)
             opExample = gateway.jvm.py4j.examples.OperatorExample()

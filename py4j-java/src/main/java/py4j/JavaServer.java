@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,8 @@ package py4j;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
+
+import javax.net.ServerSocketFactory;
 
 import py4j.commands.Command;
 
@@ -70,17 +72,47 @@ public class JavaServer extends GatewayServer {
 	 *            features. These commands will be accessible from Python
 	 *            programs. Can be null.
 	 * @param pythonClient
-	 * 			  The Py4JPythonClientPerThread used to call Python.
+	 *            The Py4JPythonClientPerThread used to call Python.
 	 */
 	public JavaServer(Object entryPoint, int port, int connectTimeout, int readTimeout,
 			List<Class<? extends Command>> customCommands, Py4JPythonClientPerThread pythonClient) {
-		super(entryPoint, port, connectTimeout, readTimeout, customCommands, pythonClient);
+		this(entryPoint, port, connectTimeout, readTimeout, customCommands, pythonClient, null);
+	}
+
+	/**
+	 *
+	 * @param entryPoint
+	 *            The entry point of this Gateway. Can be null.
+	 * @param port
+	 *            The port the GatewayServer is listening to.
+	 * @param connectTimeout
+	 *            Time in milliseconds (0 = infinite). If a GatewayServer does
+	 *            not receive a connection request after this time, it closes
+	 *            the server socket and no other connection is accepted.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once a Python program is
+	 *            connected, if a GatewayServer does not receive a request
+	 *            (e.g., a method call) after this time, the connection with the
+	 *            Python program is closed.
+	 * @param customCommands
+	 *            A list of custom Command classes to augment the Server
+	 *            features. These commands will be accessible from Python
+	 *            programs. Can be null.
+	 * @param pythonClient
+	 *            The Py4JPythonClientPerThread used to call Python.
+	 * @param authToken
+	 *            Token for authenticating with the callback server.
+	 */
+	public JavaServer(Object entryPoint, int port, int connectTimeout, int readTimeout,
+			List<Class<? extends Command>> customCommands, Py4JPythonClientPerThread pythonClient, String authToken) {
+		super(entryPoint, port, defaultAddress(), connectTimeout, readTimeout, customCommands, pythonClient,
+				ServerSocketFactory.getDefault(), authToken);
 	}
 
 	@Override
 	protected Py4JServerConnection createConnection(Gateway gateway, Socket socket) throws IOException {
 		ClientServerConnection connection = new ClientServerConnection(gateway, socket, getCustomCommands(),
-				(Py4JPythonClientPerThread) getCallbackClient(), this, getReadTimeout());
+				(Py4JPythonClientPerThread) getCallbackClient(), this, getReadTimeout(), authToken);
 		connection.startServerConnection();
 		return connection;
 	}

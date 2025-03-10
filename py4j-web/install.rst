@@ -3,21 +3,20 @@
 Installing Py4J
 ===============
 
-Installing Python 2.6+ or 3.6
------------------------------
+Installing Python 3.8-3.12
+---------------------------------
 
 Py4J is a library written in Python and Java. Currently, Py4J has been tested
-with Python 2.6, 2.7, 3.4, 3.5, and 3.6 but it should also be compatible with
-Python 3.3.  You can install Python by going to the `official Python download
-page <http://www.python.org/download/>`_.
+with Python 3.8, 3.9, 3.10, 3.11 and 3.12. You can install Python by going to the
+`official Python download page <http://www.python.org/download/>`_.
 
 
-Installing Java 6+
+Installing Java 7+
 ------------------
 
-You also need to install a Java environment, version 6 (7 and 8 are also
-supported). You can install a Java environment by going to the `official Java
-download page
+You also need to install a Java environment (version 7 or more recent - Java 6
+should work but is no longer included in the test suite).  You can install a
+Java environment by going to the `official Java download page
 <http://www.oracle.com/technetwork/java/javase/downloads/index.html>`_ You will
 need to download the JDK if you plan to use the Java compiler, but you only
 need the JRE if you are using another compiler, such as the one provided by the
@@ -79,7 +78,7 @@ Otherwise, to build the Java and Python libraries, you need:
    ``py4j-java/py4jXYZ.jar`` where XYZ is the current version of Py4J.
 3. `Sphinx <http://sphinx.pocoo.org/>`_ to build the documentation. Just
    execute the command ``make html``  in the py4j-web directory.
-4. Libraries such as `nose <http://pypi.python.org/pypi/nose/>`_ to test the
+4. Libraries such as `pytest <https://pypi.org/project/pytest/>`_ to test the
    Py4J Python library. Just run ``pip install -r requirements.txt`` in
    py4j directory.
 
@@ -96,7 +95,7 @@ Here are a few useful commands to build Py4J:
 4. ``cd py4j-java; ./gradlew check`` - runs Java tests, FindBugs, and Java
    coding conventions checks. (Python checks will be added in the future).
 5. ``cd py4j-python; flake8`` - performs flake8 check on Python source code.
-6. ``cd py4j-python; nosetests`` - runs Python test suite.
+6. ``cd py4j-python; pytest`` - runs Python test suite.
 
 
 Maven install
@@ -106,4 +105,4 @@ Maven install
 2. Go to the py4j-java directory and execute ``mvn install``.
 3. Alternatively, if a test fails (possible because of sockets), execute
    ``mvn -Dmaven.test.skip=true install``
-4. Builded binaries will be in the directory ``target/py4j-0.x.jar``.
+4. Built binaries will be in the directory ``target/py4j-0.x.jar``.

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,13 +30,25 @@
 package py4j;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.Socket;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.junit.Test;
+
+import py4j.commands.AuthCommand;
+import py4j.commands.HelpPageCommand;
 
 public class GatewayServerTest {
 
@@ -65,7 +77,8 @@ public class GatewayServerTest {
 	@Test
 	public void testListener() {
 		TestListener listener = new TestListener();
-		GatewayServer server1 = new GatewayServer(null);
+		// Use DEFAULT_PORT + 1 in case the previous test's default ports are still occupied.
+		GatewayServer server1 = new GatewayServer(null, GatewayServer.DEFAULT_PORT + 1);
 		server1.addListener(listener);
 		server1.start();
 		try {
@@ -123,6 +136,75 @@ public class GatewayServerTest {
 		assertEquals(pythonPort, GatewayServer.DEFAULT_PYTHON_PORT + 1);
 		assertEquals(pythonAddress, server.getAddress());
 		server.shutdown(true);
+	}
+
+	@Test
+	public void testAuthentication() throws Exception {
+		GatewayServer server = new GatewayServer.GatewayServerBuilder().authToken("secret").build();
+		server.start(true);
+
+		try {
+			Socket valid = new Socket(server.getAddress(), server.getListeningPort());
+			try {
+				testServerAccess(valid, "secret");
+			} finally {
+				valid.close();
+			}
+
+			for (String invalidSecret : Arrays.asList("invalidSecret", null)) {
+				Socket conn = new Socket(server.getAddress(), server.getListeningPort());
+				try {
+					testServerAccess(conn, invalidSecret);
+					fail("Should have failed to communicate with server.");
+				} catch (IOException ioe) {
+					// Expected.
+				} finally {
+					conn.close();
+				}
+			}
+		} finally {
+			server.shutdown(true);
+		}
+	}
+
+	private void testServerAccess(Socket s, String authToken) throws Exception {
+		PrintWriter out = new PrintWriter(new OutputStreamWriter(s.getOutputStream(), "UTF-8"));
+		BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream(), "UTF-8"));
+
+		if (authToken != null) {
+			out.println(AuthCommand.COMMAND_NAME);
+			out.println(authToken);
+			out.flush();
+
+			// Read the response from the auth request. Don't check it - let the rest of the test
+			// make sure auth was successful or not.
+			in.readLine();
+		}
+
+		// Send a "help" command and try to read the response. This should throw exceptions if
+		// authentication fails.
+		out.println(HelpPageCommand.HELP_COMMAND_NAME);
+		out.println(HelpPageCommand.HELP_CLASS_SUB_COMMAND_NAME);
+		out.println(HelpPageCommand.class.getName());
+		out.println("");
+		out.println("t");
+		out.flush();
+
+		String reply = in.readLine();
+		if (authToken == null) {
+			// If no auth token was provided, this code might be able to read a line of output before the
+			// socket is closed by the server; it should be the error message from the auth check.
+			assertEquals(Protocol.getOutputErrorCommand("Authentication error: unexpected command.").trim(), reply);
+
+			// Throw an IOException since that's what the test above expects in this case.
+			throw new IOException("Auth unsuccessful.");
+		} else {
+			assertTrue("Expected return message or null, got: " + reply,
+					reply == null || Protocol.isReturnMessage(reply));
+			if (reply == null || Protocol.isError(reply.substring(1))) {
+				throw new IOException("Error from server.");
+			}
+		}
 	}
 
 }

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 package py4j;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -38,13 +39,15 @@ import java.net.SocketTimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import py4j.commands.AuthCommand;
+
 /**
  * <p>
  * Utility class used to perform network operations.
  * </p>
- * 
+ *
  * @author Barthelemy Dagenais
- * 
+ *
  */
 public class NetworkUtil {
 
@@ -121,6 +124,31 @@ public class NetworkUtil {
 			socket.setSoLinger(true, 0);
 		} catch (Exception e) {
 			logger.log(Level.FINE, "Cannot set linger on socket.", e);
+		}
+	}
+
+	/**
+	 * <p>Performs authentication on the reader / writer representing a
+	 * connection to a server.</p>
+	 *
+	 * <p>To be reusable, this function performs the read and write through raw sockets,
+	 * and inspects the output immediately. It is essential that we do not try to evaluate
+	 * the output or we could end up executing a non-authenticated method or raising an
+	 * unexpected exception.</p>
+	 *
+	 * @param reader Reader connected to the remote endpoint.
+	 * @param writer Writer connected to the remote endpoint.
+	 * @param authToken The auth token.
+	 * @throws IOException On I/O error, or if authentication fails.
+	 */
+	static void authToServer(BufferedReader reader, BufferedWriter writer, String authToken) throws IOException {
+		writer.write(Protocol.getAuthCommand(authToken));
+		writer.flush();
+
+		String returnCommand = reader.readLine();
+		if (returnCommand == null || !returnCommand.equals(Protocol.getOutputVoidCommand().trim())) {
+			logger.log(Level.SEVERE, "Could not authenticate connection. Received this response: " + returnCommand);
+			throw new IOException("Authentication with callback server unsuccessful.");
 		}
 	}
 

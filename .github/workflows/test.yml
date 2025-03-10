@@ -1,0 +1,152 @@
+name: test
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  test:
+    runs-on: '${{ matrix.os }}'
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-22.04 ]
+        java-version: [ 8 ]
+        python-version: [ '3.8' ]
+        include:
+          - os: macos-14
+            java-version: 8
+            python-version: '3.12'
+          - os: windows-2019
+            java-version: 11
+            python-version: '3.10'
+          - os: ubuntu-22.04
+            java-version: 17
+            python-version: '3.11'
+          - os: ubuntu-22.04
+            java-version: 21
+            python-version: '3.9'
+    name: Python ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97 # pin@v2.3.5
+
+      - name: Setup Java 8 JDK for build
+        uses: actions/setup-java@8db439b6b47e5e12312bf036760bbaa6893481ac #pin@v2.3.1
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+          cache: 'gradle'
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@dc73133d4da04e56a135ae2246682783cc7c7cb6 # pin @v2.2.2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+
+      - name: Install dependencies
+        run: |
+          pip install pytest
+          cd py4j-java
+          # Useful in case the build stops working because of version issues.
+          ./gradlew --version
+          echo `java -version` && echo `javac -version` && echo `python --version`
+          echo $PATH
+          echo $JAVA_HOME
+          ./gradlew clean
+        shell: bash
+
+      - name: Run Gradle tests
+        run: |
+          cd py4j-java
+          ./gradlew check
+          ./gradlew assemble
+
+      - name: Setup Java ${{ matrix.java-version }} JDK for PyTest
+        if: ${{ matrix.java-version != '8' }}
+        uses: actions/setup-java@8db439b6b47e5e12312bf036760bbaa6893481ac #pin@v2.3.1
+        with:
+          java-version: '${{ matrix.java-version }}'
+          distribution: 'adopt'
+          cache: 'gradle'
+
+      - name: Run PyTest
+        run: |
+          cd py4j-python
+          echo `java -version`
+          echo $JAVA_HOME
+          # Java TLS tests are disabled until they can be fixed (refs #441)
+          pytest -k "not java_tls_test." -vvv
+
+  test-doc:
+    name: Documentation build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master branch
+        uses: actions/checkout@v2
+
+      - name: Install Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install Python packages
+        run: |
+          python3 -m pip install -r py4j-web/requirements-doc.txt
+          python3 -m pip list
+
+      - name: Setup Java 8 JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 8
+          distribution: 'adopt'
+          cache: 'gradle'
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Javadoc build
+        run: |
+          cd py4j-java && ./gradlew javadoc && cd ..
+          mv py4j-java/build/docs/javadoc py4j-web/_static/
+
+      - name: Sphinx build
+        run: |
+          cd py4j-web && make clean html && cd ..
+          mv py4j-web/_build/html ../ # Move out of the current repo for GitHub Pages.
+
+      # Publishing documentation only for commits in the master branch.
+      - name: Checkout GitHub Pages branch
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+
+      - name: Copy the generated site
+        if: github.event_name != 'pull_request'
+        run: |
+          # Include Javadoc if the commit is tagged (for releases only).
+          if [ -z "`git describe --tags --exact-match 2>/dev/null`" ]; then
+            rm -fr ../html/_static/javadoc
+            [ -d _static/javadoc ]  && mv _static/javadoc ../html/_static
+          fi
+
+          rm -fr * # Remove existing site
+          touch .nojekyll # See https://github.blog/2009-12-29-bypassing-jekyll-on-github-pages
+          echo "www.py4j.org" > CNAME # Custom domain for GitHub Actions
+          cp -r ../html/* . # Move generated site to the current repo.
+
+      - name: Push new site
+        uses: EndBug/add-and-commit@v8
+        if: github.event_name != 'pull_request'
+        with:
+          default_author: github_actions
+          message: Push new site by ${{ github.sha }}
+          add: "*"
+          push: "--force" # In case it conflicts with the same step in another workflow.

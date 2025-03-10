@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import py4j.commands.ArrayCommand;
+import py4j.commands.AuthCommand;
 import py4j.commands.CallCommand;
+import py4j.commands.CancelCommand;
 import py4j.commands.Command;
 import py4j.commands.ConstructorCommand;
 import py4j.commands.DirCommand;
@@ -83,6 +85,8 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 
 	private final static List<Class<? extends Command>> baseCommands;
 	protected final Socket socket;
+	protected final String authToken;
+	protected final AuthCommand authCommand;
 	protected final BufferedWriter writer;
 	protected final BufferedReader reader;
 	protected final Map<String, Command> commands;
@@ -100,6 +104,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		baseCommands.add(MemoryCommand.class);
 		baseCommands.add(ReflectionCommand.class);
 		baseCommands.add(ShutdownGatewayServerCommand.class);
+		baseCommands.add(CancelCommand.class);
 		baseCommands.add(JVMViewCommand.class);
 		baseCommands.add(ExceptionCommand.class);
 		baseCommands.add(DirCommand.class);
@@ -123,14 +128,28 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 
 	public GatewayConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
 			List<GatewayServerListener> listeners) throws IOException {
+		this(gateway, socket, null, customCommands, listeners);
+	}
+
+	public GatewayConnection(Gateway gateway, Socket socket, String authToken,
+			List<Class<? extends Command>> customCommands, List<GatewayServerListener> listeners) throws IOException {
 		super();
 		this.socket = socket;
+		this.authToken = authToken;
+		if (authToken != null) {
+			this.authCommand = new AuthCommand(authToken);
+		} else {
+			this.authCommand = null;
+		}
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
 		this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String, Command>();
 		initCommands(gateway, baseCommands);
 		if (customCommands != null) {
 			initCommands(gateway, customCommands);
+		}
+		if (authCommand != null) {
+			initCommand(gateway, authCommand);
 		}
 		this.listeners = listeners;
 	}
@@ -174,8 +193,7 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 		for (Class<? extends Command> clazz : commandsClazz) {
 			try {
 				Command cmd = clazz.newInstance();
-				cmd.init(gateway, this);
-				commands.put(cmd.getCommandName(), cmd);
+				initCommand(gateway, cmd);
 			} catch (Exception e) {
 				String name = "null";
 				if (clazz != null) {
@@ -184,6 +202,11 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 				logger.log(Level.SEVERE, "Could not initialize command " + name, e);
 			}
 		}
+	}
+
+	private void initCommand(Gateway gateway, Command cmd) {
+		cmd.init(gateway, this);
+		commands.put(cmd.getCommandName(), cmd);
 	}
 
 	protected void quietSendFatalError(BufferedWriter writer, Throwable exception) {
@@ -211,15 +234,25 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 				logger.fine("Received command: " + commandLine);
 				Command command = commands.get(commandLine);
 				if (command != null) {
-					command.execute(commandLine, reader, writer);
+					if (authCommand != null && !authCommand.isAuthenticated()) {
+						authCommand.execute(commandLine, reader, writer);
+					} else {
+						command.execute(commandLine, reader, writer);
+					}
 					executing = false;
 				} else {
-					logger.log(Level.WARNING, "Unknown command " + commandLine);
+					reset = true;
+					throw new Py4JException("Unknown command received: " + commandLine);
 				}
 			} while (commandLine != null && !commandLine.equals("q"));
 		} catch (SocketTimeoutException ste) {
 			logger.log(Level.WARNING, "Timeout occurred while waiting for a command.", ste);
 			error = ste;
+			reset = true;
+		} catch (Py4JAuthenticationException pae) {
+			logger.log(Level.SEVERE, "Authentication error.", pae);
+			// We do not store the error because we do not want to write
+			// a message to the other side.
 			reset = true;
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);

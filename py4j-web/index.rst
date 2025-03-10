@@ -1,6 +1,11 @@
 .. Py4J documentation master file, created by
    sphinx-quickstart on Thu Dec 10 15:12:43 2009.
 
+.. Marked as an orphan for Sphinx to suppress warnings. It's linked
+   by the custom theme.
+
+:orphan:
+
 Welcome to Py4J
 ===============
 
@@ -26,7 +31,7 @@ generated numbers.
   >>> print(number1, number2)
   (2, 7)
   >>> addition_app = gateway.entry_point               # get the AdditionApplication instance
-  >>> value = addition_app.addition(number1, number2)) # call the addition method
+  >>> value = addition_app.addition(number1, number2) # call the addition method
   >>> print(value)
   9
 
@@ -64,11 +69,45 @@ Support & Resources
 * Ask a question on the `mailing list
   <https://groups.google.com/a/py4j.org/forum/#!forum/py4j/join>`_.
 * Look at the `roadmap <https://github.com/bartdag/py4j/milestones>`_.
-* Request :doc:`professional services <professional-services>` for custom
-  features or commercial support.
 
 News
 ====
+
+* **January 15th 2024** - Py4J 0.10.9.9 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
+* **December 17th 2024** - Py4J 0.10.9.8 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
+* **August 12th 2022** - Py4J 0.10.9.7 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
+* **August 11th 2022** - Py4J 0.10.9.6 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
+* **March 18th 2022** - Py4J 0.10.9.5 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
+* **March 16th 2022** - Py4J 0.10.9.4 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
+* **November 20th 2021** - Py4J 0.10.9.3 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
+* **February 27th 2021** - Py4J 0.10.9.2 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
+* **September 7th 2020** - Py4J 0.10.9.1 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
+* **January 25th 2019** - Py4J 0.10.9 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
+* **October 21st 2018** - Py4J 0.10.8 and 0.10.8.1 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
+
+* **April 30th 2018** - Py4J 0.10.7 has been released. See the
+  :doc:`changelog` for more details about the bug fixes and new features.
 
 * **July 5th 2017** - Py4J 0.10.6 has been released. See the
   :doc:`changelog` for more details about the bug fixes and new features.
@@ -100,7 +139,7 @@ News
 * **January 9th 2016** - Py4J 0.9.1 has been released. See the :doc:`changelog`
   for more details about the bug fixes.
 
-* **September 3rd 2015** - :doc:`Professional Services <professional-services>`
+* **September 3rd 2015** - Professional Services
   are now available if you wish to have a feature implemented quickly or get
   commercial support for Py4J.
 

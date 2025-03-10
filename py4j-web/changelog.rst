@@ -4,19 +4,172 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.9.9
+-------------
 
-Py4J 0.10.7 - to be released
-----------------------------
+- Release date: January 15th 2025
+- Python side: Retry Py4J on empty response
 
-- Release date:
+Py4J 0.10.9.8
+-------------
+
+- Release date: December 17th 2024
+- Python side: Python 3.12 and Python 3.11 support
+- Python side: Drop EOL Python prior to Python 3.8
+- Java side: Better error message when gateway server binding fails
+- Improve Py4j command cancellation by shutting down the JVM side of the socket
+
+Py4J 0.10.9.7
+-------------
+
+- Release date: August 12th 2022
+- Python side: Detach Java objects only when _detach method exists
+- Java side: Add support for Java 11/17
+- `tickets closed for 0.10.9.7 release
+  <https://github.com/bartdag/py4j/milestone/33?closed=1>`_
+
+Py4J 0.10.9.6
+-------------
+
+- Release date: August 11th 2022
+- Python side: Migrate nosetest to pytest
+- `tickets closed for 0.10.9.6 release
+  <https://github.com/bartdag/py4j/milestone/32?closed=1>`_
+
+Py4J 0.10.9.5
+-------------
+
+- Release date: March 18th 2022
+- Python side: added the official support of Python 3.10
+- `tickets closed for 0.10.9.5 release
+  <https://github.com/bartdag/py4j/milestone/31?closed=1>`_
+
+Py4J 0.10.9.4
+-------------
+
+- Release date: March 16th 2022
+- Python side: clean leaked connections in pinned thread mode when threads are finished.
+- Python side: enforced documentation build have no warnings.
+- Automated documentation build with publising.
+- Fixed all tests that are flaky in GitHub Actions.
+- `tickets closed for 0.10.9.4 release
+  <https://github.com/bartdag/py4j/milestone/30?closed=1>`_
+
+Py4J 0.10.9.3
+-------------
+
+- Release date: November 20th 2021
+- Python side: added Python 3.8 and 3.9 to supported versions.
+- Python side: catch KeyboardInterrupt to prevent connection and memory leaks.
+  Thanks to Hyukjin Kwon for the thorough investigation and fix.
+- Java side: upgrade JUnit version.
+- Switched from Travis CI to Github Actions. Many thanks to Josh Rosen for
+  saving the CI pipeline of Py4J!
+- Removed professional services.
+- `tickets closed for 0.10.9.3 release
+  <https://github.com/bartdag/py4j/milestone/29?closed=1>`_
+
+Py4J 0.10.9.2
+-------------
+
+- Release date: February 27th 2021
+- Python side: add use_shell parameter in launch_gateway
+- Python side: fixed documentation of CallbackServerParameters &
+  PythonParameters
+- `tickets closed for 0.10.9.2 release
+  <https://github.com/bartdag/py4j/milestone/28?closed=1>`_
+
+Py4J 0.10.9.1
+-------------
+
+- Release date: September 7th 2020
+- Java side: fixed a regression in GatewayServer that ignored the passed port.
+- `tickets closed for 0.10.9.1 release
+  <https://github.com/bartdag/py4j/milestone/27?closed=1>`_
+
+
+Py4J 0.10.9
+-----------
+
+- Release date: January 25th 2019
+- Python side: launch_gateway can now optionally returns the Popen process
+  object.
+- Python side: launch_gateway can now set the current working directory.
+- Python side: improved support for Python 3.7 by importing from
+  collections.abc.
+- Python side: improved support for Python 3.7 by correctly escaping special
+  characters in docstrings.
+- Python side: magic members such as __name__ are no longer sent to the Java
+  side. An AttributeError exception is instead raised.
+- Java side: set explicit Gradle version and use gradlew to avoid issues with
+  more recent versions of Gradle.
+- Java side: the GatewayServer CLI no longer requires an explicit port and can
+  listen to the default port.
+- Java side: Travis no longer tries to build Py4J with Java 6 and 7. These
+  versions are no longer available in default images.
+- Java side: array elements can be set to None/null for non-primitive arrays.
+- `tickets closed for 0.10.9 release
+  <https://github.com/bartdag/py4j/issues?q=is%3Aissue+milestone%3A0.10.9+is%3Aclosed>`_
+
+Py4J 0.10.8 and Py4J 0.10.8.1
+-----------------------------
+
+- Release date: October 21st 2018
+- Python side: Py4J now supports Python 3.7.
+- Python side: Py4J no longer supports Python 2.6. Thanks to @hugovk for the
+  patch.
+- Python side: The Python ClientServer now uses a mix of deque + sleep instead
+  of a Queue to send garbage collection requests to the Java side. This solved
+  a subtle deadlock issue that could occur because of a `bug in CPython
+  <https://bugs.python.org/issue14976>`_. This CPython bug has existed for many
+  years and was finally fixed in Python 3.7. Because Py4J supports Python 2.7+,
+  we had to use an alternative to Queue.
+- Python side: Python Entry Point can no longer be accidentally garbage
+  collected. This matches the behavior of GatewayServer entry point that could
+  never be accidentally garbage collected. Thanks to `App Orchid
+  <https://www.apporchid.com/>`_ for funding the work through our professional
+  services program.
+- Python side: exceptions should no longer escape garbage collection calls. In
+  the past, Py4J was trying to log exceptions that occurred during garbage
+  collection, but the logger can itself be already garbage collected. If this
+  occurs, the exception will be caught instead of being propagated into the
+  user program. Thanks to `Thermo-Calc Software <https://www.thermocalc.com/>`_
+  for funding the work through our professional services program.
+- Python side: added a note in the docstring that str(py4j_java_error) may
+  fail in Python 2.7 if unicode is returned. Thanks to @HyukjinKwon for the
+  patch.
+- Java side: Java 6 is no longer included in the test suite considering the
+  difficulty in managing the dependencies and requirements of the build
+  toolchain (e.g., gradle, TravisCI). We will accept patches from anyone
+  wanting to continue supporting Java 6 for the foreseeable future. Java 6 will
+  be officially dropped along with Java 7 when Java 8 will become the minimum
+  version required by Py4J (no date yet, but please make yourself heard if you
+  require Java 7!).
+- Project: we switched again from CircleCI to TravisCI following the end of
+  life of CircleCI 1.0.
+- `tickets closed for 0.10.8 release
+  <https://github.com/bartdag/py4j/milestone/25?closed=1>`_
+
+
+Py4J 0.10.7
+-----------
+
+- Release date: April 30th 2018
 - Both sides: Python exception trace is now propagated to the Java side as a
   string. If the Python exception is caused by a Java exception it is possible
   to rethrow the Java exception on the Java side, making it easy to implement
   Java protocols in Python (e.g., Iterator protocol). Because this could break
   backward compatibily, Java exceptions are only rethrown if
-  propagate_java_exceptions is True in CallbackServerParameters.
+  propagate_java_exceptions is True in CallbackServerParameters. Thanks to
+  @batterseapower for the patch.
 - Both sides: small fixes to the code examples on documentation front page.
+- Both sides: added optional authentication method that requires a token at the
+  start of every connection. Thanks to @vanzin for initial patch and follow up.
 - Python side: support for Python 3.6
+- Python side: removed two spurious line breaks in sub commands.
+- Java side: as part of the addition of the authentication method, made
+  protocol stricter: unknown commands now raise an exception and stops a
+  connection.
 - Java side: ClientServer now uses the passed SocketFactory in
   PythonClient instead of always falling back to the default socket factory.
 - Java side: support for Gradle 4.x

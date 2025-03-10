@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import py4j.GatewayServer;
 import py4j.Protocol;
 import py4j.Py4JException;
 
@@ -67,7 +68,10 @@ public class MemoryCommand extends AbstractCommand {
 		// EoC
 		reader.readLine();
 
-		gateway.deleteObject(objectId);
+		if (objectId != Protocol.ENTRY_POINT_OBJECT_ID && objectId != Protocol.DEFAULT_JVM_OBJECT_ID
+				&& objectId != Protocol.GATEWAY_SERVER_ID) {
+			gateway.deleteObject(objectId);
+		}
 
 		return Protocol.getOutputVoidCommand();
 	}

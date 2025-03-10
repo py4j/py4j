@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (c) 2009-2016, Barthelemy Dagenais and individual contributors.
+ * Copyright (c) 2009-2022, Barthelemy Dagenais and individual contributors.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import py4j.commands.AuthCommand;
 import py4j.commands.Command;
 
 public class ClientServerConnection implements Py4JServerConnection, Py4JClientConnection, Runnable {
@@ -58,9 +59,19 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 	protected final Py4JPythonClientPerThread pythonClient;
 	protected final int blockingReadTimeout;
 	protected final int nonBlockingReadTimeout;
+	protected final String authToken;
+	protected final AuthCommand authCommand;
+	// Used to terminate the JVM process on command cancellation.
+	protected Thread jvmThread;
 
 	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
 			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer, int readTimeout) throws IOException {
+		this(gateway, socket, customCommands, pythonClient, javaServer, readTimeout, null);
+	}
+
+	public ClientServerConnection(Gateway gateway, Socket socket, List<Class<? extends Command>> customCommands,
+			Py4JPythonClientPerThread pythonClient, Py4JJavaServer javaServer, int readTimeout, String authToken)
+					throws IOException {
 		super();
 		this.socket = socket;
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
@@ -78,11 +89,18 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		} else {
 			this.nonBlockingReadTimeout = CallbackConnection.DEFAULT_NONBLOCKING_SO_TIMEOUT;
 		}
+		this.authToken = authToken;
+		if (authToken != null) {
+			this.authCommand = new AuthCommand(authToken);
+			initCommand(gateway, authCommand);
+		} else {
+			this.authCommand = null;
+		}
 	}
 
-	public void startServerConnection() {
-		Thread t = new Thread(this);
-		t.start();
+	public void startServerConnection() throws IOException {
+		jvmThread = new Thread(this);
+		jvmThread.start();
 	}
 
 	public void run() {
@@ -102,8 +120,7 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 		for (Class<? extends Command> clazz : commandsClazz) {
 			try {
 				Command cmd = clazz.newInstance();
-				cmd.init(gateway, this);
-				commands.put(cmd.getCommandName(), cmd);
+				initCommand(gateway, cmd);
 			} catch (Exception e) {
 				String name = "null";
 				if (clazz != null) {
@@ -112,6 +129,11 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 				logger.log(Level.SEVERE, "Could not initialize command " + name, e);
 			}
 		}
+	}
+
+	private void initCommand(Gateway gateway, Command cmd) {
+		cmd.init(gateway, this);
+		commands.put(cmd.getCommandName(), cmd);
 	}
 
 	protected void fireConnectionStopped() {
@@ -154,18 +176,28 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 				executing = true;
 				logger.fine("Received command: " + commandLine);
 				Command command = commands.get(commandLine);
+
 				if (command != null) {
-					command.execute(commandLine, reader, writer);
+					if (authCommand != null && !authCommand.isAuthenticated()) {
+						authCommand.execute(commandLine, reader, writer);
+					} else {
+						command.execute(commandLine, reader, writer);
+					}
 					executing = false;
 				} else {
-					logger.log(Level.WARNING, "Unknown command " + commandLine);
-					// TODO SEND BACK AN ERROR?
+					reset = true;
+					throw new Py4JException("Unknown command received: " + commandLine);
 				}
 			} while (commandLine != null && !commandLine.equals("q"));
 		} catch (SocketTimeoutException ste) {
 			logger.log(Level.WARNING, "Timeout occurred while waiting for a command.", ste);
 			reset = true;
 			error = ste;
+		} catch (Py4JAuthenticationException pae) {
+			logger.log(Level.SEVERE, "Authentication error.", pae);
+			// We do not store the error because we do not want to
+			// send a message to the other side.
+			reset = true;
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error occurred while waiting for a command.", e);
 			error = e;
@@ -246,11 +278,22 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 			// Only fires this event when the connection is created by the JavaServer to respect the protocol.
 			fireConnectionStopped();
 		}
+		if (jvmThread != null && jvmThread.isAlive()) {
+			jvmThread.interrupt();
+		}
 	}
 
 	@Override
 	public void start() throws IOException {
-
+		if (authToken != null) {
+			try {
+				// TODO should we receive an AuthException instead of an IOException?
+				NetworkUtil.authToServer(reader, writer, authToken);
+			} catch (IOException ioe) {
+				shutdown(true);
+				throw ioe;
+			}
+		}
 	}
 
 	@Override
@@ -296,4 +339,5 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 
 		return returnCommand;
 	}
+
 }
