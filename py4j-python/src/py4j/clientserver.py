@@ -23,7 +23,7 @@ from py4j.java_gateway import (
     CallbackServerParameters, GatewayParameters, CallbackServer,
     GatewayConnectionGuard, DEFAULT_ADDRESS, DEFAULT_PORT,
     DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-    server_connection_stopped, do_client_auth, _garbage_collect_proxy)
+    server_connection_stopped, do_client_auth, _garbage_collect_proxy, JavaObject)
 from py4j import protocol as proto
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
@@ -642,8 +642,15 @@ class ClientServerConnection(object):
             method = smart_decode(input.readline())[:-1]
             params = self._get_params(input)
             return_value = getattr(self.pool[obj_id], method)(*params)
-            return proto.RETURN_MESSAGE + proto.SUCCESS +\
-                get_command_part(return_value, self.pool)
+            if not isinstance(return_value, JavaObject) \
+                    and self.python_server \
+                    and self.python_server.gateway_client.converters:
+                for converter in self.python_server.gateway_client.converters:
+                    if converter.can_convert(return_value):
+                        return_value = converter.convert(return_value, self.python_server.gateway_client)
+                        break
+            return proto.RETURN_MESSAGE + proto.SUCCESS + \
+                   get_command_part(return_value, self.pool)
         except Exception as e:
             logger.exception("There was an exception while executing the "
                              "Python Proxy on the Python Side.")
