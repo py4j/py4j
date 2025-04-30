@@ -2319,34 +2319,60 @@ class CallbackServer(object):
                 self, server=self)
 
             read_list = [self.server_socket]
-            while not self.is_shutdown:
-                readable, writable, errored = select.select(
-                    read_list, [], [],
-                    self.callback_server_parameters.accept_timeout)
+            poller = None
+            try:
+                if os.name == "posix":
+                    # On posix systems use poll to avoid problems with file
+                    # descriptor numbers above 1024.
+                    poller = select.poll()
+                    for r in read_list:
+                        poller.register(r.fileno(), select.POLLIN)
 
-                if self.is_shutdown:
-                    break
+                while not self.is_shutdown:
+                    if poller is not None:
+                        readable_fds = {
+                            fd
+                            for fd, event in poller.poll(
+                                self.callback_server_parameters.accept_timeout
+                            )
+                            if event & select.POLLIN
+                        }
+                        readable = [
+                            r for r in read_list if r.fileno() in readable_fds
+                        ]
+                    else:
+                        # If poll is not available, use select.
+                        readable, writable, errored = select.select(
+                            read_list, [], [],
+                            self.callback_server_parameters.accept_timeout)
 
-                for s in readable:
-                    socket_instance, _ = self.server_socket.accept()
-                    if self.callback_server_parameters.read_timeout:
-                        socket_instance.settimeout(
-                            self.callback_server_parameters.read_timeout)
-                    if self.ssl_context:
-                        socket_instance = self.ssl_context.wrap_socket(
-                            socket_instance, server_side=True)
-                    input = socket_instance.makefile("rb")
-                    connection = self._create_connection(
-                        socket_instance, input)
-                    with self.lock:
-                        if not self.is_shutdown:
-                            self.connections.add(connection)
-                            connection.start()
-                            server_connection_started.send(
-                                self, connection=connection)
-                        else:
-                            quiet_shutdown(connection.socket)
-                            quiet_close(connection.socket)
+                    if self.is_shutdown:
+                        break
+
+                    for s in readable:
+                        socket_instance, _ = self.server_socket.accept()
+                        if self.callback_server_parameters.read_timeout:
+                            socket_instance.settimeout(
+                                self.callback_server_parameters.read_timeout)
+                        if self.ssl_context:
+                            socket_instance = self.ssl_context.wrap_socket(
+                                socket_instance, server_side=True)
+                        input = socket_instance.makefile("rb")
+                        connection = self._create_connection(
+                            socket_instance, input)
+                        with self.lock:
+                            if not self.is_shutdown:
+                                self.connections.add(connection)
+                                connection.start()
+                                server_connection_started.send(
+                                    self, connection=connection)
+                            else:
+                                quiet_shutdown(connection.socket)
+                                quiet_close(connection.socket)
+            finally:
+                if poller is not None:
+                    for r in read_list:
+                        poller.unregister(r.fileno())
         except Exception as e:
             if self.is_shutdown:
                 logger.info("Error while waiting for a connection.")
