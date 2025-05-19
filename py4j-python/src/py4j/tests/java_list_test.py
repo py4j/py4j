@@ -318,6 +318,35 @@ class ListTest(unittest.TestCase):
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
 
+    def testClear(self):
+        ex = self.gateway.getNewExample()
+        jList = ex.getList(5)
+
+        # Verify initial state
+        self.assertEqual(5, len(jList))
+        # Clear the list
+        jList.clear()
+        # Verify the list is empty
+        self.assertEqual(0, len(jList))
+        # Add items after clearing to verify the list is still usable
+        jList.append("new item")
+        self.assertEqual(1, len(jList))
+        self.assertEqual("new item", jList[0])
+
+    def testClearEmpty(self):
+        """Test clear method on an empty list."""
+        ex = self.gateway.getNewExample()
+        jList = ex.getList(0)
+
+        # Verify initial state
+        self.assertEqual(0, len(jList))
+        # Clear the empty list - this would fail with the default implementation
+        # because it tries to call pop() on an empty list which causes
+        # ArrayIndexOutOfBoundsException in Java
+        jList.clear()
+        # Verify the list is still empty
+        self.assertEqual(0, len(jList))
+
     def testBinaryOp(self):
         ex = self.gateway.getNewExample()
         pList = get_list(3)

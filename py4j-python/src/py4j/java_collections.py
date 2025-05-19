@@ -267,6 +267,7 @@ class JavaList(JavaObject, MutableSequence):
     def __init__(self, target_id, gateway_client):
         JavaObject.__init__(self, target_id, gateway_client)
         self.java_remove = get_method(self, "remove")
+        self.java_clear = get_method(self, "clear")
 
     def __len__(self):
         return self.size()
@@ -482,6 +483,12 @@ class JavaList(JavaObject, MutableSequence):
         success = self.java_remove(new_value)
         if not success:
             raise ValueError("java_list.remove(x): x not in java_list")
+
+    def clear(self):
+        """Remove all items from the list by calling the Java List's clear method directly.
+        By directly calling the Java List's clear method, we avoid multiple Java method calls
+        and the potential exception."""
+        self.java_clear()
 
     def __str__(self):
         return self.__repr__()
