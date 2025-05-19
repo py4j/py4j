@@ -443,11 +443,8 @@ class JavaList(JavaObject, MutableSequence):
     def extend(self, other_list):
         self.addAll(other_list)
 
-    def pop(self, key=None):
-        if key is None:
-            new_key = self.size() - 1
-        else:
-            new_key = self.__compute_index(key)
+    def pop(self, key=-1):
+        new_key = self.__compute_index(key)
         return self.java_remove(new_key)
 
     def index(self, value):

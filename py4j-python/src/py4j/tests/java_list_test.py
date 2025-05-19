@@ -318,6 +318,119 @@ class ListTest(unittest.TestCase):
         self.assertEqual(len(pList), len(jList))
         self.assertEqual(str(pList), str(jList))
 
+    def testPopDefault(self):
+        # Test pop() with default argument (should pop the last element)
+        ex = self.gateway.getNewExample()
+        jList = ex.getList(5)  # Creates a list with elements '0', '1', '2', '3', '4'
+        pList = get_list(5)
+        
+        # Pop the last element
+        jResult = jList.pop()
+        pResult = pList.pop()
+        
+        # Check that the popped element is correct
+        self.assertEqual(jResult, pResult)
+        # Check that the list size is reduced by 1
+        self.assertEqual(len(jList), len(pList))
+        # Check that the list contents match
+        self.assertEqual(str(jList), str(pList))
+
+    def testPopPositiveIndex(self):
+        # Test pop(index) with positive indices
+        ex = self.gateway.getNewExample()
+        jList = ex.getList(5)
+        pList = get_list(5)
+        
+        # Pop element at index 2
+        jResult = jList.pop(2)
+        pResult = pList.pop(2)
+        
+        # Check that the popped element is correct
+        self.assertEqual(jResult, pResult)
+        # Check that the list size is reduced by 1
+        self.assertEqual(len(jList), len(pList))
+        # Check that the list contents match
+        self.assertEqual(str(jList), str(pList))
+        
+        # Pop the first element
+        jResult = jList.pop(0)
+        pResult = pList.pop(0)
+        # Check that the popped element is correct
+        self.assertEqual(jResult, pResult)
+        # Check that the list size is reduced by 1
+        self.assertEqual(len(jList), len(pList))
+        # Check that the list contents match
+        self.assertEqual(str(jList), str(pList))
+
+    def testPopNegativeIndex(self):
+        # Test pop(index) with negative indices
+        ex = self.gateway.getNewExample()
+        jList = ex.getList(5)
+        pList = get_list(5)
+        
+        # Pop the last element using -1
+        jResult = jList.pop(-1)
+        pResult = pList.pop(-1)
+        
+        # Check that the popped element is correct
+        self.assertEqual(jResult, pResult)
+        # Check that the list size is reduced by 1
+        self.assertEqual(len(jList), len(pList))
+        # Check that the list contents match
+        self.assertEqual(str(jList), str(pList))
+        
+        # Pop the second-to-last element using -1 again
+        jResult = jList.pop(-1)
+        pResult = pList.pop(-1)
+        
+        # Check that the popped element is correct
+        self.assertEqual(jResult, pResult)
+        # Check that the list size is reduced by 1
+        self.assertEqual(len(jList), len(pList))
+        # Check that the list contents match
+        self.assertEqual(str(jList), str(pList))
+        
+        # Pop an element from the middle using negative index
+        jResult = jList.pop(-2)
+        pResult = pList.pop(-2)
+        
+        # Check that the popped element is correct
+        self.assertEqual(jResult, pResult)
+        # Check that the list size is reduced by 1
+        self.assertEqual(len(jList), len(pList))
+        # Check that the list contents match
+        self.assertEqual(str(jList), str(pList))
+
+    def testPopEdgeCases(self):
+        # Test edge cases for pop
+        ex = self.gateway.getNewExample()
+        jList = ex.getList(3)
+        
+        # Test popping from an empty list
+        jList.clear()
+        try:
+            jList.pop()
+            self.fa9il("Should have raised IndexError")
+        except IndexError:
+            # This is expected
+            pass
+        
+        # Test popping with an out-of-bounds index
+        jList = ex.getList(3)
+        try:
+            jList.pop(10)
+            self.fail("Should have raised IndexError")
+        except IndexError:
+            # This is expected
+            pass
+        
+        try:
+            jList.pop(-10)
+            self.fail("Should have raised IndexError")
+        except IndexError:
+            # This is expected
+            pass
+
     def testBinaryOp(self):
         ex = self.gateway.getNewExample()
         pList = get_list(3)
