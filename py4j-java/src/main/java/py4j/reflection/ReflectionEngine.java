@@ -348,7 +348,7 @@ public class ReflectionEngine {
 		while (clazz != null) {
 			methodsToCheck.addAll(Arrays.asList(clazz.getDeclaredMethods()));
 			for (Class<?> intf : clazz.getInterfaces()) {
-				methodsToCheck.addAll(Arrays.asList(intf.getDeclaredMethods()));
+				methodsToCheck.addAll(Arrays.asList(intf.getMethods()));
 			}
 			clazz = clazz.getSuperclass();
 		}
