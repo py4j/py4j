@@ -89,10 +89,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
 
       - name: Install Python 3.9
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@e9aba2c848f5ebd159c070c61ea2c4e2b122355e # v2.3.4
         with:
           python-version: '3.9'
 
@@ -102,14 +102,14 @@ jobs:
           python3 -m pip list
 
       - name: Setup Java 8 JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@91d3aa4956ec4a53e477c4907347b5e3481be8c9 # v2.5.1
         with:
           java-version: 8
           distribution: 'adopt'
           cache: 'gradle'
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4 # v1.1.0
 
       - name: Javadoc build
         run: |
@@ -124,7 +124,7 @@ jobs:
       # Publishing documentation only for commits in the master branch.
       - name: Checkout GitHub Pages branch
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@v2
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
         with:
           ref: gh-pages
 
@@ -143,7 +143,7 @@ jobs:
           cp -r ../html/* . # Move generated site to the current repo.
 
       - name: Push new site
-        uses: EndBug/add-and-commit@v8
+        uses: EndBug/add-and-commit@72e246094f1af94def5a07467cd789c503ae8be0 # v8.0.2
         if: github.event_name != 'pull_request'
         with:
           default_author: github_actions
