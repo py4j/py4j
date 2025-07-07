@@ -726,6 +726,67 @@ Java methods slightly less efficient because in the worst case, Py4J needs to
 go through all registered converters for all parameters. This is why automatic
 conversion is disabled by default.
 
+.. _explicit_conversion:
+
+Explicit Conversion of Python Objects to Java Primitives
+-----------------------------------------------------
+
+When using Py4J with ``auto_convert=True``, Python types are automatically mapped to Java types. However, due to Python 3’s unified int type and Java’s distinction between int, long, and boxed primitives (Integer, Long), this can lead to incorrect type resolution — especially for methods expecting Long, Optional<Long>, or maps with Long keys.
+
+To handle this, Py4J provides a ``TypeHint`` mechanism via ``py4j.protocol``, which allows explicitly specifying the Java type for Python objects.
+
+Use the java_type argument from one of the Java type constants defined in py4j.protocol, such as LONG_TYPE.
+
+**Passing Long Values to Java Methods**
+
+If a method expects a Long (boxed), you must explicitly wrap the Python integer using a TypeHint to ensure it is interpreted correctly:
+
+
+.. code-block:: java
+
+    public void exampleLong(Long longValue) {
+        System.out.println("Long value: " + longValue);
+    }
+
+::
+
+  >>> gateway.jvm.my.Class().exampleLong(TypeHint(LONG_TYPE, 123))
+
+.. code-block:: java
+
+    public void exampleOptionalLong(Optional<Long> longValue) {
+        System.out.println("Long value: " + longValue.orElse(0L));
+    }
+
+::
+
+  >>> optional_long = gateway.jvm.java.util.Optional.of(TypeHint(LONG_TYPE, 1))
+  >>> gateway.jvm.my.Class().exampleOptionalLong(optional_long)
+
+
+**Accessing Java Maps with Long Keys**
+
+When working with Java ``Map<Long, Integer>`` objects from Python, using a plain Python int as a key may not work due to implicit type mismatches.
+Use ``TypeHint`` to correctly retrieve values using boxed Long keys.
+
+.. code-block:: java
+
+
+    public Map<Long, Integer> getLongMap() {
+        Map<Long, Integer> map = new HashMap<Long, Integer>();
+        map.put(25L, 35);
+        map.put(26L, 36);
+        map.put(27L, 37);
+        return map;
+    }
+
+::
+
+  >>> out_map = gateway.jvm.my.Class().getLongMap()
+  >>> value = out_map.get(TypeHint(LONG_TYPE, 25))
+  >>> print(value)
+  35
+
 
 .. _py4j_exceptions:
 

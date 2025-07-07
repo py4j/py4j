@@ -175,6 +175,30 @@ ERROR_ON_RECEIVE = "on_receive"
 EMPTY_RESPONSE = "empty_response"
 
 
+class TypeHint:
+    """
+    A helper class to explicitly specify the Java type of a Python value
+    when sending data from Python to Java via Py4J.
+
+    This is particularly useful when automatic type conversion may result
+    in incorrect types such as when a Python int needs to be treated
+    as a Java Long, Integer, or Double.
+    Use `TypeHint` to enforce the expected Java type.
+
+    Example:
+        >>> from py4j.protocol import LONG_TYPE, TypeHint
+        >>> gateway.jvm.SomeClass().methodLong(TypeHint(LONG_TYPE, 123))
+
+    Args:
+        java_type: The target Java type (e.g., LONG_TYPE, INT_TYPE).
+        value: The Python value to be wrapped with the specified Java type.
+    """
+
+    def __init__(self, java_type, value):
+        self.java_type = java_type
+        self.value = value
+
+
 def escape_new_line(original):
     """Replaces new line characters by a backslash followed by a n.
 
@@ -274,6 +298,8 @@ def get_command_part(parameter, python_proxy_pool=None):
 
     if parameter is None:
         command_part = NULL_TYPE
+    elif isinstance(parameter, TypeHint):
+        command_part = parameter.java_type + smart_decode(parameter.value)
     elif isinstance(parameter, bool):
         command_part = BOOLEAN_TYPE + smart_decode(parameter)
     elif isinstance(parameter, Decimal):
