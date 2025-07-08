@@ -190,7 +190,7 @@ class TypeHint:
         >>> gateway.jvm.SomeClass().methodLong(TypeHint(LONG_TYPE, 123))
 
     Args:
-        java_type: The target Java type (e.g., LONG_TYPE, INT_TYPE).
+        java_type: The target Java type (e.g., LONG_TYPE, INTEGER_TYPE).
         value: The Python value to be wrapped with the specified Java type.
     """
 
