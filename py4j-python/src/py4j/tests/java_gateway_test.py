@@ -34,7 +34,8 @@ from py4j.java_gateway import (
     get_java_class)
 from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
-    encode_bytearray, escape_new_line, unescape_new_line, smart_decode)
+    encode_bytearray, escape_new_line, unescape_new_line, smart_decode,
+    TypeHint, LONG_TYPE)
 
 
 SERVER_PORT = 25333
@@ -619,6 +620,11 @@ class TypeConversionTest(unittest.TestCase):
         self.assertEqual(4, ex.method7(2147483648))
         self.assertEqual(4, ex.method7(-2147483649))
         self.assertEqual(4, ex.method7(long(2147483648)))
+        self.assertEqual(4, ex.method7(TypeHint(LONG_TYPE, 1234)))
+        optional_long = self.gateway.jvm.java.util.Optional.of(TypeHint(LONG_TYPE, 1))
+        self.assertEqual(1, ex.method7(optional_long))
+        optional_empty = self.gateway.jvm.java.util.Optional.empty()
+        self.assertEqual(0, ex.method7(optional_empty))
         self.assertEqual(long(4), ex.method8(3))
         self.assertEqual(4, ex.method8(3))
         self.assertEqual(long(4), ex.method8(long(3)))
@@ -654,6 +660,12 @@ class TypeConversionTest(unittest.TestCase):
     def testUnboxingInt(self):
         ex = self.gateway.getNewExample()
         self.assertEqual(4, ex.getInteger(4))
+
+    def testHashMapLongKeys(self):
+        ex = self.gateway.getNewExample()
+        out_map = ex.method12()
+        for key in out_map.keys():
+            self.assertIsNotNone(out_map.get(TypeHint(LONG_TYPE, key)))
 
 
 class UnicodeTest(unittest.TestCase):

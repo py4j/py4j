@@ -37,7 +37,10 @@ import java.math.BigInteger;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class ExampleClass {
 
@@ -149,6 +152,10 @@ public class ExampleClass {
 		return 4;
 	}
 
+	public Long method7(Optional<Long> l) {
+		return l.orElse(0L);
+	}
+
 	public long method8(long l) {
 		return l + 1;
 	}
@@ -172,6 +179,14 @@ public class ExampleClass {
 
 	public BigInteger method11(BigInteger bi) {
 		return bi.add(new BigInteger("1"));
+	}
+
+	public Map<Long, Integer> method12() {
+		Map<Long, Integer> map = new HashMap<Long, Integer>();
+		map.put(25L, 35);
+		map.put(26L, 36);
+		map.put(27L, 37);
+		return map;
 	}
 
 	@SuppressWarnings("unused")
