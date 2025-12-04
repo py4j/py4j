@@ -58,6 +58,7 @@ DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER = "DEFAULT"
 DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT = 5
 PY4J_SKIP_COLLECTIONS = "PY4J_SKIP_COLLECTIONS"
 PY4J_TRUE = {"yes", "y", "t", "true"}
+PY4J_FORCE_SELECT = "PY4J_FORCE_SELECT"
 
 
 server_connection_stopped = Signal()
@@ -2321,12 +2322,17 @@ class CallbackServer(object):
             read_list = [self.server_socket]
             poller = None
             try:
-                if os.name == "posix":
+                if (
+                    os.name == "posix"
+                    and os.getenv(PY4J_FORCE_SELECT, "").lower()
+                    not in PY4J_TRUE
+                ):
                     # On posix systems use poll to avoid problems with file
-                    # descriptor numbers above 1024.
+                    # descriptor numbers above 1024 (unless we force select by
+                    # setting the PY4J_FORCE_SELECT environment variable).
                     poller = select.poll()
                     for r in read_list:
-                        poller.register(r.fileno(), select.POLLIN)
+                        poller.register(r, select.POLLIN)
 
                 while not self.is_shutdown:
                     if poller is not None:
