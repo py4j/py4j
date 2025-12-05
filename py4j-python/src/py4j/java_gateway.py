@@ -2324,8 +2324,7 @@ class CallbackServer(object):
             try:
                 if (
                     os.name == "posix"
-                    and os.getenv(PY4J_FORCE_SELECT, "").lower()
-                    not in PY4J_TRUE
+                    and os.getenv(PY4J_FORCE_SELECT, "").lower() not in PY4J_TRUE
                 ):
                     # On posix systems use poll to avoid problems with file
                     # descriptor numbers above 1024 (unless we force select by
