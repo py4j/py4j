@@ -2335,10 +2335,12 @@ class CallbackServer(object):
 
                 while not self.is_shutdown:
                     if poller is not None:
+                        # Unlike select, poll timeout is in millis (hence multiply
+                        # by 1000). Rule out error events.
                         readable_fds = {
                             fd
                             for fd, event in poller.poll(
-                                self.callback_server_parameters.accept_timeout
+                                1000 * self.callback_server_parameters.accept_timeout
                             )
                             if event & select.POLLIN
                         }
