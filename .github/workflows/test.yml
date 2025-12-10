@@ -15,22 +15,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-22.04 ]
-        java-version: [ 8 ]
-        python-version: [ '3.8' ]
-        include:
-          - os: macos-14
-            java-version: 8
-            python-version: '3.12'
-          - os: windows-2019
-            java-version: 11
-            python-version: '3.10'
-          - os: ubuntu-22.04
-            java-version: 17
-            python-version: '3.11'
-          - os: ubuntu-22.04
-            java-version: 21
-            python-version: '3.9'
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        java-version: [ 8, 11, 17, 21 ]
+        python-version: [ '3.9', '3.10', '3.11', '3.12', '3.13' ]
     name: Python ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
