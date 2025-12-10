@@ -26,11 +26,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Java ${{ matrix.os == 'macos-latest' && '11' || '8' }} JDK for build
+      - name: Setup Java 8 JDK for build
         uses: actions/setup-java@v5
         with:
-          java-version: ${{ matrix.os == 'macos-latest' && '11' || '8' }}
-          distribution: 'temurin'
+          java-version: '8'
+          distribution: 'zulu'
           cache: 'gradle'
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -64,7 +64,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '${{ matrix.java-version }}'
-          distribution: 'temurin'
+          distribution: 'zulu'
           cache: 'gradle'
 
       - name: Run PyTest
@@ -92,11 +92,11 @@ jobs:
           python3 -m pip install -r py4j-web/requirements-doc.txt
           python3 -m pip list
 
-      - name: Setup Java 17 JDK
+      - name: Setup Java 8 JDK
         uses: actions/setup-java@v5
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: '8'
+          distribution: 'zulu'
           cache: 'gradle'
 
       - name: Validate Gradle wrapper
