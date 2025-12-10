@@ -30,7 +30,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: ${{ matrix.os == 'macos-latest' && '11' || '8' }}
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: 'gradle'
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -64,7 +64,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '${{ matrix.java-version }}'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: 'gradle'
 
       - name: Run PyTest
@@ -96,7 +96,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: 'gradle'
 
       - name: Validate Gradle wrapper
