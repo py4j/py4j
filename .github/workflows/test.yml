@@ -26,10 +26,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Java ${{ matrix.java-version }} JDK for build
+      - name: Setup Java ${{ matrix.os == 'macos-latest' && '11' || '8' }} JDK for build
         uses: actions/setup-java@v5
         with:
-          java-version: ${{ matrix.java-version }}
+          java-version: ${{ matrix.os == 'macos-latest' && '11' || '8' }}
           distribution: 'adopt'
           cache: 'gradle'
 
