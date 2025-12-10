@@ -52,7 +52,7 @@ if (JavaVersion.current().isJava8Compatible()) {
                 instruction 'DynamicImport-Package', '*'
                 instruction 'Import-Package', '!javax.net'
                 instruction 'Export-Package', 'py4j,py4j.commands,py4j.model,py4j.reflection'
-                instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.8'
+                instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.6'
                 instruction 'Bundle-Description', 'Bridge between Python and Java - Java lib'
                 instruction 'Bundle-DocURL', 'http://www.py4j.org'
                 instruction 'Bundle-License', 'The New BSD License'
@@ -66,7 +66,7 @@ if (JavaVersion.current().isJava8Compatible()) {
                 bundleName = 'py4j-python'
                 version = bundleVersion
                 instruction 'DynamicImport-Package', '*'
-                instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.8'
+                instruction 'Bundle-RequiredExecutionEnvironment', 'JavaSE-1.6'
                 instruction 'Bundle-Description', 'Bridge between Python and Java - Python lib'
                 instruction 'Bundle-DocURL', 'http://www.py4j.org'
                 instruction 'Eclipse-BundleShape', 'dir'
@@ -126,8 +126,8 @@ if (jdk6BootClasspath) {
 }
 
 tasks.withType(JavaCompile) {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
+    sourceCompatibility = "1.6"
+    targetCompatibility = "1.6"
     options.fork = true
     options.encoding = "UTF-8"
 }
@@ -199,8 +199,8 @@ task createPom {
                     appendNode('artifactId', 'maven-compiler-plugin')
                     appendNode('version', '3.3')
                     appendNode('configuration').with {
-                        appendNode('source', '1.8')
-                        appendNode('target', '1.8')
+                        appendNode('source', '1.6')
+                        appendNode('target', '1.6')
                     }
                 }
                 appendNode('plugin').with {
