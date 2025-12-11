@@ -41,4 +41,4 @@ Py4J for Eclipse requires:
 * Java 7.0+
 
 If you would like a particular version of Python or Java to be supported, fill
-a `feature request <https://github.com/bartdag/py4j/issues/new>`_.
+a `feature request <https://github.com/py4j/py4j/issues/new>`_.
