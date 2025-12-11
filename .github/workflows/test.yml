@@ -15,40 +15,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-22.04 ]
-        java-version: [ 8 ]
-        python-version: [ '3.8' ]
-        include:
-          - os: macos-14
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        java-version: [ 8, 11, 17, 21 ]
+        python-version: [ '3.9', '3.10', '3.11', '3.12', '3.13' ]
+        exclude:
+          - os: macos-latest
             java-version: 8
-            python-version: '3.12'
-          - os: windows-2019
-            java-version: 11
-            python-version: '3.10'
-          - os: ubuntu-22.04
-            java-version: 17
-            python-version: '3.11'
-          - os: ubuntu-22.04
-            java-version: 21
-            python-version: '3.9'
+
     name: Python ${{ matrix.python-version }}, Java ${{ matrix.java-version }}, ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@1e204e9a9253d643386038d443f96446fa156a97 # pin@v2.3.5
+      - uses: actions/checkout@v6
 
       - name: Setup Java 8 JDK for build
-        uses: actions/setup-java@8db439b6b47e5e12312bf036760bbaa6893481ac #pin@v2.3.1
+        uses: actions/setup-java@v5
         with:
           java-version: '8'
-          distribution: 'adopt'
+          distribution: 'zulu'
           cache: 'gradle'
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@dc73133d4da04e56a135ae2246682783cc7c7cb6 # pin @v2.2.2
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+        uses: gradle/actions/wrapper-validation@v5
 
       - name: Install dependencies
         run: |
@@ -70,10 +61,10 @@ jobs:
 
       - name: Setup Java ${{ matrix.java-version }} JDK for PyTest
         if: ${{ matrix.java-version != '8' }}
-        uses: actions/setup-java@8db439b6b47e5e12312bf036760bbaa6893481ac #pin@v2.3.1
+        uses: actions/setup-java@v5
         with:
           java-version: '${{ matrix.java-version }}'
-          distribution: 'adopt'
+          distribution: 'zulu'
           cache: 'gradle'
 
       - name: Run PyTest
@@ -89,12 +80,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
-      - name: Install Python 3.9
-        uses: actions/setup-python@v2
+      - name: Install Python 3.12
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.9'
+          python-version: '3.12'
 
       - name: Install Python packages
         run: |
@@ -102,14 +93,14 @@ jobs:
           python3 -m pip list
 
       - name: Setup Java 8 JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v5
         with:
-          java-version: 8
-          distribution: 'adopt'
+          java-version: '8'
+          distribution: 'zulu'
           cache: 'gradle'
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/actions/wrapper-validation@v5
 
       - name: Javadoc build
         run: |
@@ -124,7 +115,7 @@ jobs:
       # Publishing documentation only for commits in the master branch.
       - name: Checkout GitHub Pages branch
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           ref: gh-pages
 
