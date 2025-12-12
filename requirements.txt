@@ -1,2 +1,0 @@
--r py4j-python/requirements-test.txt
--r py4j-web/requirements-doc.txt

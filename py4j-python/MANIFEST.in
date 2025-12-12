@@ -1,7 +1,0 @@
-include README.rst
-include setup.py
-include LICENSE.txt
-include nose.cfg
-include src/py4j/tests/selfsigned.pem
-recursive-include doc *.*
-recursive-include py4j-java *.*

@@ -43,7 +43,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pytest
+          pip install ".[dev]"
           cd py4j-java
           # Useful in case the build stops working because of version issues.
           ./gradlew --version
@@ -69,75 +69,7 @@ jobs:
 
       - name: Run PyTest
         run: |
-          cd py4j-python
           echo `java -version`
           echo $JAVA_HOME
           # Java TLS tests are disabled until they can be fixed (refs #441)
-          pytest -k "not java_tls_test." -vvv
-
-  test-doc:
-    name: Documentation build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout master branch
-        uses: actions/checkout@v6
-
-      - name: Install Python 3.12
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - name: Install Python packages
-        run: |
-          python3 -m pip install -r py4j-web/requirements-doc.txt
-          python3 -m pip list
-
-      - name: Setup Java 8 JDK
-        uses: actions/setup-java@v5
-        with:
-          java-version: '8'
-          distribution: 'zulu'
-          cache: 'gradle'
-
-      - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v5
-
-      - name: Javadoc build
-        run: |
-          cd py4j-java && ./gradlew javadoc && cd ..
-          mv py4j-java/build/docs/javadoc py4j-web/_static/
-
-      - name: Sphinx build
-        run: |
-          cd py4j-web && make clean html && cd ..
-          mv py4j-web/_build/html ../ # Move out of the current repo for GitHub Pages.
-
-      # Publishing documentation only for commits in the master branch.
-      - name: Checkout GitHub Pages branch
-        if: github.event_name != 'pull_request'
-        uses: actions/checkout@v6
-        with:
-          ref: gh-pages
-
-      - name: Copy the generated site
-        if: github.event_name != 'pull_request'
-        run: |
-          # Include Javadoc if the commit is tagged (for releases only).
-          if [ -z "`git describe --tags --exact-match 2>/dev/null`" ]; then
-            rm -fr ../html/_static/javadoc
-            [ -d _static/javadoc ]  && mv _static/javadoc ../html/_static
-          fi
-
-          rm -fr * # Remove existing site
-          touch .nojekyll # See https://github.blog/2009-12-29-bypassing-jekyll-on-github-pages
-          echo "www.py4j.org" > CNAME # Custom domain for GitHub Actions
-          cp -r ../html/* . # Move generated site to the current repo.
-
-      - name: Push new site
-        uses: EndBug/add-and-commit@v8
-        if: github.event_name != 'pull_request'
-        with:
-          default_author: github_actions
-          message: Push new site by ${{ github.sha }}
-          add: "*"
-          push: "--force" # In case it conflicts with the same step in another workflow.
+          python -m pytest py4j/tests -k "not java_tls_test." -vvv
