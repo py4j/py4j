@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=69", "wheel", "setuptools-scm>=7"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py4j"
+dynamic = ["version"]
+description = "Enables Python programs to dynamically access arbitrary Java objects"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+requires-python = ">=3.9"
+license = "BSD-3-Clause"
+authors = [
+  {name = "Barthelemy Dagenais", email = "barthelemy@infobart.com"},
+]
+keywords = ["java", "gateway", "jvm"]
+license-files = ["LICENSE.txt"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Java",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Object Brokering",
+]
+
+[project.optional-dependencies]
+dev = [
+  "flake8>=4.0.1",
+  "pytest>=7.1.1",
+]
+docs = [
+  "Sphinx>5.0,<6.0",
+]
+
+[project.urls]
+Homepage = "https://www.py4j.org/"
+Source = "https://github.com/py4j/py4j"
+
+[tool.setuptools.package-dir]
+"" = "py4j-python/src"
+
+[tool.setuptools.packages.find]
+where = ["py4j-python/src"]
+
+[tool.setuptools_scm]
+fallback_version = "0.10.9.9"
+write_to = "py4j-python/src/py4j/version.py"

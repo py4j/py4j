@@ -1,2 +1,41 @@
 .DS_Store
 /build
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+dist/
+pip-wheel-metadata/
+
+# Virtualenvs
+.env
+.venv
+venv/
+ENV/
+
+# Java/Gradle/Maven
+*.class
+*.log
+*.jar
+*.war
+*.ear
+.gradle/
+build/
+target/
+*.iml
+.idea/
+/py4j-python/py4j-java/
+/py4j-python/doc/
+/py4j-python/dist/
+/py4j-python/build/
+/py4j-python/src/py4j/version.py
+
+# OS
+Thumbs.db

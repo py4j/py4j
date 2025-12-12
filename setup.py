@@ -1,67 +1,86 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
 import os
+import shutil
+from pathlib import Path
 import subprocess
 
+from setuptools import setup
+from setuptools.command.sdist import sdist as _sdist
+from setuptools.errors import SetupError
+from setuptools_scm import get_version
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
-DOC_DIR = os.path.join("py4j-python", "doc")
-DIST_DIR = os.path.join("py4j-python", "dist")
-VERSION_PATH = os.path.join("py4j-python", "src", "py4j", "version.py")
-# For Python 3 compatibility, we can't use execfile; this is 2to3's conversion:
-exec(compile(open(VERSION_PATH).read(),
-     VERSION_PATH, "exec"))
-VERSION = __version__  # noqa
-RELEASE = "py4j-" + VERSION
-JAR_FILE = "py4j" + VERSION + ".jar"
 
-os.chdir("py4j-java")
-if os.name == "nt":
-    subprocess.call("./gradlew.bat buildPython", shell=True)
-else:
-    subprocess.call("./gradlew buildPython", shell=True)
-os.chdir("..")
+ROOT = Path(__file__).parent.resolve()
+JAVA_DIR = ROOT / "py4j-java"
+PYTHON_DIR = ROOT / "py4j-python"
 
-JAR_FILE_PATH = os.path.join("py4j-python", "py4j-java", JAR_FILE)
+
+def _load_version() -> str:
+    return get_version(root=ROOT, relative_to=__file__)
+
+
+def _jar_path(version: str) -> Path:
+    return PYTHON_DIR / "py4j-java" / f"py4j{version}.jar"
+
+
+def _build_jar(version: str) -> Path:
+    jar = _jar_path(version)
+    if jar.exists():
+        return jar
+
+    gradle_cmd = "gradlew.bat" if os.name == "nt" else "./gradlew"
+    source_jar = JAVA_DIR / "py4j*.jar"
+    try:
+        # Only build and copy the Java jar; skip Python/doc builds.
+        subprocess.check_call([gradle_cmd, "copyMainJar"], cwd=JAVA_DIR)
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise SetupError(f"Unable to build Py4J Java gateway jar via Gradle: {exc}") from exc
+
+    jar_candidates = sorted(JAVA_DIR.glob("py4j*.jar"), reverse=True)
+    if not jar_candidates:
+        raise SetupError(f"Expected jar to be generated at {source_jar}")
+    built_jar = jar_candidates[0]
+
+    jar.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(built_jar, jar)
+    return jar
+
+
+class _BuildJarMixin:
+    """Ensure the Java gateway jar exists before packaging artifacts."""
+
+    def ensure_jar(self) -> Path:
+        version = _load_version()
+        jar = _jar_path(version)
+        if not jar.exists():
+            self.announce(f"Building Java gateway jar for version {version}", level=2)
+            jar = _build_jar(version)
+        return jar
+
+
+class sdist(_BuildJarMixin, _sdist):
+    def run(self) -> None:
+        self.ensure_jar()
+        super().run()
+
+
+class bdist_wheel(_BuildJarMixin, _bdist_wheel):
+    def run(self) -> None:
+        self.ensure_jar()
+        super().run()
+
+
+cmdclass = {
+    "sdist": sdist,
+    "bdist_wheel": bdist_wheel,
+}
+
+
+version = _load_version()
+jar_file = _jar_path(version)
+jar_file_rel = os.path.relpath(jar_file, ROOT)
 
 setup(
-    name="py4j",
-    packages=["py4j", "py4j.tests"],
-    package_dir={"": "py4j-python/src"},
-    data_files=[("share/py4j", [JAR_FILE_PATH])],
-    version=VERSION,
-    description="Enables Python programs to dynamically access arbitrary "
-                "Java objects",
-    long_description="Py4J enables Python programs running in a Python "
-                     "interpreter to dynamically "
-                     "access Java objects in a Java Virtual Machine. "
-                     "Methods are called as if the Java "
-                     "objects resided in the Python interpreter and Java "
-                     "collections can be accessed "
-                     "through standard Python collection methods. Py4J also "
-                     "enables Java programs to call back Python objects.",
-    url="https://www.py4j.org/",
-    project_urls={
-        "Source": "https://github.com/py4j/py4j",
-    },
-    author="Barthelemy Dagenais",
-    author_email="barthelemy@infobart.com",
-    license="BSD License",
-    classifiers=[
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: BSD License",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Programming Language :: Java",
-        "Topic :: Software Development :: Libraries",
-        "Topic :: Software Development :: Object Brokering",
-    ],
-
+    cmdclass=cmdclass,
+    data_files=[("share/py4j", [jar_file_rel])],
 )
