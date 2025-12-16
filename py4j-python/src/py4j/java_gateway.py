@@ -2336,14 +2336,21 @@ class CallbackServer(object):
                 while not self.is_shutdown:
                     if poller is not None:
                         # Unlike select, poll timeout is in millis (hence multiply
-                        # by 1000). Rule out error events.
-                        readable_fds = {
-                            fd
-                            for fd, event in poller.poll(
-                                1000 * self.callback_server_parameters.accept_timeout
-                            )
-                            if event & select.POLLIN
-                        }
+                        # by 1000).
+                        readable_fds = []
+                        for fd, event in poller.poll(
+                            1000 * self.callback_server_parameters.accept_timeout
+                        ):
+                            if event & (select.POLLIN | select.POLLHUP):
+                                # Data can be read (for POLLHUP peer hang up, so
+                                # reads will return 0 bytes, in which case we want
+                                # to break out - this is consistent with how select
+                                # behaves).
+                                readable_fds.append(fd)
+                            else:
+                                # Could be POLLERR or POLLNVAL (select would raise
+                                # in this case).
+                                raise Py4JError(f"Polling error - event {event} on fd {fd}")
                         readable = [
                             r for r in read_list if r.fileno() in readable_fds
                         ]
@@ -2379,7 +2386,7 @@ class CallbackServer(object):
             finally:
                 if poller is not None:
                     for r in read_list:
-                        poller.unregister(r.fileno())
+                        poller.unregister(r)
         except Exception as e:
             if self.is_shutdown:
                 logger.info("Error while waiting for a connection.")
