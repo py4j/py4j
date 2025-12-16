@@ -58,6 +58,7 @@ DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER = "DEFAULT"
 DEFAULT_CALLBACK_SERVER_ACCEPT_TIMEOUT = 5
 PY4J_SKIP_COLLECTIONS = "PY4J_SKIP_COLLECTIONS"
 PY4J_TRUE = {"yes", "y", "t", "true"}
+PY4J_FORCE_SELECT = "PY4J_FORCE_SELECT"
 
 
 server_connection_stopped = Signal()
@@ -2319,34 +2320,73 @@ class CallbackServer(object):
                 self, server=self)
 
             read_list = [self.server_socket]
-            while not self.is_shutdown:
-                readable, writable, errored = select.select(
-                    read_list, [], [],
-                    self.callback_server_parameters.accept_timeout)
+            poller = None
+            try:
+                if (
+                    os.name == "posix"
+                    and os.getenv(PY4J_FORCE_SELECT, "").lower() not in PY4J_TRUE
+                ):
+                    # On posix systems use poll to avoid problems with file
+                    # descriptor numbers above 1024 (unless we force select by
+                    # setting the PY4J_FORCE_SELECT environment variable).
+                    poller = select.poll()
+                    for r in read_list:
+                        poller.register(r, select.POLLIN)
 
-                if self.is_shutdown:
-                    break
+                while not self.is_shutdown:
+                    if poller is not None:
+                        # Unlike select, poll timeout is in millis (hence multiply
+                        # by 1000).
+                        readable_fds = []
+                        for fd, event in poller.poll(
+                            1000 * self.callback_server_parameters.accept_timeout
+                        ):
+                            if event & (select.POLLIN | select.POLLHUP):
+                                # Data can be read (for POLLHUP peer hang up, so
+                                # reads will return 0 bytes, in which case we want
+                                # to break out - this is consistent with how select
+                                # behaves).
+                                readable_fds.append(fd)
+                            else:
+                                # Could be POLLERR or POLLNVAL (select would raise
+                                # in this case).
+                                raise Py4JError(f"Polling error - event {event} on fd {fd}")
+                        readable = [
+                            r for r in read_list if r.fileno() in readable_fds
+                        ]
+                    else:
+                        # If poll is not available, use select.
+                        readable, writable, errored = select.select(
+                            read_list, [], [],
+                            self.callback_server_parameters.accept_timeout)
 
-                for s in readable:
-                    socket_instance, _ = self.server_socket.accept()
-                    if self.callback_server_parameters.read_timeout:
-                        socket_instance.settimeout(
-                            self.callback_server_parameters.read_timeout)
-                    if self.ssl_context:
-                        socket_instance = self.ssl_context.wrap_socket(
-                            socket_instance, server_side=True)
-                    input = socket_instance.makefile("rb")
-                    connection = self._create_connection(
-                        socket_instance, input)
-                    with self.lock:
-                        if not self.is_shutdown:
-                            self.connections.add(connection)
-                            connection.start()
-                            server_connection_started.send(
-                                self, connection=connection)
-                        else:
-                            quiet_shutdown(connection.socket)
-                            quiet_close(connection.socket)
+                    if self.is_shutdown:
+                        break
+
+                    for s in readable:
+                        socket_instance, _ = self.server_socket.accept()
+                        if self.callback_server_parameters.read_timeout:
+                            socket_instance.settimeout(
+                                self.callback_server_parameters.read_timeout)
+                        if self.ssl_context:
+                            socket_instance = self.ssl_context.wrap_socket(
+                                socket_instance, server_side=True)
+                        input = socket_instance.makefile("rb")
+                        connection = self._create_connection(
+                            socket_instance, input)
+                        with self.lock:
+                            if not self.is_shutdown:
+                                self.connections.add(connection)
+                                connection.start()
+                                server_connection_started.send(
+                                    self, connection=connection)
+                            else:
+                                quiet_shutdown(connection.socket)
+                                quiet_close(connection.socket)
+            finally:
+                if poller is not None:
+                    for r in read_list:
+                        poller.unregister(r)
         except Exception as e:
             if self.is_shutdown:
                 logger.info("Error while waiting for a connection.")
