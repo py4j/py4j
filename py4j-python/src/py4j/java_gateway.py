@@ -1049,8 +1049,12 @@ class GatewayClient(object):
                     reset = True
                 connection.close(reset)
             if self._should_retry(retry, connection, pne):
+                if pne.when == proto.ERROR_ON_SEND or pne.when == proto.EMPTY_RESPONSE:
+                    # For empty response, just try once more because now we reset
+                    # the connection, and should work if the other end is alive.
+                    retry = False
                 logger.info("Exception while sending command.", exc_info=True)
-                response = self.send_command(command, binary=binary)
+                response = self.send_command(command, retry, binary=binary)
             else:
                 logger.exception(
                     "Exception while sending command.")
@@ -1107,7 +1111,8 @@ class GatewayClient(object):
         return GatewayConnectionGuard(self, connection)
 
     def _should_retry(self, retry, connection, pne=None):
-        return pne and pne.when == proto.ERROR_ON_SEND
+        return retry and pne and (
+            pne.when == proto.ERROR_ON_SEND or pne.when == proto.EMPTY_RESPONSE)
 
     def close(self):
         """Closes all currently opened connections.
@@ -1254,10 +1259,12 @@ class GatewayConnection(object):
             # Happens when a the other end is dead. There might be an empty
             # answer before the socket raises an error.
             if answer.strip() == "":
-                raise Py4JNetworkError("Answer from Java side is empty")
+                raise Py4JNetworkError("Answer from Java side is empty", when=proto.EMPTY_RESPONSE)
             return answer
         except Exception as e:
             logger.info("Error while receiving.", exc_info=True)
+            if isinstance(e, Py4JNetworkError) and e.when == proto.EMPTY_RESPONSE:
+                raise
             raise Py4JNetworkError(
                 "Error while receiving", e, proto.ERROR_ON_RECEIVE)
 

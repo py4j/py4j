@@ -4,6 +4,21 @@ Changelog
 The changelog describes in plain English the changes that occurred between Py4J
 releases.
 
+Py4J 0.10.9.9
+-------------
+
+- Release date: January 15th 2025
+- Python side: Retry Py4J on empty response
+
+Py4J 0.10.9.8
+-------------
+
+- Release date: December 17th 2024
+- Python side: Python 3.12 and Python 3.11 support
+- Python side: Drop EOL Python prior to Python 3.8
+- Java side: Better error message when gateway server binding fails
+- Improve Py4j command cancellation by shutting down the JVM side of the socket
+
 Py4J 0.10.9.7
 -------------
 
