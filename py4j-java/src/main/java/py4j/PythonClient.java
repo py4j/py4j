@@ -32,6 +32,7 @@ package py4j;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -61,6 +62,8 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 
 	protected final int readTimeout;
 
+	protected final int createSocketTimeout;
+
 	/**
 	 *
 	 * @param gateway The gateway used to pool Java instances created on the Python side.
@@ -76,7 +79,8 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 			InetAddress pythonAddress, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory, Py4JJavaServer javaServer) {
 		this(gateway, customCommands, pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit,
-				socketFactory, javaServer, true, GatewayServer.DEFAULT_READ_TIMEOUT);
+				socketFactory, javaServer, true, GatewayServer.DEFAULT_READ_TIMEOUT,
+				GatewayServer.DEFAULT_CREATE_SOCKET_CONNECTION_TIMEOUT);
 	}
 
 	/**
@@ -99,9 +103,10 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 	 */
 	public PythonClient(Gateway gateway, List<Class<? extends Command>> customCommands, int pythonPort,
 			InetAddress pythonAddress, long minConnectionTime, TimeUnit minConnectionTimeUnit,
-			SocketFactory socketFactory, Py4JJavaServer javaServer, boolean enableMemoryManagement, int readTimeout) {
+			SocketFactory socketFactory, Py4JJavaServer javaServer, boolean enableMemoryManagement, int readTimeout,
+			int createSocketTimeout) {
 		this(gateway, customCommands, pythonPort, pythonAddress, minConnectionTime, minConnectionTimeUnit,
-				socketFactory, javaServer, enableMemoryManagement, readTimeout, null);
+				socketFactory, javaServer, enableMemoryManagement, readTimeout, createSocketTimeout, null);
 	}
 
 	/**
@@ -127,14 +132,15 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 	public PythonClient(Gateway gateway, List<Class<? extends Command>> customCommands, int pythonPort,
 			InetAddress pythonAddress, long minConnectionTime, TimeUnit minConnectionTimeUnit,
 			SocketFactory socketFactory, Py4JJavaServer javaServer, boolean enableMemoryManagement, int readTimeout,
-			String authToken) {
+			int createSocketTimeout, String authToken) {
 		super(pythonPort, pythonAddress, authToken, minConnectionTime, minConnectionTimeUnit, socketFactory,
-				enableMemoryManagement, readTimeout);
+				enableMemoryManagement, readTimeout, createSocketTimeout);
 		this.gateway = gateway;
 		this.javaServer = javaServer;
 		this.customCommands = customCommands;
 		this.threadConnection = new ThreadLocal<WeakReference<ClientServerConnection>>();
 		this.readTimeout = readTimeout;
+		this.createSocketTimeout = createSocketTimeout;
 		setSelfListener();
 	}
 
@@ -183,13 +189,19 @@ public class PythonClient extends CallbackClient implements Py4JPythonClientPerT
 	}
 
 	@Override
+	public int getCreateSocketConnectionTimeout() {
+		return createSocketTimeout;
+	}
+
+	@Override
 	protected void setupCleaner() {
 		// Do nothing, we don't need a cleaner.
 	}
 
 	protected Socket startClientSocket() throws IOException {
 		logger.info("Starting Python Client connection on " + address + " at " + port);
-		Socket socket = socketFactory.createSocket(address, port);
+		Socket socket = socketFactory.createSocket();
+		socket.connect(new InetSocketAddress(address, port), createSocketTimeout);
 		socket.setSoTimeout(readTimeout);
 		return socket;
 	}

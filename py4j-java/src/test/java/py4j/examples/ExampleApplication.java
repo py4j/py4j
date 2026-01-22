@@ -85,7 +85,8 @@ public class ExampleApplication {
 			GatewayServer.turnLoggingOff();
 			CallbackClient callbackClient = new CallbackClient(GatewayServer.DEFAULT_PYTHON_PORT,
 					GatewayServer.defaultAddress(), CallbackClient.DEFAULT_MIN_CONNECTION_TIME,
-					CallbackClient.DEFAULT_MIN_CONNECTION_TIME_UNIT, SocketFactory.getDefault(), false, 250);
+					CallbackClient.DEFAULT_MIN_CONNECTION_TIME_UNIT, SocketFactory.getDefault(), false, 250,
+					GatewayServer.DEFAULT_CREATE_SOCKET_CONNECTION_TIMEOUT);
 			GatewayServer server = new GatewayServer.GatewayServerBuilder().readTimeout(250)
 					.entryPoint(new ExampleEntryPoint()).callbackClient(callbackClient).build();
 			server.start();
@@ -98,7 +99,8 @@ public class ExampleApplication {
 			GatewayServer.turnLoggingOff();
 			CallbackClient callbackClient = new CallbackClient(GatewayServer.DEFAULT_PYTHON_PORT,
 					GatewayServer.defaultIPv6Address(), CallbackClient.DEFAULT_MIN_CONNECTION_TIME,
-					CallbackClient.DEFAULT_MIN_CONNECTION_TIME_UNIT, SocketFactory.getDefault(), false, 250);
+					CallbackClient.DEFAULT_MIN_CONNECTION_TIME_UNIT, SocketFactory.getDefault(), false, 250,
+					GatewayServer.DEFAULT_CREATE_SOCKET_CONNECTION_TIMEOUT);
 			GatewayServer server = new GatewayServer.GatewayServerBuilder().readTimeout(250)
 					.entryPoint(new ExampleEntryPoint()).callbackClient(callbackClient)
 					.javaAddress(GatewayServer.defaultIPv6Address()).build();
