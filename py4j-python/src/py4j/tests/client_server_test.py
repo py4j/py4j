@@ -13,7 +13,8 @@ from py4j.java_gateway import GatewayConnectionGuard, is_instance_of, \
 from py4j.protocol import Py4JError, Py4JJavaError, smart_decode
 from py4j.tests.java_callback_test import IHelloImpl, IHelloFailingImpl
 from py4j.tests.java_gateway_test import (
-    PY4J_JAVA_PATH, check_connection, sleep, WaitOperator)
+    PY4J_JAVA_PATH, check_connection, safe_join, sleep,
+    safe_terminate_process, verify_jvm_or_terminate, WaitOperator)
 from py4j.tests.memory_leak_test import python_gc
 from py4j.tests.py4j_callback_recursive_example import (
     PythonPing, HelloState)
@@ -53,7 +54,6 @@ def start_clientserver_example_app_process(
         args = ("--auth-token", auth_token)
         gw_params = GatewayParameters(auth_token=auth_token)
 
-    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     if start_short_timeout:
         p = Process(target=start_short_timeout_clientserver_example_server,
                     args=args)
@@ -67,7 +67,13 @@ def start_clientserver_example_app_process(
     p.start()
     sleep()
 
-    check_connection(gateway_parameters=gw_params)
+    # Verify the JVM actually accepted connections; if not, terminate
+    # the orphan process so it doesn't hold DEFAULT_PORT for the next
+    # test in the same CI cell. Previously this called check_connection
+    # (which silently retries and returns), so a dead JVM looked alive
+    # and downstream tests cascaded with cryptic port-conflict failures
+    # until the 20-minute job timeout fired.
+    verify_jvm_or_terminate(p, gateway_parameters=gw_params)
     return p
 
 
@@ -81,7 +87,10 @@ def clientserver_example_app_process(
         yield p
     finally:
         if join:
-            p.join()
+            # Bounded join + terminate fallback. Replaces unbounded
+            # p.join() which could hang for the full 20-minute CI
+            # timeout if the JVM didn't shut down cleanly.
+            safe_join(p)
 
 
 def start_java_multi_client_server_app():
@@ -91,15 +100,19 @@ def start_java_multi_client_server_app():
 
 
 def start_java_multi_client_server_app_process():
-    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_java_multi_client_server_app)
     p.start()
     sleep()
-    # test both gateways...
-    check_connection(
-        gateway_parameters=GatewayParameters(port=DEFAULT_PORT))
-    check_connection(
-        gateway_parameters=GatewayParameters(port=DEFAULT_PORT + 2))
+    # Verify both gateways are up; terminate-and-raise if not (see
+    # rationale in start_clientserver_example_app_process above).
+    try:
+        verify_jvm_or_terminate(
+            p, gateway_parameters=GatewayParameters(port=DEFAULT_PORT))
+        verify_jvm_or_terminate(
+            p, gateway_parameters=GatewayParameters(port=DEFAULT_PORT + 2))
+    except Exception:
+        safe_terminate_process(p)
+        raise
     return p
 
 
@@ -109,7 +122,7 @@ def java_multi_client_server_app_process():
     try:
         yield p
     finally:
-        p.join()
+        safe_join(p)
 
 
 class HelloObjects(object):

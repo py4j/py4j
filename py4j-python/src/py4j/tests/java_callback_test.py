@@ -18,7 +18,8 @@ from py4j.java_gateway import (
     set_default_callback_accept_timeout, is_instance_of)
 from py4j.protocol import Py4JJavaError
 from py4j.tests.java_gateway_test import (
-    PY4J_JAVA_PATH, safe_shutdown, sleep, check_connection)
+    PY4J_JAVA_PATH, safe_join, safe_shutdown, sleep, check_connection,
+    verify_jvm_or_terminate)
 
 
 set_default_callback_accept_timeout(0.125)
@@ -56,7 +57,6 @@ def start_example_server3():
 
 
 def start_example_app_process(app=None, args=()):
-    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     if not app:
         target = start_example_server
     elif app == "nomem":
@@ -66,7 +66,9 @@ def start_example_app_process(app=None, args=()):
     p = Process(target=target, args=args)
     p.start()
     sleep()
-    check_connection()
+    # Verify the JVM accepted connections; terminate orphan if not.
+    # See verify_jvm_or_terminate docstring for full rationale.
+    verify_jvm_or_terminate(p)
     return p
 
 
@@ -76,24 +78,24 @@ def gateway_example_app_process(app=None, args=()):
     try:
         yield p
     finally:
-        p.join()
+        # Bounded join + terminate fallback (vs unbounded p.join()
+        # which could hang the entire CI cell).
+        safe_join(p)
 
 
 def start_example_app_process2():
-    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_example_server2)
     p.start()
     sleep()
-    check_connection()
+    verify_jvm_or_terminate(p)
     return p
 
 
 def start_example_app_process3():
-    # XXX DO NOT FORGET TO KILL THE PROCESS IF THE TEST DOES NOT SUCCEED
     p = Process(target=start_example_server3)
     p.start()
     sleep()
-    check_connection()
+    verify_jvm_or_terminate(p)
     return p
 
 
