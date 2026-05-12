@@ -123,20 +123,24 @@ suite across the supported python versions.
 
 .. code-block:: bash
 
-  # make sure that the jar file is created
+  # Make sure that the jar file is created
   cd py4j-java
   ./gradlew clean
   ./gradlew assemble
 
-  # install test requirements
+  # Come back to home directory
+  cd ..
+
+  # Install test requirements for Python
   cd py4j-python
-  pip install -r requirements.txt
+  pip install -r requirements-test.txt
 
   # Run the full test suite
-  nosetests
+  # Java TLS tests are disabled until they can be fixed (refs #441)
+  pytest -k "not java_tls_test." -vvv
 
   # Run only one particular test
-  nosetests py4j.tests.java_gateway_test:GatewayLauncherTest.testRedirectToDeque
+  pytest -k "GatewayLauncherTest and testRedirectToDeque"
 
   # Run all tests on all supported pythons.
   # Typically only do this if the automated build failed
