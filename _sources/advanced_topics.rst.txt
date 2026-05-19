@@ -146,7 +146,7 @@ access to a byte required a call between the Python and the Java interpreter
 In summary:
 
 * If from Java, you return a byte[], Py4J will convert the byte[] to a
-  bytearray (Python 2.x) or bytes (Python 3.x) variable in Python.
+  bytes variable in Python.
 
 * If from Python, you pass a bytearray or bytes variable to the Java side,
   Py4J will convert it to a byte[].

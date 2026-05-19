@@ -160,8 +160,6 @@ clients of Py4J because it is automatically loaded by the <a class="reference in
 with <cite>Py4JJavaError.java_exception</cite>.</p>
 <p><cite>str(py4j_java_error)</cite> returns the error message and the stack trace
 available on the Java side (similar to printStackTrace()).</p>
-<p>Note that <cite>str(py4j_java_error)</cite> in Python 2 might not automatically handle
-a non-ascii unicode string but throw an error if the exception contains it.</p>
 </dd></dl>
 
 </section>
@@ -222,7 +220,7 @@ a non-ascii unicode string but throw an error if the exception contains it.</p>
 <span class="sig-prename descclassname"><span class="pre">py4j.protocol.</span></span><span class="sig-name descname"><span class="pre">get_command_part</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">python_proxy_pool</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#py4j.protocol.get_command_part" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a Python object into a string representation respecting the
 Py4J protocol.</p>
-<p>For example, the integer <cite>1</cite> is converted to <cite>u”i1”</cite></p>
+<p>For example, the integer <cite>1</cite> is converted to <cite>“i1”</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>parameter</strong> – the object to convert</p>
@@ -286,7 +284,7 @@ java.util.ArrayList on the Java side. See <code class="docutils literal notransl
 examples.</p>
 <p>When initialized with <cite>auto_convert=True</cite>, a <a class="reference internal" href="py4j_java_gateway.html#py4j.java_gateway.JavaGateway" title="py4j.java_gateway.JavaGateway"><code class="xref py py-class docutils literal notranslate"><span class="pre">JavaGateway</span></code></a> will use the input converters on any
 parameter that is not a <code class="xref py py-class docutils literal notranslate"><span class="pre">JavaObject</span></code>
-or <cite>basestring</cite> instance.</p>
+or <cite>str</cite> instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
