@@ -65,12 +65,12 @@ Using the latest development source code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can install the latest version with pip and git:
-``pip install git+https://github.com/bartdag/py4j.git``
+``pip install git+https://github.com/py4j/py4j.git``
 
 Otherwise, to build the Java and Python libraries, you need:
 
 1. `Git <https://git-scm.com/>`_ to download the latest source code.
-   Execute the command line ``git clone https://github.com/bartdag/py4j.git
+   Execute the command line ``git clone https://github.com/py4j/py4j.git
    py4j`` to download the source code.
 2. `Gradle <https://gradle.org>`_ to build the Py4J Java library execute the
    command line ``./gradlew assemble`` in the py4j-java project directory to

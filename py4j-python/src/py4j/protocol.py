@@ -473,5 +473,5 @@ class Py4JJavaError(Py4JError):
         return_value = get_return_value(answer, gateway_client, None, None)
         # Note: technically this should return a bytestring 'str' rather than
         # unicodes in Python 2; however, it can return unicodes for now.
-        # See https://github.com/bartdag/py4j/issues/306 for more details.
+        # See https://github.com/py4j/py4j/issues/306 for more details.
         return "{0}: {1}".format(self.errmsg, return_value)
