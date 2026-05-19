@@ -11,7 +11,6 @@ Created on Dec 3, 2009
 :author: Barthelemy Dagenais
 """
 from collections import deque
-import inspect
 import logging
 import os
 from pydoc import pager
@@ -338,7 +337,7 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     # Read the auth token from the server if enabled.
     _auth_token = None
     if enable_auth:
-        _auth_token = proc.stdout.readline()[:-len(os.linesep)]
+        _auth_token = proc.stdout.readline()[:-len(os.linesep)].decode("utf-8")
 
     # Start consumer threads so process does not deadlock/hangs
     OutputConsumer(

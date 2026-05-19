@@ -233,7 +233,7 @@ def encode_bytearray(barray):
 
 
 def decode_bytearray(encoded):
-    return bytearray(standard_b64decode(encoded.encode("ascii")))
+    return bytearray(standard_b64decode(encoded))
 
 
 def is_python_proxy(parameter):
