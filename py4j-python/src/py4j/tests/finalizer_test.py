@@ -3,8 +3,6 @@ Created on Mar 7, 2010
 
 @author: barthelemy
 """
-from __future__ import unicode_literals, absolute_import
-
 import gc
 import unittest
 from weakref import ref

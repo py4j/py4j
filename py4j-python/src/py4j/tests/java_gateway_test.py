@@ -1,11 +1,8 @@
-# -*- coding: UTF-8 -*-
 """
 Created on Dec 10, 2009
 
 @author: barthelemy
 """
-from __future__ import unicode_literals, absolute_import, print_function
-
 from collections import deque
 from contextlib import contextmanager
 from decimal import Decimal
@@ -14,6 +11,7 @@ import math
 from multiprocessing import Process
 import os
 import sys
+from queue import Queue
 from socket import AF_INET, SOCK_STREAM, socket
 import subprocess
 import tempfile
@@ -22,9 +20,6 @@ import time
 from traceback import print_exc
 import unittest
 
-from py4j.compat import (
-    range, isbytearray, ispython3bytestr, bytearray2, long,
-    Queue)
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_gateway import (
     JavaGateway, JavaMember, get_field, get_method,
@@ -366,7 +361,7 @@ class ProtocolTest(unittest.TestCase):
             self.assertAlmostEqual(1.25, ex.method3())
             self.assertTrue(ex.method2() is None)
             self.assertTrue(ex.method4())
-            self.assertEqual(long(123), ex.method8())
+            self.assertEqual(123, ex.method8())
             self.assertEqual(float("inf"), ex.method8())
             self.gateway.shutdown()
 
@@ -496,7 +491,7 @@ class FieldTest(unittest.TestCase):
             gateway_parameters=GatewayParameters(auto_field=True))
         ex = self.gateway.getNewExample()
         self.assertEqual(ex.field10, 10)
-        self.assertEqual(ex.field11, long(11))
+        self.assertEqual(ex.field11, 11)
         sb = ex.field20
         sb.append("Hello")
         self.assertEqual("Hello", sb.toString())
@@ -733,11 +728,11 @@ class TypeConversionTest(unittest.TestCase):
         self.assertEqual(1, ex.method7(1234))
         self.assertEqual(4, ex.method7(2147483648))
         self.assertEqual(4, ex.method7(-2147483649))
-        self.assertEqual(4, ex.method7(long(2147483648)))
-        self.assertEqual(long(4), ex.method8(3))
+        self.assertEqual(4, ex.method7(2147483648))
         self.assertEqual(4, ex.method8(3))
-        self.assertEqual(long(4), ex.method8(long(3)))
-        self.assertEqual(long(4), ex.method9(long(3)))
+        self.assertEqual(4, ex.method8(3))
+        self.assertEqual(4, ex.method8(3))
+        self.assertEqual(4, ex.method9(3))
         try:
             ex.method8(3000000000000000000000000000000000000)
             self.fail("Should not be able to convert overflowing long")
@@ -874,7 +869,7 @@ class ByteTest(unittest.TestCase):
         int_list = [0, 1, 10, 127, 128, 255]
         ba1 = bytearray(int_list)
         # Same for Python2, bytes for Python 3
-        ba2 = bytearray2(int_list)
+        ba2 = bytes(int_list)
         a1 = ex.getBytesValue(ba1)
         a2 = ex.getBytesValue(ba2)
         for i1, i2 in zip(a1, int_list):
@@ -891,7 +886,7 @@ class ByteTest(unittest.TestCase):
         # strings)
         # Python 3: bytes (because bytes is closer to the byte[] representation
         # in Java)
-        self.assertTrue(isbytearray(a1) or ispython3bytestr(a1))
+        self.assertTrue(isinstance(a1, (bytearray, bytes)))
         for i1, i2 in zip(a1, int_list):
             self.assertEqual(i1, i2)
 
@@ -1164,11 +1159,7 @@ class GatewayLauncherTest(unittest.TestCase):
         # giving two orders of magnitude of headroom over a healthy
         # JVM's tens-of-ms shutdown - reaching 5 s indicates a real
         # hang, not scheduler jitter.
-        if sys.version_info < (3,):
-            sleep()
-            self.assertFalse(self.gateway.java_process.poll() is None)
-        else:
-            self.gateway.java_process.wait(5)
+        self.gateway.java_process.wait(5)
         # Popen.wait() will raise a TimeoutExpired exception if the subprocess
         # has not yet terminated.
 
@@ -1183,13 +1174,9 @@ class GatewayLauncherTest(unittest.TestCase):
         self.assertTrue(self.gateway.java_process.poll() is None)
         self.gateway.java_process.stdin.write("\n".encode("utf-8"))
         self.gateway.java_process.stdin.flush()
-        if sys.version_info < (3,):
-            sleep()
-            self.assertFalse(self.gateway.java_process.poll() is None)
-        else:
-            # Same rationale as testShutdownSubprocess: 1 s timed out on
-            # Py3.11/Java 21/macOS. 5 s gives headroom for noisy CI.
-            self.gateway.java_process.wait(5)
+        # Same rationale as testShutdownSubprocess: 1 s timed out on
+        # Py3.11/Java 21/macOS. 5 s gives headroom for noisy CI.
+        self.gateway.java_process.wait(5)
 
     def testJavaopts(self):
         self.gateway = JavaGateway.launch_gateway(javaopts=["-Xmx64m"])

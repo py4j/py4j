@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 from contextlib import contextmanager
 import gc
 from multiprocessing import Process

@@ -1,13 +1,9 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup
 import os
 
 DOC_DIR = "doc"
 DIST_DIR = "dist"
 VERSION_PATH = os.path.join("src", "py4j", "version.py")
-# For Python 3 compatibility, we can't use execfile; this is 2to3's conversion:
 exec(compile(open(VERSION_PATH).read(),
      VERSION_PATH, "exec"))
 VERSION = __version__  # noqa
@@ -37,18 +33,20 @@ setup(
     author="Barthelemy Dagenais",
     author_email="barthelemy@infobart.com",
     license="BSD License",
+    python_requires=">=3.9",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Programming Language :: Java",
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Object Brokering",

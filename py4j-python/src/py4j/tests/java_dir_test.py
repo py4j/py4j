@@ -1,5 +1,3 @@
-from __future__ import unicode_literals, absolute_import
-
 from py4j.java_gateway import (
     java_import, UserHelpAutoCompletion)
 from py4j.protocol import Py4JError

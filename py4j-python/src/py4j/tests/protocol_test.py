@@ -1,0 +1,229 @@
+"""
+Pure-protocol unit tests covering Python 2 / 3 boundary semantics.
+
+Pinned here so the Python 2 removal can't silently regress the
+externally-visible behaviour of ``py4j.compat`` (which downstream
+projects still import from) or the protocol-encoding paths that
+deal with ``bytes`` vs ``str`` distinctions.
+
+No JVM dependency — fast pure-Python tests.
+"""
+import unittest
+
+from py4j.protocol import (
+    decode_bytearray, encode_bytearray, encode_float,
+    escape_new_line, unescape_new_line, get_command_part,
+    smart_decode,
+    NULL_TYPE, BOOLEAN_TYPE, INTEGER_TYPE, LONG_TYPE, DOUBLE_TYPE,
+    BYTES_TYPE, STRING_TYPE, JAVA_INFINITY, JAVA_NEGATIVE_INFINITY,
+    JAVA_NAN, JAVA_MAX_INT, JAVA_MIN_INT,
+)
+
+
+class EncodeBytearrayRoundTripTest(unittest.TestCase):
+    """``encode_bytearray`` / ``decode_bytearray`` round-trip protected
+    after the Python 2 removal collapsed the ``bytearray2`` /
+    ``bytestr`` aliases into ``bytes``.
+    """
+
+    def test_round_trip_bytes(self):
+        original = b"\x00\x01\x02\xff\xfe\xfd"
+        encoded = encode_bytearray(original)
+        self.assertIsInstance(encoded, str)
+        self.assertEqual(decode_bytearray(encoded), original)
+
+    def test_round_trip_bytearray(self):
+        original = bytearray(b"abc\x00xyz")
+        encoded = encode_bytearray(original)
+        self.assertIsInstance(encoded, str)
+        # decode returns bytes, but content must compare equal.
+        self.assertEqual(decode_bytearray(encoded), bytes(original))
+
+    def test_round_trip_empty(self):
+        self.assertEqual(decode_bytearray(encode_bytearray(b"")), b"")
+
+    def test_round_trip_high_bytes(self):
+        # All single-byte values, exercises the full 0-255 range.
+        original = bytes(range(256))
+        self.assertEqual(decode_bytearray(encode_bytearray(original)), original)
+
+
+class EscapeNewLineTest(unittest.TestCase):
+    """``escape_new_line`` / ``unescape_new_line`` round-trip protected.
+    The function preserves a long-standing wrapping behaviour for
+    ``bytes`` inputs (via ``smart_decode``) so removing ``smart_decode``
+    here would be a behaviour change, not a Python 2 removal.
+    """
+
+    def test_str_passthrough_simple(self):
+        self.assertEqual(escape_new_line("hello"), "hello")
+
+    def test_escapes_backslash_then_newlines(self):
+        # Order matters: backslash must be doubled first so that the
+        # ``\n`` / ``\r`` insertions don't get re-escaped.
+        self.assertEqual(escape_new_line("a\\b\rc\nd"), "a\\\\b\\rc\\nd")
+
+    def test_round_trip_with_unescape(self):
+        original = "first line\nsecond\tline\rthird\\fourth"
+        self.assertEqual(unescape_new_line(escape_new_line(original)), original)
+
+    def test_falsy_passthrough(self):
+        # Documented behaviour: empty / None returns input unchanged.
+        self.assertEqual(escape_new_line(""), "")
+        self.assertIsNone(escape_new_line(None))
+
+
+class GetCommandPartTest(unittest.TestCase):
+    """Spot-check ``get_command_part`` after the type-check aliases
+    (``isinstance(x, long)`` etc.) were collapsed into native py3
+    types.
+    """
+
+    def _strip(self, s):
+        self.assertTrue(s.endswith("\n"))
+        return s[:-1]
+
+    def test_none_uses_null_prefix(self):
+        self.assertEqual(self._strip(get_command_part(None)), NULL_TYPE.strip())
+
+    def test_bool_dispatched_before_int(self):
+        # ``isinstance(True, int)`` is True in Python — the bool branch
+        # must run first so booleans don't get INTEGER-encoded.
+        self.assertTrue(
+            self._strip(get_command_part(True)).startswith(BOOLEAN_TYPE))
+        self.assertTrue(
+            self._strip(get_command_part(False)).startswith(BOOLEAN_TYPE))
+
+    def test_small_int_uses_integer_prefix(self):
+        self.assertEqual(
+            self._strip(get_command_part(42)),
+            INTEGER_TYPE + "42")
+
+    def test_int_at_java_max_uses_integer_prefix(self):
+        # Inclusive boundary.
+        self.assertEqual(
+            self._strip(get_command_part(JAVA_MAX_INT)),
+            INTEGER_TYPE + str(JAVA_MAX_INT))
+
+    def test_int_above_java_max_uses_long_prefix(self):
+        big = JAVA_MAX_INT + 1
+        self.assertEqual(
+            self._strip(get_command_part(big)),
+            LONG_TYPE + str(big))
+
+    def test_int_below_java_min_uses_long_prefix(self):
+        small = JAVA_MIN_INT - 1
+        self.assertEqual(
+            self._strip(get_command_part(small)),
+            LONG_TYPE + str(small))
+
+    def test_float_uses_double_prefix(self):
+        self.assertEqual(
+            self._strip(get_command_part(0.5)),
+            DOUBLE_TYPE + "0.5")
+
+    def test_str_uses_string_prefix_with_escaping(self):
+        out = self._strip(get_command_part("a\nb"))
+        self.assertEqual(out, STRING_TYPE + "a\\nb")
+
+    def test_bytes_uses_bytes_prefix(self):
+        out = self._strip(get_command_part(b"abc"))
+        self.assertTrue(out.startswith(BYTES_TYPE))
+
+    def test_bytearray_uses_bytes_prefix(self):
+        out = self._strip(get_command_part(bytearray(b"abc")))
+        self.assertTrue(out.startswith(BYTES_TYPE))
+
+
+class EncodeFloatTest(unittest.TestCase):
+    """``encode_float`` after the ``smart_decode(repr(...))`` /
+    ``unicode(...)`` aliases were inlined. Java-side spellings for
+    inf / -inf / NaN preserved.
+    """
+
+    def test_positive_infinity(self):
+        self.assertEqual(encode_float(float("inf")), JAVA_INFINITY)
+
+    def test_negative_infinity(self):
+        self.assertEqual(encode_float(float("-inf")), JAVA_NEGATIVE_INFINITY)
+
+    def test_nan(self):
+        self.assertEqual(encode_float(float("nan")), JAVA_NAN)
+
+    def test_finite_float(self):
+        self.assertEqual(encode_float(1.0), "1.0")
+
+
+class SmartDecodeTest(unittest.TestCase):
+    """``smart_decode`` body was rewritten with native py3 types
+    (``str`` instead of ``unicode``; ``bytes`` instead of ``bytestr``).
+    Function-level behaviour must be unchanged.
+    """
+
+    def test_str_input_returns_input_unchanged(self):
+        self.assertEqual(smart_decode("hello"), "hello")
+
+    def test_bytes_input_decodes_as_utf8(self):
+        self.assertEqual(smart_decode(b"hello"), "hello")
+        self.assertEqual(smart_decode("café".encode("utf-8")), "café")
+
+    def test_non_string_falls_back_to_str(self):
+        self.assertEqual(smart_decode(123), "123")
+        self.assertEqual(smart_decode(0.5), "0.5")
+        self.assertEqual(smart_decode(None), "None")
+
+
+class CompatModuleBackcompatTest(unittest.TestCase):
+    """``py4j.compat`` is kept around as a soft-deprecated shim for any
+    external callers that imported its py2/3 names
+    (``from py4j.compat import unicode``, etc.). This pins every
+    exported name to its py3 equivalent so a future cleanup of the
+    module can't silently break downstream imports.
+    """
+
+    def test_compat_exports_resolve(self):
+        from py4j.compat import (   # noqa: F401
+            items, iteritems, range, long, basestring, unicode,
+            bytearray2, unichr, bytestr, tobytestr, isbytestr,
+            ispython3bytestr, isbytearray, bytetoint, bytetostr,
+            strtobyte, Queue, Empty, hasattr2, CompatThread,
+            version_info,
+        )
+
+    def test_compat_aliases_resolve_to_py3_builtins(self):
+        from py4j import compat
+        self.assertIs(compat.long, int)
+        self.assertIs(compat.basestring, str)
+        self.assertIs(compat.unicode, str)
+        self.assertIs(compat.bytestr, bytes)
+        self.assertIs(compat.range, range)
+        self.assertIs(compat.unichr, chr)
+
+    def test_compat_helpers_use_py3_semantics(self):
+        from py4j import compat
+        self.assertTrue(compat.isbytestr(b""))
+        self.assertFalse(compat.isbytestr(""))
+        self.assertTrue(compat.ispython3bytestr(b""))
+        self.assertFalse(compat.ispython3bytestr(""))
+        self.assertTrue(compat.isbytearray(bytearray()))
+        self.assertFalse(compat.isbytearray(b""))
+        self.assertEqual(compat.bytetoint(b"a"[0]), b"a"[0])
+        self.assertEqual(compat.bytetostr(b"abc"), "abc")
+        self.assertEqual(compat.strtobyte("abc"), b"abc")
+        self.assertEqual(compat.items({"a": 1}), [("a", 1)])
+        self.assertEqual(list(compat.iteritems({"a": 1})), [("a", 1)])
+
+    def test_compat_thread_is_threading_thread(self):
+        from threading import Thread
+        from py4j.compat import CompatThread
+        self.assertIs(CompatThread, Thread)
+
+    def test_compat_queue_is_stdlib_queue(self):
+        from queue import Queue as StdQueue, Empty as StdEmpty
+        from py4j.compat import Queue, Empty
+        self.assertIs(Queue, StdQueue)
+        self.assertIs(Empty, StdEmpty)
+
+
+if __name__ == "__main__":
+    unittest.main()

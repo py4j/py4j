@@ -3,8 +3,6 @@ Created on Apr 5, 2010
 
 @author: Barthelemy Dagenais
 """
-from __future__ import unicode_literals, absolute_import
-
 from contextlib import contextmanager
 from multiprocessing import Process
 import subprocess
@@ -12,7 +10,6 @@ from threading import Thread
 from traceback import print_exc
 import unittest
 
-from py4j.compat import range
 from py4j.java_gateway import (
     JavaGateway, PythonProxyPool, CallbackServerParameters,
     set_default_callback_accept_timeout, is_instance_of)

@@ -3,11 +3,8 @@ Created on Dec 17, 2009
 
 @author: barthelemy
 """
-from __future__ import unicode_literals, absolute_import
-
 import unittest
 
-from py4j.compat import unicode
 from py4j.java_gateway import JavaGateway, GatewayParameters
 from py4j.protocol import Py4JJavaError, Py4JError
 from py4j.tests.java_gateway_test import (
@@ -15,7 +12,7 @@ from py4j.tests.java_gateway_test import (
 
 
 def get_list(count):
-    return [unicode(i) for i in range(count)]
+    return [str(i) for i in range(count)]
 
 
 class AutoConvertTest(unittest.TestCase):

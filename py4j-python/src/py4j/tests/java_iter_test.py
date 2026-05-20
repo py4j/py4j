@@ -1,5 +1,3 @@
-from __future__ import unicode_literals, absolute_import
-
 import unittest
 
 from py4j.java_gateway import JavaGateway, is_instance_of

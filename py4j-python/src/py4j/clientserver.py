@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 """Module that implements a different threading model between
 a Java Virtual Machine a Python interpreter.
 
@@ -6,9 +5,6 @@ In this model, Java and Python can exchange resquests and responses in the same
 thread. For example, if a request is started in a Java UI thread and the Python
 code calls some Java code, the Java code will be executed in the UI thread.
 """
-
-from __future__ import unicode_literals, absolute_import
-
 from collections import deque
 import logging
 import socket

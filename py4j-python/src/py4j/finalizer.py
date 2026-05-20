@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 """
 Module that defines a Finalizer class responsible for registering and cleaning
 finalizer
@@ -7,11 +6,7 @@ Created on Mar 7, 2010
 
 :author: Barthelemy Dagenais
 """
-from __future__ import unicode_literals, absolute_import
-
 from threading import RLock
-
-from py4j.compat import items
 
 
 class ThreadSafeFinalizer(object):
@@ -64,7 +59,7 @@ class ThreadSafeFinalizer(object):
             if clear_all:
                 cls.finalizers.clear()
             else:
-                for id, ref in items(cls.finalizers):
+                for id, ref in list(cls.finalizers.items()):
                     if ref() is None:
                         cls.finalizers.pop(id, None)
 
@@ -116,7 +111,7 @@ class Finalizer(object):
         if clear_all:
             cls.finalizers.clear()
         else:
-            for id, ref in items(cls.finalizers):
+            for id, ref in list(cls.finalizers.items()):
                 if ref() is None:
                     cls.finalizers.pop(id, None)
 

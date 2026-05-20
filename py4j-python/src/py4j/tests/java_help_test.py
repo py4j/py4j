@@ -1,6 +1,3 @@
-from __future__ import unicode_literals, absolute_import
-
-
 from py4j.tests.java_gateway_test import gateway, example_app_process
 
 

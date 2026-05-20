@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 """Module to interact with objects in a Java Virtual Machine from a
 Python Virtual Machine.
 
@@ -10,12 +9,11 @@ Created on Dec 3, 2009
 
 :author: Barthelemy Dagenais
 """
-from __future__ import unicode_literals, absolute_import
-
 from collections import deque
 import logging
 import os
 from pydoc import pager
+from queue import Queue
 import select
 import socket
 import struct
@@ -26,8 +24,7 @@ import traceback
 from threading import Thread, RLock
 import weakref
 
-from py4j.compat import (
-    range, hasattr2, basestring, CompatThread, Queue)
+from py4j.compat import hasattr2
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j import protocol as proto
 from py4j.protocol import (
@@ -451,7 +448,7 @@ def is_instance_of(gateway, java_object, java_class):
     :param java_class: can be a string (fully qualified name), a JavaClass
             instance, or a JavaObject instance)
     """
-    if isinstance(java_class, basestring):
+    if isinstance(java_class, str):
         param = java_class
     elif isinstance(java_class, JavaClass):
         param = java_class._fqn
@@ -694,7 +691,7 @@ def _garbage_collect_proxy(pool, proxy_id):
     return success
 
 
-class OutputConsumer(CompatThread):
+class OutputConsumer(Thread):
     """Thread that consumes output
     """
 
@@ -725,7 +722,7 @@ class OutputConsumer(CompatThread):
             self.redirect_func(smart_decode(line))
 
 
-class ProcessConsumer(CompatThread):
+class ProcessConsumer(Thread):
     """Thread that ensures process stdout and stderr are properly closed.
     """
 

@@ -3,8 +3,6 @@ Created on Feb 2, 2016
 
 @author: Nick White
 """
-from __future__ import unicode_literals, absolute_import
-
 from multiprocessing import Process
 import subprocess
 import unittest

@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 """Module that provides a simple signals library.
 
 The signals pattern is very similar to the listener/observer pattern.
@@ -6,8 +5,6 @@ The signals pattern is very similar to the listener/observer pattern.
 """
 from inspect import ismethod
 from threading import Lock
-
-from py4j.compat import range
 
 
 def make_id(func):

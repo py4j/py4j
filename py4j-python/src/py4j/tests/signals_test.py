@@ -1,6 +1,3 @@
-# -*- coding: UTF-8 -*-
-from __future__ import unicode_literals, absolute_import
-
 from unittest import TestCase
 
 from py4j.signals import Signal

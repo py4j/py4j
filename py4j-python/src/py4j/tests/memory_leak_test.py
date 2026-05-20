@@ -1,4 +1,3 @@
-# -*- coding: UTF-8 -*-
 import platform
 from contextlib import contextmanager
 import gc

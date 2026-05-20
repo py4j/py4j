@@ -16,16 +16,9 @@ Created on Oct 14, 2010
 
 :author: Barthelemy Dagenais
 """
-from __future__ import unicode_literals, absolute_import
-
 from base64 import standard_b64encode, standard_b64decode
 
 from decimal import Decimal
-
-from py4j.compat import (
-    long, basestring, unicode, bytearray2,
-    bytestr, isbytestr, isbytearray, ispython3bytestr,
-    bytetoint, bytetostr, strtobyte)
 
 
 JAVA_MAX_INT = 2147483647
@@ -159,7 +152,7 @@ DIR_JVMVIEW_SUBCOMMAND_NAME = "v\n"
 OUTPUT_CONVERTER = {
     NULL_TYPE: (lambda x, y: None),
     BOOLEAN_TYPE: (lambda value, y: value.lower() == "true"),
-    LONG_TYPE: (lambda value, y: long(value)),
+    LONG_TYPE: (lambda value, y: int(value)),
     DECIMAL_TYPE: (lambda value, y: Decimal(value)),
     INTEGER_TYPE: (lambda value, y: int(value)),
     BYTES_TYPE: (lambda value, y: decode_bytearray(value)),
@@ -213,13 +206,12 @@ def unescape_new_line(escaped):
 
 
 def smart_decode(s):
-    if isinstance(s, unicode):
+    if isinstance(s, str):
         return s
-    elif isinstance(s, bytestr):
-        # Should never reach this case in Python 3
-        return unicode(s, "utf-8")
+    elif isinstance(s, bytes):
+        return str(s, "utf-8")
     else:
-        return unicode(s)
+        return str(s)
 
 
 def encode_float(float_value):
@@ -234,16 +226,16 @@ def encode_float(float_value):
 
 
 def encode_bytearray(barray):
-    if isbytestr(barray):
-        return bytetostr(standard_b64encode(barray))
+    if isinstance(barray, bytes):
+        return str(standard_b64encode(barray), encoding="ascii")
     else:
-        newbytestr = bytestr(barray)
-        return bytetostr(standard_b64encode(newbytestr))
+        newbytestr = bytes(barray)
+        return str(standard_b64encode(newbytestr), encoding="ascii")
 
 
 def decode_bytearray(encoded):
-    new_bytes = strtobyte(encoded)
-    return bytearray2([bytetoint(b) for b in standard_b64decode(new_bytes)])
+    new_bytes = bytes(encoded, encoding="ascii")
+    return bytes([b for b in standard_b64decode(new_bytes)])
 
 
 def is_python_proxy(parameter):
@@ -265,7 +257,7 @@ def get_command_part(parameter, python_proxy_pool=None):
     """Converts a Python object into a string representation respecting the
     Py4J protocol.
 
-    For example, the integer `1` is converted to `u"i1"`
+    For example, the integer `1` is converted to `"i1"`
 
     :param parameter: the object to convert
     :rtype: the string representing the command part
@@ -281,15 +273,15 @@ def get_command_part(parameter, python_proxy_pool=None):
     elif isinstance(parameter, int) and parameter <= JAVA_MAX_INT\
             and parameter >= JAVA_MIN_INT:
         command_part = INTEGER_TYPE + smart_decode(parameter)
-    elif isinstance(parameter, long) or isinstance(parameter, int):
+    elif isinstance(parameter, int):
         command_part = LONG_TYPE + smart_decode(parameter)
     elif isinstance(parameter, float):
         command_part = DOUBLE_TYPE + encode_float(parameter)
-    elif isbytearray(parameter):
+    elif isinstance(parameter, bytearray):
         command_part = BYTES_TYPE + encode_bytearray(parameter)
-    elif ispython3bytestr(parameter):
+    elif isinstance(parameter, bytes):
         command_part = BYTES_TYPE + encode_bytearray(parameter)
-    elif isinstance(parameter, basestring):
+    elif isinstance(parameter, str):
         command_part = STRING_TYPE + escape_new_line(parameter)
     elif is_python_proxy(parameter):
         command_part = PYTHON_PROXY_TYPE + python_proxy_pool.put(parameter)
@@ -410,7 +402,7 @@ def register_input_converter(converter, prepend=False):
     When initialized with `auto_convert=True`, a :class:`JavaGateway
     <py4j.java_gateway.JavaGateway>` will use the input converters on any
     parameter that is not a :class:`JavaObject <py4j.java_gateway.JavaObject>`
-    or `basestring` instance.
+    or `str` instance.
 
     :param converter: A converter that declares the methods
         `can_convert(object)` and `convert(object,gateway_client)`.
@@ -456,8 +448,6 @@ class Py4JJavaError(Py4JError):
     `str(py4j_java_error)` returns the error message and the stack trace
     available on the Java side (similar to printStackTrace()).
 
-    Note that `str(py4j_java_error)` in Python 2 might not automatically handle
-    a non-ascii unicode string but throw an error if the exception contains it.
     """
 
     def __init__(self, msg, java_exception):
@@ -471,7 +461,4 @@ class Py4JJavaError(Py4JError):
         gateway_client = self.java_exception._gateway_client
         answer = gateway_client.send_command(self.exception_cmd)
         return_value = get_return_value(answer, gateway_client, None, None)
-        # Note: technically this should return a bytestring 'str' rather than
-        # unicodes in Python 2; however, it can return unicodes for now.
-        # See https://github.com/bartdag/py4j/issues/306 for more details.
         return "{0}: {1}".format(self.errmsg, return_value)

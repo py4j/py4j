@@ -3,8 +3,6 @@ Created on Mar 24, 2010
 
 @author: Barthelemy Dagenais
 """
-from __future__ import unicode_literals, absolute_import
-
 import time
 import unittest
 
