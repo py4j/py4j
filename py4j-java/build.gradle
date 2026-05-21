@@ -80,7 +80,14 @@ if (JavaVersion.current().isJava8Compatible()) {
 
 buildscript {
     repositories {
-        jcenter()
+        // jcenter() (JFrog Bintray) was sunset in May 2021 and is
+        // increasingly unreliable — fresh CI runners (e.g. windows-
+        // latest with an empty gradle cache) fail dependency
+        // resolution intermittently. Both classpath artifacts below
+        // are mirrored on Maven Central; the gradle plugin portal
+        // is added as a defensive fallback for plugin resolution.
+        mavenCentral()
+        gradlePluginPortal()
     }
     dependencies {
         // Only add spotless for JDK >= 1.8
