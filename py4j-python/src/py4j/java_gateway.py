@@ -31,7 +31,7 @@ from py4j.protocol import (
     Py4JError, Py4JJavaError, Py4JNetworkError,
     Py4JAuthenticationError,
     get_command_part, get_return_value,
-    register_output_converter, smart_decode, escape_new_line,
+    register_output_converter, escape_new_line,
     is_fatal_error, is_error, unescape_new_line,
     get_error_message, compute_exception_message)
 from py4j.signals import Signal
@@ -361,10 +361,13 @@ def launch_gateway(port=0, jarpath="", classpath="", javaopts=[],
     # ephemeral ports)
     _port = int(proc.stdout.readline())
 
-    # Read the auth token from the server if enabled.
+    # Read the auth token from the server if enabled. stdout is in
+    # binary mode by default; decode here so the rest of the auth flow
+    # (which uses string equality, escape_new_line, etc.) sees str.
     _auth_token = None
     if enable_auth:
-        _auth_token = proc.stdout.readline()[:-len(os.linesep)]
+        _auth_token = proc.stdout.readline()[:-len(os.linesep)].decode(
+            "utf-8")
 
     # Start consumer threads so process does not deadlock/hangs
     OutputConsumer(
@@ -638,7 +641,7 @@ def do_client_auth(command, input_stream, sock, auth_token):
             raise Py4JAuthenticationError("Expected {}, received {}.".format(
                 proto.AUTH_COMMAND_NAME, command))
 
-        client_token = smart_decode(input_stream.readline()[:-1])
+        client_token = input_stream.readline()[:-1].decode("utf-8")
         # Remove the END marker
         input_stream.readline()
         if auth_token == client_token:
@@ -669,8 +672,8 @@ def _garbage_collect_object(gateway_client, target_id):
     try:
         try:
             ThreadSafeFinalizer.remove_finalizer(
-                smart_decode(gateway_client.address) +
-                smart_decode(gateway_client.port) +
+                str(gateway_client.address) +
+                str(gateway_client.port) +
                 target_id)
             gateway_client.garbage_collect_object(target_id)
         except Exception:
@@ -747,7 +750,8 @@ class OutputConsumer(Thread):
     def run(self):
         lines_iterator = iter(self.stream.readline, b"")
         for line in lines_iterator:
-            self.redirect_func(smart_decode(line))
+            # The sentinel b"" above pins line to bytes; decode directly.
+            self.redirect_func(line.decode("utf-8"))
 
 
 class ProcessConsumer(Thread):
@@ -1278,7 +1282,11 @@ class GatewayConnection(object):
                 "Error while sending", e, proto.ERROR_ON_SEND)
 
         try:
-            answer = smart_decode(self.stream.readline()[:-1])
+            # Stream is opened in binary mode (socket.makefile("rb")),
+            # so readline() returns bytes; decode at the source rather
+            # than dispatch through smart_decode's isinstance check.
+            # Every JavaGateway call hits this — the saving compounds.
+            answer = self.stream.readline()[:-1].decode("utf-8")
             logger.debug("Answer received: {0}".format(answer))
             if answer.startswith(proto.RETURN_MESSAGE):
                 answer = answer[1:]
@@ -1427,8 +1435,8 @@ class JavaObject(object):
         self._fully_populated = False
         self._gateway_doc = None
 
-        key = smart_decode(self._gateway_client.address) +\
-            smart_decode(self._gateway_client.port) +\
+        key = str(self._gateway_client.address) +\
+            str(self._gateway_client.port) +\
             self._target_id
 
         if self._gateway_client.gateway_property.enable_memory_management:
@@ -2352,7 +2360,7 @@ class CallbackServer(object):
             self.server_socket.listen(5)
             logger.info(
                 "Socket listening on {0}".
-                format(smart_decode(self.server_socket.getsockname())))
+                format(self.server_socket.getsockname()))
             server_started.send(
                 self, server=self)
 
@@ -2475,7 +2483,7 @@ class CallbackConnection(Thread):
         authenticated = self.callback_server_parameters.auth_token is None
         try:
             while True:
-                command = smart_decode(self.input.readline())[:-1]
+                command = self.input.readline()[:-1].decode("utf-8")
                 if not authenticated:
                     token = self.callback_server_parameters.auth_token
                     # Will raise an exception if auth fails in any way.
@@ -2483,7 +2491,7 @@ class CallbackConnection(Thread):
                         command, self.input, self.socket, token)
                     continue
 
-                obj_id = smart_decode(self.input.readline())[:-1]
+                obj_id = self.input.readline()[:-1].decode("utf-8")
                 logger.info(
                     "Received command {0} on object id {1}".
                     format(command, obj_id))
@@ -2540,7 +2548,7 @@ class CallbackConnection(Thread):
                 get_command_part('Object ID unknown', self.pool)
 
         try:
-            method = smart_decode(input.readline())[:-1]
+            method = input.readline()[:-1].decode("utf-8")
             params = self._get_params(input)
             return_value = getattr(self.pool[obj_id], method)(*params)
             return proto.RETURN_MESSAGE + proto.SUCCESS +\
@@ -2559,11 +2567,11 @@ class CallbackConnection(Thread):
 
     def _get_params(self, input):
         params = []
-        temp = smart_decode(input.readline())[:-1]
+        temp = input.readline()[:-1].decode("utf-8")
         while temp != proto.END:
             param = get_return_value("y" + temp, self.gateway_client)
             params.append(param)
-            temp = smart_decode(input.readline())[:-1]
+            temp = input.readline()[:-1].decode("utf-8")
         return params
 
 
@@ -2596,7 +2604,7 @@ class PythonProxyPool(object):
             if force_id:
                 id = force_id
             else:
-                id = proto.PYTHON_PROXY_PREFIX + smart_decode(self.next_id)
+                id = proto.PYTHON_PROXY_PREFIX + str(self.next_id)
                 self.next_id += 1
             self.dict[id] = object
         return id

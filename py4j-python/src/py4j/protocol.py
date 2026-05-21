@@ -173,9 +173,22 @@ def escape_new_line(original):
 
     Backslashes are also escaped by another backslash.
 
-    :param original: the string to escape
+    :param original: the string to escape (str or bytes; bytes inputs
+        are decoded via smart_decode for backward compatibility — see
+        below).
 
     :rtype: an escaped string
+
+    .. note::
+        The internal ``smart_decode(original)`` is **load-bearing**: it
+        accepts bytes inputs that some legacy callers (and any code path
+        that forgot to decode at the socket boundary) might still
+        produce. Removing it makes ``bytes.replace("str", "str")``
+        raise ``TypeError`` — see PR #575 review for the auth-token
+        regression this guarded against. The replacement chain is fast
+        enough that the smart_decode dispatch is not a hot-path concern;
+        all py4j-internal callers already pass str, so the type check
+        is a single isinstance hit.
     """
     if original:
         return smart_decode(original).replace("\\", "\\\\").\
@@ -215,7 +228,10 @@ def smart_decode(s):
 
 
 def encode_float(float_value):
-    float_str = smart_decode(repr(float_value))
+    # str(float) on Python 3 already returns the same shortest-
+    # roundtrip repr that smart_decode(repr(...)) was producing on
+    # py2; smart_decode here was a no-op dispatcher.
+    float_str = str(float_value)
     if float_str == "-inf":
         float_str = JAVA_NEGATIVE_INFINITY
     elif float_str == "inf":
@@ -234,8 +250,14 @@ def encode_bytearray(barray):
 
 
 def decode_bytearray(encoded):
-    new_bytes = bytes(encoded, encoding="ascii")
-    return bytes([b for b in standard_b64decode(new_bytes)])
+    # Per @PaperTsar's analysis in issue #570: the prior
+    # implementation built a Python list of ints (one PyObject per
+    # byte) then reconstructed bytes from that list — pure overhead
+    # now that Python 2 is no longer a target. standard_b64decode
+    # already returns bytes; the bytes() wrapper preserves the return-
+    # type contract while skipping the intermediate list. ~7.5x on
+    # 256KB payloads in microbenchmarks.
+    return bytes(standard_b64decode(encoded.encode("ascii")))
 
 
 def is_python_proxy(parameter):

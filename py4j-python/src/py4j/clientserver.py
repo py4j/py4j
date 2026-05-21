@@ -23,7 +23,7 @@ from py4j.java_gateway import (
     disable_nagle)
 from py4j import protocol as proto
 from py4j.protocol import (
-    Py4JError, Py4JNetworkError, smart_decode, get_command_part,
+    Py4JError, Py4JNetworkError, get_command_part,
     get_return_value, Py4JAuthenticationError)
 
 
@@ -530,7 +530,7 @@ class ClientServerConnection(object):
 
         try:
             while True:
-                answer = smart_decode(self.stream.readline()[:-1])
+                answer = self.stream.readline()[:-1].decode("utf-8")
                 logger.debug("Answer received: {0}".format(answer))
                 # Happens when a the other end is dead. There might be an empty
                 # answer before the socket raises an error.
@@ -541,7 +541,7 @@ class ClientServerConnection(object):
                     return answer[1:]
                 else:
                     command = answer
-                    obj_id = smart_decode(self.stream.readline())[:-1]
+                    obj_id = self.stream.readline()[:-1].decode("utf-8")
 
                     if command == proto.CALL_PROXY_COMMAND_NAME:
                         return_message = self._call_proxy(obj_id, self.stream)
@@ -588,7 +588,7 @@ class ClientServerConnection(object):
         authenticated = self.python_parameters.auth_token is None
         try:
             while True:
-                command = smart_decode(self.stream.readline())[:-1]
+                command = self.stream.readline()[:-1].decode("utf-8")
                 if not authenticated:
                     # Will raise an exception if auth fails in any way.
                     authenticated = do_client_auth(
@@ -596,7 +596,7 @@ class ClientServerConnection(object):
                         self.python_parameters.auth_token)
                     continue
 
-                obj_id = smart_decode(self.stream.readline())[:-1]
+                obj_id = self.stream.readline()[:-1].decode("utf-8")
                 logger.info(
                     "Received command {0} on object id {1}".
                     format(command, obj_id))
@@ -637,7 +637,7 @@ class ClientServerConnection(object):
                 get_command_part('Object ID unknown', self.pool)
 
         try:
-            method = smart_decode(input.readline())[:-1]
+            method = input.readline()[:-1].decode("utf-8")
             params = self._get_params(input)
             return_value = getattr(self.pool[obj_id], method)(*params)
             return proto.RETURN_MESSAGE + proto.SUCCESS +\
@@ -657,11 +657,11 @@ class ClientServerConnection(object):
 
     def _get_params(self, input):
         params = []
-        temp = smart_decode(input.readline())[:-1]
+        temp = input.readline()[:-1].decode("utf-8")
         while temp != proto.END:
             param = get_return_value("y" + temp, self.java_client)
             params.append(param)
-            temp = smart_decode(input.readline())[:-1]
+            temp = input.readline()[:-1].decode("utf-8")
         return params
 
     def __del__(self):

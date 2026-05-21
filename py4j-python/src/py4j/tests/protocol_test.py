@@ -311,5 +311,45 @@ class StringEscapingEdgeCasesTest(unittest.TestCase):
         self.assertEqual(self._roundtrip(s), s)
 
 
+class EscapeNewLineBytesInputSafetyTest(unittest.TestCase):
+    """Pins the bytes-input safety contract on escape_new_line.
+
+    escape_new_line's ``smart_decode(original)`` is a defensive measure
+    that lets bytes inputs pass through cleanly — see the docstring of
+    escape_new_line for the full rationale. PR #575's perf review
+    proposed dropping this smart_decode; doing so makes
+    ``bytes.replace("str", "str")`` raise TypeError, breaking the
+    auth-token round-trip path (testGatewayAuth) and any other path
+    that hands escape_new_line a bytes input without explicit decoding.
+
+    If a future refactor drops smart_decode from escape_new_line, these
+    tests fail immediately — catching the regression before CI's
+    integration tests need to spin up a JVM."""
+
+    def test_bytes_input_decoded_as_utf8(self):
+        # ASCII bytes round-trip through escape_new_line as if they
+        # were str — smart_decode does the conversion.
+        result = escape_new_line(b"hello\nworld")
+        self.assertEqual(result, "hello\\nworld")
+
+    def test_str_input_passes_through(self):
+        # str inputs are the common case; smart_decode is a single
+        # isinstance hit for these.
+        result = escape_new_line("hello\nworld")
+        self.assertEqual(result, "hello\\nworld")
+
+    def test_bytes_input_with_utf8_payload(self):
+        # Non-ASCII bytes (UTF-8 encoded) decode correctly via
+        # smart_decode("utf-8") — auth tokens or other identifiers
+        # may contain UTF-8 bytes if read from stdout in binary mode.
+        s = "\u4e2d\u6587"  # "中文"
+        result = escape_new_line(s.encode("utf-8"))
+        self.assertEqual(result, s)
+
+    def test_empty_bytes_passes_through(self):
+        # The falsy-passthrough branch handles both b"" and "".
+        self.assertEqual(escape_new_line(b""), b"")
+
+
 if __name__ == "__main__":
     unittest.main()
