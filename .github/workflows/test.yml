@@ -53,11 +53,35 @@ jobs:
           ./gradlew clean
         shell: bash
 
-      - name: Run Gradle tests
+      - name: Run Gradle tests (3 attempts on transient CDN failures)
+        # Maven Central / Gradle wrapper downloads occasionally fail on
+        # fresh CI runners with empty caches. Build genuinely-failing
+        # tests will fail the same way on each retry, just slower; the
+        # backoff (20s, 40s) prevents thundering-herd against an
+        # already-troubled CDN. Real test failures still report
+        # cleanly via the last attempt's exit code.
+        #
+        # shell: bash is REQUIRED — on windows-latest the default shell
+        # is PowerShell, which does not understand bash's for/do/done
+        # loop syntax. shell: bash uses Git Bash on Windows runners
+        # (preinstalled) for cross-platform consistency.
+        shell: bash
         run: |
           cd py4j-java
-          ./gradlew check
-          ./gradlew assemble
+          for attempt in 1 2 3; do
+            echo "::group::Gradle attempt $attempt/3"
+            if ./gradlew check && ./gradlew assemble; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            if [ $attempt -lt 3 ]; then
+              backoff=$((attempt * 20))
+              echo "Gradle build failed (attempt $attempt/3); retrying in ${backoff}s"
+              sleep "$backoff"
+            fi
+          done
+          exit 1
 
       - name: Setup Java ${{ matrix.java-version }} JDK for PyTest
         if: ${{ matrix.java-version != '8' }}
