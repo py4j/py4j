@@ -19,7 +19,8 @@ from py4j.java_gateway import (
     CallbackServerParameters, GatewayParameters, CallbackServer,
     GatewayConnectionGuard, DEFAULT_ADDRESS, DEFAULT_PORT,
     DEFAULT_PYTHON_PROXY_PORT, DEFAULT_ACCEPT_TIMEOUT_PLACEHOLDER,
-    server_connection_stopped, do_client_auth, _garbage_collect_proxy)
+    server_connection_stopped, do_client_auth, _garbage_collect_proxy,
+    disable_nagle)
 from py4j import protocol as proto
 from py4j.protocol import (
     Py4JError, Py4JNetworkError, smart_decode, get_command_part,
@@ -432,6 +433,7 @@ class ClientServerConnection(object):
                 self.socket = self.ssl_context.wrap_socket(
                     self.socket, server_hostname=self.java_address)
             self.socket.connect((self.java_address, self.java_port))
+            disable_nagle(self.socket)
             self.stream = self.socket.makefile("rb")
             self.is_connected = True
             self.initiated_from_client = True

@@ -74,6 +74,15 @@ public class ClientServerConnection implements Py4JServerConnection, Py4JClientC
 					throws IOException {
 		super();
 		this.socket = socket;
+		// Disable Nagle's algorithm to avoid the write-write-read latency
+		// penalty (issue #516): a write that exceeds the BufferedWriter's
+		// buffer is flushed in two parts, Nagle holds the second part
+		// until the delayed-ACK timer fires, and per-call latency jumps
+		// from <1 ms to ~40 ms. Py4J runs over loopback or low-latency
+		// LAN (same-host JVM, cluster), so Nagle's coalescing brings no
+		// benefit, only the bug. Modern RPC systems (gRPC, Thrift) do
+		// this unconditionally for the same reason.
+		socket.setTcpNoDelay(true);
 		this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), Charset.forName("UTF-8")));
 		this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
 		this.commands = new HashMap<String, Command>();

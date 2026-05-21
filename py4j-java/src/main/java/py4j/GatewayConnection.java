@@ -135,6 +135,10 @@ public class GatewayConnection implements Runnable, Py4JServerConnection {
 			List<Class<? extends Command>> customCommands, List<GatewayServerListener> listeners) throws IOException {
 		super();
 		this.socket = socket;
+		// Disable Nagle's algorithm (see ClientServerConnection for the
+		// rationale; same issue #516 pattern applies on the JavaGateway
+		// path).
+		socket.setTcpNoDelay(true);
 		this.authToken = authToken;
 		if (authToken != null) {
 			this.authCommand = new AuthCommand(authToken);

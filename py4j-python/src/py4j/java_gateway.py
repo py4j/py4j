@@ -139,6 +139,34 @@ def set_reuse_address(server_socket):
             socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 
+def disable_nagle(sock):
+    """Disable Nagle's algorithm (set TCP_NODELAY) on a TCP socket.
+
+    Py4J's text protocol is a classic write-write-read pattern: a single
+    method call frequently triggers two writes (command body + END marker
+    or, for large payloads, a BufferedWriter overflow that flushes in two
+    parts). Nagle's algorithm holds the second write waiting to coalesce,
+    which interacts with delayed ACK and adds ~40 ms per affected call —
+    turning sub-millisecond round-trips into 40 ms+ operations (see
+    issue #516, where 8 KB ByteBuffer.array() round-trips went from
+    expected sub-millisecond to ~44 ms each).
+
+    Py4J runs over loopback or low-latency LAN (PySpark driver↔executor,
+    same-host JVM); the Nagle coalescing benefit doesn't apply to either,
+    while the write-write-read penalty hits the same way on both. Every
+    modern RPC system (gRPC, Thrift, …) disables Nagle by default for
+    exactly this reason.
+
+    Best-effort: setsockopt errors are swallowed because TCP_NODELAY is
+    performance-only, not correctness-critical (e.g. AF_UNIX sockets
+    don't support the option).
+    """
+    try:
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    except OSError:
+        pass
+
+
 def set_default_callback_accept_timeout(accept_timeout):
     """Sets default accept timeout of callback server.
     """
@@ -1165,6 +1193,7 @@ class GatewayConnection(object):
         """
         try:
             self.socket.connect((self.address, self.port))
+            disable_nagle(self.socket)
             self.stream = self.socket.makefile("rb")
             self.is_connected = True
 
@@ -2338,6 +2367,7 @@ class CallbackServer(object):
 
                 for s in readable:
                     socket_instance, _ = self.server_socket.accept()
+                    disable_nagle(socket_instance)
                     if self.callback_server_parameters.read_timeout:
                         socket_instance.settimeout(
                             self.callback_server_parameters.read_timeout)
