@@ -9,6 +9,7 @@ deal with ``bytes`` vs ``str`` distinctions.
 No JVM dependency — fast pure-Python tests.
 """
 import unittest
+from decimal import Decimal
 
 from py4j.protocol import (
     decode_bytearray, encode_bytearray, encode_float,
@@ -223,6 +224,91 @@ class CompatModuleBackcompatTest(unittest.TestCase):
         from py4j.compat import Queue, Empty
         self.assertIs(Queue, StdQueue)
         self.assertIs(Empty, StdEmpty)
+
+
+class DecimalEncodingTest(unittest.TestCase):
+    """Decimal precision and special-value handling in the wire protocol.
+
+    py4j currently routes Decimal through smart_decode(repr(d)). These
+    tests pin that contract: precision must survive round-trip, and
+    Infinity/NaN must not silently corrupt the wire."""
+
+    def setUp(self):
+        class _NoPool:
+            def put(self, *a, **kw):
+                raise AssertionError("pool should not be used here")
+        self.pool = _NoPool()
+
+    def test_high_precision_decimal_preserved_in_wire_text(self):
+        d = Decimal("123.45678901234567890123")
+        out = get_command_part(d, self.pool)
+        # The decimal's text form must appear verbatim in the wire
+        # output — that's the only way the Java side can reconstruct
+        # the exact value.
+        self.assertIn("123.45678901234567890123", out)
+
+    def test_decimal_infinity_encodes_verbatim(self):
+        # Pin the contract: Decimal("Infinity") flows through
+        # smart_decode(repr(d)) and the text "Infinity" appears in the
+        # wire output. If a future refactor silently re-routes Decimal
+        # encoding (e.g., via float()), this regresses to "inf" or
+        # something else and the test catches it.
+        out = get_command_part(Decimal("Infinity"), self.pool)
+        self.assertIn("Infinity", out)
+
+    def test_decimal_nan_encodes_verbatim(self):
+        # Same contract as Infinity. Pinning the literal "NaN" string
+        # in the wire output prevents silent corruption.
+        out = get_command_part(Decimal("NaN"), self.pool)
+        self.assertIn("NaN", out)
+
+    def test_negative_decimal(self):
+        out = get_command_part(Decimal("-1.5"), self.pool)
+        self.assertIn("-1.5", out)
+
+
+class StringEscapingEdgeCasesTest(unittest.TestCase):
+    """escape_new_line / unescape_new_line round-trip on boundary inputs.
+
+    Existing tests cover plain ASCII. These add: UTF-8 (CJK + emoji),
+    consecutive backslashes, mixed CRLF, embedded nulls. Each is a
+    silent-corruption risk that the current code happens to handle
+    correctly — pin it before any state-machine rewrite (deferred
+    from this PR; gated on this coverage)."""
+
+    def _roundtrip(self, s):
+        return unescape_new_line(escape_new_line(s))
+
+    def test_utf8_cjk(self):
+        s = "\u4e2d\u6587\u30c6\u30b9\u30c8"  # 中文テスト
+        self.assertEqual(self._roundtrip(s), s)
+
+    def test_utf8_emoji(self):
+        s = "hello \U0001F600 world \U0001F4A9"
+        self.assertEqual(self._roundtrip(s), s)
+
+    def test_consecutive_backslashes(self):
+        s = "a\\\\\\b"  # three actual backslashes + b
+        self.assertEqual(self._roundtrip(s), s)
+
+    def test_mixed_crlf(self):
+        s = "line1\r\nline2\nline3\rline4"
+        self.assertEqual(self._roundtrip(s), s)
+
+    def test_null_byte_in_string(self):
+        s = "before\x00after"
+        self.assertEqual(self._roundtrip(s), s)
+
+    def test_empty_string(self):
+        self.assertEqual(self._roundtrip(""), "")
+
+    def test_only_special_chars(self):
+        # CRLF + 2 backslashes + CRLF + 1 backslash — exercises the
+        # interaction between the newline-escape and backslash-escape
+        # paths in a single string (neither test_mixed_crlf nor
+        # test_consecutive_backslashes covers this combination).
+        s = "\r\n\\\\\r\n\\"
+        self.assertEqual(self._roundtrip(s), s)
 
 
 if __name__ == "__main__":

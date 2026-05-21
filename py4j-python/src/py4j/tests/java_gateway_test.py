@@ -620,12 +620,38 @@ class MemoryManagementTest(unittest.TestCase):
         gateway2 = JavaGateway()
         sb = self.gateway.jvm.java.lang.StringBuffer()
         sb.append("Hello World")
+
+        # Capture the gateway port BEFORE shutdown so we can probe it.
+        gateway_port = self.gateway.gateway_parameters.port
+
         self.gateway.shutdown()
 
+        # sb is now detached from a closed gateway: any call must fail.
         self.assertRaises(Exception, lambda: sb.append("Python"))
+
+        # gateway2 connects to the same JVM. shutdown() asked the JVM to
+        # tear down its GatewayServer, but the listening socket close
+        # is async — wait deterministically (max 5s) for it before
+        # asserting that gateway2's next call fails. This replaces the
+        # flake-prone "just-try-it" pattern.
+        self._wait_for_port_closed("127.0.0.1", gateway_port, timeout=5.0)
 
         self.assertRaises(
             Exception, lambda: gateway2.jvm.java.lang.StringBuffer())
+
+    @staticmethod
+    def _wait_for_port_closed(host, port, timeout):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            with socket(AF_INET, SOCK_STREAM) as s:
+                s.settimeout(0.2)
+                try:
+                    s.connect((host, port))
+                except OSError:
+                    return  # port refuses connections — JVM listener is down
+            time.sleep(0.05)
+        raise AssertionError(
+            f"gateway port {port} never closed after shutdown()")
 
     def testDetach(self):
         self.gateway = JavaGateway()

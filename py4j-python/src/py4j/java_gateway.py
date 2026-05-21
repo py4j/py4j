@@ -1257,7 +1257,19 @@ class GatewayConnection(object):
             # answer before the socket raises an error.
             if answer.strip() == "":
                 raise Py4JNetworkError("Answer from Java side is empty", when=proto.EMPTY_RESPONSE)
+            # Detect auth-required server rejecting a client with no or bad
+            # token: the Java AuthCommand writes an error string prefixed with
+            # "Authentication error".  Surface this as Py4JAuthenticationError
+            # rather than the generic Py4JError the caller would otherwise
+            # raise from get_error_message().
+            if (answer.startswith(proto.ERROR + proto.STRING_TYPE) and
+                    "Authentication error" in answer):
+                raise Py4JAuthenticationError(
+                    "Server requires authentication but client provided "
+                    "no valid token.")
             return answer
+        except Py4JAuthenticationError:
+            raise
         except Exception as e:
             logger.info("Error while receiving.", exc_info=True)
             if isinstance(e, Py4JNetworkError) and e.when == proto.EMPTY_RESPONSE:

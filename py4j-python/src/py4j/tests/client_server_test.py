@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import gc
 from multiprocessing import Process
+import os
 import subprocess
 import threading
 import unittest
@@ -8,11 +9,13 @@ import unittest
 from py4j.clientserver import (
     ClientServer, JavaParameters, PythonParameters)
 from py4j.java_gateway import GatewayConnectionGuard, is_instance_of, \
-    GatewayParameters, DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT
-from py4j.protocol import Py4JError, Py4JJavaError, smart_decode
+    GatewayParameters, JavaGateway, DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT
+from py4j.protocol import (
+    Py4JError, Py4JJavaError, Py4JNetworkError, smart_decode)
 from py4j.tests.java_callback_test import IHelloImpl, IHelloFailingImpl
 from py4j.tests.java_gateway_test import (
-    PY4J_JAVA_PATH, check_connection, safe_join, sleep,
+    PY4J_JAVA_PATH, PY4J_JAVA_PATHS,
+    check_connection, safe_join, sleep,
     safe_terminate_process, verify_jvm_or_terminate, WaitOperator)
 from py4j.tests.memory_leak_test import python_gc
 from py4j.tests.py4j_callback_recursive_example import (
@@ -731,3 +734,142 @@ class PythonGetThreadId(object):
 
     class Java:
         implements = ["py4j.examples.MultiClientServerGetThreadId"]
+
+
+class AuthFailureTest(unittest.TestCase):
+    """Negative auth-token paths — confirm Py4JAuthenticationError
+    is raised cleanly, NOT a generic socket/protocol error.
+
+    Uses the same JavaGateway.launch_gateway(enable_auth=True) pattern
+    as testGatewayAuth in java_gateway_test.py: it spins up an
+    ephemeral Java GatewayServer with a randomly-generated token, so
+    each bad-credential attempt can be directed at the correct port.
+    """
+
+    def setUp(self):
+        import os
+        from py4j.java_gateway import JavaGateway
+        # launch_gateway requires an existing jar/classpath entry as
+        # jarpath.  Use the first existing entry from PY4J_JAVA_PATHS
+        # (same list used by java_gateway_test) and pass the full
+        # PY4J_JAVA_PATH as the extra classpath so all compiled classes
+        # are available.
+        jarpath = next(
+            (p for p in PY4J_JAVA_PATHS if os.path.exists(p)), None)
+        if jarpath is None:
+            self.skipTest("py4j-java build artifacts not found; run "
+                          "./gradlew classes testClasses first")
+        # Spawn an authenticated Java gateway; stash the good gateway
+        # (for teardown) and the connection parameters (port + correct
+        # token) so each sub-test can build a *bad* client against the
+        # same server.
+        self._good_gw = JavaGateway.launch_gateway(
+            jarpath=jarpath,
+            classpath=PY4J_JAVA_PATH,
+            enable_auth=True)
+        self._port = self._good_gw.gateway_parameters.port
+        self._auth_token = self._good_gw.gateway_parameters.auth_token
+
+    def tearDown(self):
+        try:
+            self._good_gw.shutdown()
+        except Exception:
+            pass
+
+    def _bad_gateway(self, bad_token):
+        """Return a JavaGateway pointed at the authed server but with a
+        bad (or absent) auth token.  The caller is responsible for
+        calling shutdown() inside a finally block."""
+        from py4j.java_gateway import JavaGateway
+        return JavaGateway(
+            gateway_parameters=GatewayParameters(
+                port=self._port, auth_token=bad_token))
+
+    def test_wrong_token_raises_auth_error(self):
+        from py4j.protocol import Py4JAuthenticationError
+        gw = self._bad_gateway("wrong-token")
+        try:
+            with self.assertRaises(Py4JAuthenticationError):
+                gw.jvm.java.lang.System.currentTimeMillis()
+        finally:
+            try:
+                gw.shutdown()
+            except Exception:
+                pass
+
+    def test_missing_token_raises_auth_error(self):
+        from py4j.protocol import Py4JAuthenticationError
+        gw = self._bad_gateway(None)
+        try:
+            with self.assertRaises(Py4JAuthenticationError):
+                gw.jvm.java.lang.System.currentTimeMillis()
+        finally:
+            try:
+                gw.shutdown()
+            except Exception:
+                pass
+
+    def test_very_long_token_raises_auth_error(self):
+        from py4j.protocol import Py4JAuthenticationError
+        gw = self._bad_gateway("x" * 4096)
+        try:
+            with self.assertRaises(Py4JAuthenticationError):
+                gw.jvm.java.lang.System.currentTimeMillis()
+        finally:
+            try:
+                gw.shutdown()
+            except Exception:
+                pass
+
+
+class JVMCrashRecoveryTest(unittest.TestCase):
+    """Killing the JVM mid-call must surface a clean exception and
+    leave the gateway in a state where further calls also fail cleanly
+    (rather than hanging or returning garbage)."""
+
+    def setUp(self):
+        jarpath = next(
+            (p for p in PY4J_JAVA_PATHS if os.path.exists(p)), None)
+        if jarpath is None:
+            self.skipTest("py4j-java build artifacts not found; run "
+                          "./gradlew classes testClasses first")
+        # JavaGateway.launch_gateway() exposes the Popen handle via
+        # gateway.java_process, letting us SIGKILL the actual JVM
+        # (not just a Python wrapper process).
+        self.gateway = JavaGateway.launch_gateway(
+            jarpath=jarpath,
+            classpath=PY4J_JAVA_PATH)
+        # Bound the post-kill recv so the test cannot hang on a
+        # dead-peer socket that never reaches EOF. Mutated after
+        # construction because JavaGateway.launch_gateway() does not
+        # accept a gateway_parameters argument; timeout is read at
+        # connection-creation time so this takes effect on all
+        # subsequent calls.
+        self.gateway.gateway_parameters.read_timeout = 5.0
+
+    def tearDown(self):
+        try:
+            self.gateway.java_process.kill()
+            self.gateway.java_process.wait(timeout=5)
+        except Exception:
+            pass
+        try:
+            self.gateway.shutdown()
+        except Exception:
+            pass
+
+    def test_kill_jvm_then_call_raises_cleanly(self):
+        # Make one call to confirm gateway is healthy.
+        self.gateway.jvm.java.lang.System.currentTimeMillis()
+
+        # Kill the JVM forcibly (SIGKILL — no graceful shutdown).
+        self.gateway.java_process.kill()
+        self.gateway.java_process.wait(timeout=5)
+
+        # Next call must raise a connection-class exception within
+        # the read_timeout bound. Tight exception list — Exception
+        # catch-all would mask a regression where the wrong type
+        # surfaces (e.g., AttributeError from a test bug).
+        with self.assertRaises((Py4JNetworkError, Py4JError,
+                                ConnectionError, OSError)):
+            self.gateway.jvm.java.lang.System.currentTimeMillis()

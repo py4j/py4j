@@ -314,7 +314,13 @@ def get_return_value(answer, gateway_client, target_id=None, name=None):
     if is_error(answer)[0]:
         if len(answer) > 1:
             type = answer[1]
-            value = OUTPUT_CONVERTER[type](answer[2:], gateway_client)
+            try:
+                converter = OUTPUT_CONVERTER[type]
+            except KeyError:
+                raise Py4JError(
+                    "Unknown protocol type {0!r} in answer {1!r}".
+                    format(type, answer))
+            value = converter(answer[2:], gateway_client)
             if answer[1] == REFERENCE_TYPE:
                 raise Py4JJavaError(
                     "An error occurred while calling {0}{1}{2}.\n".
@@ -328,11 +334,20 @@ def get_return_value(answer, gateway_client, target_id=None, name=None):
                 "An error occurred while calling {0}{1}{2}".
                 format(target_id, ".", name))
     else:
+        if len(answer) < 2:
+            raise Py4JError(
+                "Received truncated answer from JVM: {0!r}".format(answer))
         type = answer[1]
         if type == VOID_TYPE:
             return
         else:
-            return OUTPUT_CONVERTER[type](answer[2:], gateway_client)
+            try:
+                converter = OUTPUT_CONVERTER[type]
+            except KeyError:
+                raise Py4JError(
+                    "Unknown protocol type {0!r} in answer {1!r}".
+                    format(type, answer))
+            return converter(answer[2:], gateway_client)
 
 
 def get_error_message(answer, gateway_client=None):
