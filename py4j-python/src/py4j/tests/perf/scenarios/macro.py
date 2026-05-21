@@ -276,6 +276,110 @@ class X6_PoolSaturation(MacroScenario):
             t.join()
 
 
+# ===================================================================== X7
+# Bytes round-trip RECV: exercises decode_bytearray on the recv path.
+# Java returns a byte[]; py4j routes it through OUTPUT_CONVERTER[BYTES_TYPE]
+# → decode_bytearray, which base64-decodes the ASCII wire payload back
+# to bytes. Without this scenario, decode_bytearray improvements (e.g.
+# issue #570's ~7.5x speedup on 256KB payloads) are invisible to
+# CodSpeed — every prior macro returns int / list / void / callback.
+
+class _X7BytesRoundtripBase(MacroScenario):
+    size = 1_024  # bytes per call
+    iterations_per_round = 100
+    bytes_per_iteration = property(lambda self: self.size)
+
+    def setup(self, gateway):
+        # Allocate a ByteBuffer once. It stays as a JavaObject because
+        # ByteBuffer has no Python equivalent (unlike byte[]/String,
+        # which py4j auto-converts on return). Each .array() call below
+        # round-trips the backing byte[] over the wire — py4j returns
+        # it via BYTES_TYPE and decodes via decode_bytearray, exactly
+        # the recv-side path optimized in issue #570.
+        self._buf = gateway.jvm.java.nio.ByteBuffer.allocate(self.size)
+
+    def measure(self, gateway):
+        buf = self._buf
+        for _ in range(self.iterations_per_round):
+            buf.array()
+
+
+class X7_1k(_X7BytesRoundtripBase):
+    id = "X7-1k"
+    name = "bytes_roundtrip_1k"
+    size = 1_024
+
+
+class X7_16k(_X7BytesRoundtripBase):
+    id = "X7-16k"
+    name = "bytes_roundtrip_16k"
+    size = 16 * 1_024
+
+
+class X7_256k(_X7BytesRoundtripBase):
+    id = "X7-256k"
+    name = "bytes_roundtrip_256k"
+    size = 256 * 1_024
+    # Larger payloads → fewer iterations to keep the round bounded.
+    iterations_per_round = 25
+
+
+# ===================================================================== X8
+# Bytes SEND: Python -> Java byte[] payload throughput. Complements X7
+# (bytes recv). Each iteration sends `size` bytes via
+# ByteArrayOutputStream.write(byte[], int, int). py4j encodes Python
+# bytes as BYTES_TYPE on the wire; Java decodes and writes into the
+# BAOS. The BAOS is reset between iterations so memory stays bounded.
+#
+# Exercises the Python-side encode_bytearray path (mirror of X7's
+# Java-side encode + Python-side decode_bytearray exercised in X7).
+# Same Nagle write-write-read sensitivity at sizes that exceed the
+# BufferedWriter buffer.
+
+class _X8BytesSendBase(MacroScenario):
+    size = 1_024  # bytes per call
+    iterations_per_round = 100
+    bytes_per_iteration = property(lambda self: self.size)
+
+    def setup(self, gateway):
+        # ByteArrayOutputStream is a JavaObject (not auto-converted
+        # because it's not a known Python type). reset() between
+        # iterations keeps it from growing unboundedly.
+        self._baos = gateway.jvm.java.io.ByteArrayOutputStream(self.size)
+        # Build the payload once Python-side; setup is not timed.
+        self._payload = b"x" * self.size
+
+    def measure(self, gateway):
+        baos = self._baos
+        payload = self._payload
+        length = self.size
+        for _ in range(self.iterations_per_round):
+            baos.reset()
+            # Force the write(byte[], int, int) overload by passing
+            # the explicit offset/length triple — avoids any chance
+            # of py4j picking write(int) for a 1-arg call.
+            baos.write(payload, 0, length)
+
+
+class X8_1k(_X8BytesSendBase):
+    id = "X8-1k"
+    name = "bytes_send_1k"
+    size = 1_024
+
+
+class X8_16k(_X8BytesSendBase):
+    id = "X8-16k"
+    name = "bytes_send_16k"
+    size = 16 * 1_024
+
+
+class X8_256k(_X8BytesSendBase):
+    id = "X8-256k"
+    name = "bytes_send_256k"
+    size = 256 * 1_024
+    iterations_per_round = 25
+
+
 ALL_MACRO_CLASSES = [
     X1_1Thread, X1_4Thread, X1_16Thread,
     X2_1k, X2_10k, X2_100k,
@@ -283,4 +387,6 @@ ALL_MACRO_CLASSES = [
     X4_Callbacks,
     X5_ErrorPath,
     X6_PoolSaturation,
+    X7_1k, X7_16k, X7_256k,
+    X8_1k, X8_16k, X8_256k,
 ]

@@ -39,10 +39,22 @@ from py4j.tests.perf.scenarios.macro import (
     X2_10k,
     X4_Callbacks,
     X6_PoolSaturation,
+    X7_16k,
+    X8_16k,
 )
 
 
-_MACRO_SCENARIOS = [X1_1Thread, X2_10k, X4_Callbacks, X6_PoolSaturation]
+# X7-16k exercises the bytes-decoding recv path (decode_bytearray);
+# X8-16k exercises the bytes-encoding send path. Together they cover
+# both halves of the byte-codec / Nagle-sensitive bandwidth surface
+# in CodSpeed CI. Without either, byte-codec optimizations are
+# invisible to the per-PR dashboard — every prior macro returns
+# int / list / void / callback and the byte path was a measurement
+# blind spot.
+_MACRO_SCENARIOS = [
+    X1_1Thread, X2_10k, X4_Callbacks, X6_PoolSaturation,
+    X7_16k, X8_16k,
+]
 
 
 @pytest.fixture(scope="function")
