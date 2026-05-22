@@ -191,12 +191,26 @@ available on the Java side (similar to printStackTrace()).</p>
 <p>Backslashes are also escaped by another backslash.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>original</strong> – the string to escape</p>
+<dd class="field-odd"><p><strong>original</strong> – the string to escape (str or bytes; bytes inputs
+are decoded via smart_decode for backward compatibility — see
+below).</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>an escaped string</p>
 </dd>
 </dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The internal <code class="docutils literal notranslate"><span class="pre">smart_decode(original)</span></code> is <strong>load-bearing</strong>: it
+accepts bytes inputs that some legacy callers (and any code path
+that forgot to decode at the socket boundary) might still
+produce. Removing it makes <code class="docutils literal notranslate"><span class="pre">bytes.replace(&quot;str&quot;,</span> <span class="pre">&quot;str&quot;)</span></code>
+raise <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> — see PR #575 review for the auth-token
+regression this guarded against. The replacement chain is fast
+enough that the smart_decode dispatch is not a hot-path concern;
+all py4j-internal callers already pass str, so the type check
+is a single isinstance hit.</p>
+</div>
 </dd></dl>
 
 <dl class="py function">
