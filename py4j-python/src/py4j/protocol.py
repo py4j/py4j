@@ -19,6 +19,8 @@ Created on Oct 14, 2010
 from base64 import standard_b64encode, standard_b64decode
 
 from decimal import Decimal
+from enum import Enum
+from collections import namedtuple
 
 
 JAVA_MAX_INT = 2147483647
@@ -62,6 +64,12 @@ NO_MEMBER = "o"
 VOID_TYPE = "v"
 ITERATOR_TYPE = "g"
 PYTHON_PROXY_TYPE = "f"
+
+class JavaType(Enum):
+    PRIMITIVE_INT = INTEGER_TYPE
+    PRIMITIVE_LONG = LONG_TYPE
+
+TypeInt = namedtuple('TypeInt', ['value', 'java_type'])
 
 # Protocol
 END = "e"
@@ -292,6 +300,8 @@ def get_command_part(parameter, python_proxy_pool=None):
         command_part = BOOLEAN_TYPE + smart_decode(parameter)
     elif isinstance(parameter, Decimal):
         command_part = DECIMAL_TYPE + smart_decode(parameter)
+    elif isinstance(parameter, TypeInt):
+        command_part = parameter.java_type.value + smart_decode(parameter.value)
     elif isinstance(parameter, int) and parameter <= JAVA_MAX_INT\
             and parameter >= JAVA_MIN_INT:
         command_part = INTEGER_TYPE + smart_decode(parameter)
