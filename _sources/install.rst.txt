@@ -3,12 +3,12 @@
 Installing Py4J
 ===============
 
-Installing Python 3.8-3.12
+Installing Python 3.9-3.13
 ---------------------------------
 
 Py4J is a library written in Python and Java. Currently, Py4J has been tested
-with Python 3.8, 3.9, 3.10, 3.11 and 3.12. You can install Python by going to the
-`official Python download page <http://www.python.org/download/>`_.
+with Python 3.9, 3.10, 3.11, 3.12 and 3.13. You can install Python by going to
+the `official Python download page <http://www.python.org/download/>`_.
 
 
 Installing Java 7+
@@ -42,8 +42,8 @@ Using easy_install or pip
    1. Either ``/usr/share/py4j/py4j0.x.jar`` or ``/usr/local/share/py4j/py4j0.x.jar`` for system-wide install on Linux.
    2. ``{virtual_env_dir}/share/py4j/py4j0.x.jar`` for installation in a
       virtual environment.
-   3. ``C:\python27\share\py4j\py4j0.x.jar`` for system-wide install on
-      Windows.
+   3. ``C:\python3X\share\py4j\py4j0.x.jar`` for system-wide install on
+      Windows (where ``3X`` is your Python minor version).
 
 Using an official release
 ^^^^^^^^^^^^^^^^^^^^^^^^^

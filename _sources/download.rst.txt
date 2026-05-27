@@ -32,7 +32,7 @@ Requirements
 
 Py4J requires:
 
-* A Python interpreter. Py4J has been tested with 3.8+.
+* A Python interpreter. Py4J has been tested with 3.9+.
 * Java 7.0+.
 
 Py4J for Eclipse requires:
