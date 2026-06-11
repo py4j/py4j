@@ -7,6 +7,20 @@ releases.
 Unreleased
 ----------
 
+- Python side: Memoize attribute lookups on ``JVMView``,
+  ``JavaPackage``, and ``JavaClass`` via a per-instance bounded LRU
+  cache (default 1024 entries). Repeated walks along chains like
+  ``gateway.jvm.java.lang.System.currentTimeMillis()`` no longer
+  round-trip to the JVM for each segment after the first walk.
+  Identity semantics shift: ``gateway.jvm.X is gateway.jvm.X`` is
+  now ``True`` within the cache window (was ``False``). The cache
+  stores only non-finalizable types (``JavaClass``,
+  ``JavaPackage``, static-member ``JavaMember``); ``JavaObject``
+  instances and their JVM-side finalization paths are unaffected.
+  ``JavaGateway.shutdown()`` drops every tracked ``JVMView``'s
+  attribute cache so cached references no longer pin the gateway
+  client past shutdown. Closes issue #128; refs #557.
+
 - Java side: Fix listener-lifecycle correctness bugs in
   ``GatewayServer`` / ``ClientServer``:
 

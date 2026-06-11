@@ -144,6 +144,19 @@ releases.</p>
 <section id="unreleased">
 <h2><span class="section-number">8.1. </span>Unreleased<a class="headerlink" href="#unreleased" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
+<li><p>Python side: Memoize attribute lookups on <code class="docutils literal notranslate"><span class="pre">JVMView</span></code>,
+<code class="docutils literal notranslate"><span class="pre">JavaPackage</span></code>, and <code class="docutils literal notranslate"><span class="pre">JavaClass</span></code> via a per-instance bounded LRU
+cache (default 1024 entries). Repeated walks along chains like
+<code class="docutils literal notranslate"><span class="pre">gateway.jvm.java.lang.System.currentTimeMillis()</span></code> no longer
+round-trip to the JVM for each segment after the first walk.
+Identity semantics shift: <code class="docutils literal notranslate"><span class="pre">gateway.jvm.X</span> <span class="pre">is</span> <span class="pre">gateway.jvm.X</span></code> is
+now <code class="docutils literal notranslate"><span class="pre">True</span></code> within the cache window (was <code class="docutils literal notranslate"><span class="pre">False</span></code>). The cache
+stores only non-finalizable types (<code class="docutils literal notranslate"><span class="pre">JavaClass</span></code>,
+<code class="docutils literal notranslate"><span class="pre">JavaPackage</span></code>, static-member <code class="docutils literal notranslate"><span class="pre">JavaMember</span></code>); <code class="docutils literal notranslate"><span class="pre">JavaObject</span></code>
+instances and their JVM-side finalization paths are unaffected.
+<code class="docutils literal notranslate"><span class="pre">JavaGateway.shutdown()</span></code> drops every tracked <code class="docutils literal notranslate"><span class="pre">JVMView</span></code>’s
+attribute cache so cached references no longer pin the gateway
+client past shutdown. Closes issue #128; refs #557.</p></li>
 <li><p>Java side: Fix listener-lifecycle correctness bugs in
 <code class="docutils literal notranslate"><span class="pre">GatewayServer</span></code> / <code class="docutils literal notranslate"><span class="pre">ClientServer</span></code>:</p>
 <ul>

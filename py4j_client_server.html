@@ -341,6 +341,12 @@ requests.</p></li>
 JavaObject on the Python side. If enqueue is True, sends the request
 to the FinalizerWorker deque. Otherwise, sends the request to the Java
 side.</p>
+<p>When this <code class="docutils literal notranslate"><span class="pre">JavaClient</span></code> was constructed without a
+<code class="docutils literal notranslate"><span class="pre">finalizer_deque</span></code> (which can happen on subclasses or in test
+harnesses — see <code class="docutils literal notranslate"><span class="pre">InstrJavaClient</span></code> in <code class="docutils literal notranslate"><span class="pre">tests/instrumented.py</span></code>),
+there is no worker thread to drain the deque, so we fall back to
+the synchronous super-class implementation regardless of
+<code class="docutils literal notranslate"><span class="pre">enqueue</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">

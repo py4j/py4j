@@ -816,6 +816,12 @@ program.</p>
 <cite>JavaGateway</cite>.</p>
 <p>This can be used to reference static members (fields and methods) and
 to call constructors.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Resolved top-level names are memoized in a bounded LRU cache;
+see <code class="docutils literal notranslate"><span class="pre">JavaClass</span></code> docstring for the identity-stability behavior,
+the GC-safety contract, and the <code class="docutils literal notranslate"><span class="pre">java_import</span></code> overlap caveat.</p>
+</div>
 </dd></dl>
 
 </section>
@@ -863,6 +869,13 @@ classes can be accessed.</p>
 <p>Usually, <cite>JavaPackage</cite> are not initialized using their constructor, but
 they are created while accessing the <cite>jvm</cite> property of a gateway, e.g.,
 <cite>gateway.jvm.java.lang</cite>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Resolved children are memoized in a bounded LRU cache; see
+<code class="docutils literal notranslate"><span class="pre">JavaClass</span></code> docstring for the identity-stability behavior, the
+GC-safety contract (only non-finalizable types are cached), and
+the <code class="docutils literal notranslate"><span class="pre">java_import</span></code> overlap caveat.</p>
+</div>
 </dd></dl>
 
 </section>
