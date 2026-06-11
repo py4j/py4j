@@ -28,7 +28,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 package py4j.reflection;
-
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 /**
  * <p>This class loading strategy uses the current thread's ClassLoader to
  * load a class from a fully qualified name.</p>
@@ -42,7 +43,26 @@ public class CurrentThreadClassLoadingStrategy implements ClassLoadingStrategy {
 
 	@Override
 	public ClassLoader getClassLoader() {
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		return classLoader;
+	    // Fast path when no SecurityManager is present
+	    if (System.getSecurityManager() == null) {
+	        return Thread.currentThread().getContextClassLoader();
+	    } else {
+	        // Use privileged action when under a SecurityManager
+	        return AccessController.doPrivileged((PrivilegedAction<ClassLoader>) () -> {
+	            ClassLoader tccl = null;
+	            try {
+	                tccl = Thread.currentThread().getContextClassLoader();
+	            } catch (SecurityException ex) {
+	                // Log the exception without exposing stack trace
+	                logger.warn("Unable to get context classloader instance.");
+	                
+	                // Fallback to class's ClassLoader if available
+	                if (this.getClass().getClassLoader() != null) {
+	                    tccl = this.getClass().getClassLoader();
+	                }
+	            }
+	            return tccl;
+	        });
+	    }
 	}
 }
