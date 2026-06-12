@@ -81,7 +81,8 @@ public class CallbackClient implements Py4JPythonClient {
 
 	public final static TimeUnit DEFAULT_MIN_CONNECTION_TIME_UNIT = TimeUnit.SECONDS;
 
-	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+	private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1,
+			new DaemonThreadFactory("py4j-callback-client-cleaner"));
 
 	protected final long minConnectionTime;
 
