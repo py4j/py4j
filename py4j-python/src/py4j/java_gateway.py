@@ -371,7 +371,13 @@ def launch_gateway(
 
     # Determine which port the server started on (needed to support
     # ephemeral ports)
-    _port = int(proc.stdout.readline())
+    _port = None
+    while _port is None:
+        try:
+            _port = int(proc.stdout.readline())
+        except ValueError:
+            # If a JVM debug port is exposed, its details will be printed first
+            pass
 
     # Read the auth token from the server if enabled. stdout is in
     # binary mode by default; decode here so the rest of the auth flow
