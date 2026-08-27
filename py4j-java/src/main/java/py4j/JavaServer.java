@@ -30,6 +30,7 @@
 package py4j;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.List;
 
@@ -105,7 +106,38 @@ public class JavaServer extends GatewayServer {
 	 */
 	public JavaServer(Object entryPoint, int port, int connectTimeout, int readTimeout,
 			List<Class<? extends Command>> customCommands, Py4JPythonClientPerThread pythonClient, String authToken) {
-		super(entryPoint, port, defaultAddress(), connectTimeout, readTimeout, customCommands, pythonClient,
+		this(entryPoint, port, defaultAddress(), connectTimeout, readTimeout, customCommands, pythonClient, authToken);
+	}
+
+	/**
+	 *
+	 * @param entryPoint
+	 *            The entry point of this Gateway. Can be null.
+	 * @param port
+	 *            The port the GatewayServer is listening to.
+	 * @param address
+	 *            The address the GatewayServer is listening to.
+	 * @param connectTimeout
+	 *            Time in milliseconds (0 = infinite). If a GatewayServer does
+	 *            not receive a connection request after this time, it closes
+	 *            the server socket and no other connection is accepted.
+	 * @param readTimeout
+	 *            Time in milliseconds (0 = infinite). Once a Python program is
+	 *            connected, if a GatewayServer does not receive a request
+	 *            (e.g., a method call) after this time, the connection with the
+	 *            Python program is closed.
+	 * @param customCommands
+	 *            A list of custom Command classes to augment the Server
+	 *            features. These commands will be accessible from Python
+	 *            programs. Can be null.
+	 * @param pythonClient
+	 *            The Py4JPythonClientPerThread used to call Python.
+	 * @param authToken
+	 *            Token for authenticating with the callback server.
+	 */
+	public JavaServer(Object entryPoint, int port, InetAddress address, int connectTimeout, int readTimeout,
+			List<Class<? extends Command>> customCommands, Py4JPythonClientPerThread pythonClient, String authToken) {
+		super(entryPoint, port, address, connectTimeout, readTimeout, customCommands, pythonClient,
 				ServerSocketFactory.getDefault(), authToken);
 	}
 
