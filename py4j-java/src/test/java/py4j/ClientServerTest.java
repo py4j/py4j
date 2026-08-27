@@ -33,7 +33,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.net.InetAddress;
 import java.net.Socket;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
 
 import org.junit.Test;
 
@@ -95,6 +99,42 @@ public class ClientServerTest {
 		assertTrue(listeningPort > 0);
 		assertTrue(javaServer.getPort() != listeningPort);
 		server.shutdown();
+	}
+
+	@Test
+	public void testClientServerBuilderUsesConfiguredJavaAddress() throws Exception {
+		InetAddress address = InetAddress.getByName("127.0.0.2");
+		ClientServer server = new ClientServer.ClientServerBuilder(null).javaPort(0).javaAddress(address)
+				.autoStartJavaServer(false).build();
+		try {
+			assertEquals(address, server.getJavaServer().getAddress());
+		} finally {
+			server.shutdown();
+		}
+	}
+
+	@Test
+	public void testClientServerBuilderDefaultsJavaAddress() {
+		ClientServer server = new ClientServer.ClientServerBuilder(null).javaPort(0).autoStartJavaServer(false)
+				.build();
+		try {
+			assertEquals(GatewayServer.defaultAddress(), server.getJavaServer().getAddress());
+		} finally {
+			server.shutdown();
+		}
+	}
+
+	@Test
+	public void testLegacyClientServerConstructorDefaultsJavaAddress() {
+		ClientServer server = new ClientServer(0, GatewayServer.defaultAddress(), 0,
+				GatewayServer.defaultAddress(), GatewayServer.DEFAULT_CONNECT_TIMEOUT,
+				GatewayServer.DEFAULT_READ_TIMEOUT, ServerSocketFactory.getDefault(), SocketFactory.getDefault(), null,
+				false, true);
+		try {
+			assertEquals(GatewayServer.defaultAddress(), server.getJavaServer().getAddress());
+		} finally {
+			server.shutdown();
+		}
 	}
 
 	/**

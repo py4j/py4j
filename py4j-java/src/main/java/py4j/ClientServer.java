@@ -178,7 +178,8 @@ public class ClientServer {
 	}
 
 	protected Py4JJavaServer createJavaServer(Object entryPoint, Py4JPythonClientPerThread pythonClient) {
-		return new JavaServer(entryPoint, javaPort, connectTimeout, readTimeout, null, pythonClient, authToken);
+		return new JavaServer(entryPoint, javaPort, javaAddress, connectTimeout, readTimeout, null, pythonClient,
+				authToken);
 	}
 
 	public Py4JJavaServer getJavaServer() {
