@@ -1176,80 +1176,78 @@ class GatewayClient(object):
         :rtype: the `string` answer received from the JVM (The answer follows
          the Py4J protocol). The guarded `GatewayConnection` is also returned
          if `binary` is `True`.
+
+        :raises Py4JNetworkError: if communication fails after any retry.
         """
-        connection = self._get_connection()
-        try:
-            response = connection.send_command(command)
+        while True:
+            connection = self._get_connection()
+            try:
+                response = connection.send_command(command)
+            except Py4JNetworkError as pne:
+                connection.close(isinstance(pne.cause, socket.timeout))
+                if not self._should_retry(retry, connection, pne):
+                    raise
+                if pne.when in (proto.ERROR_ON_SEND, proto.EMPTY_RESPONSE):
+                    retry = False
+                logger.info("Retrying command after network error.",
+                            exc_info=True)
+                continue
+            except KeyboardInterrupt:
+                # For KeyboardInterrupt triggered from Python shell, it should
+                # clean up the connection so the connection is
+                #   - closed and does not leak
+                #   - removed from the thread local when Py4J
+                #     Single Threading Model is on
+                # See also https://github.com/bartdag/py4j/pull/440 for
+                # more details.
+                logger.exception("KeyboardInterrupt while sending command.")
+
+                if connection and connection.socket:
+                    local_addr = connection.socket.getsockname()
+                    remote_addr = connection.socket.getpeername()
+                    logger.info(
+                        "Search for sockets that match local addr {0} and remote addr {1}".
+                        format(local_addr, remote_addr))
+                    # Find all of the socket pairs with the same laddr and raddr.
+                    remaining_sockets = []
+                    size = len(self.deque)
+
+                    for _ in range(0, size):
+                        try:
+                            next_conn = self.deque.pop()
+                            socket_match = next_conn.socket and \
+                                (next_conn.socket.getsockname() == local_addr or \
+                                next_conn.socket.getpeername() == remote_addr)
+                            if socket_match:
+                                logger.info("Shutting down matched socket {0}".format(next_conn.socket))
+                                # We send local port as remote and remote port as local for JVM part
+                                # of the connection.
+                                next_conn.shutdown_socket(local_addr[1], remote_addr[1])
+                                logger.info("Finished shutdown of socket {0}".format(next_conn.socket))
+                            else:
+                                remaining_sockets.append(next_conn)
+                        except IndexError:
+                            pass
+
+                    for conn in remaining_sockets:
+                        self.deque.append(conn)
+
+                    logger.info("Shutting down the current connection {0}".format(connection))
+                    # The ports are reversed for JVM side of the connection.
+                    connection.shutdown_socket(local_addr[1], remote_addr[1])
+
+                raise
+            except Exception:
+                connection.close()
+                raise
+
             if binary:
                 return response, self._create_connection_guard(connection)
-            elif is_fatal_error(response):
+            if is_fatal_error(response):
                 connection.close(False)
             else:
                 self._give_back_connection(connection)
-        except Py4JNetworkError as pne:
-            if connection:
-                reset = False
-                if isinstance(pne.cause, socket.timeout):
-                    reset = True
-                connection.close(reset)
-            if self._should_retry(retry, connection, pne):
-                if pne.when == proto.ERROR_ON_SEND or pne.when == proto.EMPTY_RESPONSE:
-                    # For empty response, just try once more because now we reset
-                    # the connection, and should work if the other end is alive.
-                    retry = False
-                logger.info("Exception while sending command.", exc_info=True)
-                response = self.send_command(command, retry, binary=binary)
-            else:
-                logger.exception(
-                    "Exception while sending command.")
-                response = proto.ERROR
-        except KeyboardInterrupt:
-            # For KeyboardInterrupt triggered from Python shell, it should
-            # clean up the connection so the connection is
-            #   - closed and does not leak
-            #   - removed from the thread local when Py4J
-            #     Single Threading Model is on
-            # See also https://github.com/bartdag/py4j/pull/440 for
-            # more details.
-            logger.exception("KeyboardInterrupt while sending command.")
-
-            if connection and connection.socket:
-                local_addr = connection.socket.getsockname()
-                remote_addr = connection.socket.getpeername()
-                logger.info(
-                    "Search for sockets that match local addr {0} and remote addr {1}".
-                    format(local_addr, remote_addr))
-                # Find all of the socket pairs with the same laddr and raddr.
-                remaining_sockets = []
-                size = len(self.deque)
-
-                for _ in range(0, size):
-                    try:
-                        next_conn = self.deque.pop()
-                        socket_match = next_conn.socket and \
-                            (next_conn.socket.getsockname() == local_addr or \
-                            next_conn.socket.getpeername() == remote_addr)
-                        if socket_match:
-                            logger.info("Shutting down matched socket {0}".format(next_conn.socket))
-                            # We send local port as remote and remote port as local for JVM part
-                            # of the connection.
-                            next_conn.shutdown_socket(local_addr[1], remote_addr[1])
-                            logger.info("Finished shutdown of socket {0}".format(next_conn.socket))
-                        else:
-                            remaining_sockets.append(next_conn)
-                    except IndexError:
-                        pass
-
-                for conn in remaining_sockets:
-                    self.deque.append(conn)
-
-                logger.info("Shutting down the current connection {0}".format(connection))
-                # The ports are reversed for JVM side of the connection.
-                connection.shutdown_socket(local_addr[1], remote_addr[1])
-
-            raise
-
-        return response
+            return response
 
     def _create_connection_guard(self, connection):
         return GatewayConnectionGuard(self, connection)
@@ -1391,7 +1389,7 @@ class GatewayConnection(object):
             # Write will only fail if remote is closed for large payloads or
             # if it sent a RST packet (SO_LINGER)
             self.socket.sendall(command.encode("utf-8"))
-        except Exception as e:
+        except OSError as e:
             logger.info("Error while sending.", exc_info=True)
             raise Py4JNetworkError(
                 "Error while sending", e, proto.ERROR_ON_SEND) from e
@@ -1420,14 +1418,10 @@ class GatewayConnection(object):
                     "Server requires authentication but client provided "
                     "no valid token.")
             return answer
-        except Py4JAuthenticationError:
-            raise
-        except Exception as e:
+        except OSError as e:
             logger.info("Error while receiving.", exc_info=True)
-            if isinstance(e, Py4JNetworkError) and e.when == proto.EMPTY_RESPONSE:
-                raise
             raise Py4JNetworkError(
-                "Error while receiving", e, proto.ERROR_ON_RECEIVE)
+                "Error while receiving", e, proto.ERROR_ON_RECEIVE) from e
 
 
 class JavaMember(object):

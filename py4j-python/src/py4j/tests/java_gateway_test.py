@@ -12,7 +12,7 @@ from multiprocessing import Process
 import os
 import sys
 from queue import Queue
-from socket import AF_INET, SOCK_STREAM, socket
+from socket import AF_INET, SOCK_STREAM, socket, timeout
 import subprocess
 import tempfile
 from threading import Thread
@@ -28,7 +28,7 @@ from py4j.java_gateway import (
     set_default_callback_accept_timeout, GatewayConnectionGuard,
     get_java_class)
 from py4j.protocol import (
-    Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
+    ERROR_ON_RECEIVE, Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
     encode_bytearray, escape_new_line, unescape_new_line, smart_decode)
 
 
@@ -1611,12 +1611,12 @@ class RetryTest(unittest.TestCase):
         gateway = JavaGateway(
             gateway_parameters=GatewayParameters(read_timeout=0.250))
         try:
-            value = gateway.entry_point.getNewExample().sleepFirstTimeOnly(500)
-            self.fail(
-                "Should never retry once the first command went through."
-                "number of calls made: {0}".format(value))
-        except Py4JError:
-            self.assertTrue(True)
+            example = gateway.entry_point.getNewExample()
+            with self.assertRaises(Py4JNetworkError) as raised:
+                example.sleepFirstTimeOnly(500)
+            self.assertEqual(ERROR_ON_RECEIVE, raised.exception.when)
+            self.assertIsInstance(raised.exception.cause, timeout)
+            self.assertIs(raised.exception.__cause__, raised.exception.cause)
         finally:
             gateway.shutdown()
             self.p.join()

@@ -540,7 +540,7 @@ class ClientServerConnection(object):
         logger.debug("Command to send: {0}".format(command))
         try:
             self.socket.sendall(command.encode("utf-8"))
-        except Exception as e:
+        except OSError as e:
             logger.info("Error while sending or receiving.", exc_info=True)
             raise Py4JNetworkError(
                 "Error while sending", e, proto.ERROR_ON_SEND) from e
@@ -574,12 +574,11 @@ class ClientServerConnection(object):
                         # but at this point, the protocol is broken.
                         self.socket.sendall(
                             proto.ERROR_RETURN_MESSAGE.encode("utf-8"))
-        except Exception as e:
+        except OSError as e:
             logger.info("Error while receiving.", exc_info=True)
-            if isinstance(e, Py4JNetworkError) and e.when == proto.EMPTY_RESPONSE:
-                raise
             raise Py4JNetworkError(
-                "Error while sending or receiving", e, proto.ERROR_ON_RECEIVE)
+                "Error while sending or receiving", e,
+                proto.ERROR_ON_RECEIVE) from e
 
     def close(self, reset=False):
         logger.info("Closing down clientserver connection")
