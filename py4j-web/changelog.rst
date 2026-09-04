@@ -7,6 +7,16 @@ releases.
 Unreleased
 ----------
 
+- Python side: The callback server's accept loop now uses ``select.poll()``
+  instead of ``select.select()`` on POSIX systems. ``select()`` is bounded by
+  ``FD_SETSIZE`` (typically 1024), so a callback-server socket assigned a file
+  descriptor >= 1024 -- common in long-lived processes such as PySpark drivers
+  that have opened many descriptors -- raised ``ValueError: filedescriptor out
+  of range in select()``. ``poll()`` has no such limit. Windows, and any POSIX
+  build without ``select.poll``, continue to use ``select()``. Set the
+  ``PY4J_FORCE_SELECT`` environment variable (to ``yes``/``y``/``t``/``true``)
+  to force the legacy ``select()`` path on POSIX. Closes issue #559.
+
 - Python side: Memoize attribute lookups on ``JVMView``,
   ``JavaPackage``, and ``JavaClass`` via a per-instance bounded LRU
   cache (default 1024 entries). Repeated walks along chains like

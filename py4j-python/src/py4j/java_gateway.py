@@ -952,7 +952,12 @@ class GatewayParameters(object):
 
 class CallbackServerParameters(object):
     """Wrapper class that contains all parameters that can be passed to
-    configure a `CallbackServer`
+    configure a `CallbackServer`.
+
+    On POSIX systems the callback server's accept loop uses ``select.poll()``,
+    which (unlike ``select.select()``) is not bounded by ``FD_SETSIZE``; set
+    the ``PY4J_FORCE_SELECT`` environment variable to force the legacy
+    ``select()`` path. Windows always uses ``select()``.
     """
 
     def __init__(
@@ -2622,33 +2627,52 @@ class CallbackServer(object):
             try:
                 if (
                     os.name == "posix"
-                    and os.getenv(PY4J_FORCE_SELECT, "").lower() not in PY4J_TRUE
+                    and hasattr(select, "poll")
+                    and os.getenv(
+                        PY4J_FORCE_SELECT, "").lower() not in PY4J_TRUE
                 ):
                     # On posix systems use poll to avoid problems with file
-                    # descriptor numbers above 1024 (unless we force select by
-                    # setting the PY4J_FORCE_SELECT environment variable).
+                    # descriptor numbers above 1024 (select is bounded by
+                    # FD_SETSIZE). Guarded by hasattr because a few posix
+                    # builds (e.g. Emscripten/WASM) ship select without poll.
+                    # Set PY4J_FORCE_SELECT to force the select path.
                     poller = select.poll()
                     for r in read_list:
                         poller.register(r, select.POLLIN)
 
                 while not self.is_shutdown:
                     if poller is not None:
-                        # Unlike select, poll timeout is in millis (hence multiply
-                        # by 1000).
+                        # poll's timeout is in milliseconds (select uses
+                        # seconds). A None accept_timeout means "block until
+                        # an event"; mirror select's handling of None rather
+                        # than crashing on ``1000 * None``.
+                        accept_timeout = \
+                            self.callback_server_parameters.accept_timeout
+                        poll_timeout = (
+                            None if accept_timeout is None
+                            else 1000 * accept_timeout)
                         readable_fds = []
-                        for fd, event in poller.poll(
-                            1000 * self.callback_server_parameters.accept_timeout
-                        ):
-                            if event & (select.POLLIN | select.POLLHUP):
-                                # Data can be read (for POLLHUP peer hang up, so
-                                # reads will return 0 bytes, in which case we want
-                                # to break out - this is consistent with how select
-                                # behaves).
+                        for fd, event in poller.poll(poll_timeout):
+                            if event & select.POLLIN:
+                                # A connection is waiting to be accepted.
                                 readable_fds.append(fd)
-                            else:
-                                # Could be POLLERR or POLLNVAL (select would raise
-                                # in this case).
-                                raise Py4JError(f"Polling error - event {event} on fd {fd}")
+                            elif not self.is_shutdown:
+                                # POLLERR / POLLHUP / POLLNVAL without POLLIN
+                                # on the listening socket. The select-based
+                                # path passed an empty exceptional set -- it
+                                # ignored these conditions and kept waiting --
+                                # so mirror that here rather than tearing the
+                                # callback server down on a transient socket
+                                # error (a regression for long-lived servers,
+                                # the very case #559 targets). During shutdown
+                                # the socket was closed under us, so stay
+                                # silent. We deliberately do NOT accept() on a
+                                # POLLHUP-only event: accept() on a listening
+                                # socket with no pending connection blocks.
+                                logger.warning(
+                                    "Ignoring unexpected poll event %s on the "
+                                    "callback server listening socket (fd %s)",
+                                    event, fd)
                         readable = [
                             r for r in read_list if r.fileno() in readable_fds
                         ]
@@ -2685,7 +2709,16 @@ class CallbackServer(object):
             finally:
                 if poller is not None:
                     for r in read_list:
-                        poller.unregister(r)
+                        # During shutdown the socket may already be closed
+                        # (fileno() == -1); guard so unregister can't mask
+                        # the real exception on the way out of the loop.
+                        try:
+                            poller.unregister(r)
+                        except (KeyError, OSError, ValueError) as unreg_exc:
+                            logger.debug(
+                                "Ignoring poller.unregister error during "
+                                "callback server teardown: %s: %s",
+                                type(unreg_exc).__name__, str(unreg_exc))
         except Exception as e:
             if self.is_shutdown:
                 logger.info("Error while waiting for a connection.")

@@ -5,14 +5,17 @@ Created on Apr 5, 2010
 """
 from contextlib import contextmanager
 from multiprocessing import Process
+import os
+import select
 import subprocess
 from threading import Thread
 from traceback import print_exc
 import unittest
+from unittest.mock import patch
 
 from py4j.java_gateway import (
     JavaGateway, PythonProxyPool, CallbackServerParameters,
-    set_default_callback_accept_timeout, is_instance_of)
+    set_default_callback_accept_timeout, is_instance_of, PY4J_FORCE_SELECT)
 from py4j.protocol import Py4JJavaError
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, safe_join, safe_shutdown, sleep, check_connection,
@@ -591,6 +594,140 @@ class LazyStartTest(unittest.TestCase):
         except Exception:
             print_exc()
             self.fail()
+
+
+class _WrappingPoller(object):
+    """Wraps a real ``select.poll`` object so a test can confirm the accept
+    loop actually CALLS ``poll()`` (not merely that a poller was created),
+    and optionally inject a synthetic event on the first ``poll()`` call to
+    exercise the error path. register/unregister delegate to the real poller.
+    """
+
+    def __init__(self, real, inject_first=None):
+        self._real = real
+        self._inject_first = inject_first
+        self.poll_calls = 0
+
+    def register(self, *args, **kwargs):
+        return self._real.register(*args, **kwargs)
+
+    def unregister(self, *args, **kwargs):
+        return self._real.unregister(*args, **kwargs)
+
+    def poll(self, *args, **kwargs):
+        self.poll_calls += 1
+        if self._inject_first is not None and self.poll_calls == 1:
+            return self._inject_first
+        return self._real.poll(*args, **kwargs)
+
+
+class CallbackServerPollSelectTest(unittest.TestCase):
+    """Covers the CallbackServer accept loop under both back-ends:
+
+    - poll (the posix default; issue #559 -- avoids select's
+      ``FD_SETSIZE=1024`` ceiling so callback sockets with high fd
+      numbers still work), and
+    - select (Windows, or forced on posix via ``PY4J_FORCE_SELECT``).
+
+    The poll path is already exercised implicitly by every callback test
+    on posix CI; these tests pin it explicitly and add the otherwise
+    uncovered select fallback and env-var escape hatch.
+    """
+
+    def setUp(self):
+        self.p = start_example_app_process()
+        self.gateway = None
+        sleep()
+
+    def tearDown(self):
+        if self.gateway is not None:
+            safe_shutdown(self)
+        self.p.join()
+        os.environ.pop(PY4J_FORCE_SELECT, None)
+        sleep()
+
+    def _assert_callback_works(self):
+        # A Java->Python callback forces the accept loop to accept a
+        # callback connection, so it must have gone through the active
+        # back-end (poll or select) to succeed.
+        example = self.gateway.entry_point.getNewExample()
+        self.assertEqual("This is Hello!", example.callHello(IHelloImpl()))
+
+    @unittest.skipIf(os.name != "posix", "poll is only used on posix")
+    def testAcceptLoopUsesPollOnPosix(self):
+        # White-box: the accept loop must actually CALL poll() (not merely
+        # construct a poller) on posix -- the fix for #559's FD_SETSIZE
+        # ceiling. A wrapping poller records poll() invocations. Because a
+        # successful callback requires the accept loop to have accepted the
+        # connection, poll_calls > 0 is guaranteed once the callback returns.
+        pollers = []
+        real_poll = select.poll
+
+        def make_poller():
+            wrapper = _WrappingPoller(real_poll())
+            pollers.append(wrapper)
+            return wrapper
+
+        with patch("py4j.java_gateway.select.poll", side_effect=make_poller):
+            self.gateway = JavaGateway(
+                callback_server_parameters=CallbackServerParameters())
+            sleep()
+            self._assert_callback_works()
+        self.assertTrue(pollers, "a poll object should have been created")
+        self.assertGreater(
+            pollers[0].poll_calls, 0,
+            "poller.poll() should drive the accept loop on posix")
+
+    @unittest.skipIf(os.name != "posix", "select is the only path off posix")
+    def testForceSelectSkipsPoll(self):
+        # PY4J_FORCE_SELECT must make the accept loop use select (not poll)
+        # even on posix; poll must never be constructed and select.select
+        # must actually back the loop (proven by the callback succeeding).
+        os.environ[PY4J_FORCE_SELECT] = "true"
+        with patch("py4j.java_gateway.select.poll",
+                   wraps=select.poll) as mock_poll, \
+                patch("py4j.java_gateway.select.select",
+                      wraps=select.select) as mock_select:
+            self.gateway = JavaGateway(
+                callback_server_parameters=CallbackServerParameters())
+            sleep()
+            self._assert_callback_works()
+        mock_poll.assert_not_called()
+        self.assertTrue(
+            mock_select.called,
+            "select.select() should back the accept loop when forced")
+
+    @unittest.skipIf(os.name != "posix", "poll is only used on posix")
+    def testTransientPollErrorDoesNotKillServer(self):
+        # A transient POLLERR on the listening socket must be logged and
+        # ignored (the old select path passed an empty exceptional set, i.e.
+        # ignored these), NOT raised -- otherwise the callback server would
+        # die on a transient error, a regression for the long-lived servers
+        # #559 targets. Inject a synthetic POLLERR on the first poll(), then
+        # confirm a callback still succeeds (the loop survived).
+        real_poll = select.poll
+
+        def make_poller():
+            return _WrappingPoller(
+                real_poll(), inject_first=[(999, select.POLLERR)])
+
+        with patch("py4j.java_gateway.select.poll", side_effect=make_poller):
+            self.gateway = JavaGateway(
+                callback_server_parameters=CallbackServerParameters())
+            sleep()
+            # Had the POLLERR raised, the accept loop would be dead and this
+            # callback would fail/hang instead of returning.
+            self._assert_callback_works()
+
+    def testCleanShutdownDrainsPool(self):
+        # A clean shutdown must drain the proxy pool without the poll-path
+        # teardown (poller.unregister in the finally) raising.
+        self.gateway = JavaGateway(
+            callback_server_parameters=CallbackServerParameters())
+        sleep()
+        self._assert_callback_works()
+        self.gateway.shutdown()
+        self.assertEqual(0, len(self.gateway.gateway_property.pool))
 
 
 if __name__ == "__main__":
