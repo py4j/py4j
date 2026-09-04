@@ -2,7 +2,7 @@ from contextlib import contextmanager
 import gc
 from multiprocessing import Process
 import os
-from socket import timeout
+from socket import SHUT_RDWR, timeout
 import subprocess
 import threading
 import unittest
@@ -268,29 +268,44 @@ class GarbageCollectionTest(unittest.TestCase):
 
 class RetryTest(unittest.TestCase):
 
-    def testUnexpectedReplyError(self):
+    def testFailedCancellationClosesConnection(self):
         with clientserver_example_app_process():
             gateway = ClientServer()
             try:
-                items = gateway.jvm.java.util.ArrayList()
-                add = items.add
-                connection = gateway._gateway_client.get_thread_connection()
-                interruption = RuntimeError("interrupted reply")
-
-                def interrupt_read():
-                    # Wait for the command to finish, leaving its reply unread.
-                    connection.stream.peek(1)
-                    raise interruption
-
-                with patch.object(connection.stream, "readline",
-                                  side_effect=interrupt_read):
-                    with self.assertRaises(RuntimeError) as raised:
-                        add("first")
-                self.assertIs(raised.exception, interruption)
-                # Neither replay the add nor read its stale boolean reply.
-                self.assertEqual("[first]", items.toString())
+                connection = gateway._gateway_client._get_connection()
+                connection.socket.shutdown(SHUT_RDWR)
+                connection.shutdown_socket(0, 0)
+                self.assertIsNone(connection.socket)
+                self.assertFalse(connection.is_connected)
             finally:
                 gateway.shutdown()
+
+    def testInterruptedReply(self):
+        for interruption in (RuntimeError(), KeyboardInterrupt()):
+            with self.subTest(interruption=type(interruption).__name__):
+                with clientserver_example_app_process():
+                    gateway = ClientServer()
+                    try:
+                        items = gateway.jvm.java.util.ArrayList()
+                        add = items.add
+                        client = gateway._gateway_client
+                        connection = client.get_thread_connection()
+
+                        def interrupt_read():
+                            # Wait for the reply without consuming it.
+                            connection.stream.peek(1)
+                            raise interruption
+
+                        with patch.object(connection.stream, "readline",
+                                          side_effect=interrupt_read):
+                            with self.assertRaises(
+                                    type(interruption)) as raised:
+                                add("first")
+                        self.assertIs(raised.exception, interruption)
+                        # No duplicate add or stale boolean reply.
+                        self.assertEqual("[first]", items.toString())
+                    finally:
+                        gateway.shutdown()
 
     def testBadRetry(self):
         """Should not retry from Python to Java.
@@ -311,7 +326,8 @@ class RetryTest(unittest.TestCase):
                     example.sleepFirstTimeOnly(500)
                 self.assertEqual(ERROR_ON_RECEIVE, raised.exception.when)
                 self.assertIsInstance(raised.exception.cause, timeout)
-                self.assertIs(raised.exception.__cause__, raised.exception.cause)
+                self.assertIs(raised.exception.__cause__,
+                              raised.exception.cause)
             finally:
                 client_server.shutdown()
 

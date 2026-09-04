@@ -313,6 +313,43 @@ class JavaClient(GatewayClient):
         return parent_retry and retry and connection and\
             connection.initiated_from_client
 
+    def _cancel_connection(self, connection):
+        # Pinned connections also cancel the corresponding JVM socket.
+        current_socket = connection.socket
+        if current_socket is None:
+            return
+        try:
+            try:
+                local_addr = current_socket.getsockname()
+                remote_addr = current_socket.getpeername()
+            except OSError:
+                logger.info("Socket unavailable during cancellation.",
+                            exc_info=True)
+                return
+            for next_conn in list(self.deque):
+                next_socket = next_conn.socket
+                try:
+                    socket_match = next_socket and (
+                        next_socket.getsockname() == local_addr or
+                        next_socket.getpeername() == remote_addr)
+                except OSError:
+                    # A pooled socket may have closed while scanning.
+                    continue
+                if next_conn is connection or socket_match:
+                    try:
+                        self.deque.remove(next_conn)
+                    except ValueError:
+                        continue
+                    # Nested callbacks can return the current connection to
+                    # the pool. Cancel it only once, after removing aliases.
+                    if next_conn is not connection:
+                        next_conn.shutdown_socket(
+                            local_addr[1], remote_addr[1])
+            # The ports are reversed for the JVM side of the connection.
+            connection.shutdown_socket(local_addr[1], remote_addr[1])
+        finally:
+            connection.close()
+
     def _create_connection_guard(self, connection):
         return ClientServerConnectionGuard(self, connection)
 
@@ -506,8 +543,9 @@ class ClientServerConnection(object):
     # remote_port is the remote port of the Java socket (local port for Py4j).
     # local_port is the local port of the Java socket (remote port for Py4j).
     def shutdown_socket(self, remote_port, local_port):
-        if not self.is_connected:
-            raise Py4JError("Gateway must be connected to send cancel cmd.")
+        connection_socket = self.socket
+        if connection_socket is None:
+            return
         try:
             logger.info("Close connection stream")
             quiet_close(self.stream)
@@ -515,16 +553,16 @@ class ClientServerConnection(object):
             logger.info(
                 "Send shutdown request for the Java socket {0}, remote port {1}, local port {2}".
                 format(address, remote_port, local_port))
-            self.socket.sendall("z\n".encode("utf-8"))
-            self.socket.sendall(("%s\n" % address).encode("utf-8"))
-            self.socket.sendall(("%s\n" % remote_port).encode("utf-8"))
-            self.socket.sendall(("%s\n" % local_port).encode("utf-8"))
-            logger.info("Close connection")
+            connection_socket.sendall("z\n".encode("utf-8"))
+            connection_socket.sendall(("%s\n" % address).encode("utf-8"))
+            connection_socket.sendall(("%s\n" % remote_port).encode("utf-8"))
+            connection_socket.sendall(("%s\n" % local_port).encode("utf-8"))
+        except OSError:
+            logger.info("Socket unavailable during cancellation.",
+                        exc_info=True)
+        finally:
             self.close()
             self.is_connected = False
-            logger.info("Connection is closed")
-        except Exception:
-            logger.exception("Exception occurred while shutting down connection", exc_info=True)
 
     def start(self):
         t = Thread(target=self.run)
