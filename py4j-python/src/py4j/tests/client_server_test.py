@@ -2,16 +2,18 @@ from contextlib import contextmanager
 import gc
 from multiprocessing import Process
 import os
+from socket import SHUT_RDWR, timeout
 import subprocess
 import threading
 import unittest
+from unittest.mock import patch
 
 from py4j.clientserver import (
     ClientServer, JavaParameters, PythonParameters)
 from py4j.java_gateway import GatewayConnectionGuard, is_instance_of, \
     GatewayParameters, JavaGateway, DEFAULT_PORT, DEFAULT_PYTHON_PROXY_PORT
 from py4j.protocol import (
-    Py4JError, Py4JJavaError, Py4JNetworkError, smart_decode)
+    ERROR_ON_RECEIVE, Py4JError, Py4JJavaError, Py4JNetworkError, smart_decode)
 from py4j.tests.java_callback_test import IHelloImpl, IHelloFailingImpl
 from py4j.tests.java_gateway_test import (
     PY4J_JAVA_PATH, PY4J_JAVA_PATHS,
@@ -266,6 +268,46 @@ class GarbageCollectionTest(unittest.TestCase):
 
 class RetryTest(unittest.TestCase):
 
+    def testFailedCancellationClosesConnection(self):
+        with clientserver_example_app_process():
+            gateway = ClientServer()
+            try:
+                connection = gateway._gateway_client._get_connection()
+                connection.socket.shutdown(SHUT_RDWR)
+                connection.shutdown_socket(0, 0)
+                self.assertIsNone(connection.socket)
+                self.assertFalse(connection.is_connected)
+            finally:
+                gateway.shutdown()
+
+    def testInterruptedReply(self):
+        for interruption in (RuntimeError(), KeyboardInterrupt(),
+                             BaseException()):
+            with self.subTest(interruption=type(interruption).__name__):
+                with clientserver_example_app_process():
+                    gateway = ClientServer()
+                    try:
+                        items = gateway.jvm.java.util.ArrayList()
+                        add = items.add
+                        client = gateway._gateway_client
+                        connection = client.get_thread_connection()
+
+                        def interrupt_read():
+                            # Wait for the reply without consuming it.
+                            connection.stream.peek(1)
+                            raise interruption
+
+                        with patch.object(connection.stream, "readline",
+                                          side_effect=interrupt_read):
+                            with self.assertRaises(
+                                    type(interruption)) as raised:
+                                add("first")
+                        self.assertIs(raised.exception, interruption)
+                        # No duplicate add or stale boolean reply.
+                        self.assertEqual("[first]", items.toString())
+                    finally:
+                        gateway.shutdown()
+
     def testBadRetry(self):
         """Should not retry from Python to Java.
         Python calls a long Java method. The call goes through, but the
@@ -281,12 +323,12 @@ class RetryTest(unittest.TestCase):
         with clientserver_example_app_process():
             try:
                 example = client_server.jvm.py4j.examples.ExampleClass()
-                value = example.sleepFirstTimeOnly(500)
-                self.fail(
-                    "Should never retry once the first command went through."
-                    "number of calls made: {0}".format(value))
-            except Py4JError:
-                self.assertTrue(True)
+                with self.assertRaises(Py4JNetworkError) as raised:
+                    example.sleepFirstTimeOnly(500)
+                self.assertEqual(ERROR_ON_RECEIVE, raised.exception.when)
+                self.assertIsInstance(raised.exception.cause, timeout)
+                self.assertIs(raised.exception.__cause__,
+                              raised.exception.cause)
             finally:
                 client_server.shutdown()
 

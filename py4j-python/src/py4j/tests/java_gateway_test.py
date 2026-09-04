@@ -12,13 +12,14 @@ from multiprocessing import Process
 import os
 import sys
 from queue import Queue
-from socket import AF_INET, SOCK_STREAM, socket
+from socket import AF_INET, SOCK_STREAM, socket, timeout
 import subprocess
 import tempfile
 from threading import Thread
 import time
 from traceback import print_exc
 import unittest
+from unittest.mock import patch
 
 from py4j.finalizer import ThreadSafeFinalizer
 from py4j.java_gateway import (
@@ -28,8 +29,9 @@ from py4j.java_gateway import (
     set_default_callback_accept_timeout, GatewayConnectionGuard,
     get_java_class)
 from py4j.protocol import (
-    Py4JError, Py4JJavaError, Py4JNetworkError, decode_bytearray,
-    encode_bytearray, escape_new_line, unescape_new_line, smart_decode)
+    ERROR_ON_RECEIVE, Py4JError, Py4JJavaError, Py4JNetworkError,
+    decode_bytearray, encode_bytearray, escape_new_line, unescape_new_line,
+    smart_decode)
 
 
 SERVER_PORT = 25333
@@ -1597,6 +1599,22 @@ class IPv6Test(unittest.TestCase):
 
 class RetryTest(unittest.TestCase):
 
+    def testKeyboardInterrupt(self):
+        gateway = JavaGateway.launch_gateway(die_on_exit=True)
+        try:
+            current_time = gateway.jvm.System.currentTimeMillis
+            connection = gateway._gateway_client.deque[-1]
+            interruption = KeyboardInterrupt()
+            with patch.object(connection.stream, "readline",
+                              side_effect=interruption):
+                with self.assertRaises(KeyboardInterrupt) as raised:
+                    current_time()
+            self.assertIs(raised.exception, interruption)
+            self.assertFalse(connection.is_connected)
+            self.assertGreater(current_time(), 0)
+        finally:
+            gateway.shutdown()
+
     def testBadRetry(self):
         """Should not retry from Python to Java.
         Python calls a long Java method. The call goes through, but the
@@ -1611,12 +1629,12 @@ class RetryTest(unittest.TestCase):
         gateway = JavaGateway(
             gateway_parameters=GatewayParameters(read_timeout=0.250))
         try:
-            value = gateway.entry_point.getNewExample().sleepFirstTimeOnly(500)
-            self.fail(
-                "Should never retry once the first command went through."
-                "number of calls made: {0}".format(value))
-        except Py4JError:
-            self.assertTrue(True)
+            example = gateway.entry_point.getNewExample()
+            with self.assertRaises(Py4JNetworkError) as raised:
+                example.sleepFirstTimeOnly(500)
+            self.assertEqual(ERROR_ON_RECEIVE, raised.exception.when)
+            self.assertIsInstance(raised.exception.cause, timeout)
+            self.assertIs(raised.exception.__cause__, raised.exception.cause)
         finally:
             gateway.shutdown()
             self.p.join()
