@@ -1195,7 +1195,9 @@ class GatewayClient(object):
             except KeyboardInterrupt:
                 self._cancel_connection(connection)
                 raise
-            except Exception:
+            except BaseException:
+                # An interrupted read may leave a reply pending. Never reuse
+                # the connection or replay a possibly executed command.
                 connection.close()
                 raise
 

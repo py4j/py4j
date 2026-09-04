@@ -281,7 +281,8 @@ class RetryTest(unittest.TestCase):
                 gateway.shutdown()
 
     def testInterruptedReply(self):
-        for interruption in (RuntimeError(), KeyboardInterrupt()):
+        for interruption in (RuntimeError(), KeyboardInterrupt(),
+                             BaseException()):
             with self.subTest(interruption=type(interruption).__name__):
                 with clientserver_example_app_process():
                     gateway = ClientServer()
