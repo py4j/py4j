@@ -214,6 +214,22 @@ default on most systems.
 To secure Py4J applications, refer to the :ref:`TLS And Authentication <security>`
 documentation.
 
+Why do I get "filedescriptor out of range in select()" with callbacks?
+----------------------------------------------------------------------
+
+This happens in long-lived processes (for example PySpark drivers) that have
+opened many file descriptors: the callback server's socket is assigned a file
+descriptor number greater than or equal to ``FD_SETSIZE`` (typically 1024),
+which the underlying ``select()`` call cannot represent. Since Py4J 0.11 the
+callback server uses ``select.poll()`` on POSIX systems, which has no such
+limit, so this should no longer occur.
+
+If you need the legacy behavior, set the ``PY4J_FORCE_SELECT`` environment
+variable before starting your application. This reintroduces the limit and is
+intended only as an escape hatch::
+
+  export PY4J_FORCE_SELECT=yes
+
 I found a bug, how do I report it?
 ----------------------------------
 
