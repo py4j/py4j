@@ -199,7 +199,7 @@ your commit:
 
         fixes #XYZ -- short description below 72 characters
 
-        Longer description that lists all the changes that occured
+        Longer description that lists all the changes that occurred
         on multiple lines of 79 characters.
 
 
